@@ -1,0 +1,46 @@
+<!ELEMENT flow (filename, title, description, longdescription, author, program*)>
+<!ATTLIST flow id ID #REQUIRED>
+
+<!ELEMENT program (title, binary, description, longdescription, parameters?)>
+<!ATTLIST program
+   id                                         ID #REQUIRED
+   stdin  (yes | no)                             #REQUIRED
+   stdout (yes | no)                             #REQUIRED
+   status (disabled | configured | unconfigured) #REQUIRED>
+
+<!ELEMENT parameters (int | float | string | flag | file | range)*>
+
+<!ELEMENT int (keyword, description, value)>
+<!ATTLIST int required (yes | no) #REQUIRED>
+
+<!ELEMENT float (keyword, description, value)>
+<!ATTLIST float required (yes | no) #REQUIRED>
+
+<!ELEMENT string (keyword, description, value)>
+<!ATTLIST string required (yes | no) #REQUIRED>
+
+<!ELEMENT flag (keyword, description, state)>
+<!ATTLIST flag required (yes | no) #REQUIRED>
+
+<!ELEMENT file (keyword, description, value)>
+<!ATTLIST file required (yes | no) #REQUIRED>
+
+<!ELEMENT range (keyword, description, value)>
+<!ATTLIST range
+   min           CDATA #REQUIRED
+   max           CDATA #REQUIRED
+   inc           CDATA #REQUIRED
+   required (yes | no) #REQUIRED>
+
+<!ELEMENT filename         (#PCDATA)>
+<!ELEMENT author           (#PCDATA)>
+<!ELEMENT description      (#PCDATA)>
+<!ELEMENT longdescription  (#PCDATA)>
+<!ELEMENT title	           (#PCDATA)>
+<!ELEMENT binary           (#PCDATA)>
+<!ELEMENT keyword          (#PCDATA)>
+<!ELEMENT value            (#PCDATA)>
+<!ATTLIST value default CDATA #IMPLIED>
+<!ELEMENT state            (#PCDATA)>
+<!ATTLIST state default (on | off) #REQUIRED>
+

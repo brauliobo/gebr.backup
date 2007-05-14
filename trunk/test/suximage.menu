@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE flow SYSTEM "flow.dtd">
+<flow id="flow_suximage_01">
+  <filename>suximage.menu</filename>
+  <title>SU ximage</title>
+  <description>X-windows IMAGE plot</description>
+  <longdescription>
+    X-windows IMAGE plot of a segy data set
+  </longdescription>
+  <author>GêBR core team</author>
+  <program id="prog_suximage_01" stdin="yes" stdout="no" status="unconfigured">
+    <title>SU ximage</title>
+    <binary>suximage</binary>
+    <description>X-windows IMAGE plot</description>
+    <longdescription>
+      X-windows IMAGE plot of a segy data set
+    </longdescription>
+    <parameters>
+      <string required="no">
+	<keyword>title</keyword>
+	<description>x window title</description>
+	<value></value>
+      </string>
+      <flag required="no">
+	<keyword>legend=1</keyword>
+	<description>display the color scale</description>
+	<state default="off"></state>
+      </flag>
+    </parameters>
+  </program>
+</flow>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE flow SYSTEM "flow.dtd">
+<flow id="flow_sugain_01">
+  <filename>sugain.menu</filename>
+  <title>SU gain</title>
+  <description>Gain control</description>
+  <longdescription>
+     Apply various types of gain to traces
+  </longdescription>
+  <author>GêBR core team</author>
+  <program id="prog_sugain_01" stdin="yes" stdout="yes" status="unconfigured">
+    <title>SU gain</title>
+    <binary>sugain</binary>
+    <description>Gain control</description>
+    <longdescription>
+      Apply various types of gain to traces
+    </longdescription>
+    <parameters>
+      <float required="no">
+	<keyword>tpow</keyword>
+	<description>
+	  multiply data by t^tpow
+	</description>
+	<value default="0.0"></value>
+      </float>
+      <float required="no">
+	<keyword>wagc</keyword>
+	<description>
+	  agc window in seconds (use if agc or gagc applies)
+	</description>
+	<value default="0.5"></value>
+      </float>
+    </parameters>
+  </program>
+</flow>

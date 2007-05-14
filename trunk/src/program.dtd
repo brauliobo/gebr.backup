@@ -1,0 +1,25 @@
+<!ELEMENT program (title, binary, description, parameters?)>
+<!ATTLIST program status (disabled | configured | unconfigured) #REQUIRED>
+
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT binary (#PCDATA)>
+<!ELEMENT parameters (float*, int*, string*, flag*)>
+
+<!ELEMENT float (description, keyword, value, defaultvalue)>
+<!ATTLIST float required (yes | no) #REQUIRED>
+
+<!ELEMENT int (description, keyword, value, defaultvalue)>
+<!ATTLIST int required (yes | no) #REQUIRED>
+
+<!ELEMENT string (description, keyword, value, defaultvalue)>
+<!ATTLIST string required (yes | no) #REQUIRED>
+
+<!ELEMENT flag (description, keyword, state)>
+<!ATTLIST flag required (yes | no) #REQUIRED>
+
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT keyword (#PCDATA)>
+<!ELEMENT value (#PCDATA)>
+<!ELEMENT defaultvalue (#PCDATA)>
+<!ELEMENT state (#PCDATA)>
+

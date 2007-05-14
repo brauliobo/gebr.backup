@@ -1,0 +1,29 @@
+AC_INIT(test/geoxml-test.c)
+
+PACKAGE=geoxml
+VERSION=0.1.0
+GEOXML_VERSION_INFO=`echo $VERSION | awk -F. '{ printf "%d:%d:%d", $1+$2, $3, $2 }'`
+AC_SUBST(GEOXML_VERSION_INFO)
+
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+
+dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
+AM_CONFIG_HEADER(config.h)
+
+AC_PROG_INSTALL
+AC_PROG_LIBTOOL
+AC_PROG_CC
+AC_HEADER_STDC
+AC_CHECK_HEADERS(stdio.h)
+
+dnl Main depencies: gdome2.
+GDOME2_DEFS
+AC_SUBST(GDOME2_CFLAGS)
+AC_SUBST(GDOME2_LIBS)
+
+AC_OUTPUT([
+libgeoxml.lsm libgeoxml.spec
+src/Makefile
+test/Makefile
+Makefile
+])

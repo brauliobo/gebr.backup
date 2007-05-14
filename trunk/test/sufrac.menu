@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE flow SYSTEM "flow.dtd">
+<flow id="flow-sufrac-01">
+  <filename>sufrac.menu</filename>
+  <title>SU frac</title>
+  <description>Fraction derivative or integral</description>
+  <longdescription>
+    Take general (fractional) time derivative or integral of
+    data, plus a phase shift. Input is TIME DOMAIN data.
+  </longdescription>
+  <author>GêBR core team</author>
+  <program id="prog_sufrac_01" stdin="yes" stdout="yes" status="unconfigured">
+    <title>SU frac</title>
+    <binary>sufrac</binary>
+    <description>Fraction derivative or integral</description>
+    <longdescription>
+      Take general (fractional) time derivative or integral of
+      data, plus a phase shift. Input is TIME DOMAIN data.
+    </longdescription>
+    <parameters>
+      <float required="no">
+	<keyword>power</keyword>
+	<description>
+	  exponent of (-i*omega)
+	</description>
+	<value default="0"></value>
+      </float>
+      <int required="no">
+	<keyword>sign</keyword>
+	<description>
+	  sign in front of i * omega
+	</description>
+	<value default="-1"></value>
+      </int>
+      <float required="no">
+	<keyword>dt</keyword>
+	<description>
+	  time sample interval (in seconds)
+	</description>
+	<value></value>
+      </float>
+      <float required="no">
+	<keyword>phasefac</keyword>
+	<description>
+	  phase shift by phase=phasefac*PI
+	</description>
+	<value default="0"></value>
+      </float>
+    </parameters>
+  </program>
+</flow>
