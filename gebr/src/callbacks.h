@@ -33,13 +33,6 @@ data_fname (const char *document,
 	    GString    **fname   );
 
 void
-file_browse                    (GtkButton  *button,
-                                GtkWidget  *entry);
-void
-file_browse_ok                  (GtkButton  *button,
-                                 GtkWidget  *entry);
-
-void
 pref_actions                (GtkDialog *dialog,
 			     gint       arg1,
 			     gpointer   user_data);

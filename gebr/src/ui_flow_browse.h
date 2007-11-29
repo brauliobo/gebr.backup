@@ -15,13 +15,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_HELP_H
-#define __UI_HELP_H
+#ifndef __UI_FLOW_H
+#define __UI_FLOW_H
 
-#include <gtk/gtk.h>
-#include <geoxml.h>
 
-void
-ui_help_edit(GtkButton * button, GeoXmlDocument * document);
 
-#endif //__UI_HELP_H
+#endif //__UI_FLOW_H

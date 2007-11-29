@@ -15,17 +15,40 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_HELP_H_
-#define __UI_HELP_H_
+#ifndef __UI_FLOW_COMPONENT_H
+#define __UI_FLOW_COMPONENT_H
 
-#include <gtk/gtk.h>
-#include <geoxml.h>
+/* Flow sequence store fields */
+enum {
+	FSEQ_STATUS_COLUMN = 0,
+	FSEQ_TITLE_COLUMN,
+	FSEQ_MENU_FILE_NAME_COLUMN,
+	FSEQ_MENU_INDEX,
+	FSEQ_N_COLUMN
+};
+
+struct ui_flow_component {
+	GtkWidget *	widget;
+
+	/* available system and user's menus*/
+	GtkWidget *	menu_view;
+	GtkTreeStore *	menu_store;
+
+	/* Sequence of programs of a flow */
+	GtkListStore *	fseq_store;
+	GtkWidget *	fseq_view;
+};
+
+struct ui_flow_component
+flow_component_setup_ui(void);
 
 void
-help_show(gchar * help, gchar * title, gchar * fname);
+flow_component_selected(void);
 
 void
-help_edit(GtkButton * button, GeoXmlDocument * document);
+flow_component_change_properties(void);
 
+void
+flow_component_set_status(GtkMenuItem * menuitem);
 
-#endif //_GEBR_UI_HELP_H_
+#endif //__UI_FLOW_COMPONENT_H

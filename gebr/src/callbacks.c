@@ -75,50 +75,6 @@ data_fname (const char *document,
 }
 
 /*
- * Function: file_browse
- * Pop-up file browse dialog.
- *
- * The file browse dialog is initialize with the
- * string in entry.
- *
- * Input:
- * button - button pressed to call this function
- * entry  - entry that should be modified
- */
-void
-file_browse                    (GtkButton  *button,
-                                GtkWidget  *entry)
-{
-   gchar *filename;
-
-   gtk_widget_show (W.filesel);
-
-   W.fileselentry = entry;
-   filename = (gchar *)gtk_entry_get_text (GTK_ENTRY (entry));
-   if (strlen (filename) > 0){
-      gtk_file_selection_set_filename (GTK_FILE_SELECTION (W.filesel), filename);
-   }
-}
-
-/*
- * Function: file_browse_ok
- * Retrive file selection.
- *
- * Store the selected filename in W.filesel and emmits
- * the signal activate.
- */
-void
-file_browse_ok                  (GtkButton  *button,
-                                 GtkWidget  *entry)
-{
-   gtk_entry_set_text (GTK_ENTRY (W.fileselentry),
-		       gtk_file_selection_get_filename
-		       (GTK_FILE_SELECTION (W.filesel)));
-
-   gtk_signal_emit_by_name (GTK_OBJECT (W.fileselentry), "activate");
-}
-
-/*
   Function: pref_actions
   Take the appropriate action when the parameter dialog emmits
   a response signal.

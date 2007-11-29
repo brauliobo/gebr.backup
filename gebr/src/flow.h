@@ -52,20 +52,6 @@ flow_rename  (GtkCellRendererText *cell,
 	      gpointer             user_data);
 
 void
-program_add_to_flow      (GtkButton *button,
-			  gpointer user_data);
-
-void
-program_remove_from_flow      (GtkButton *button,
-			       gpointer user_data);
-void
-program_move_down    (GtkButton *button,
-		      gpointer user_data);
-void
-program_move_up    (GtkButton *button,
-		    gpointer user_data);
-
-void
 flow_properties (void);
 
 void

@@ -26,7 +26,4 @@ add_project     (GtkNotebook    *notebook);
 void
 add_flow_browse (GtkNotebook    *notebook);
 
-void
-add_flow_edit   (GtkNotebook    *notebook);
-
 #endif //_GEBR_UI_PAGES_H_

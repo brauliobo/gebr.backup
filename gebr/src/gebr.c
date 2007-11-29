@@ -36,12 +36,6 @@
 #include "server.h"
 #include "menus.h"
 
-GeoXmlFlow *flow = NULL;
-
-gebrw_t W = (gebrw_t) {
-   .server_store = NULL
-};
-
 /*
  * Function: gebr_init
  * Take initial measures
@@ -51,6 +45,9 @@ gebr_init(void)
 {
 	gchar	fname[STRMAX];
 	gchar *	home;
+
+	/* initialization */
+	gebr.server_store = NULL;
 
 	/* assembly user's gebr directory */
 	home = getenv("HOME");
@@ -80,25 +77,25 @@ gebr_init(void)
 	log_message(START, "GêBR Initiating...", TRUE);
 }
 
-
+/*
+ * Function: gebr_init
+ * Free memory, remove temporaries files and quit
+ */
 gboolean
-gebr_quit       (GtkWidget *widget,
-		 GdkEvent  *event,
-		 gpointer   user_data)
+gebr_quit(void)
 {
+	g_slist_foreach(W.tmpfiles, (GFunc) unlink, NULL);
+	g_slist_foreach(W.tmpfiles, (GFunc) free, NULL);
 
-   g_slist_foreach(W.tmpfiles, (GFunc) unlink, NULL);
-   g_slist_foreach(W.tmpfiles, (GFunc) free, NULL);
+	g_slist_free(W.tmpfiles);
 
-   g_slist_free(W.tmpfiles);
+	g_object_unref(W.pixmaps.unconfigured_icon);
+	g_object_unref(W.pixmaps.configured_icon);
+	g_object_unref(W.pixmaps.disabled_icon);
 
-   g_object_unref(W.pixmaps.unconfigured_icon);
-   g_object_unref(W.pixmaps.configured_icon);
-   g_object_unref(W.pixmaps.disabled_icon);
+	gtk_main_quit();
 
-   gtk_main_quit();
-
-   return FALSE;
+	return FALSE;
 }
 
 /*
@@ -177,7 +174,7 @@ gebr_config_load(int argc, char ** argv)
 		else{
 		   for (i=0; i <W.config.server_given; i++) {
 		      GtkTreeIter	iter;
-		      
+
 		      /* TODO: free servers structs on exit */
 		      gtk_list_store_append (W.server_store, &iter);
 		      gtk_list_store_set (W.server_store, &iter,
@@ -208,7 +205,6 @@ gebr_config_reload(void)
 
 	return EXIT_SUCCESS;
 }
-
 
 /*
  * Function: gebr_config_save

@@ -32,7 +32,7 @@
 
 #define _(CONTENT)  CONTENT
 
-/*------------------------------------------------------------------------*
+/*
  * Function: add_project
  * Assembly the project page.
  *
@@ -96,7 +96,7 @@ add_project   (GtkNotebook    *notebook)
 	gtk_notebook_append_page (notebook, page, pagetitle);
 }
 
-/*------------------------------------------------------------------------*
+/*
  * Function: add_flow_browse
  * Assembly the flow browse page.
  *
@@ -231,162 +231,7 @@ add_flow_browse      (GtkNotebook    *notebook)
    gtk_notebook_append_page (notebook, page, pagetitle);
 }
 
-/*------------------------------------------------------------------------*
- * Function: add_flow_edit
- * Assembly the flow edit page.
- *
- * Input:
- * notebook - Pointer to the notebook to which the page will be added to.
- *
- */
-void
-add_flow_edit   (GtkNotebook    *notebook)
-{
-   GtkWidget *page;
-   GtkWidget *pagetitle;
-   GtkWidget *hpanel;
-   GtkWidget *scrolledwin;
-   GtkWidget *frame;
-
-   GtkTreeViewColumn *col;
-   GtkCellRenderer *renderer;
-
-   /* Create flow edit page */
-   page = gtk_vbox_new (FALSE, 0);
-   pagetitle = gtk_label_new ("Flow edition");
-
-   hpanel = gtk_hpaned_new ();
-   gtk_container_add (GTK_CONTAINER (page), hpanel);
-
-   /* Left side */
-   frame = gtk_frame_new ("Flow sequence");
-   gtk_paned_pack1 (GTK_PANED (hpanel), frame, FALSE, FALSE);
-
-   scrolledwin = gtk_scrolled_window_new (NULL, NULL);
-   gtk_container_add (GTK_CONTAINER (frame), scrolledwin);
-
-   W.fseq_store = gtk_list_store_new (FSEQ_N_COLUMN,
-				      GDK_TYPE_PIXBUF,
-				      G_TYPE_STRING,
-				      G_TYPE_STRING,
-				      G_TYPE_ULONG);
-
-   W.fseq_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (W.fseq_store));
-   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW(W.fseq_view), FALSE);
-
-   renderer = gtk_cell_renderer_pixbuf_new ();
-   col = gtk_tree_view_column_new_with_attributes ("", renderer, NULL);
-   gtk_tree_view_append_column (GTK_TREE_VIEW (W.fseq_view), col);
-   gtk_tree_view_column_add_attribute (col, renderer, "pixbuf", FSEQ_STATUS_COLUMN);
-
-   renderer = gtk_cell_renderer_text_new ();
-   col = gtk_tree_view_column_new_with_attributes ("", renderer, NULL);
-   gtk_tree_view_append_column (GTK_TREE_VIEW (W.fseq_view), col);
-   gtk_tree_view_column_add_attribute (col, renderer, "text", FSEQ_TITLE_COLUMN);
-
-   /* Double click on flow component open its parameter window */
-   g_signal_connect (W.fseq_view, "row-activated",
-		     (GCallback) progpar_config_window, NULL );
-   g_signal_connect (GTK_OBJECT (W.fseq_view), "cursor-changed",
-			GTK_SIGNAL_FUNC (flow_component_selected), NULL );
-
-   gtk_container_add (GTK_CONTAINER (scrolledwin), W.fseq_view);
-   gtk_widget_set_size_request (GTK_WIDGET (scrolledwin), 180, 30);
-
-   /* Right side */
-   {
-      GtkWidget *hbox;
-
-      frame = gtk_frame_new ("Flow components");
-      gtk_paned_pack2 (GTK_PANED (hpanel), frame, TRUE, TRUE);
-
-      hbox = gtk_hbox_new (FALSE, 1);
-      gtk_container_add (GTK_CONTAINER (frame), hbox);
-
-      /* Up, Down, Right and Left buttons */
-      {
-	 GtkWidget *button;
-	 GtkWidget *vbox;
-
-	 vbox = gtk_vbox_new (FALSE, 4);
-	 gtk_box_pack_start (GTK_BOX (hbox), vbox, FALSE, FALSE, 0);
-
-	 button = gtk_button_new ();
-	 gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_ADD, 1));
-	 gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 0);
-
-	 g_signal_connect (GTK_OBJECT (button), "clicked",
-			   GTK_SIGNAL_FUNC (program_add_to_flow), NULL );
-
-	 button = gtk_button_new ();
-	 gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_REMOVE, 1));
-	 gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 0);
-
-	 g_signal_connect (GTK_OBJECT (button), "clicked",
-			   GTK_SIGNAL_FUNC (program_remove_from_flow), NULL );
-
-	 button = gtk_button_new ();
-	 gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_HELP, 1));
-	 gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 0);
-	 g_signal_connect (GTK_OBJECT (button), "clicked",
-			   GTK_SIGNAL_FUNC (menu_show_help), NULL );
-
-	 button = gtk_button_new ();
-	 gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_GO_DOWN, 1));
-	 gtk_box_pack_end (GTK_BOX (vbox), button, FALSE, FALSE, 0);
-
-	 g_signal_connect (GTK_OBJECT (button), "clicked",
-			   GTK_SIGNAL_FUNC (program_move_down), NULL );
-
-	 button = gtk_button_new ();
-	 gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_GO_UP, 1));
-	 gtk_box_pack_end (GTK_BOX (vbox), button, FALSE, FALSE, 0);
-
-	 g_signal_connect (GTK_OBJECT (button), "clicked",
-			   GTK_SIGNAL_FUNC (program_move_up), NULL );
-
-      }
-
-      /* Menu list */
-      {
-	 GtkWidget *vbox;
-
-	 vbox = gtk_vbox_new (FALSE, 3);
-	 gtk_box_pack_end (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
-
-	 scrolledwin = gtk_scrolled_window_new (NULL, NULL);
-	 gtk_container_add (GTK_CONTAINER (vbox), scrolledwin);
-
-	 W.menu_store = gtk_tree_store_new (MENU_N_COLUMN,
-					    G_TYPE_STRING,
-					    G_TYPE_STRING,
-					    G_TYPE_STRING);
-
-	 W.menu_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (W.menu_store));
-
-	 g_signal_connect (GTK_OBJECT (W.menu_view), "row-activated",
-			   GTK_SIGNAL_FUNC (program_add_to_flow), NULL );
-
-	 renderer = gtk_cell_renderer_text_new ();
-	 col = gtk_tree_view_column_new_with_attributes ("Flow", renderer, NULL);
-	 gtk_tree_view_append_column (GTK_TREE_VIEW (W.menu_view), col);
-	 gtk_tree_view_column_add_attribute (col, renderer, "markup", MENU_TITLE_COLUMN);
-	 gtk_tree_view_column_set_sort_column_id (col, MENU_TITLE_COLUMN);
-	 gtk_tree_view_column_set_sort_indicator (col, TRUE);
-
-	 renderer = gtk_cell_renderer_text_new ();
-	 col = gtk_tree_view_column_new_with_attributes ("Description", renderer, NULL);
-	 gtk_tree_view_append_column (GTK_TREE_VIEW (W.menu_view), col);
-	 gtk_tree_view_column_add_attribute (col, renderer, "text", MENU_DESC_COLUMN);
-
-	 gtk_container_add (GTK_CONTAINER (scrolledwin), W.menu_view);
-      }
-   }
-   /* Add this page to the notebook */
-   gtk_notebook_append_page (notebook, page, pagetitle);
-}
-
-/*------------------------------------------------------------------------*
+/*
  * Function: add_job_control
  * Assembly the job control page.
  *

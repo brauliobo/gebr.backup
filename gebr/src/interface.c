@@ -22,11 +22,14 @@
  * dialogs. All other subcomponents of the interface are implemented
  * in the files initiated by "ui_".
  */
-#include <string.h>
-#include <glib.h>
-#include "interface.h"
 
+#include <string.h>
+
+#include <glib.h>
+
+#include "interface.h"
 #include "gebr.h"
+#include "menus.h"
 #include "ui_menubar.h"
 #include "ui_pages.h"
 #include "callbacks.h"
@@ -34,19 +37,115 @@
 
 /* Pre-defined browser options */
 #define NBROWSER 5
-const char* browser[] = { "epiphany",
-			  "firefox",
-			  "galeon",
-			  "konqueror",
-			  "mozilla" };
+const char * browser[] = {
+	"epiphany", "firefox", "galeon", "konqueror", "mozilla"
+};
 
-/*------------------------------------------------------------------------*
+/*
+ * Function: assembly_interface
+ * Assembly the whole interface.
+ *
+ */
+void
+assembly_interface (void)
+{
+	GtkWidget *	vboxmain;
+
+	/* Preferences dialog*/
+	W.pref.win = NULL;
+
+	/* About dialog */
+	W.about = assembly_about ();
+
+	/*
+	* Parameters dialog
+	* (to be created on the fly)
+	*/
+	W.parameters = NULL;
+
+	/* Create the main window */
+	W.mainwin = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title (GTK_WINDOW (W.mainwin), "GêBR" );
+	gtk_widget_set_size_request (GTK_WIDGET (W.mainwin), 700, 400);
+
+	/* Signals */
+	g_signal_connect (GTK_OBJECT (W.mainwin), "delete_event",
+			GTK_SIGNAL_FUNC (gebr_quit),
+			NULL);
+	g_signal_connect (GTK_OBJECT (W.mainwin), "show",
+			GTK_SIGNAL_FUNC (gebr_init), NULL);
+
+	/* Define the function to be called when the main loops is finished */
+	/* (Not implemented yet) */
+	/* gtk_quit_add (0, save_and_quit, NULL); */
+
+	/* Create the main vbox to hold menu, notebook and status bar */
+	vboxmain = gtk_vbox_new (FALSE, 1);
+	gtk_container_add (GTK_CONTAINER (W.mainwin), vboxmain );
+
+	/* Create the main menu */
+	{
+		GtkWidget *mainmenu;
+
+		mainmenu = gtk_menu_bar_new ();
+		gtk_box_pack_start (GTK_BOX (vboxmain), mainmenu, FALSE, FALSE, 0);
+
+
+		W.menu[MENUBAR_PROJECT] = assembly_projectmenu ();
+		gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), W.menu[MENUBAR_PROJECT]);
+
+		W.menu[MENUBAR_LINE] = assembly_linemenu ();
+		gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), W.menu[MENUBAR_LINE]);
+
+		W.menu[MENUBAR_FLOW] = assembly_flowmenu ();
+		gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), W.menu[MENUBAR_FLOW]);
+
+		W.menu[MENUBAR_FLOW_COMPONENTS] = assembly_flowcomponentsmenu ();
+		gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), W.menu[MENUBAR_FLOW_COMPONENTS]);
+
+		gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), assembly_configmenu ());
+		gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), assembly_helpmenu ());
+	}
+
+	/* Create a notebook to hold several pages */
+	{
+		GtkWidget *	pagetitle;
+
+		W.notebook = gtk_notebook_new();
+		gtk_box_pack_start(GTK_BOX(vboxmain), W.notebook, TRUE, TRUE, 0);
+
+		g_signal_connect(GTK_OBJECT (W.notebook), "switch-page",
+					GTK_SIGNAL_FUNC (switch_menu), NULL);
+
+		add_project (GTK_NOTEBOOK (W.notebook));
+		add_flow_browse (GTK_NOTEBOOK (W.notebook));
+
+		/* Flow Components */
+		gebr.ui_flow_component = flow_component_setup_ui();
+		pagetitle = gtk_label_new(_("Flow edition"));
+		gtk_notebook_append_page(GTK_NOTE_BOOK(gebr.notebook), gebr.ui_flow_component.widget, pagetitle);
+
+		/* Flow Components */
+		gebr.ui_flow_component = flow_component_setup_ui();
+		pagetitle = gtk_label_new(_("Flow edition"));
+		gtk_notebook_append_page(GTK_NOTE_BOOK(gebr.notebook), gebr.ui_flow_component.widget, pagetitle);
+
+		add_flow_edit (GTK_NOTEBOOK (W.notebook));
+		add_job_control (GTK_NOTEBOOK (W.notebook));
+	}
+
+	/* Create a status bar */
+	W.statusbar = gtk_statusbar_new ();
+	gtk_box_pack_end (GTK_BOX (vboxmain), W.statusbar, FALSE, FALSE, 0);
+}
+
+/*
  * Function: assembly_preference_win
  * Assembly preference window.
  *
  */
 void
-assembly_preference_win (void)
+assembly_preference_win(void)
 {
 	if (W.pref.win != NULL)
 		return;
@@ -142,7 +241,6 @@ assembly_preference_win (void)
  	if (W.pref.editor_value->len > 0)
 	   gtk_entry_set_text (GTK_ENTRY (W.pref.editor), W.pref.editor_value->str);
 
-
 	/* Browser */
 	label = gtk_label_new ("Browser");
 	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
@@ -174,213 +272,62 @@ assembly_preference_win (void)
 	gtk_widget_show_all(W.pref.win);
 }
 
-
-/*------------------------------------------------------------------------*
+/*
  * Function: assembly_about
  * Assembly the about dialog.
  *
  */
 GtkWidget *
-assembly_about (void)
+assembly_about(void)
 {
+	const gchar * authors[] = {
+		"GêBR Core Team:",
+		"Developers",
+		"  Bráulio Oliveira <brauliobo@gmail.com>",
+		"  Eduardo Filpo <efilpo@gmail.com>",
+		"  Fernando Roxo <roxo@roxo.org>",
+		"  Ricardo Biloti <biloti@gmail.com>",
+		"  Rodrigo Portugal <rosoport@gmail.com>",
+		"SU Port Team",
+		"  Jesse Costa",
+		"  Ellen Costa",
+		"  Various students",
+		NULL
+	};
+	GtkWidget *	about;
 
-   const gchar *authors[] = {"GêBR Core Team",
-			     "Developers",
-                             "  Bráulio Oliveira <brauliobo@gmail.com>",
-                             "  Eduardo Filpo <efilpo@gmail.com>",
-			     "  Fernando Roxo <roxo@roxo.org>",
-			     "  Ricardo Biloti <biloti@gmail.com>",
-			     "  Rodrigo Portugal <rosoport@gmail.com>",
-			     "",
-			     "SU Port Team",
-			     "Jesse Costa",
-			     "Ellen Costa",
-			     "Varios alunos",
-			     NULL};
+	about = gtk_about_dialog_new();
 
-   GtkWidget *about = gtk_about_dialog_new ();
-   gtk_about_dialog_set_name (GTK_ABOUT_DIALOG (about), "GêBR");
-   gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (about), "2.0");
-   gtk_about_dialog_set_copyright (GTK_ABOUT_DIALOG (about),
-				   "GêBR Core Team");
-   gtk_about_dialog_set_license (GTK_ABOUT_DIALOG (about),
-    "Copyright (C) 2007 GêBR Core Team (http://gebr.sourceforge.net/)\n\n"
-    "This program is free software; you can redistribute it and/or modify "
-    "it under the terms of the GNU General Public License as published by "
-    "the Free Software Foundation; either version 2, or (at your option) "
-    "any later version.\n\n"
-    "This program is distributed in the hope that it will be useful, "
-    "but WITHOUT ANY WARRANTY; without even the implied warranty of "
-    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
-    "GNU General Public License for more details.\n\n"
-    "You should have received a copy of the GNU General Public License "
-    "along with this program; if not, write to the Free Software Foundation, "
-    "Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n\n"
-    "In Brazil, this program is under protection against unauthorized usage, "
-    "in accordance to brazilian laws #9609, Feb 19, 1998, #2556, "
-    "Apr 20, 1998, and #9610, Feb 19, 1998, and is registered in "
-    "Instituto Nacional da Propriedade Industrial (INPI) under number 70156.");
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG (about), "GêBR");
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG (about), "2.0");
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG (about),
+					"GêBR Core Team");
 
-   gtk_about_dialog_set_wrap_license(GTK_ABOUT_DIALOG (about), TRUE);
+	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG (about),
+		"Copyright (C) 2007 GêBR Core Team (http://gebr.sourceforge.net/)\n"
+		"\n"
+		"This program is free software: you can redistribute it and/or modify"
+		"it under the terms of the GNU General Public License as published by"
+		"the Free Software Foundation, either version 3 of the License, or"
+		"(at your option) any later version.\n"
+		"\n"
+		"This program is distributed in the hope that it will be useful,"
+		"but WITHOUT ANY WARRANTY; without even the implied warranty of"
+		"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
+		"GNU General Public License for more details.\n"
+		"\n"
+		"You should have received a copy of the GNU General Public License"
+		"along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+	gtk_about_dialog_set_wrap_license(GTK_ABOUT_DIALOG (about), TRUE);
 
-   gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (about), "http://sourceforge.net/projects/gebr");
-   gtk_about_dialog_set_website_label (GTK_ABOUT_DIALOG (about), "GêBR Home page");
+	gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (about), "http://sourceforge.net/projects/gebr");
+	gtk_about_dialog_set_website_label (GTK_ABOUT_DIALOG (about), "GêBR Home page");
+	gtk_about_dialog_set_authors (GTK_ABOUT_DIALOG (about), authors);
+	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (about),
+					"A plug-and-play environment to\nseismic processing tools");
 
-   gtk_about_dialog_set_authors (GTK_ABOUT_DIALOG (about), authors);
+	g_signal_connect (GTK_OBJECT (about), "delete_event",
+			GTK_SIGNAL_FUNC (gtk_widget_hide), NULL );
 
-   gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (about),
-				   "A plug-and-play environment to\nseismic processing tools");
-
-   g_signal_connect (GTK_OBJECT (about), "delete_event",
-		     GTK_SIGNAL_FUNC (gtk_widget_hide), NULL );
-
-
-   return about;
-}
-
-
-/*------------------------------------------------------------------------*
- * Function: assembly_interface
- * Assembly the whole interface.
- *
- */
-void
-assembly_interface (void)
-{
-   GtkWidget *	vboxmain;
-
-   /* File Chooser dialog */
-   W.filesel = gtk_file_selection_new ("File browse");
-
-   g_signal_connect (GTK_OBJECT (W.filesel), "delete_event",
-		     GTK_SIGNAL_FUNC (gtk_widget_hide),
-		     NULL);
-
-   g_signal_connect (GTK_FILE_SELECTION (W.filesel)->ok_button, "clicked",
-		     GTK_SIGNAL_FUNC (file_browse_ok), NULL);
-
-   g_signal_connect (GTK_FILE_SELECTION (W.filesel)->ok_button, "clicked",
-		     GTK_SIGNAL_FUNC (hide_widget), W.filesel);
-
-   g_signal_connect (GTK_FILE_SELECTION (W.filesel)->cancel_button, "clicked",
-		     GTK_SIGNAL_FUNC (hide_widget), W.filesel);
-
-   /* Preferences dialog*/
-   W.pref.win = NULL;
-
-   /* About dialog */
-   W.about = assembly_about ();
-
-   /*
-    * Parameters dialog
-    * (to be created on the fly)
-    */
-   W.parameters = NULL;
-
-   /* Create the main window */
-   W.mainwin = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title (GTK_WINDOW (W.mainwin), "GêBR" );
-   gtk_widget_set_size_request (GTK_WIDGET (W.mainwin), 700, 400);
-
-   /* Define the function to be called when the main loops is finished */
-   /* (Not implemented yet) */
-   /* gtk_quit_add (0, save_and_quit, NULL); */
-
-   /* Create the main vbox to hold menu, notebook and status bar */
-   vboxmain = gtk_vbox_new (FALSE, 1);
-   gtk_container_add (GTK_CONTAINER (W.mainwin), vboxmain );
-
-   /* Create the main menu */
-   {
-      GtkWidget *mainmenu;
-
-      mainmenu = gtk_menu_bar_new ();
-      gtk_box_pack_start (GTK_BOX (vboxmain), mainmenu, FALSE, FALSE, 0);
-
-
-      W.menu[MENUBAR_PROJECT] = assembly_projectmenu ();
-      gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), W.menu[MENUBAR_PROJECT]);
-
-      W.menu[MENUBAR_LINE] = assembly_linemenu ();
-      gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), W.menu[MENUBAR_LINE]);
-
-      W.menu[MENUBAR_FLOW] = assembly_flowmenu ();
-      gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), W.menu[MENUBAR_FLOW]);
-
-      W.menu[MENUBAR_FLOW_COMPONENTS] = assembly_flowcomponentsmenu ();
-      gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), W.menu[MENUBAR_FLOW_COMPONENTS]);
-
-      gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), assembly_configmenu ());
-      gtk_menu_bar_append (GTK_MENU_BAR (mainmenu), assembly_helpmenu ());
-   }
-
-   /* Create a notebook to hold several pages */
-   {
-      W.notebook = gtk_notebook_new ();
-      gtk_box_pack_start (GTK_BOX (vboxmain), W.notebook, TRUE, TRUE, 0);
-
-      g_signal_connect (GTK_OBJECT (W.notebook), "switch-page",
-			 GTK_SIGNAL_FUNC (switch_menu), NULL);
-
-      /* Fill in the notebook */
-      add_project (GTK_NOTEBOOK (W.notebook));
-      add_flow_browse (GTK_NOTEBOOK (W.notebook));
-      add_flow_edit (GTK_NOTEBOOK (W.notebook));
-      add_job_control (GTK_NOTEBOOK (W.notebook));
-   }
-
-   /* Create a status bar */
-   W.statusbar = gtk_statusbar_new ();
-   gtk_box_pack_end (GTK_BOX (vboxmain), W.statusbar, FALSE, FALSE, 0);
-
-
-   /* Signals */
-   g_signal_connect (GTK_OBJECT (W.mainwin), "delete_event",
-		     GTK_SIGNAL_FUNC (gebr_quit),
-		     NULL);
-   g_signal_connect (GTK_OBJECT (W.mainwin), "show",
-		     GTK_SIGNAL_FUNC (gebr_init), NULL);
-}
-
-void
-save_widget_browse_button_clicked(GtkWidget * button, GtkWidget * entry)
-{
-	GtkWidget *	chooser_dialog;
-
-	chooser_dialog = gtk_file_chooser_dialog_new(	"Choose file", NULL,
-							GTK_FILE_CHOOSER_ACTION_SAVE,
-							GTK_STOCK_OK, GTK_RESPONSE_OK,
-							GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-							NULL);
-
-	switch (gtk_dialog_run(GTK_DIALOG(chooser_dialog))) {
-	case GTK_RESPONSE_OK:
-		gtk_entry_set_text(GTK_ENTRY(entry), gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser_dialog)));
-		break;
-	default:
-		break;
-	}
-
-	gtk_widget_destroy(GTK_WIDGET(chooser_dialog));
-}
-
-gebr_save_widget_t
-save_widget_create(void)
-{
-	gebr_save_widget_t save_widget;
-
-	save_widget.hbox = gtk_hbox_new(FALSE, 10);
-
-	/* entry */
-	save_widget.entry = gtk_entry_new();
-// 	gtk_entry_set_editable(GTK_ENTRY(save_widget.entry), FALSE);
-	gtk_box_pack_start(GTK_BOX (save_widget.hbox), save_widget.entry, TRUE, TRUE, 0);
-
-	/* browse button */
-	save_widget.browse_button = gtk_button_new_from_stock(GTK_STOCK_OPEN);
-	gtk_box_pack_start(GTK_BOX (save_widget.hbox), save_widget.browse_button, FALSE, TRUE, 0);
-	g_signal_connect (GTK_OBJECT (save_widget.browse_button), "clicked",
-			  G_CALLBACK (save_widget_browse_button_clicked), save_widget.entry);
-
-	return save_widget;
+	return about;
 }

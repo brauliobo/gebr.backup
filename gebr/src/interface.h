@@ -18,15 +18,30 @@
 #ifndef _GEBR_INTERFACE_H_
 #define _GEBR_INTERFACE_H_
 
-#include "widgets.h"
-
-void
-assembly_preference_win (void);
+#include <gtk/gtk.h>
 
 void
 assembly_interface(void);
 
-gebr_save_widget_t
-save_widget_create(void);
+void
+assembly_preference_win(void);
+
+GtkWidget *
+assembly_configmenu(void);
+
+GtkWidget *
+assembly_helpmenu(void);
+
+GtkWidget *
+assembly_projectmenu(void);
+
+GtkWidget *
+assembly_linemenu(void);
+
+GtkWidget *
+assembly_flowmenu(void);
+
+GtkWidget *
+assembly_flowcomponentsmenu(void);
 
 #endif //_GEBR_INTERFACE_H_

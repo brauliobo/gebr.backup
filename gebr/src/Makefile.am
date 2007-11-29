@@ -37,7 +37,10 @@ gebr_SOURCES = main.c \
 	parse.c support.c \
 	interface.c \
 	ui_help.c \
-	ui_menubar.c \
+	ui_project_line.c \
+	ui_flow_browse.c \
+	ui_flow_edition.c \
+	ui_job_control.c \
 	ui_pages.c \
 	ui_prop.c \
 	ui_server.c
@@ -57,7 +60,10 @@ noinst_HEADERS = \
 	parse.h support.h \
 	interface.h \
 	ui_help.h \
-	ui_menubar.h \
+	ui_project_line.h \
+	ui_flow_browse.h \
+	ui_flow_edition.h \
+	ui_job_control.h \
 	ui_pages.h \
 	ui_prop.h \
 	ui_server.h

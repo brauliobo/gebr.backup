@@ -15,27 +15,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_UI_MENUBAR_H_
-#define _GEBR_UI_MENUBAR_H_
+#ifndef __UI_FLOW_H
+#define __UI_FLOW_H
 
-#include <gtk/gtk.h>
 
-GtkWidget *
-assembly_configmenu(void);
 
-GtkWidget *
-assembly_helpmenu(void);
-
-GtkWidget *
-assembly_projectmenu(void);
-
-GtkWidget *
-assembly_linemenu(void);
-
-GtkWidget *
-assembly_flowmenu(void);
-
-GtkWidget *
-assembly_flowcomponentsmenu (void);
-
-#endif //_GEBR_UI_MENUBAR_H_
+#endif //__UI_FLOW_H

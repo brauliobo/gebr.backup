@@ -15,28 +15,220 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_H_
-#define _GEBR_H_
+#ifndef __GEBR_H
+#define __GEBR_H
 
-#define STRMAX 2048
+#include <glib.h>
 
 #include <geoxml.h>
-#include "widgets.h"
+#include <gui/about.h>
 
-extern GeoXmlFlow *	flow;
-extern gebrw_t		W;
+#include "ui_flow_component.h"
+
+/* global variable of common needed stuff */
+extern struct gebr gebr;
 
 enum msg_type {
 	START, END, ACTION, SERVER, ERROR, WARNING, INTERFACE
 };
 
+#define NABAS 4
+
+/* Projects/Lines store fields */
+enum {
+   PL_NAME = 0,
+   PL_FILENAME,
+   PL_N_COLUMN
+};
+
+/* Flow browser store fields */
+enum {
+   FB_NAME = 0,
+   FB_FILENAME,
+   FB_N_COLUMN
+};
+
+/* Menubar */
+enum {
+   MENUBAR_PROJECT,
+   MENUBAR_LINE,
+   MENUBAR_FLOW,
+   MENUBAR_FLOW_COMPONENTS,
+   MENUBAR_N
+};
+
+/* Menu store fields */
+enum {
+   MENU_TITLE_COLUMN,
+   MENU_DESC_COLUMN,
+   MENU_FILE_NAME_COLUMN,
+   MENU_N_COLUMN
+};
+
+
+/* Job control store fields */
+enum {
+   JC_ICON,
+   JC_TITLE,
+   JC_STRUCT,
+   JC_N_COLUMN
+};
+
+
+/* Server store field */
+enum {
+   SERVER_ADDRESS,
+   SERVER_POINTER,
+   SERVER_N_COLUMN
+};
+
+typedef struct {
+	GtkWidget *hbox;
+
+	GtkWidget *entry;
+	GtkWidget *browse_button;
+} gebr_save_widget_t;
+
+typedef struct {
+
+   GtkWidget *win;
+
+   GtkWidget *username;
+   GtkWidget *email;
+   GtkWidget *usermenus;
+   GtkWidget *data;
+   GtkWidget *editor;
+   GtkWidget *browser;
+
+} gebrw_pref_t;
+
+typedef struct {
+   GtkWidget *win;
+
+   GtkWidget *title;
+   GtkWidget *description;
+   GtkWidget *help;
+   GtkWidget *author;
+   GtkWidget *email;
+
+} gebr_flow_prop_t;
+
+typedef struct {
+	GtkWidget *		win;
+
+	gebr_save_widget_t	input;
+	gebr_save_widget_t	output;
+	gebr_save_widget_t	error;
+} gebr_flow_io_t;
+
+typedef struct {
+
+   GtkWidget *title;
+   GtkWidget *description;
+
+   GtkWidget *input_label;
+   GtkWidget *input;
+   GtkWidget *output_label;
+   GtkWidget *output;
+   GtkWidget *error_label;
+   GtkWidget *error;
+
+   GtkWidget *help;
+
+   GtkWidget *author;
+
+} gebr_flow_info_t;
+
+typedef struct {
+   GdkPixbuf *	configured_icon;
+   GdkPixbuf *	unconfigured_icon;
+   GdkPixbuf *	disabled_icon;
+   GdkPixbuf *	running_icon;
+} gebr_pixmaps;
+
+typedef struct {
+	GtkWidget *	job_label;
+	GtkWidget *	text_view;
+	GtkTextBuffer *	text_buffer;
+} gebr_job_control_t;
+
+struct gebr {
+	GtkWidget *			mainwin;
+	GtkWidget *			menu[MENUBAR_N];
+	GtkWidget *			notebook;
+	GtkWidget *			statusbar;
+	struct about			about;
+
+	struct config {
+		/* config options from gengetopt
+		 * loaded in gebr_config_load at callbacks.c
+		 */
+		struct ggopt		config;
+
+		GString *		username;
+		GString *		email;
+		GString *		usermenus;
+		GString *		data;
+		GString *		editor;
+		GString *		browser;
+	} config;
+
+	struct ui_flow_component	ui_flow_component;
+
+	/* Trees and Lists */
+	GtkTreePath  *proj_line_selection_path;
+	GtkTreeStore *proj_line_store;
+	GtkListStore *flow_store;
+
+        GtkListStore *job_store;
+        GtkListStore *server_store;
+
+	/* Views */
+	GtkWidget *proj_line_view; /* projects and lines             */
+	GtkWidget *flow_view;      /* flows of a line                */
+
+        GtkWidget *job_view;       /* Running jobs                   */
+        GtkWidget *server_view;    /* Server view                    */
+
+	/* preferences window */
+	gebrw_pref_t		pref;
+	/* log file */
+	FILE *			log_fp;
+
+	/* flow info window */
+	gebr_flow_info_t	flow_info;
+
+	/* flow properties window */
+	gebr_flow_prop_t	flow_prop;
+
+	/* job control */
+	gebr_job_control_t	job_ctrl;
+
+	/* status menu items */
+	GtkWidget *		configured_menuitem;
+	GtkWidget *		disabled_menuitem;
+	GtkWidget *		unconfigured_menuitem;
+
+	/* flow io window. */
+	gebr_flow_io_t		flow_io;
+
+	GtkWidget *	parameters;
+	GtkWidget **	parwidgets;
+	int		parwidgets_number;
+	int		program_index;
+
+	/* Pixmaps */
+	gebr_pixmaps pixmaps;
+
+	/* List of temporary file to be deleted */
+	GSList * tmpfiles;
+}
+
 void
 gebr_init(void);
 
 gboolean
-gebr_quit       (GtkWidget *widget,
-		 GdkEvent  *event,
-		 gpointer   user_data);
+gebr_quit(void);
 
 int
 gebr_config_load(int argc, char ** argv);
@@ -50,4 +242,4 @@ gebr_config_save(void);
 void
 log_message(enum msg_type type, const gchar * message, gboolean in_statusbar);
 
-#endif //_GEBR_H_
+#endif //__GEBR_H

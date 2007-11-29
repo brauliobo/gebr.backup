@@ -15,17 +15,5 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_HELP_H_
-#define __UI_HELP_H_
+#include "ui_flow.h"
 
-#include <gtk/gtk.h>
-#include <geoxml.h>
-
-void
-help_show(gchar * help, gchar * title, gchar * fname);
-
-void
-help_edit(GtkButton * button, GeoXmlDocument * document);
-
-
-#endif //_GEBR_UI_HELP_H_
