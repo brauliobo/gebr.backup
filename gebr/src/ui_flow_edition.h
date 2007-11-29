@@ -15,12 +15,48 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_UI_SERVER_H_
-#define _GEBR_UI_SERVER_H_
+#ifndef __UI_FLOW_COMPONENT_H
+#define __UI_FLOW_COMPONENT_H
 
-#include <gtk/gtk.h>
+/* Flow sequence store fields */
+enum {
+	FSEQ_STATUS_COLUMN = 0,
+	FSEQ_TITLE_COLUMN,
+	FSEQ_MENU_FILE_NAME_COLUMN,
+	FSEQ_MENU_INDEX,
+	FSEQ_N_COLUMN
+};
+
+/* Menu store fields */
+enum {
+	MENU_TITLE_COLUMN = 0,
+	MENU_DESC_COLUMN,
+	MENU_FILE_NAME_COLUMN,
+	MENU_N_COLUMN
+};
+
+struct ui_flow_edition {
+	GtkWidget *	widget;
+
+	/* Sequence of programs of a flow */
+	GtkListStore *	fseq_store;
+	GtkWidget *	fseq_view;
+
+	/* available system and user's menus*/
+	GtkWidget *	menu_view;
+	GtkTreeStore *	menu_store;
+};
+
+struct ui_flow_edition
+flow_edition_setup_ui(void);
 
 void
-assembly_server_win     (void);
+flow_edition_selected(void);
 
-#endif //_GEBR_UI_SERVER_H_
+void
+flow_edition_change_properties(void);
+
+void
+flow_edition_set_status(GtkMenuItem * menuitem);
+
+#endif //__UI_FLOW_COMPONENT_H

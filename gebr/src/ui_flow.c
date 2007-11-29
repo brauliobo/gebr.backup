@@ -15,28 +15,5 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_JOB_CONTROL_H
-#define __UI_JOB_CONTROL_H
+#include "ui_flow.h"
 
-/* Store fields */
-enum {
-	JC_ICON = 0,
-	JC_TITLE,
-	JC_STRUCT,
-	JC_N_COLUMN
-};
-
-struct ui_job_control {
-	GtkWidget *		widget;
-
-	GtkListStore *		store;
-	GtkWidget *		view;
-
-	GtkWidget *		label;
-	GtkWidget *		text_view;
-	GtkTextBuffer *		text_buffer;
-};
-
-
-
-#endif //__UI_JOB_CONTROL_H

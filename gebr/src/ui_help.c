@@ -41,7 +41,7 @@ help_show(gchar * help, gchar * title, gchar * fname)
 		return;
 
 	dialog = gtk_dialog_new_with_buttons(title,
-					GTK_WINDOW(W.mainwin),
+					GTK_WINDOW(gebr.mainwin),
 					GTK_DIALOG_DESTROY_WITH_PARENT,
 					NULL);
 	g_signal_connect (GTK_OBJECT (dialog), "delete_event",
@@ -75,7 +75,7 @@ help_show(gchar * help, gchar * title, gchar * fname)
 	g_string_free(ghelp, TRUE);
 
 	/* Add file to list of files to be removed */
-	W.tmpfiles = g_slist_append(W.tmpfiles, html_filename->str);
+	gebr.tmpfiles = g_slist_append(gebr.tmpfiles, html_filename->str);
 
 	url = g_string_new("file://");
 	g_string_append(url, html_filename->str);
@@ -84,7 +84,7 @@ help_show(gchar * help, gchar * title, gchar * fname)
 	{
 	GString *cmdline;
 
-	cmdline = g_string_new (W.config.browser_arg);
+	cmdline = g_string_new (gebr.config.browser_arg);
 	g_string_append(cmdline, " ");
 	g_string_append(cmdline, html_filename->str);
 	g_string_append(cmdline, " &");
@@ -108,7 +108,7 @@ help_edit(GtkButton * button, GeoXmlDocument * document);
 	GString *	cmdline;
 
 	/* Call an editor */
-	if (!W.config.editor_given) {
+	if (!gebr.config.editor_given) {
 		log_message(ERROR, "No editor defined", TRUE);
 		return;
 	}
@@ -126,7 +126,7 @@ help_edit(GtkButton * button, GeoXmlDocument * document);
 	fclose(tmp_fp);
 
 	cmdline = g_string_new(NULL);
-	g_string_printf(cmdline, "%s %s", W.pref.editor_value->str, tmp_fn->str);
+	g_string_printf(cmdline, "%s %s", gebr.pref.editor_value->str, tmp_fn->str);
 	system(cmdline->str);
 	g_string_free(cmdline, TRUE);
 

@@ -1,5 +1,5 @@
-/*   GêBR - An environment for seismic processing.
- *   Copyright (C) 2007 G\ufffdBR core team (http://gebr.sourceforge.net)
+/*   libgebr - GêBR Library
+ *   Copyright (C) 2007 GÃªBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,15 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_UI_PAGES_H_
-#define _GEBR_UI_PAGES_H_
+#ifndef __LIBGEBR_MISC_UTILS_H
+#define __LIBGEBR_MISC_UTILS_H
 
-#include <gtk/gtk.h>
+#include <glib.h>
 
-void
-add_project     (GtkNotebook    *notebook);
+gchar *
+make_temp_filename(void);
 
-void
-add_flow_browse (GtkNotebook    *notebook);
-
-#endif //_GEBR_UI_PAGES_H_
+#endif //__LIBGEBR_MISC_UTILS_H

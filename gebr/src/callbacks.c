@@ -69,7 +69,7 @@ void
 data_fname (const char *document,
 	    GString    **fname   )
 {
-   *fname = g_string_new(W.config.data_arg);
+   *fname = g_string_new(gebr.config.data_arg);
    g_string_append(*fname, "/");
    g_string_append(*fname, document);
 }
@@ -88,18 +88,18 @@ pref_actions                (GtkDialog *dialog,
    switch (arg1){
    case GTK_RESPONSE_OK:
       /* Save preferences to file and the relod */
-      g_string_assign(W.pref.username_value,
-		      gtk_entry_get_text (GTK_ENTRY (W.pref.username)));
-      g_string_assign(W.pref.email_value,
-		      gtk_entry_get_text (GTK_ENTRY (W.pref.email)));
-      g_string_assign(W.pref.usermenus_value,
-		      gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (W.pref.usermenus)));
-      g_string_assign(W.pref.data_value,
-		      gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (W.pref.data)));
-      g_string_assign(W.pref.editor_value,
-		      gtk_entry_get_text (GTK_ENTRY (W.pref.editor)));
-      g_string_assign(W.pref.browser_value,
-		      gtk_combo_box_get_active_text(GTK_COMBO_BOX(W.pref.browser)));
+      g_string_assign(gebr.pref.username_value,
+		      gtk_entry_get_text (GTK_ENTRY (gebr.pref.username)));
+      g_string_assign(gebr.pref.email_value,
+		      gtk_entry_get_text (GTK_ENTRY (gebr.pref.email)));
+      g_string_assign(gebr.pref.usermenus_value,
+		      gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (gebr.pref.usermenus)));
+      g_string_assign(gebr.pref.data_value,
+		      gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (gebr.pref.data)));
+      g_string_assign(gebr.pref.editor_value,
+		      gtk_entry_get_text (GTK_ENTRY (gebr.pref.editor)));
+      g_string_assign(gebr.pref.browser_value,
+		      gtk_combo_box_get_active_text(GTK_COMBO_BOX(gebr.pref.browser)));
 
       gebr_config_save();
       gebr_config_reload();
@@ -110,7 +110,7 @@ pref_actions                (GtkDialog *dialog,
    }
 
    gtk_widget_destroy(GTK_WIDGET(dialog));
-   W.pref.win = NULL;
+   gebr.pref.win = NULL;
 }
 
 
@@ -128,33 +128,33 @@ switch_menu     (GtkNotebook     *notebook,
 {
    switch (page_num){
    case 0: /* Project page */
-      g_object_set (W.menu[MENUBAR_PROJECT], "sensitive", TRUE, NULL);
-      g_object_set (W.menu[MENUBAR_LINE], "sensitive", TRUE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW], "sensitive", FALSE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
       break;
    case 1: /* Flow browse page */
-      g_object_set (W.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
-      g_object_set (W.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
       break;
    case 2: /* Flow edit page */
-      g_object_set (W.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
-      g_object_set (W.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", TRUE, NULL);
       break;
    case 3: /* Job control page*/
-      g_object_set (W.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
-      g_object_set (W.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW], "sensitive", FALSE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", FALSE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
       break;
    default: /* Anything else */
-      g_object_set (W.menu[MENUBAR_PROJECT], "sensitive", TRUE, NULL);
-      g_object_set (W.menu[MENUBAR_LINE], "sensitive", TRUE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
-      g_object_set (W.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
+      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", TRUE, NULL);
    }
 }

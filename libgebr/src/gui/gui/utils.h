@@ -15,12 +15,10 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEBR_MISC_MISC_H
-#define __LIBGEBR_MISC_MISC_H
+#ifndef __LIBGEBR_GUI_UTILS_H
+#define __LIBGEBR_GUI_UTILS_H
 
-#include <glib.h>
+// gebr_save_widget
+// save_widget_create(void);
 
-gchar *
-make_temp_filename(void);
-
-#endif //__LIBGEBR_MISC_MISC_H
+#endif //__LIBGEBR_GUI_UTILS_H

@@ -15,9 +15,26 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_FLOW_H
-#define __UI_FLOW_H
+#ifndef __UI_PROJECT_LINE_H
+#define __UI_PROJECT_LINE_H
+
+#include <gtk/gtk.h>
+
+/* Store fields */
+enum {
+	PL_NAME = 0,
+	PL_FILENAME,
+	PL_N_COLUMN
+};
+
+struct ui_project_line {
+	GtkWidget *		widget;
+
+	GtkTreeStore *		store;
+	GtkWidget *		view;
+	GtkTreePath  *		selection_path;
+
+};
 
 
-
-#endif //__UI_FLOW_H
+#endif //__UI_PROJECT_LINE_H

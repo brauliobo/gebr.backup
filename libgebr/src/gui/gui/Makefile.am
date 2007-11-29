@@ -16,11 +16,11 @@
 
 lib_LTLIBRARIES = libgebr_gui.la
 libgebr_gui_la_SOURCES = \
-	about.c
+	about.c utils.c
 
 libgebr_guisubincludedir = $(includedir)/libgebr/gui
 libgebr_guisubinclude_HEADERS = \
-	about.h
+	about.h utils.h
 noinst_HEADERS =
 EXTRA_DIST = ${noinst_HEADERS}
 

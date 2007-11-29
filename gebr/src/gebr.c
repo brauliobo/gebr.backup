@@ -55,10 +55,10 @@ gebr_init(void)
 
 	/* log file */
 	strcat(fname, "/gebr.log");
-	W.log_fp = fopen(fname, "a+");
+	gebr.log_fp = fopen(fname, "a+");
 
 	/* allocating list of temporary files */
-	W.tmpfiles = g_slist_alloc();
+	gebr.tmpfiles = g_slist_alloc();
 
 	/* list of servers */
 	protocol_init();
@@ -68,10 +68,10 @@ gebr_init(void)
 		GError *	error;
 
 		error = NULL;
-		W.pixmaps.unconfigured_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_unconfigured.png", &error);
-		W.pixmaps.configured_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_configured.png", &error);
-		W.pixmaps.disabled_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_disabled.png", &error);
-		W.pixmaps.running_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_running.png", &error);
+		gebr.pixmaps.unconfigured_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_unconfigured.png", &error);
+		gebr.pixmaps.configured_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_configured.png", &error);
+		gebr.pixmaps.disabled_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_disabled.png", &error);
+		gebr.pixmaps.running_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_running.png", &error);
 	}
 
 	log_message(START, "GêBR Initiating...", TRUE);
@@ -84,14 +84,14 @@ gebr_init(void)
 gboolean
 gebr_quit(void)
 {
-	g_slist_foreach(W.tmpfiles, (GFunc) unlink, NULL);
-	g_slist_foreach(W.tmpfiles, (GFunc) free, NULL);
+	g_slist_foreach(gebr.tmpfiles, (GFunc) unlink, NULL);
+	g_slist_foreach(gebr.tmpfiles, (GFunc) free, NULL);
 
-	g_slist_free(W.tmpfiles);
+	g_slist_free(gebr.tmpfiles);
 
-	g_object_unref(W.pixmaps.unconfigured_icon);
-	g_object_unref(W.pixmaps.configured_icon);
-	g_object_unref(W.pixmaps.disabled_icon);
+	g_object_unref(gebr.pixmaps.unconfigured_icon);
+	g_object_unref(gebr.pixmaps.configured_icon);
+	g_object_unref(gebr.pixmaps.disabled_icon);
 
 	gtk_main_quit();
 
@@ -120,73 +120,73 @@ gebr_config_load(int argc, char ** argv)
 	}
 
 	/* Init server list store */
-	W.server_store = gtk_list_store_new (SERVER_N_COLUMN,
+	gebr.server_store = gtk_list_store_new (SERVER_N_COLUMN,
 					G_TYPE_STRING,
 					G_TYPE_POINTER);
 	strcat(fname,"/gebr.conf");
 
-	W.pref.username_value = g_string_new(NULL);
-	W.pref.email_value = g_string_new(NULL);
-	W.pref.editor_value = g_string_new(NULL);
-	W.pref.usermenus_value = g_string_new(NULL);
-	W.pref.data_value = g_string_new(NULL);
-	W.pref.browser_value = g_string_new(NULL);
+	gebr.pref.username_value = g_string_new(NULL);
+	gebr.pref.email_value = g_string_new(NULL);
+	gebr.pref.editor_value = g_string_new(NULL);
+	gebr.pref.usermenus_value = g_string_new(NULL);
+	gebr.pref.data_value = g_string_new(NULL);
+	gebr.pref.browser_value = g_string_new(NULL);
 
 	if (access (fname, F_OK) == 0) {
 		int i;
 		/* Initialize GeBR with option in gebr.conf */
-		if(cmdline_parser_configfile (fname, &W.config, 1, 1, 0) != 0) {
+		if(cmdline_parser_configfile (fname, &gebr.config, 1, 1, 0) != 0) {
 			fprintf(stderr,"%s: try '--help' option\n", argv[0]);
 			exit(EXIT_FAILURE);
 		}
 
 		/* Filling our structure in */
-		g_string_append(W.pref.username_value, W.config.name_arg);
-		g_string_append(W.pref.email_value, W.config.email_arg);
-		g_string_append(W.pref.editor_value, W.config.editor_arg);
-		g_string_append(W.pref.usermenus_value, W.config.usermenus_arg);
-		g_string_append(W.pref.data_value, W.config.data_arg);
-		g_string_append(W.pref.browser_value, W.config.browser_arg);
+		g_string_append(gebr.pref.username_value, gebr.config.name_arg);
+		g_string_append(gebr.pref.email_value, gebr.config.email_arg);
+		g_string_append(gebr.pref.editor_value, gebr.config.editor_arg);
+		g_string_append(gebr.pref.usermenus_value, gebr.config.usermenus_arg);
+		g_string_append(gebr.pref.data_value, gebr.config.data_arg);
+		g_string_append(gebr.pref.browser_value, gebr.config.browser_arg);
 
-		if (!(W.config.usermenus_given &&
-			W.config.data_given &&
-			W.config.editor_given &&
-			W.config.browser_given
+		if (!(gebr.config.usermenus_given &&
+			gebr.config.data_given &&
+			gebr.config.editor_given &&
+			gebr.config.browser_given
 			)) {
 			assembly_preference_win();
-			gtk_widget_show_all (W.pref.win);
+			gtk_widget_show_all (gebr.pref.win);
 		} else {
 			menus_populate ();
 			projects_refresh();
 		}
 
-		if (!W.config.server_given){
+		if (!gebr.config.server_given){
 		   GtkTreeIter	iter;
 		   gchar hostname[100];
 
 		   gethostname(hostname, 100);
-		   gtk_list_store_append (W.server_store, &iter);
-		   gtk_list_store_set (W.server_store, &iter,
+		   gtk_list_store_append (gebr.server_store, &iter);
+		   gtk_list_store_set (gebr.server_store, &iter,
 				       SERVER_ADDRESS, hostname,
 				       SERVER_POINTER, server_new(hostname),
 				       -1);
 		}
 		else{
-		   for (i=0; i <W.config.server_given; i++) {
+		   for (i=0; i <gebr.config.server_given; i++) {
 		      GtkTreeIter	iter;
 
 		      /* TODO: free servers structs on exit */
-		      gtk_list_store_append (W.server_store, &iter);
-		      gtk_list_store_set (W.server_store, &iter,
-					  SERVER_ADDRESS, W.config.server_arg[i],
-					  SERVER_POINTER, server_new(W.config.server_arg[i]),
+		      gtk_list_store_append (gebr.server_store, &iter);
+		      gtk_list_store_set (gebr.server_store, &iter,
+					  SERVER_ADDRESS, gebr.config.server_arg[i],
+					  SERVER_POINTER, server_new(gebr.config.server_arg[i]),
 					  -1);
 		   }
 		}
 	}
 	else {
 		assembly_preference_win();
-		gtk_widget_show_all (W.pref.win);
+		gtk_widget_show_all (gebr.pref.win);
 	}
 
 	return EXIT_SUCCESS;
@@ -227,35 +227,35 @@ gebr_config_save(void)
 		return EXIT_FAILURE;
 	}
 
-	if (W.pref.username_value->str != NULL)
-		fprintf(fp, "name = \"%s\"\n", W.pref.username_value->str);
-	if (W.pref.email_value->str != NULL)
-		fprintf(fp, "email = \"%s\"\n", W.pref.email_value->str);
-	if (W.pref.usermenus_value->str != NULL)
-		fprintf(fp, "usermenus = \"%s\"\n", W.pref.usermenus_value->str);
-	if (W.pref.data_value->str != NULL)
-		fprintf(fp, "data = \"%s\"\n",  W.pref.data_value->str);
-	if (W.pref.editor_value->str != NULL)
-		fprintf(fp, "editor = \"%s\"\n", W.pref.editor_value->str);
-	if (W.pref.browser_value->str != NULL)
-		fprintf(fp, "browser = \"%s\"\n", W.pref.browser_value->str);
+	if (gebr.pref.username_value->str != NULL)
+		fprintf(fp, "name = \"%s\"\n", gebr.pref.username_value->str);
+	if (gebr.pref.email_value->str != NULL)
+		fprintf(fp, "email = \"%s\"\n", gebr.pref.email_value->str);
+	if (gebr.pref.usermenus_value->str != NULL)
+		fprintf(fp, "usermenus = \"%s\"\n", gebr.pref.usermenus_value->str);
+	if (gebr.pref.data_value->str != NULL)
+		fprintf(fp, "data = \"%s\"\n",  gebr.pref.data_value->str);
+	if (gebr.pref.editor_value->str != NULL)
+		fprintf(fp, "editor = \"%s\"\n", gebr.pref.editor_value->str);
+	if (gebr.pref.browser_value->str != NULL)
+		fprintf(fp, "browser = \"%s\"\n", gebr.pref.browser_value->str);
 
 	{
 		GtkTreeIter	iter;
 		gboolean	valid;
 
 		/* check if it is already open */
-		valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(W.server_store), &iter);
+		valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.server_store), &iter);
 		while (valid) {
 			gchar *	server;
 
-			gtk_tree_model_get (GTK_TREE_MODEL(W.server_store), &iter,
+			gtk_tree_model_get (GTK_TREE_MODEL(gebr.server_store), &iter,
 					SERVER_ADDRESS, &server,	-1);
 
 			fprintf(fp, "server = \"%s\"\n", server);
 
 			g_free(server);
-			valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(W.server_store), &iter);
+			valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.server_store), &iter);
 		}
 	}
 
@@ -308,8 +308,8 @@ log_message(enum msg_type type, const gchar * message, gboolean in_statusbar)
 	time (&t);
 	lt = localtime (&t);
 	strftime (time_str, STRMAX, "%F %T", lt);
-	fprintf(W.log_fp, "%s %s %s\n", ident_str, time_str, message);
+	fprintf(gebr.log_fp, "%s %s %s\n", ident_str, time_str, message);
 
 	if (in_statusbar)
-		gtk_statusbar_push (GTK_STATUSBAR (W.statusbar), 0, message);
+		gtk_statusbar_push (GTK_STATUSBAR (gebr.statusbar), 0, message);
 }

@@ -25,19 +25,19 @@
 int
 main(int argc, char ** argv, char ** env)
 {
-	gtk_init (&argc, &argv);
+	gtk_init(&argc, &argv);
 
 	/* temporary: necessary for representing fractional numbers only with comma */
 	setlocale(LC_NUMERIC, "C");
 
-	assembly_interface ();
+	assembly_interface();
 
 	/* read command line */
 	gebr_config_load(argc, argv);
 
-	gtk_widget_show_all (W.mainwin);
+	gtk_widget_show_all(gebr.mainwin);
 
-	gtk_main ();
+	gtk_main();
 
 	return EXIT_SUCCESS;
 }

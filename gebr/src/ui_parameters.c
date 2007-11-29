@@ -49,54 +49,54 @@ progpar_config_window    (void)
 	long int			i;
 
 	/* Which program ? */
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.fseq_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.fseq_view));
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		GtkTreePath * path;
 
 		path = gtk_tree_model_get_path (model, &iter);
-		W.program_index = (int) atoi(gtk_tree_path_to_string(path));
+		gebr.program_index = (int) atoi(gtk_tree_path_to_string(path));
 		gtk_tree_path_free(path);
 	} else {
-		gtk_statusbar_push (GTK_STATUSBAR (W.statusbar), 0,
+		gtk_statusbar_push (GTK_STATUSBAR (gebr.statusbar), 0,
 				"No program selected");
 		return;
 	}
 
-	W.parameters = gtk_dialog_new_with_buttons ("Parameters",
-						GTK_WINDOW(W.mainwin),
+	gebr.parameters = gtk_dialog_new_with_buttons ("Parameters",
+						GTK_WINDOW(gebr.mainwin),
 						GTK_DIALOG_DESTROY_WITH_PARENT,
 						GTK_STOCK_OK,     GTK_RESPONSE_OK,
 						GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 						NULL);
-	gtk_dialog_add_button(GTK_DIALOG(W.parameters), "Default", GTK_RESPONSE_DEFAULT);
-	gtk_dialog_add_button(GTK_DIALOG(W.parameters), "Help", GTK_RESPONSE_HELP);
-	gtk_widget_set_size_request (W.parameters, 490, 350);
+	gtk_dialog_add_button(GTK_DIALOG(gebr.parameters), "Default", GTK_RESPONSE_DEFAULT);
+	gtk_dialog_add_button(GTK_DIALOG(gebr.parameters), "Help", GTK_RESPONSE_HELP);
+	gtk_widget_set_size_request (gebr.parameters, 490, 350);
 
 	/* Take the apropriate action when a button is pressed */
-	g_signal_connect_swapped (W.parameters, "response",
+	g_signal_connect_swapped (gebr.parameters, "response",
 				G_CALLBACK (properties_action),
-				W.parameters);
-	g_signal_connect (GTK_OBJECT (W.parameters), "delete_event",
+				gebr.parameters);
+	g_signal_connect (GTK_OBJECT (gebr.parameters), "delete_event",
 			GTK_SIGNAL_FUNC (gtk_widget_destroy), NULL );
 
-	gtk_box_set_homogeneous( GTK_BOX(GTK_DIALOG (W.parameters)->vbox), FALSE);
+	gtk_box_set_homogeneous( GTK_BOX(GTK_DIALOG (gebr.parameters)->vbox), FALSE);
 
 	/* Flow Title */
 	label = gtk_label_new(NULL);
-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (W.parameters)->vbox), label, FALSE, TRUE, 5);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (gebr.parameters)->vbox), label, FALSE, TRUE, 5);
 	gtk_misc_set_alignment( GTK_MISC(label), 0.5, 0);
 
 	/* Scrolled window for parameters */
 	scrolledwin = gtk_scrolled_window_new (NULL, NULL);
 	viewport = gtk_viewport_new(NULL, NULL);
 	vbox = gtk_vbox_new(FALSE, 3);
-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (W.parameters)->vbox), scrolledwin, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (gebr.parameters)->vbox), scrolledwin, TRUE, TRUE, 0);
 	gtk_container_add (GTK_CONTAINER (scrolledwin), viewport);
 	gtk_container_add (GTK_CONTAINER (viewport), vbox);
 
 	/* Starts reading program and its parameters
 	 */
-	geoxml_flow_get_program(flow, &program, W.program_index);
+	geoxml_flow_get_program(flow, &program, gebr.program_index);
 
 	/* Program title in bold */
 	{
@@ -107,35 +107,35 @@ progpar_config_window    (void)
 		g_free (markup);
 	}
 
-	W.parwidgets_number = geoxml_program_get_parameters_number(program);
-	W.parwidgets = (GtkWidget**) malloc(sizeof(GtkWidget*) * W.parwidgets_number);
+	gebr.parwidgets_number = geoxml_program_get_parameters_number(program);
+	gebr.parwidgets = (GtkWidget**) malloc(sizeof(GtkWidget*) * gebr.parwidgets_number);
 
 	program_parameter = geoxml_program_get_first_parameter(program);
-	for(i=0; i<W.parwidgets_number; i++,  geoxml_program_parameter_next(&program_parameter)) {
+	for(i=0; i<gebr.parwidgets_number; i++,  geoxml_program_parameter_next(&program_parameter)) {
 		gchar * label = (gchar *)geoxml_program_parameter_get_label(program_parameter);
 
 		switch (geoxml_program_parameter_get_type(program_parameter)) {
 		case GEOXML_PARAMETERTYPE_FLOAT:
-			W.parwidgets[i] =
+			gebr.parwidgets[i] =
 			progpar_add_input_float (vbox, label,
 						geoxml_program_parameter_get_required (program_parameter));
 
-			gtk_entry_set_text(GTK_ENTRY(W.parwidgets[i]),
+			gtk_entry_set_text(GTK_ENTRY(gebr.parwidgets[i]),
 					geoxml_program_parameter_get_value(program_parameter));
 		break;
 		case GEOXML_PARAMETERTYPE_INT:
-			W.parwidgets[i] =
+			gebr.parwidgets[i] =
 			progpar_add_input_int(vbox, label,
 						geoxml_program_parameter_get_required (program_parameter));
-			gtk_entry_set_text(GTK_ENTRY(W.parwidgets[i]),
+			gtk_entry_set_text(GTK_ENTRY(gebr.parwidgets[i]),
 					geoxml_program_parameter_get_value(program_parameter));
 		break;
 		case GEOXML_PARAMETERTYPE_STRING:
-			W.parwidgets[i] =
+			gebr.parwidgets[i] =
 			progpar_add_input_string(vbox, label,
 						geoxml_program_parameter_get_required (program_parameter));
 
-			gtk_entry_set_text(GTK_ENTRY(W.parwidgets[i]),
+			gtk_entry_set_text(GTK_ENTRY(gebr.parwidgets[i]),
 					geoxml_program_parameter_get_value(program_parameter));
 			break;
 		case GEOXML_PARAMETERTYPE_RANGE:
@@ -147,22 +147,22 @@ progpar_config_window    (void)
 			geoxml_program_parameter_get_range_properties(program_parameter,
 									&min, &max, &step);
 
-			W.parwidgets[i] =
+			gebr.parwidgets[i] =
 				progpar_add_input_range(vbox, label,
 							atof(min), atof(max), atof(step),
 							geoxml_program_parameter_get_required (program_parameter));
 
-			gtk_spin_button_set_value(GTK_SPIN_BUTTON(W.parwidgets[i]),
+			gtk_spin_button_set_value(GTK_SPIN_BUTTON(gebr.parwidgets[i]),
 							atof(geoxml_program_parameter_get_value(program_parameter)));
 			break;
 			}
 		case GEOXML_PARAMETERTYPE_FLAG:
-			W.parwidgets[i] = progpar_add_input_flag (vbox, label);
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(W.parwidgets[i]),
+			gebr.parwidgets[i] = progpar_add_input_flag (vbox, label);
+			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(gebr.parwidgets[i]),
 							geoxml_program_parameter_get_flag_status(program_parameter));
 		break;
 		case GEOXML_PARAMETERTYPE_FILE: {
-			W.parwidgets[i] = progpar_add_input_file (vbox, label,
+			gebr.parwidgets[i] = progpar_add_input_file (vbox, label,
 				geoxml_program_parameter_get_file_be_directory(program_parameter),
 				geoxml_program_parameter_get_required(program_parameter),
 				geoxml_program_parameter_get_value(program_parameter));
@@ -172,8 +172,8 @@ progpar_config_window    (void)
 		}
 	}
 
-	gtk_widget_show_all(W.parameters);
-	gtk_dialog_run(GTK_DIALOG(W.parameters));
+	gtk_widget_show_all(gebr.parameters);
+	gtk_dialog_run(GTK_DIALOG(gebr.parameters));
 }
 
 /*

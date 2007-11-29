@@ -20,22 +20,24 @@
 #include "support.h"
 #include "flow.h"
 
-gchar * no_flow_comp_selected_error = _("No flow component selected");
+gchar * no_flow_comp_selected_error = "No flow component selected";
 
-/* Function: flow_component_setup_ui
- * Assembly the flow edit ui_flow_component.widget and add it GÍBR's notebook.
+/* Function: flow_edition_setup_ui
+ * Assembly the flow edit ui_flow_edition.widget.
+ *
+ * Return:
+ * The structure containing relevant data.
  */
-struct ui_flow_component
-flow_component_setup_ui(void)
+struct ui_flow_edition
+flow_edition_setup_ui(void)
 {
-	struct ui_flow_component	ui_flow_component;
-	GtkWidget *			ui_flow_component.widget;
+	struct ui_flow_edition		ui_flow_edition;
 	GtkWidget *			hpanel;
 
-	/* Create flow edit ui_flow_component.widget */
-	ui_flow_component.widget = gtk_vbox_new(FALSE, 0);
+	/* Create flow edit ui_flow_edition.widget */
+	ui_flow_edition.widget = gtk_vbox_new(FALSE, 0);
 	hpanel = gtk_hpaned_new();
-	gtk_container_add(GTK_CONTAINER(ui_flow_component.widget), hpanel);
+	gtk_container_add(GTK_CONTAINER(ui_flow_edition.widget), hpanel);
 
 	/* Left side */
 	{
@@ -51,32 +53,32 @@ flow_component_setup_ui(void)
 		scrolledwin = gtk_scrolled_window_new (NULL, NULL);
 		gtk_container_add (GTK_CONTAINER(frame), scrolledwin);
 
-		ui_flow_component.fseq_store = gtk_list_store_new(FSEQ_N_COLUMN,
+		ui_flow_edition.fseq_store = gtk_list_store_new(FSEQ_N_COLUMN,
 						GDK_TYPE_PIXBUF,
 						G_TYPE_STRING,
 						G_TYPE_STRING,
 						G_TYPE_ULONG);
 
-		ui_flow_component.fseq_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (ui_flow_component.fseq_store));
-		gtk_tree_view_set_headers_visible (GTK_TREE_VIEW(ui_flow_component.fseq_view), FALSE);
+		ui_flow_edition.fseq_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (ui_flow_edition.fseq_store));
+		gtk_tree_view_set_headers_visible (GTK_TREE_VIEW(ui_flow_edition.fseq_view), FALSE);
 
 		renderer = gtk_cell_renderer_pixbuf_new ();
 		col = gtk_tree_view_column_new_with_attributes ("", renderer, NULL);
-		gtk_tree_view_append_column (GTK_TREE_VIEW (ui_flow_component.fseq_view), col);
+		gtk_tree_view_append_column (GTK_TREE_VIEW (ui_flow_edition.fseq_view), col);
 		gtk_tree_view_column_add_attribute (col, renderer, "pixbuf", FSEQ_STATUS_COLUMN);
 
 		renderer = gtk_cell_renderer_text_new ();
 		col = gtk_tree_view_column_new_with_attributes ("", renderer, NULL);
-		gtk_tree_view_append_column (GTK_TREE_VIEW (ui_flow_component.fseq_view), col);
+		gtk_tree_view_append_column (GTK_TREE_VIEW (ui_flow_edition.fseq_view), col);
 		gtk_tree_view_column_add_attribute (col, renderer, "text", FSEQ_TITLE_COLUMN);
 
 		/* Double click on flow component open its parameter window */
-		g_signal_connect (ui_flow_component.fseq_view, "row-activated",
+		g_signal_connect (ui_flow_edition.fseq_view, "row-activated",
 				(GCallback) progpar_config_window, NULL );
-		g_signal_connect (GTK_OBJECT (ui_flow_component.fseq_view), "cursor-changed",
-				GTK_SIGNAL_FUNC (flow_component_selected), NULL );
+		g_signal_connect (GTK_OBJECT (ui_flow_edition.fseq_view), "cursor-changed",
+				GTK_SIGNAL_FUNC (flow_edition_selected), NULL );
 
-		gtk_container_add (GTK_CONTAINER (scrolledwin), ui_flow_component.fseq_view);
+		gtk_container_add (GTK_CONTAINER (scrolledwin), ui_flow_edition.fseq_view);
 		gtk_widget_set_size_request (GTK_WIDGET (scrolledwin), 180, 30);
 	}
 
@@ -138,35 +140,35 @@ flow_component_setup_ui(void)
 		scrolledwin = gtk_scrolled_window_new (NULL, NULL);
 		gtk_container_add (GTK_CONTAINER (vbox), scrolledwin);
 
-		ui_flow_component.menu_store = gtk_tree_store_new (MENU_N_COLUMN,
+		ui_flow_edition.menu_store = gtk_tree_store_new (MENU_N_COLUMN,
 						G_TYPE_STRING,
 						G_TYPE_STRING,
 						G_TYPE_STRING);
 
-		ui_flow_component.menu_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (ui_flow_component.menu_store));
+		ui_flow_edition.menu_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (ui_flow_edition.menu_store));
 
-		g_signal_connect (GTK_OBJECT (ui_flow_component.menu_view), "row-activated",
+		g_signal_connect (GTK_OBJECT (ui_flow_edition.menu_view), "row-activated",
 				GTK_SIGNAL_FUNC (program_add_to_flow), NULL );
 
 		renderer = gtk_cell_renderer_text_new ();
 		col = gtk_tree_view_column_new_with_attributes ("Flow", renderer, NULL);
-		gtk_tree_view_append_column (GTK_TREE_VIEW (ui_flow_component.menu_view), col);
+		gtk_tree_view_append_column (GTK_TREE_VIEW (ui_flow_edition.menu_view), col);
 		gtk_tree_view_column_add_attribute (col, renderer, "markup", MENU_TITLE_COLUMN);
 		gtk_tree_view_column_set_sort_column_id (col, MENU_TITLE_COLUMN);
 		gtk_tree_view_column_set_sort_indicator (col, TRUE);
 
 		renderer = gtk_cell_renderer_text_new ();
 		col = gtk_tree_view_column_new_with_attributes ("Description", renderer, NULL);
-		gtk_tree_view_append_column (GTK_TREE_VIEW (ui_flow_component.menu_view), col);
+		gtk_tree_view_append_column (GTK_TREE_VIEW (ui_flow_edition.menu_view), col);
 		gtk_tree_view_column_add_attribute (col, renderer, "text", MENU_DESC_COLUMN);
 
-		gtk_container_add (GTK_CONTAINER (scrolledwin), ui_flow_component.menu_view);
+		gtk_container_add (GTK_CONTAINER (scrolledwin), ui_flow_edition.menu_view);
 	}
 
-	return ui_flow_component;
+	return ui_flow_edition;
 }
 
-/* Function: flow_component_selected
+/* Function: flow_edition_selected
  * When a flow component (a program in the flow) is selected
  * this funtions get the state of the program and set it on Flow Component Menu
  *
@@ -174,7 +176,7 @@ flow_component_setup_ui(void)
  * also by hand.
  */
 void
-flow_component_selected(void)
+flow_edition_selected(void)
 {
 	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
@@ -204,11 +206,11 @@ flow_component_selected(void)
 }
 
 /*
- * Function: flow_component_change_properties
+ * Function: flow_edition_change_properties
  * Show the current selected flow components parameters
  */
 void
-flow_component_change_properties(void)
+flow_edition_change_properties(void)
 {
 	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
@@ -233,11 +235,11 @@ flow_component_change_properties(void)
 }
 
 /*
- * Function: flow_component_change_properties
+ * Function: flow_edition_change_properties
  * Change the flow status when select the status from the "Flow Component" menu.
  */
 void
-flow_component_set_status(GtkMenuItem * menuitem)
+flow_edition_set_status(GtkMenuItem * menuitem)
 {
 	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;

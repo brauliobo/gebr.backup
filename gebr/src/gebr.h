@@ -23,7 +23,10 @@
 #include <geoxml.h>
 #include <gui/about.h>
 
-#include "ui_flow_component.h"
+#include "ui_project_line.h"
+#include "ui_flow_browse.h"
+#include "ui_flow_edition.h"
+#include "ui_job_control.h"
 
 /* global variable of common needed stuff */
 extern struct gebr gebr;
@@ -34,45 +37,19 @@ enum msg_type {
 
 #define NABAS 4
 
-/* Projects/Lines store fields */
-enum {
-   PL_NAME = 0,
-   PL_FILENAME,
-   PL_N_COLUMN
-};
-
-/* Flow browser store fields */
-enum {
-   FB_NAME = 0,
-   FB_FILENAME,
-   FB_N_COLUMN
-};
-
 /* Menubar */
 enum {
-   MENUBAR_PROJECT,
-   MENUBAR_LINE,
-   MENUBAR_FLOW,
-   MENUBAR_FLOW_COMPONENTS,
-   MENUBAR_N
-};
-
-/* Menu store fields */
-enum {
-   MENU_TITLE_COLUMN,
-   MENU_DESC_COLUMN,
-   MENU_FILE_NAME_COLUMN,
-   MENU_N_COLUMN
+	MENUBAR_PROJECT,
+	MENUBAR_LINE,
+	MENUBAR_FLOW,
+	MENUBAR_FLOW_COMPONENTS,
+	MENUBAR_N
 };
 
 
-/* Job control store fields */
-enum {
-   JC_ICON,
-   JC_TITLE,
-   JC_STRUCT,
-   JC_N_COLUMN
-};
+
+
+
 
 
 /* Server store field */
@@ -146,12 +123,6 @@ typedef struct {
    GdkPixbuf *	running_icon;
 } gebr_pixmaps;
 
-typedef struct {
-	GtkWidget *	job_label;
-	GtkWidget *	text_view;
-	GtkTextBuffer *	text_buffer;
-} gebr_job_control_t;
-
 struct gebr {
 	GtkWidget *			mainwin;
 	GtkWidget *			menu[MENUBAR_N];
@@ -161,9 +132,9 @@ struct gebr {
 
 	struct config {
 		/* config options from gengetopt
-		 * loaded in gebr_config_load at callbacks.c
+		 * loaded in gebr_config_load at gebr.c
 		 */
-		struct ggopt		config;
+		struct ggopt		ggopt;
 
 		GString *		username;
 		GString *		email;
@@ -173,22 +144,12 @@ struct gebr {
 		GString *		browser;
 	} config;
 
-	struct ui_flow_component	ui_flow_component;
+	struct ui_project_line		ui_project_line;
+	struct ui_flow_browse		ui_flow_browse;
+	struct ui_flow_edition		ui_flow_edition;
+	struct ui_job_control		ui_job_control;
+	struct ui_servers		ui_servers;
 
-	/* Trees and Lists */
-	GtkTreePath  *proj_line_selection_path;
-	GtkTreeStore *proj_line_store;
-	GtkListStore *flow_store;
-
-        GtkListStore *job_store;
-        GtkListStore *server_store;
-
-	/* Views */
-	GtkWidget *proj_line_view; /* projects and lines             */
-	GtkWidget *flow_view;      /* flows of a line                */
-
-        GtkWidget *job_view;       /* Running jobs                   */
-        GtkWidget *server_view;    /* Server view                    */
 
 	/* preferences window */
 	gebrw_pref_t		pref;
@@ -200,9 +161,6 @@ struct gebr {
 
 	/* flow properties window */
 	gebr_flow_prop_t	flow_prop;
-
-	/* job control */
-	gebr_job_control_t	job_ctrl;
 
 	/* status menu items */
 	GtkWidget *		configured_menuitem;

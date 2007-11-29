@@ -25,17 +25,18 @@ gebr_SOURCES = main.c \
 	cmdline.c \
 	gebr.c \
 	callbacks.c \
-	proj.c \
+	project.c \
 	line.c \
 	flow.c \
-	flowcomp.c \
 	help.c \
-	prop.c \
+	parameters.c \
 	job.c \
 	server.c client.c \
 	menus.c \
 	parse.c support.c \
 	interface.c \
+	ui_flow.c \
+	ui_parameters.c \
 	ui_help.c \
 	ui_project_line.c \
 	ui_flow_browse.c \
@@ -43,15 +44,14 @@ gebr_SOURCES = main.c \
 	ui_job_control.c \
 	ui_pages.c \
 	ui_prop.c \
-	ui_server.c
+	ui_servers.c
 noinst_HEADERS = \
 	cmdline.h \
 	gebr.h \
 	callbacks.h \
-	proj.h \
+	project.h \
 	line.h \
 	flow.h \
-	flowcomp.h \
 	help.h \
 	prop.h \
 	job.h \
@@ -59,6 +59,8 @@ noinst_HEADERS = \
 	menus.h \
 	parse.h support.h \
 	interface.h \
+	ui_flow.h \
+	ui_parameters.h \
 	ui_help.h \
 	ui_project_line.h \
 	ui_flow_browse.h \
@@ -66,7 +68,7 @@ noinst_HEADERS = \
 	ui_job_control.h \
 	ui_pages.h \
 	ui_prop.h \
-	ui_server.h
+	ui_servers.h
 EXTRA_DIST = gebr.ggo
 
 GEBR_PIXMAPS_DIR = $(datadir)/gebr/pixmaps/

@@ -28,8 +28,6 @@ AC_SUBST(GEOXML_VERSION_INFO)
 AC_SUBST(FLOW_VERSION)
 
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
-PACKAGE_NAME=$PACKAGE
-PACKAGE_VERSION=$VERSION
 
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -51,6 +49,11 @@ dnl check for GTHREAD >= 2.8 (which is thread safe)
 PKG_CHECK_MODULES(GTHREAD, [gthread-2.0 >= 2.8],,AC_MSG_ERROR([Could not find gthread >= 2.8]))
 AC_SUBST(GTHREAD_LIBS)
 AC_SUBST(GTHREAD_CFLAGS)
+
+dnl check for GTK
+PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0,,AC_MSG_ERROR([Could not find gtk+-2.0 >= 2.0.0]))
+AC_SUBST(GTK_LIBS)
+AC_SUBST(GTK_CFLAGS)
 
 dnl check for gdome >= 0.8.0 (which is thread safe)
 PKG_CHECK_MODULES(GDOME2, [gdome2 >= 0.8.0],,AC_MSG_ERROR([Could not find gdome2 >= 0.8.0]))

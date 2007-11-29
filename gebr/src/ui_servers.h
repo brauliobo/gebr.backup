@@ -15,40 +15,19 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_FLOW_COMPONENT_H
-#define __UI_FLOW_COMPONENT_H
+#ifndef _GEBR_UI_SERVERS_H_
+#define _GEBR_UI_SERVERS_H_
 
-/* Flow sequence store fields */
-enum {
-	FSEQ_STATUS_COLUMN = 0,
-	FSEQ_TITLE_COLUMN,
-	FSEQ_MENU_FILE_NAME_COLUMN,
-	FSEQ_MENU_INDEX,
-	FSEQ_N_COLUMN
-};
+#include <gtk/gtk.h>
 
-struct ui_flow_component {
-	GtkWidget *	widget;
+struct ui_servers {
+	GtkWidget *		dialog;
 
-	/* available system and user's menus*/
-	GtkWidget *	menu_view;
-	GtkTreeStore *	menu_store;
+	GtkListStore *		store;
+	GtkWidget *		view;
+}
 
-	/* Sequence of programs of a flow */
-	GtkListStore *	fseq_store;
-	GtkWidget *	fseq_view;
-};
+struct ui_servers
+servers_setup_ui(void);
 
-struct ui_flow_component
-flow_component_setup_ui(void);
-
-void
-flow_component_selected(void);
-
-void
-flow_component_change_properties(void);
-
-void
-flow_component_set_status(GtkMenuItem * menuitem);
-
-#endif //__UI_FLOW_COMPONENT_H
+#endif //_GEBR_UI_SERVERS_H_

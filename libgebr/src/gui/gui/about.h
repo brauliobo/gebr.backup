@@ -15,3 +15,16 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __LIBGEBR_GUI_ABOUT_H
+#define __LIBGEBR_GUI_ABOUT_H
+
+#include <gtk/gtk.h>
+
+struct about {
+	GtkWidget *	dialog;
+};
+
+struct about
+about_setup_ui(void);
+
+#endif //__LIBGEBR_GUI_ABOUT_H

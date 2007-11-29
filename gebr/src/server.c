@@ -89,7 +89,7 @@ ssh_read_stderr(GProcess * process, struct server * server)
 		g_process_kill(process);
 
 	error = g_process_read_stderr_string_all(process);
-	dialog = gtk_message_dialog_new(GTK_WINDOW(W.mainwin),
+	dialog = gtk_message_dialog_new(GTK_WINDOW(gebr.mainwin),
 		GTK_DIALOG_MODAL,
 		GTK_MESSAGE_ERROR,
 		GTK_BUTTONS_CLOSE,
@@ -205,16 +205,16 @@ server_free(struct server * server)
 	gboolean	valid;
 
 	/* delete all jobs at server */
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(W.job_store), &iter);
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.job_store), &iter);
 	while (valid) {
 		struct job *	job;
 		GtkTreeIter	this;
 
-		gtk_tree_model_get (GTK_TREE_MODEL(W.job_store), &iter,
+		gtk_tree_model_get (GTK_TREE_MODEL(gebr.job_store), &iter,
 				JC_STRUCT, &job,
 				-1);
 		this = iter;
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(W.job_store), &iter);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.job_store), &iter);
 
 		if (job->server == server)
 			job_delete(job);
@@ -247,11 +247,11 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 	gethostname(hostname, 100);
 	display = getenv("DISPLAY");
 
-	/* TODO: port to GProcess using blocking calls */ 
+	/* TODO: port to GProcess using blocking calls */
 	/* get this X session magic cookie */
 	g_string_printf(mcookie_cmd, "xauth list %s", display);
 	output_fp = popen(mcookie_cmd->str, "r");
-	fread(line, 1, 1024, output_fp); 
+	fread(line, 1, 1024, output_fp);
 	/* split output and get only the magic cookie */
 	splits = g_strsplit_set(line, " \n", 6);
 	pclose(output_fp);
@@ -300,15 +300,15 @@ server_run_flow(struct server * server)
 	/* TODO: check logged instead of connected */
 	if (g_socket_get_state(G_SOCKET(server->tcp_socket)) != G_SOCKET_STATE_CONNECTED) {
 	   GtkWidget *	dialog;
-	   
-	   dialog = gtk_message_dialog_new(GTK_WINDOW(W.mainwin),
+
+	   dialog = gtk_message_dialog_new(GTK_WINDOW(gebr.mainwin),
 					   GTK_DIALOG_MODAL,
 					   GTK_MESSAGE_ERROR,
 					   GTK_BUTTONS_CLOSE,
 					   "You are not connected to this server");
 	   gtk_widget_show_all(dialog);
 	   gtk_dialog_run(GTK_DIALOG(dialog));
-	   
+
 	   gtk_widget_destroy(dialog);
 	   return;
 	}

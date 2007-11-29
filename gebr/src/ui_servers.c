@@ -15,36 +15,39 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* File: interface.c
+/* File: ui_servers.c
  * Assembly the main components of the interface
  *
  * This function assemblies the main window, preference and about
  * dialogs. All other subcomponents of the interface are implemented
  * in the files initiated by "ui_".
  */
+
 #include <string.h>
 #include "ui_server.h"
-#include "cb_server.h"
 
 #include "gebr.h"
 
-/*------------------------------------------------------------------------*
- * Function: assembly_preference_win
- * Assembly preference window.
+/*
+ * Function: servers_setup_ui
+ * Assembly the servers configurations dialog.
  *
+ * Return:
+ * The structure containing relevant data
  */
-void
-assembly_server_win (void){
-
-   GtkWidget *dialog;
-   GtkWidget *label;
-   GtkWidget *entry;
-   GtkTreeViewColumn *col;
-   GtkCellRenderer *renderer;
+struct ui_servers
+servers_setup_ui(void)
+{
+	struct ui_servers	ui_servers;
+	GtkWidget *dialog;
+	GtkWidget *label;
+	GtkWidget *entry;
+	GtkTreeViewColumn *col;
+	GtkCellRenderer *renderer;
 
 
    dialog = gtk_dialog_new_with_buttons ("Server",
-					 GTK_WINDOW(W.mainwin),
+					 GTK_WINDOW(gebr.mainwin),
 					 GTK_DIALOG_DESTROY_WITH_PARENT,
 					 GTK_STOCK_REMOVE, GEBR_SERVER_REMOVE,
 					 GTK_STOCK_CLOSE, GEBR_SERVER_CLOSE,
@@ -61,22 +64,22 @@ assembly_server_win (void){
    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), label, FALSE, TRUE, 0);
 
    entry = gtk_entry_new();
-   g_signal_connect (GTK_OBJECT(entry), "activate", 
+   g_signal_connect (GTK_OBJECT(entry), "activate",
 		     GTK_SIGNAL_FUNC(server_add), NULL);
 
    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), entry, FALSE, TRUE, 0);
 
-   W.server_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (W.server_store));
+   gebr.server_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (gebr.server_store));
 
    renderer = gtk_cell_renderer_text_new ();
    col = gtk_tree_view_column_new_with_attributes ("Servers", renderer, NULL);
    gtk_tree_view_column_set_sort_column_id  (col, SERVER_ADDRESS);
    gtk_tree_view_column_set_sort_indicator  (col, TRUE);
 
-   gtk_tree_view_append_column (GTK_TREE_VIEW (W.server_view), col);
+   gtk_tree_view_append_column (GTK_TREE_VIEW (gebr.server_view), col);
    gtk_tree_view_column_add_attribute (col, renderer, "text", SERVER_ADDRESS);
 
-   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), W.server_view, TRUE, TRUE, 0);
+   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), gebr.server_view, TRUE, TRUE, 0);
 
 
    gtk_widget_show_all(dialog);

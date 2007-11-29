@@ -15,9 +15,24 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_FLOW_H
-#define __UI_FLOW_H
+#ifndef __UI_FLOW_BROWSE_H
+#define __UI_FLOW_BROWSE_H
 
+/* Store fields */
+enum {
+	FB_NAME = 0,
+	FB_FILENAME,
+	FB_N_COLUMN
+};
 
+struct ui_flow_browse {
+	GtkWidget *		widget;
 
-#endif //__UI_FLOW_H
+	GtkListStore *		store;
+	GtkWidget *		flow_view;
+};
+
+struct ui_flow_browse
+flow_browse_setup_ui(void);
+
+#endif //__UI_FLOW_BROWSE_H

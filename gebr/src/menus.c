@@ -62,7 +62,7 @@ menus_populate (void)
    }
 
    /* Remove any previous menus from the list */
-   gtk_tree_store_clear (W.menu_store);
+   gtk_tree_store_clear (gebr.menu_store);
    parent_iter = NULL;
 
    while (read_line(line, STRMAX, menuindex_fp)){
@@ -83,17 +83,17 @@ menus_populate (void)
 	    gchar * category;
 
 	    if (parent_iter != NULL) {
-	       gtk_tree_model_get ( GTK_TREE_MODEL(W.menu_store), parent_iter,
+	       gtk_tree_model_get ( GTK_TREE_MODEL(gebr.menu_store), parent_iter,
 				    MENU_TITLE_COLUMN, &category,
 				    -1);
 
 
 	       /* different category? */
 	       if (g_ascii_strcasecmp(category, titlebf->str)) {
-		  gtk_tree_store_append (W.menu_store, &category_iter, NULL);
+		  gtk_tree_store_append (gebr.menu_store, &category_iter, NULL);
 
 
-		  gtk_tree_store_set (W.menu_store, &category_iter,
+		  gtk_tree_store_set (gebr.menu_store, &category_iter,
 				      MENU_TITLE_COLUMN, titlebf->str,
 				      -1);
 
@@ -102,17 +102,17 @@ menus_populate (void)
 
 	       g_free(category);
 	    } else {
-	       gtk_tree_store_append (W.menu_store, &category_iter, NULL);
+	       gtk_tree_store_append (gebr.menu_store, &category_iter, NULL);
 
-	       gtk_tree_store_set (W.menu_store, &category_iter,
+	       gtk_tree_store_set (gebr.menu_store, &category_iter,
 				   MENU_TITLE_COLUMN, titlebf->str,
 				   -1);
 	       parent_iter = &category_iter;
 	    }
 	 }
 
-	 gtk_tree_store_append (W.menu_store, &iter, parent_iter);
-	 gtk_tree_store_set (W.menu_store, &iter,
+	 gtk_tree_store_append (gebr.menu_store, &iter, parent_iter);
+	 gtk_tree_store_set (gebr.menu_store, &iter,
 			     MENU_TITLE_COLUMN, parts[1],
 			     MENU_DESC_COLUMN, parts[2],
 			     MENU_FILE_NAME_COLUMN, parts[3],
@@ -209,7 +209,7 @@ menus_create_index(void)
    }
 
    scan_dir(GEBRMENUSYS,   menuindex);
-   scan_dir(W.pref.usermenus_value->str, menuindex);
+   scan_dir(gebr.pref.usermenus_value->str, menuindex);
 
    fclose(menuindex);
 
@@ -232,11 +232,11 @@ menus_create_index(void)
 int
 menus_fname   (const gchar  *menu,
 	       GString     **fname  )
-{   
-   
+{
+
    if (menu == NULL)
-      return EXIT_FAILURE;   
-   
+      return EXIT_FAILURE;
+
    *fname = g_string_new(GEBRMENUSYS);
    g_string_append(*fname, "/");
    g_string_append(*fname, menu);
@@ -247,7 +247,7 @@ menus_fname   (const gchar  *menu,
    g_string_free(*fname, TRUE);
 
    /* user's menus directory */
-   *fname = g_string_new(W.pref.usermenus_value->str);
+   *fname = g_string_new(gebr.pref.usermenus_value->str);
    g_string_append(*fname, "/");
    g_string_append(*fname, menu);
 
@@ -273,17 +273,17 @@ menu_show_help (void)
 	GString *	        menu_path;
 	GeoXmlFlow *		menu;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.menu_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.menu_view));
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		log_message(INTERFACE, no_menu_selected_error, TRUE);
 		return;
 	}
-	if (!gtk_tree_store_iter_depth(W.menu_store, &iter)) {
+	if (!gtk_tree_store_iter_depth(gebr.menu_store, &iter)) {
 		log_message(INTERFACE, selected_menu_instead_error, TRUE);
 		return;
 	}
 
-	gtk_tree_model_get ( GTK_TREE_MODEL (W.menu_store), &iter,
+	gtk_tree_model_get ( GTK_TREE_MODEL (gebr.menu_store), &iter,
 			MENU_FILE_NAME_COLUMN, &menu_fn,
 			-1);
 

@@ -154,8 +154,8 @@ flow_add_programs_to_view   (GeoXmlFlow * f)
 
 		/* Add to the GUI */
 		GtkTreeIter piter;
-		gtk_list_store_append (W.fseq_store, &piter);
-		gtk_list_store_set (W.fseq_store, &piter,
+		gtk_list_store_append (gebr.fseq_store, &piter);
+		gtk_list_store_set (gebr.fseq_store, &piter,
 				FSEQ_TITLE_COLUMN, geoxml_program_get_title(program),
 				FSEQ_MENU_FILE_NAME_COLUMN, menu,
 				FSEQ_MENU_INDEX, prog_index,
@@ -165,15 +165,15 @@ flow_add_programs_to_view   (GeoXmlFlow * f)
 		   GdkPixbuf    *pixbuf;
 
 		   if (strcmp(geoxml_program_get_status(program), "unconfigured") == 0)
-		      pixbuf = W.pixmaps.unconfigured_icon;
+		      pixbuf = gebr.pixmaps.unconfigured_icon;
 		   else if (strcmp(geoxml_program_get_status(program), "configured") == 0)
-		      pixbuf = W.pixmaps.configured_icon;
+		      pixbuf = gebr.pixmaps.configured_icon;
 		   else if (strcmp(geoxml_program_get_status(program), "disabled") == 0)
-		      pixbuf = W.pixmaps.disabled_icon;
+		      pixbuf = gebr.pixmaps.disabled_icon;
 		   else
 		      continue;
 
-		   gtk_list_store_set (W.fseq_store, &piter,
+		   gtk_list_store_set (gebr.fseq_store, &piter,
 				       FSEQ_STATUS_COLUMN, pixbuf, -1);
 		}
 	}
@@ -191,7 +191,7 @@ flow_load (void)
     GtkTreeSelection *selection;
     GtkTreeModel     *model;
 
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.flow_view));
+    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.flow_view));
     if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 
        gchar    *filename;
@@ -200,9 +200,9 @@ flow_load (void)
        /* Free previous flow */
        if (flow != NULL)
 	  geoxml_document_free ( GEOXML_DOC(flow));
-       gtk_list_store_clear (W.fseq_store);
+       gtk_list_store_clear (gebr.fseq_store);
 
-       gtk_tree_model_get (GTK_TREE_MODEL (W.flow_store), &iter,
+       gtk_tree_model_get (GTK_TREE_MODEL (gebr.flow_store), &iter,
  			   FB_FILENAME, &filename,
  			   -1);
 
@@ -217,7 +217,7 @@ flow_load (void)
        g_free(filename);
     }
     else if (flow != NULL) {
-	gtk_list_store_clear(W.fseq_store);
+	gtk_list_store_clear(gebr.fseq_store);
 	geoxml_document_free (GEOXML_DOC (flow));
 	flow = NULL;
     }
@@ -237,7 +237,7 @@ flow_info_update (void){
 	 char *markup;
 
 	 markup = g_markup_printf_escaped ("<b>%s</b>", geoxml_document_get_title (GEOXML_DOC(flow)));
-	 gtk_label_set_markup (GTK_LABEL (W.flow_info.title), markup);
+	 gtk_label_set_markup (GTK_LABEL (gebr.flow_info.title), markup);
 	 g_free (markup);
       }
 
@@ -246,7 +246,7 @@ flow_info_update (void){
 	 char *markup;
 
 	 markup = g_markup_printf_escaped ("<i>%s</i>", geoxml_document_get_description (GEOXML_DOC(flow)));
-	 gtk_label_set_markup (GTK_LABEL (W.flow_info.description), markup);
+	 gtk_label_set_markup (GTK_LABEL (gebr.flow_info.description), markup);
 	 g_free (markup);
       }
 
@@ -254,37 +254,37 @@ flow_info_update (void){
       {
 	 char *markup;
 	 markup = g_markup_printf_escaped ("<b>Input:</b>");
-	 gtk_label_set_markup (GTK_LABEL (W.flow_info.input_label), markup);
+	 gtk_label_set_markup (GTK_LABEL (gebr.flow_info.input_label), markup);
 	 g_free (markup);
 
 	 markup = g_markup_printf_escaped ("<b>Output:</b>");
-	 gtk_label_set_markup (GTK_LABEL (W.flow_info.output_label), markup);
+	 gtk_label_set_markup (GTK_LABEL (gebr.flow_info.output_label), markup);
 	 g_free (markup);
 
 	 markup = g_markup_printf_escaped ("<b>Error log:</b>");
-	 gtk_label_set_markup (GTK_LABEL (W.flow_info.error_label), markup);
+	 gtk_label_set_markup (GTK_LABEL (gebr.flow_info.error_label), markup);
 	 g_free (markup);
       }
 
       /* Input file */
       if (strlen(geoxml_flow_io_get_input(flow)) > 0)
-	 gtk_label_set_text (GTK_LABEL (W.flow_info.input), geoxml_flow_io_get_input(flow));
+	 gtk_label_set_text (GTK_LABEL (gebr.flow_info.input), geoxml_flow_io_get_input(flow));
       else
-	 gtk_label_set_text (GTK_LABEL (W.flow_info.input), "(none)");
+	 gtk_label_set_text (GTK_LABEL (gebr.flow_info.input), "(none)");
 
 
       /* Output file */
       if (strlen(geoxml_flow_io_get_output(flow)) > 0)
-	 gtk_label_set_text (GTK_LABEL (W.flow_info.output), geoxml_flow_io_get_output(flow));
+	 gtk_label_set_text (GTK_LABEL (gebr.flow_info.output), geoxml_flow_io_get_output(flow));
       else
-	 gtk_label_set_text (GTK_LABEL (W.flow_info.output), "(none)");
+	 gtk_label_set_text (GTK_LABEL (gebr.flow_info.output), "(none)");
 
 
       /* Error file */
       if (strlen(geoxml_flow_io_get_error(flow)) > 0)
-	 gtk_label_set_text (GTK_LABEL (W.flow_info.error), geoxml_flow_io_get_error(flow));
+	 gtk_label_set_text (GTK_LABEL (gebr.flow_info.error), geoxml_flow_io_get_error(flow));
       else
-	 gtk_label_set_text (GTK_LABEL (W.flow_info.error), "(none)");
+	 gtk_label_set_text (GTK_LABEL (gebr.flow_info.error), "(none)");
 
 
       /* Author and email */
@@ -297,26 +297,26 @@ flow_info_update (void){
 			 geoxml_document_get_author (GEOXML_DOC(flow)),
 			 geoxml_document_get_email  (GEOXML_DOC(flow)));
 
-	 gtk_label_set_text (GTK_LABEL (W.flow_info.author), str->str);
+	 gtk_label_set_text (GTK_LABEL (gebr.flow_info.author), str->str);
 	 g_string_free(str, TRUE);
       }
 
       /* Info button */
-      g_object_set(W.flow_info.help, "sensitive", TRUE, NULL);
+      g_object_set(gebr.flow_info.help, "sensitive", TRUE, NULL);
 
    }
    else{
-      gtk_label_set_text( GTK_LABEL(W.flow_info.title), "");
-      gtk_label_set_text( GTK_LABEL(W.flow_info.description), "");
-      gtk_label_set_text( GTK_LABEL(W.flow_info.input_label), "");
-      gtk_label_set_text( GTK_LABEL(W.flow_info.input), "");
-      gtk_label_set_text( GTK_LABEL(W.flow_info.output_label), "");
-      gtk_label_set_text( GTK_LABEL(W.flow_info.output), "");
-      gtk_label_set_text( GTK_LABEL(W.flow_info.error_label), "");
-      gtk_label_set_text( GTK_LABEL(W.flow_info.error), "");
-      gtk_label_set_text( GTK_LABEL(W.flow_info.author), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.title), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.description), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.input_label), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.input), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.output_label), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.output), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.error_label), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.error), "");
+      gtk_label_set_text( GTK_LABEL(gebr.flow_info.author), "");
 
-      g_object_set(W.flow_info.help, "sensitive", FALSE, NULL);
+      g_object_set(gebr.flow_info.help, "sensitive", FALSE, NULL);
    }
 }
 
@@ -332,18 +332,18 @@ flow_new     (GtkMenuItem *menuitem,
    GtkTreeIter       iter;
    GtkTreeModel     *model;
 
-   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.proj_line_view));
+   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.proj_line_view));
    if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 
       gchar    *name;
       gchar    *lne_filename;
 
-      gtk_tree_model_get ( GTK_TREE_MODEL(W.proj_line_store), &iter,
+      gtk_tree_model_get ( GTK_TREE_MODEL(gebr.proj_line_store), &iter,
 			   PL_NAME, &name,
 			   PL_FILENAME, &lne_filename,
 			   -1);
 
-      if (gtk_tree_store_iter_depth(W.proj_line_store, &iter) < 1)
+      if (gtk_tree_store_iter_depth(gebr.proj_line_store, &iter) < 1)
 	 log_message(INTERFACE, no_line_selected_error, TRUE);
       else {
 	 time_t     t;
@@ -388,15 +388,15 @@ flow_new     (GtkMenuItem *menuitem,
 	 f = geoxml_flow_new ();
 	 geoxml_document_set_filename (GEOXML_DOC(f), flw_filename);
 	 geoxml_document_set_title (GEOXML_DOC(f), title );
-	 geoxml_document_set_author (GEOXML_DOC(f), W.pref.username_value->str);
-	 geoxml_document_set_email (GEOXML_DOC(f), W.pref.email_value->str);
+	 geoxml_document_set_author (GEOXML_DOC(f), gebr.pref.username_value->str);
+	 geoxml_document_set_email (GEOXML_DOC(f), gebr.pref.email_value->str);
 	 geoxml_document_save (GEOXML_DOC(f), flw_path->str);
 	 geoxml_document_free (GEOXML_DOC(f));
 
 	 /* Add to the GUI */
 	 GtkTreeIter fiter;
-	 gtk_list_store_append (W.flow_store, &fiter);
-	 gtk_list_store_set (W.flow_store, &fiter,
+	 gtk_list_store_append (gebr.flow_store, &fiter);
+	 gtk_list_store_set (gebr.flow_store, &fiter,
 			     FB_NAME, title,
 			     FB_FILENAME, flw_filename,
 			     -1);
@@ -425,7 +425,7 @@ flow_delete     (GtkMenuItem *menuitem,
    GtkTreeIter       iter, liter;
    GtkTreeModel     *model;
 
-   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.flow_view));
+   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.flow_view));
    if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 
       gchar *name, *flw_filename, *lne_filename;
@@ -433,13 +433,13 @@ flow_delete     (GtkMenuItem *menuitem,
       GString *flw_path;
       GString *message;
 
-      gtk_tree_model_get ( GTK_TREE_MODEL(W.flow_store), &iter,
+      gtk_tree_model_get ( GTK_TREE_MODEL(gebr.flow_store), &iter,
 			   FB_NAME, &name,
 			   FB_FILENAME, &flw_filename,
 			   -1);
 
       /* Get the line filename */
-      selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.proj_line_view));
+      selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.proj_line_view));
       gtk_tree_selection_get_selected (selection, &model, &liter);
       gtk_tree_model_get ( model, &liter,
 			   PL_FILENAME, &lne_filename,
@@ -486,8 +486,8 @@ flow_delete     (GtkMenuItem *menuitem,
       g_string_free(flw_path, TRUE);
 
       /* Finally, from the GUI */
-      gtk_list_store_remove (GTK_LIST_STORE (W.flow_store), &iter);
-      gtk_list_store_clear(W.fseq_store);
+      gtk_list_store_remove (GTK_LIST_STORE (gebr.flow_store), &iter);
+      gtk_list_store_clear(gebr.fseq_store);
       flow_info_update();
 
 out:
@@ -512,10 +512,10 @@ flow_rename  (GtkCellRendererText *cell,
    GtkTreeIter iter;
 
 
-   gtk_tree_model_get_iter_from_string (GTK_TREE_MODEL (W.flow_store),
+   gtk_tree_model_get_iter_from_string (GTK_TREE_MODEL (gebr.flow_store),
  					&iter,
  					path_string);
-   gtk_list_store_set (W.flow_store, &iter,
+   gtk_list_store_set (gebr.flow_store, &iter,
  		       FB_NAME, new_text,
  		       -1);
 
@@ -541,12 +541,12 @@ program_add_to_flow      (GtkButton *button,
 		log_message(INTERFACE, no_flow_selected_error, TRUE);
 		return;
 	}
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.menu_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.menu_view));
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		log_message(INTERFACE, no_menu_selected_error, TRUE);
 		return;
 	}
-	if (!gtk_tree_store_iter_depth(W.menu_store, &iter)) {
+	if (!gtk_tree_store_iter_depth(gebr.menu_store, &iter)) {
 		log_message(INTERFACE, selected_menu_instead_error, TRUE);
 		return;
 	}
@@ -558,7 +558,7 @@ program_add_to_flow      (GtkButton *button,
 	GeoXmlProgram *			program;
 	GeoXmlProgramParameter *	program_parameter;
 
-	gtk_tree_model_get ( GTK_TREE_MODEL (W.menu_store), &iter,
+	gtk_tree_model_get ( GTK_TREE_MODEL (gebr.menu_store), &iter,
 			      MENU_TITLE_COLUMN, &name,
 			      MENU_FILE_NAME_COLUMN, &menufn,
 			      -1);
@@ -612,7 +612,7 @@ program_remove_from_flow      (GtkButton *button,
    GtkTreeSelection *selection;
    GtkTreeModel     *model;
 
-     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.fseq_view));
+     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.fseq_view));
       if (gtk_tree_selection_get_selected (selection, &model, &iter)){
 
 	 GeoXmlProgram *pg;
@@ -628,7 +628,7 @@ program_remove_from_flow      (GtkButton *button,
 
 	 flow_save();
 
-	 gtk_list_store_remove (GTK_LIST_STORE (W.fseq_store), &iter);
+	 gtk_list_store_remove (GTK_LIST_STORE (gebr.fseq_store), &iter);
 
       }
       else
@@ -648,13 +648,13 @@ program_move_down    (GtkButton *button,
    GtkTreeSelection *selection;
    GtkTreeModel     *model;
 
-      selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.fseq_view));
+      selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.fseq_view));
       if (gtk_tree_selection_get_selected (selection, &model, &iter)){
 
 	 GtkTreeIter next;
 	 next = iter;
 
-	 if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (W.fseq_store), &next) == FALSE)
+	 if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (gebr.fseq_store), &next) == FALSE)
 		return;
 
 	 GeoXmlProgram *pg;
@@ -672,7 +672,7 @@ program_move_down    (GtkButton *button,
 	 flow_save();
 
 	 /* Update GUI */
-         gtk_list_store_move_after (W.fseq_store, &iter, &next);
+         gtk_list_store_move_after (gebr.fseq_store, &iter, &next);
       }
       else
 	 log_message(INTERFACE, no_program_selected_error, TRUE);
@@ -691,10 +691,10 @@ program_move_up    (GtkButton *button,
       GtkTreeSelection *selection;
       GtkTreeModel     *model;
 
-      selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.fseq_view));
+      selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.fseq_view));
       if (gtk_tree_selection_get_selected (selection, &model, &iter)){
 
-	 GtkTreePath *path_to_pre =  gtk_tree_model_get_path  ( GTK_TREE_MODEL (W.fseq_store),
+	 GtkTreePath *path_to_pre =  gtk_tree_model_get_path  ( GTK_TREE_MODEL (gebr.fseq_store),
 								&iter);
 	 if ( gtk_tree_path_prev (path_to_pre) ){
 
@@ -714,10 +714,10 @@ program_move_up    (GtkButton *button,
 	    flow_save();
 
 	    /* View change */
-	    gtk_tree_model_get_iter (GTK_TREE_MODEL (W.fseq_store),
+	    gtk_tree_model_get_iter (GTK_TREE_MODEL (gebr.fseq_store),
 				     &pre, path_to_pre );
 
-	    gtk_list_store_move_before (W.fseq_store, &iter, &pre);
+	    gtk_list_store_move_before (gebr.fseq_store, &iter, &pre);
 	 }
 	 gtk_tree_path_free(path_to_pre);
       }
@@ -733,7 +733,7 @@ flow_properties (void)
    GtkTreeSelection *selection;
    GtkTreeModel     *model;
 
-   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.flow_view));
+   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.flow_view));
    if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
 	   log_message(INTERFACE, no_flow_selected_error, TRUE);
 	   return;
@@ -744,13 +744,13 @@ flow_properties (void)
    GtkWidget *label;
 
    dialog = gtk_dialog_new_with_buttons ("Flow properties",
-					 GTK_WINDOW(W.mainwin),
+					 GTK_WINDOW(gebr.mainwin),
 					 GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
 					 GTK_STOCK_OK, GTK_RESPONSE_OK,
 					 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 					 NULL);
 
-   W.flow_prop.win = GTK_WIDGET (dialog);
+   gebr.flow_prop.win = GTK_WIDGET (dialog);
 
    g_signal_connect_swapped (dialog, "response",
                              G_CALLBACK (flow_properties_actions),
@@ -768,43 +768,43 @@ flow_properties (void)
    /* Title */
    label = gtk_label_new ("Title");
    gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-   W.flow_prop.title = gtk_entry_new ();
+   gebr.flow_prop.title = gtk_entry_new ();
    gtk_table_attach (GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
-   gtk_table_attach (GTK_TABLE (table), W.flow_prop.title, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
-   gtk_entry_set_text (GTK_ENTRY (W.flow_prop.title), geoxml_document_get_title ( GEOXML_DOC (flow)));
+   gtk_table_attach (GTK_TABLE (table), gebr.flow_prop.title, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
+   gtk_entry_set_text (GTK_ENTRY (gebr.flow_prop.title), geoxml_document_get_title ( GEOXML_DOC (flow)));
 
    /* Description */
    label = gtk_label_new ("Description");
    gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-   W.flow_prop.description = gtk_entry_new ();
+   gebr.flow_prop.description = gtk_entry_new ();
    gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-   gtk_table_attach (GTK_TABLE (table), W.flow_prop.description, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-   gtk_entry_set_text (GTK_ENTRY (W.flow_prop.description), geoxml_document_get_description ( GEOXML_DOC (flow)));
+   gtk_table_attach (GTK_TABLE (table), gebr.flow_prop.description, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+   gtk_entry_set_text (GTK_ENTRY (gebr.flow_prop.description), geoxml_document_get_description ( GEOXML_DOC (flow)));
 
    /* Help */
    label = gtk_label_new ("Help");
    gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-   W.flow_prop.help = gtk_button_new_from_stock ( GTK_STOCK_EDIT );
+   gebr.flow_prop.help = gtk_button_new_from_stock ( GTK_STOCK_EDIT );
    gtk_table_attach (GTK_TABLE (table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-   gtk_table_attach (GTK_TABLE (table), W.flow_prop.help, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-   g_signal_connect (GTK_OBJECT (W.flow_prop.help), "clicked",
+   gtk_table_attach (GTK_TABLE (table), gebr.flow_prop.help, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+   g_signal_connect (GTK_OBJECT (gebr.flow_prop.help), "clicked",
 		     GTK_SIGNAL_FUNC (help_edit), flow );
 
    /* Author */
    label = gtk_label_new ("Author");
    gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-   W.flow_prop.author = gtk_entry_new ();
+   gebr.flow_prop.author = gtk_entry_new ();
    gtk_table_attach (GTK_TABLE (table), label, 0, 1, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
-   gtk_table_attach (GTK_TABLE (table), W.flow_prop.author, 1, 2, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
-   gtk_entry_set_text (GTK_ENTRY (W.flow_prop.author), geoxml_document_get_author ( GEOXML_DOC (flow)));
+   gtk_table_attach (GTK_TABLE (table), gebr.flow_prop.author, 1, 2, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
+   gtk_entry_set_text (GTK_ENTRY (gebr.flow_prop.author), geoxml_document_get_author ( GEOXML_DOC (flow)));
 
    /* User email */
    label = gtk_label_new ("Email");
    gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-   W.flow_prop.email = gtk_entry_new ();
+   gebr.flow_prop.email = gtk_entry_new ();
    gtk_table_attach (GTK_TABLE (table), label, 0, 1, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
-   gtk_table_attach (GTK_TABLE (table), W.flow_prop.email, 1, 2, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
-   gtk_entry_set_text (GTK_ENTRY (W.flow_prop.email), geoxml_document_get_email ( GEOXML_DOC (flow)));
+   gtk_table_attach (GTK_TABLE (table), gebr.flow_prop.email, 1, 2, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
+   gtk_entry_set_text (GTK_ENTRY (gebr.flow_prop.email), geoxml_document_get_email ( GEOXML_DOC (flow)));
 
    gtk_widget_show_all (dialog);
 
@@ -823,10 +823,10 @@ flow_properties_actions                (GtkDialog *dialog,
 {
     switch (arg1){
     case GTK_RESPONSE_OK:
-	    geoxml_document_set_title (GEOXML_DOC (flow), gtk_entry_get_text ( GTK_ENTRY (W.flow_prop.title)));
-	    geoxml_document_set_description (GEOXML_DOC (flow), gtk_entry_get_text ( GTK_ENTRY (W.flow_prop.description)));
-	    geoxml_document_set_author (GEOXML_DOC (flow), gtk_entry_get_text ( GTK_ENTRY (W.flow_prop.author)));
-	    geoxml_document_set_email (GEOXML_DOC (flow), gtk_entry_get_text ( GTK_ENTRY (W.flow_prop.email)));
+	    geoxml_document_set_title (GEOXML_DOC (flow), gtk_entry_get_text ( GTK_ENTRY (gebr.flow_prop.title)));
+	    geoxml_document_set_description (GEOXML_DOC (flow), gtk_entry_get_text ( GTK_ENTRY (gebr.flow_prop.description)));
+	    geoxml_document_set_author (GEOXML_DOC (flow), gtk_entry_get_text ( GTK_ENTRY (gebr.flow_prop.author)));
+	    geoxml_document_set_email (GEOXML_DOC (flow), gtk_entry_get_text ( GTK_ENTRY (gebr.flow_prop.email)));
 
 	    /* Update flow title in flow_store */
 	    {
@@ -834,10 +834,10 @@ flow_properties_actions                (GtkDialog *dialog,
 	       GtkTreeSelection *selection;
 	       GtkTreeModel     *model;
 
-	       selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.flow_view));
+	       selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.flow_view));
 	       if (gtk_tree_selection_get_selected (selection, &model, &iter)){
 
-		  gtk_list_store_set (W.flow_store, &iter,
+		  gtk_list_store_set (gebr.flow_store, &iter,
 				      FB_NAME, geoxml_document_get_title (GEOXML_DOC (flow)),
 				      -1);
 	       }
@@ -850,7 +850,7 @@ flow_properties_actions                (GtkDialog *dialog,
     default:                  /* does nothing */
        break;
     }
-    gtk_widget_destroy (GTK_WIDGET (W.flow_prop.win));
+    gtk_widget_destroy (GTK_WIDGET (gebr.flow_prop.win));
 }
 
 void
@@ -860,7 +860,7 @@ flow_io (void)
 	GtkTreeSelection *	selection;
 	GtkTreeModel* 		model;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.flow_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.flow_view));
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		log_message(INTERFACE, no_flow_selected_error, TRUE);
 		return;
@@ -871,12 +871,12 @@ flow_io (void)
 	GtkWidget *label;
 
 	dialog = gtk_dialog_new_with_buttons ("Flow input/output",
-						GTK_WINDOW(W.mainwin),
+						GTK_WINDOW(gebr.mainwin),
 						GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
 						GTK_STOCK_OK, GTK_RESPONSE_OK,
 						GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 						NULL);
-	W.flow_io.win = GTK_WIDGET (dialog);
+	gebr.flow_io.win = GTK_WIDGET (dialog);
 	gtk_widget_set_size_request (dialog, 390, 160);
 
 	g_signal_connect_swapped (dialog, "response",
@@ -894,29 +894,29 @@ flow_io (void)
 	/* Input */
 	label = gtk_label_new ("Input file");
 	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	W.flow_io.input = save_widget_create();
+	gebr.flow_io.input = save_widget_create();
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), W.flow_io.input.hbox, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL,  3, 3);
-	gtk_entry_set_text (GTK_ENTRY (W.flow_io.input.entry), geoxml_flow_io_get_input (flow));
-	gtk_widget_set_size_request (W.flow_io.input.hbox, 140, 30);
+	gtk_table_attach (GTK_TABLE (table), gebr.flow_io.input.hbox, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL,  3, 3);
+	gtk_entry_set_text (GTK_ENTRY (gebr.flow_io.input.entry), geoxml_flow_io_get_input (flow));
+	gtk_widget_set_size_request (gebr.flow_io.input.hbox, 140, 30);
 
 	/* Output */
 	label = gtk_label_new ("Output file");
 	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	W.flow_io.output = save_widget_create();
+	gebr.flow_io.output = save_widget_create();
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), W.flow_io.output.hbox, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_entry_set_text (GTK_ENTRY (W.flow_io.output.entry), geoxml_flow_io_get_output (flow));
-	gtk_widget_set_size_request (W.flow_io.output.hbox, 140, 30);
+	gtk_table_attach (GTK_TABLE (table), gebr.flow_io.output.hbox, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+	gtk_entry_set_text (GTK_ENTRY (gebr.flow_io.output.entry), geoxml_flow_io_get_output (flow));
+	gtk_widget_set_size_request (gebr.flow_io.output.hbox, 140, 30);
 
 	/* Error */
 	label = gtk_label_new ("Error log file");
 	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	W.flow_io.error = save_widget_create();
+	gebr.flow_io.error = save_widget_create();
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), W.flow_io.error.hbox, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_entry_set_text (GTK_ENTRY (W.flow_io.error.entry), geoxml_flow_io_get_error (flow));
-	gtk_widget_set_size_request (W.flow_io.error.hbox, 140, 30);
+	gtk_table_attach (GTK_TABLE (table), gebr.flow_io.error.hbox, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+	gtk_entry_set_text (GTK_ENTRY (gebr.flow_io.error.entry), geoxml_flow_io_get_error (flow));
+	gtk_widget_set_size_request (gebr.flow_io.error.hbox, 140, 30);
 
 	gtk_widget_show_all (dialog);
 
@@ -931,11 +931,11 @@ flow_io_actions			(GtkDialog *dialog,
 	switch (arg1) {
 	case GTK_RESPONSE_OK:
 		geoxml_flow_io_set_input (flow,
-			gtk_entry_get_text (GTK_ENTRY (W.flow_io.input.entry)));
+			gtk_entry_get_text (GTK_ENTRY (gebr.flow_io.input.entry)));
 		geoxml_flow_io_set_output (flow,
-			gtk_entry_get_text (GTK_ENTRY (W.flow_io.output.entry)));
+			gtk_entry_get_text (GTK_ENTRY (gebr.flow_io.output.entry)));
 		geoxml_flow_io_set_error (flow,
-			gtk_entry_get_text (GTK_ENTRY (W.flow_io.error.entry)));
+			gtk_entry_get_text (GTK_ENTRY (gebr.flow_io.error.entry)));
 
 		flow_save ();
 		flow_info_update ();
@@ -944,7 +944,7 @@ flow_io_actions			(GtkDialog *dialog,
 		break;
 	}
 
-	gtk_widget_destroy (GTK_WIDGET (W.flow_io.win));
+	gtk_widget_destroy (GTK_WIDGET (gebr.flow_io.win));
 }
 
 void
@@ -962,17 +962,17 @@ flow_run(void)
 	struct server *		server;
 
 	/* check for a flow selected */
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.flow_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.flow_view));
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		log_message(INTERFACE, no_flow_selected_error, TRUE);
 		return;
 	}
 
-	has_first = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(W.server_store), &first_iter);
+	has_first = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.server_store), &first_iter);
 	if (!has_first) {
 		GtkWidget *	dialog;
 
-		dialog = gtk_message_dialog_new(GTK_WINDOW(W.mainwin),
+		dialog = gtk_message_dialog_new(GTK_WINDOW(gebr.mainwin),
 			GTK_DIALOG_MODAL,
 			GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE,
@@ -985,8 +985,8 @@ flow_run(void)
 		return;
 	}
 
-	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(W.server_store), NULL) == 1){
-	   gtk_tree_model_get (GTK_TREE_MODEL(W.server_store), &first_iter,
+	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebr.server_store), NULL) == 1){
+	   gtk_tree_model_get (GTK_TREE_MODEL(gebr.server_store), &first_iter,
 			       SERVER_POINTER, &server,
 			       -1);
 	   server_run_flow(server);
@@ -994,14 +994,14 @@ flow_run(void)
 	}
 
 	dialog = gtk_dialog_new_with_buttons("Choose server to run",
-						GTK_WINDOW(W.mainwin),
+						GTK_WINDOW(gebr.mainwin),
 						GTK_DIALOG_MODAL,
 						GTK_STOCK_OK, GTK_RESPONSE_OK,
 						GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 						NULL );
 	gtk_widget_set_size_request(dialog, 380, 300);
 
-	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL (W.server_store));
+	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL (gebr.server_store));
 
 	renderer = gtk_cell_renderer_text_new ();
 	col = gtk_tree_view_column_new_with_attributes ("Servers", renderer, NULL);
@@ -1023,7 +1023,7 @@ flow_run(void)
 		GtkTreeIter       	iter;
 
 		gtk_tree_selection_get_selected(selection, &model, &iter);
-		gtk_tree_model_get (GTK_TREE_MODEL(W.server_store), &iter,
+		gtk_tree_model_get (GTK_TREE_MODEL(gebr.server_store), &iter,
 				SERVER_POINTER, &server,
 				-1);
 
