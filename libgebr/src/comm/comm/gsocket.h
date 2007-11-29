@@ -1,4 +1,4 @@
-/*   GêBR Daemon - Process and control execution of flows
+/*   libgebr - G�BR Library
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *   Inspired on Qt 4.3 version of QAbstractSocket, by Trolltech
  */
 
-#ifndef __GSOCKET_H
-#define __GSOCKET_H
+#ifndef __LIBGEBR_COMM_GSOCKET_H
+#define __LIBGEBR_COMM_GSOCKET_H
 
 #include <glib.h>
 #include <glib-object.h>
@@ -110,4 +110,4 @@ g_socket_write_string(GSocket *, GString *);
 
 G_END_DECLS
 
-#endif //__GSOCKET_H
+#endif //__LIBGEBR_COMM_GSOCKET_H

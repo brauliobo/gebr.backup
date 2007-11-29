@@ -1,4 +1,4 @@
-/*   GêBR Daemon - Process and control execution of flows
+/*   libgebr - G�BR Library
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *   Inspired on Qt 4.3 version of QHostAddress, by Trolltech
  */
 
-#ifndef __GHOSTADDRESS_H
-#define __GHOSTADDRESS_H
+#ifndef __LIBGEBR_COMM_GHOSTADDRESS_H
+#define __LIBGEBR_COMM_GHOSTADDRESS_H
 
 #include <glib.h>
 
@@ -68,4 +68,4 @@ g_host_address_set_ipv6_string(GHostAddress * host_address, const gchar * string
 
 G_END_DECLS
 
-#endif // __GHOSTADDRESS_H
+#endif // __LIBGEBR_COMM_GHOSTADDRESS_H

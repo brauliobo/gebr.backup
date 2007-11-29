@@ -22,4 +22,4 @@ pkgconfig_DATA = gebr-gui.pc
 EXTRA_DIST = gebr-gui.pc
 
 libgebr_guiincludedir=$(includedir)/libgebr
-libgebr_guiinclude_HEADERS=gui.h
+libgebr_guiinclude_HEADERS = gui.h

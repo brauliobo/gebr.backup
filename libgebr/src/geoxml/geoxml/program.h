@@ -1,4 +1,4 @@
-/*   libgeoxml - An interface to describe seismic software in XML
+/*   libgebr - GÍBR Library
  *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -108,7 +108,7 @@ GeoXmlProgramParameter *
 geoxml_program_new_parameter(GeoXmlProgram * program, enum GEOXML_PARAMETERTYPE parameter_type);
 
 /**
- * Get the first paramater of \p program. 
+ * Get the first paramater of \p program.
  *
  * \note Due to internal implementation, it is very slow to get the nieth paramater. If you want so, you'll need to call geoxml_sequence_next
  */

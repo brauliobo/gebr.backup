@@ -1,4 +1,4 @@
-# GêBR Daemon - Process and control execution of flows
+# libgebr - G�BR Library
 # Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = misc
+SUBDIRS = comm
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = gebr-misc.pc
+pkgconfig_DATA = gebr-comm.pc
 
-EXTRA_DIST = gebr-misc.pc
+EXTRA_DIST = gebr-comm.pc
 
-libgebr_miscincludedir=$(includedir)/libgebr
-libgebr_miscinclude_HEADERS=misc.h
+libgebr_commincludedir=$(includedir)/libgebr
+libgebr_comminclude_HEADERS=comm.h

@@ -1,4 +1,4 @@
-/*   GêBR Daemon - Process and control execution of flows
+/*   libgebr - G�BR Library
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *   Partly inspired on Qt 4.3 version of QProcess, by Trolltech
  */
 
-#ifndef __GPROCESS_H
-#define __GPROCESS_H
+#ifndef __LIBGEBR_COMM_GPROCESS_H
+#define __LIBGEBR_COMM_GPROCESS_H
 
 #include <glib.h>
 #include <glib-object.h>
@@ -130,4 +130,4 @@ g_process_write_stdin_string(GProcess *, GString *);
 
 G_END_DECLS
 
-#endif //__GPROCESS_H
+#endif //__LIBGEBR_COMM_GPROCESS_H

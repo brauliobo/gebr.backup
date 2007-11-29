@@ -1,4 +1,4 @@
-/*   GÍBR Daemon - Process and control execution of flows
+/*   libgebr - GÍBR Library
  *   Copyright (C) 2007 GÍBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SSH_H
-#define __SSH_H
+#ifndef __LIBGEBR_COMM_SSH_H_H
+#define __LIBGEBR_COMM_SSH_H_H
 
 #include <glib.h>
 
@@ -27,10 +27,10 @@ struct ssh_tunnel {
 	guint16		port;
 };
 
-struct ssh_tunnel
+struct ssh_tunnel *
 ssh_tunnel_new(guint16 start_port, const gchar * destination, guint16 remote_port);
 
 void
-ssh_tunnel_free(struct ssh_tunnel ssh_tunnel);
+ssh_tunnel_free(struct ssh_tunnel * ssh_tunnel);
 
-#endif //__SSH_H
+#endif //__LIBGEBR_COMM_SSH_H_H

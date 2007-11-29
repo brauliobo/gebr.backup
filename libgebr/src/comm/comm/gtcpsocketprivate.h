@@ -1,4 +1,4 @@
-/*   GÍBR Daemon - Process and control execution of flows
+/*   libgebr - GÍBR Library
  *   Copyright (C) 2007 GÍBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *   Inspired on Qt 4.3 version of QTcpSocket, by Trolltech
  */
 
-#ifndef __G_TCP_SOCKET_PRIVATE_H
-#define __G_TCP_SOCKET_PRIVATE_H
+#ifndef __LIBGEBR_COMM_G_TCP_SOCKET_PRIVATE_H
+#define __LIBGEBR_COMM_G_TCP_SOCKET_PRIVATE_H
 
 /**
  * Create an already connected socket
@@ -27,4 +27,4 @@
 GTcpSocket *
 _g_tcp_socket_new_connected(int fd);
 
-#endif //__G_TCP_SOCKET_PRIVATE_H
+#endif //__LIBGEBR_COMM_G_TCP_SOCKET_PRIVATE_H

@@ -15,12 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* include all misc library's headers. */
-#include <misc/ghostaddress.h>
-#include <misc/ghostinfo.h>
-#include <misc/gsocket.h>
-#include <misc/gtcpsocket.h>
-#include <misc/gtcpserver.h>
-#include <misc/gprocess.h>
-#include <misc/protocol.h>
-#include <misc/ssh.h>
+/* include all comm library's headers. */
+#include <comm/ghostaddress.h>
+#include <comm/ghostinfo.h>
+#include <comm/gsocket.h>
+#include <comm/gtcpsocket.h>
+#include <comm/gtcpserver.h>
+#include <comm/gprocess.h>
+#include <comm/protocol.h>
+#include <comm/ssh.h>

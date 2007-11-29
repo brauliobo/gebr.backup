@@ -1,4 +1,4 @@
-/*   libgeoxml - An interface to describe seismic software in XML
+/*   libgebr - GÍBR Library
  *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -20,19 +20,19 @@
 
 /**
  * \internal
- * 
+ *
  */
 typedef void (*createValueNode_function)(GdomeElement *, const gchar *);
 
 /**
  * \internal
- * 
+ *
  */
 void __geoxml_create_CDATASection(GdomeElement * parent_element, const gchar * value);
 
 /**
  * \internal
- * 
+ *
  */
 void __geoxml_create_TextNode(GdomeElement * parent_element, const gchar * value);
 
@@ -53,28 +53,28 @@ __geoxml_get_first_element(GdomeElement * parent_element, const gchar * tag_name
 
 /**
  * \internal
- * 
+ *
  */
 GdomeElement *
 __geoxml_get_element_at(GdomeElement * parent_element, const gchar * tag_name, gulong index);
 
 /**
  * \internal
- * 
+ *
  */
 gulong
 __geoxml_get_elements_number(GdomeElement * parent_element, const gchar * tag_name);
 
 /**
  * \internal
- * 
+ *
  */
 const gchar *
 __geoxml_get_element_value(GdomeElement * element);
 
 /**
  * \internal
- * 
+ *
  */
 void
 __geoxml_set_element_value(GdomeElement * element, const gchar * tag_value,
@@ -82,14 +82,14 @@ __geoxml_set_element_value(GdomeElement * element, const gchar * tag_value,
 
 /**
  * \internal
- * 
+ *
  */
 const gchar *
 __geoxml_get_tag_value(GdomeElement * parent_element, const gchar * tag_name);
 
 /**
  * \internal
- * 
+ *
  */
 void
 __geoxml_set_tag_value(GdomeElement * parent_element, const gchar * tag_name, const gchar * tag_value,
@@ -97,42 +97,42 @@ __geoxml_set_tag_value(GdomeElement * parent_element, const gchar * tag_name, co
 
 /**
  * \internal
- * 
+ *
  */
 const gchar *
 __geoxml_get_attr_value(GdomeElement * element, const gchar * attr_name);
 
 /**
  * \internal
- * 
+ *
  */
 void
 __geoxml_set_attr_value(GdomeElement * element, const gchar * attr_name, const gchar * attr_value);
 
 /**
  * \internal
- * 
+ *
  */
 GdomeElement *
 __geoxml_previous_element(GdomeElement * element);
 
 /**
  * \internal
- * 
+ *
  */
 GdomeElement *
 __geoxml_next_element(GdomeElement * element);
 
 /**
  * \internal
- * 
+ *
  */
 GdomeElement *
 __geoxml_previous_same_element(GdomeElement * element);
 
 /**
  * \internal
- * 
+ *
  */
 GdomeElement *
 __geoxml_next_same_element(GdomeElement * element);

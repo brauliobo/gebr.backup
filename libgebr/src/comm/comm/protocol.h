@@ -1,4 +1,4 @@
-/*   GêBR Daemon - Process and control execution of flows
+/*   libgebr - G�BR Library
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PROTOCOL_H
-#define __PROTOCOL_H
+#ifndef __LIBGEBR_COMM_PROTOCOL_H
+#define __LIBGEBR_COMM_PROTOCOL_H
 
 #include <glib.h>
 
@@ -100,4 +100,4 @@ protocol_split_new(GString * arguments, guint parts);
 void
 protocol_split_free(GList * split);
 
-#endif //__PROTOCOL_H
+#endif //__LIBGEBR_COMM_PROTOCOL_H

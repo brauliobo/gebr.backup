@@ -1,4 +1,4 @@
-/*   GêBR Daemon - Process and control execution of flows
+/*   libgebr - GêBR Library
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -20,22 +20,24 @@
 #include "ssh.h"
 #include "gtcpserver.h"
 
-struct ssh_tunnel
+struct ssh_tunnel *
 ssh_tunnel_new(guint16 start_port, const gchar * destination, guint16 remote_port)
 {
-	struct ssh_tunnel	ssh_tunnel;
+	struct ssh_tunnel *	ssh_tunnel;
 	GString *		cmd_line;
 
+	ssh_tunnel = g_malloc(sizeof(struct ssh_tunnel));
+
 	/* define the port available for tunneling */
-	ssh_tunnel.port = start_port;
-	while (!g_tcp_server_is_local_port_available(ssh_tunnel.port))
-		++ssh_tunnel.port;
+	ssh_tunnel->port = start_port;
+	while (!g_tcp_server_is_local_port_available(ssh_tunnel->port))
+		++ssh_tunnel->port;
 
 	cmd_line = g_string_new(NULL);
-	g_string_printf(cmd_line, "bash -c \"ssh -f -L %d:127.0.0.1:%d %s sleep 999d\"", ssh_tunnel.port, remote_port, destination);
+	g_string_printf(cmd_line, "bash -c \"ssh -f -L %d:127.0.0.1:%d %s sleep 999d\"", ssh_tunnel->port, remote_port, destination);
 
-// 	ssh_tunnel.process = g_process_new();
-// 	g_process_start(ssh_tunnel.process, cmd_line);
+// 	ssh_tunnel->process = g_process_new();
+// 	g_process_start(ssh_tunnel->process, cmd_line);
 	system(cmd_line->str);
 
 	/* frees */
@@ -45,8 +47,9 @@ ssh_tunnel_new(guint16 start_port, const gchar * destination, guint16 remote_por
 }
 
 void
-ssh_tunnel_free(struct ssh_tunnel ssh_tunnel)
+ssh_tunnel_free(struct ssh_tunnel * ssh_tunnel)
 {
-// 	g_process_kill(ssh_tunnel.process);
-// 	g_process_free(ssh_tunnel.process);
+// 	g_process_kill(ssh_tunnel->process);
+// 	g_process_free(ssh_tunnel->process);
+	g_free(ssh_tunnel);
 }

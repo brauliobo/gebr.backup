@@ -1,4 +1,4 @@
-/*   GêBR Daemon - Process and control execution of flows
+/*   libgebr - G�BR Library
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *   Inspired on Qt 4.3 version of QTcpServer, by Trolltech
  */
 
-#ifndef __GTCPSERVER_H
-#define __GTCPSERVER_H
+#ifndef __LIBGEBR_COMM_GTCPSERVER_H
+#define __LIBGEBR_COMM_GTCPSERVER_H
 
 #include "gsocket.h"
 #include "gtcpsocket.h"
@@ -85,4 +85,4 @@ g_tcp_server_get_has_pending_connections(GTcpServer * tcp_server);
 
 G_END_DECLS
 
-#endif //__GTCPSERVER_H
+#endif //__LIBGEBR_COMM_GTCPSERVER_H

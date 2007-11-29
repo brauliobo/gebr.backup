@@ -18,5 +18,5 @@
 /* all libgebr modules */
 #include <geoxml.h>
 #include <comm.h>
-#include <ui.h>
+#include <gui.h>
 #include <misc.h>

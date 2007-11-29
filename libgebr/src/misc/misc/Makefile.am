@@ -21,8 +21,7 @@ libgebr_misc_la_SOURCES = \
 libgebr_miscsubincludedir = $(includedir)/libgebr/misc
 libgebr_miscsubinclude_HEADERS = \
 	date.h log.h
-noinst_HEADERS = \
-
+noinst_HEADERS =
 EXTRA_DIST = ${noinst_HEADERS}
 
 INCLUDES =

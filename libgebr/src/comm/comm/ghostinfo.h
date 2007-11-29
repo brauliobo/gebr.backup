@@ -1,4 +1,4 @@
-/*   GêBR Daemon - Process and control execution of flows
+/*   libgebr - G�BR Library
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *   Inspired on Qt 4.3 version of QHostInfo, by Trolltech
  */
 
-#ifndef __G_HOST_INFO
-#define __G_HOST_INFO
+#ifndef __LIBGEBR_COMM_G_HOST_INFO_H
+#define __LIBGEBR_COMM_G_HOST_INFO_H
 
 #include <glib.h>
 
@@ -66,4 +66,4 @@ g_host_info_first_address(GHostInfo * host_info);
 
 G_END_DECLS
 
-#endif //__G_HOST_INFO
+#endif //__LIBGEBR_COMM_G_HOST_INFO_H

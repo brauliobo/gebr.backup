@@ -1,4 +1,4 @@
-/*   GêBR Daemon - Process and control execution of flows
+/*   libgebr - G�BR Library
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *   Inspired on Qt 4.3 version of QTcpSocket, by Trolltech
  */
 
-#ifndef __G_TCP_SOCKET_H
-#define __G_TCP_SOCKET_H
+#ifndef __LIBGEBR_COMM_G_TCP_SOCKET_H
+#define __LIBGEBR_COMM_G_TCP_SOCKET_H
 
 #include "gsocket.h"
 #include "ghostaddress.h"
@@ -70,4 +70,4 @@ g_tcp_socket_peer_port(GTcpSocket * tcp_socket);
 
 G_END_DECLS
 
-#endif //__G_TCP_SOCKET_H
+#endif //__LIBGEBR_COMM_G_TCP_SOCKET_H

@@ -1,4 +1,4 @@
-/*   libgeoxml - An interface to describe seismic software in XML
+/*   libgebr - GÍBR Library
  *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -120,7 +120,7 @@ geoxml_sequence_remove(GeoXmlSequence * sequence);
 
 /**
  *
- * In case that \p sequence is a parameter, \p before should be 
+ * In case that \p sequence is a parameter, \p before should be
  *
  * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_NULL_PTR, GEOXML_RETV_NOT_A_SEQUENCE, GEOXML_RETV_DIFFERENT_SEQUENCES
  */

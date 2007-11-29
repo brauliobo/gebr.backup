@@ -1,4 +1,4 @@
-# GêBR Daemon - Process and control execution of flows
+# libgebr - G�BR Library
 # Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-lib_LTLIBRARIES = libgebr_misc.la
-libgebr_misc_la_SOURCES = \
+lib_LTLIBRARIES = libgebr_comm.la
+libgebr_comm_la_SOURCES = \
 	ghostaddress.c ghostinfo.c gsocket.c gtcpsocket.c gtcpserver.c \
 	gprocess.c \
 	protocol.c ssh.c
 
-libgebr_miscsubincludedir = $(includedir)/libgebr/misc
-libgebr_miscsubinclude_HEADERS = \
+libgebr_commsubincludedir = $(includedir)/libgebr/comm
+libgebr_commsubinclude_HEADERS = \
 	ghostaddress.h ghostinfo.h gsocket.h gtcpsocket.h gtcpserver.h \
 	gprocess.h \
 	protocol.h ssh.h
@@ -31,5 +31,5 @@ EXTRA_DIST = ${noinst_HEADERS}
 
 INCLUDES =
 AM_CFLAGS = -Wall $(GLIB_CFLAGS) $(GOBJECT_CFLAGS) $(GTHREAD_CFLAGS)
-libgebr_misc_la_LIBADD = $(GLIB_LIBS) $(GOBJECT_LIBS) $(GTHREAD_LIBS)
-libgebr_misc_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@
+libgebr_comm_la_LIBADD = $(GLIB_LIBS) $(GOBJECT_LIBS) $(GTHREAD_LIBS)
+libgebr_comm_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@
