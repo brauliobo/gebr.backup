@@ -21,50 +21,46 @@ cmdline.h: cmdline.c
 cmdline.c: gebr.ggo
 	gengetopt < gebr.ggo --file-name=cmdline -C -a ggopt
 
-gebr_SOURCES =	main.c \
-		cmdline.c \
-		gebr.c \
-		callbacks.c \
-		cb_proj.c \
-		cb_line.c \
-		cb_flow.c \
-		cb_flowcomp.c \
-		cb_help.c \
-		cb_job.c \
-		cb_prop.c \
-		cb_server.c \
-		cb_job.h \
-		ui_help.c \
-		ui_menubar.c \
-		ui_pages.c \
-		ui_prop.c \
-		ui_server.c \
-		interface.c \
-		menus.c \
-		server.c client.c \
-		parse.c
-noinst_HEADERS = cmdline.h \
-		gebr.h \
-		callbacks.h \
-		cb_proj.h \
-		cb_line.h \
-		cb_flow.h \
-		cb_flowcomp.h \
-		cb_help.h \
-		cb_job.h \
-		cb_prop.h \
-		cb_server.h \
-		cb_job.h \
-		ui_help.h \
-		ui_menubar.h \
-		ui_pages.h \
-		ui_prop.h \
-		ui_server.h \
-		interface.h \
-		menus.h \
-		parse.h \
-		server.h client.h \
-		widgets.h
+gebr_SOURCES = main.c \
+	cmdline.c \
+	gebr.c \
+	callbacks.c \
+	proj.c \
+	line.c \
+	flow.c \
+	flowcomp.c \
+	help.c \
+	prop.c \
+	job.c \
+	server.c client.c \
+	menus.c \
+	parse.c support.c \
+	interface.c \
+	ui_help.c \
+	ui_menubar.c \
+	ui_pages.c \
+	ui_prop.c \
+	ui_server.c
+noinst_HEADERS = \
+	cmdline.h \
+	gebr.h \
+	callbacks.h \
+	proj.h \
+	line.h \
+	flow.h \
+	flowcomp.h \
+	help.h \
+	prop.h \
+	job.h \
+	server.h client.h \
+	menus.h \
+	parse.h support.h \
+	interface.h \
+	ui_help.h \
+	ui_menubar.h \
+	ui_pages.h \
+	ui_prop.h \
+	ui_server.h
 EXTRA_DIST = gebr.ggo
 
 GEBR_PIXMAPS_DIR = $(datadir)/gebr/pixmaps/
