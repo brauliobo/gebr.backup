@@ -15,9 +15,23 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEBR_MISC_DATE_H
-#define __LIBGEBR_MISC_DATE_H
+#include <stdlib.h>
+#include <string.h>
 
+#include "misc.h"
 
+/**
+ * mkstemp has the exigency that the XXXXXX comes in the end of the template.
+ * This function returns an static allocated string which will be used to create
+ * temporary filename, possibly with an extension, which is not easily possible with mkstemp
+ */
+gchar *
+make_temp_filename(void)
+{
+	static gchar	template[7];
 
-#endif //__LIBGEBR_MISC_DATE_H
+	strcmp(template, "XXXXXX");
+	mkstemp(template);
+
+	return template;
+}

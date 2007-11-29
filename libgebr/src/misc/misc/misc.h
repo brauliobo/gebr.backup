@@ -15,9 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEBR_MISC_DATE_H
-#define __LIBGEBR_MISC_DATE_H
+#ifndef __LIBGEBR_MISC_MISC_H
+#define __LIBGEBR_MISC_MISC_H
 
+#include <glib.h>
 
+gchar *
+make_temp_filename(void);
 
-#endif //__LIBGEBR_MISC_DATE_H
+#endif //__LIBGEBR_MISC_MISC_H

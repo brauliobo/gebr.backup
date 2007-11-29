@@ -15,3 +15,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __LIBGEBR_MISC_LOG_H
+#define __LIBGEBR_MISC_LOG_H
+
+
+
+#endif //__LIBGEBR_MISC_LOG_H

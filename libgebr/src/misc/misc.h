@@ -18,4 +18,4 @@
 /* include all misc library's headers. */
 #include <misc/date.h>
 #include <misc/log.h>
-
+#include <misc/utils.h>

@@ -16,15 +16,15 @@
 
 lib_LTLIBRARIES = libgebr_misc.la
 libgebr_misc_la_SOURCES = \
-	date.c log.c
+	date.c log.c utils.c
 
 libgebr_miscsubincludedir = $(includedir)/libgebr/misc
 libgebr_miscsubinclude_HEADERS = \
-	date.h log.h
+	date.h log.h utils.h
 noinst_HEADERS =
 EXTRA_DIST = ${noinst_HEADERS}
 
 INCLUDES =
-AM_CFLAGS = -Wall $(GLIB_CFLAGS) $(GOBJECT_CFLAGS) $(GTHREAD_CFLAGS)
-libgebr_misc_la_LIBADD = $(GLIB_LIBS) $(GOBJECT_LIBS) $(GTHREAD_LIBS)
+AM_CFLAGS = -Wall $(GLIB_CFLAGS)
+libgebr_misc_la_LIBADD = $(GLIB_LIBS)
 libgebr_misc_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@
