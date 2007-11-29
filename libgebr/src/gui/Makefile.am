@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = misc
+SUBDIRS = gui
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = gebr-misc.pc
+pkgconfig_DATA = gebr-gui.pc
 
-EXTRA_DIST = gebr-misc.pc
+EXTRA_DIST = gebr-gui.pc
 
-libgebr_miscincludedir=$(includedir)/libgebr
-libgebr_miscinclude_HEADERS=misc.h
+libgebr_guiincludedir=$(includedir)/libgebr
+libgebr_guiinclude_HEADERS=gui.h

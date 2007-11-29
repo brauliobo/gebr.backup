@@ -1,5 +1,5 @@
-/*   libgebr - GêBR Library
- *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   GÃªBR Daemon - Process and control execution of flows
+ *   Copyright (C) 2007 GÃªBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,8 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* all libgebr modules */
-#include <geoxml.h>
-#include <comm.h>
-#include <ui.h>
-#include <misc.h>
+/* include all misc library's headers. */
+#include <misc/ghostaddress.h>
+#include <misc/ghostinfo.h>
+#include <misc/gsocket.h>
+#include <misc/gtcpsocket.h>
+#include <misc/gtcpserver.h>
+#include <misc/gprocess.h>
+#include <misc/protocol.h>
+#include <misc/ssh.h>
