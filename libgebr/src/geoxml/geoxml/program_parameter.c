@@ -228,12 +228,13 @@ geoxml_program_parameter_get_default(GeoXmlProgramParameter * parameter)
 	tag_name = (geoxml_program_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_FLAG) ? "state" : "value";
 	element = __geoxml_get_first_element((GdomeElement*)parameter, tag_name);
 
-	string = gdome_str_mkref("default");
-	ret = (gboolean)gdome_el_hasAttribute(element, string, &exception);
-	gdome_str_unref(string);
-
-	if (ret == FALSE)
-		return "";
+	/* TODO: add support for removing or adding a default value */
+// 	string = gdome_str_mkref("default");
+// 	ret = (gboolean)gdome_el_hasAttribute(element, string, &exception);
+// 	gdome_str_unref(string);
+//
+// 	if (ret == FALSE)
+// 		return "";
 
 	return __geoxml_get_attr_value(element, "default");
 }

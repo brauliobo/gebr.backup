@@ -18,7 +18,6 @@
 #ifndef __LIBGEBR_GUI_UTILS_H
 #define __LIBGEBR_GUI_UTILS_H
 
-// gebr_save_widget
-// save_widget_create(void);
+
 
 #endif //__LIBGEBR_GUI_UTILS_H

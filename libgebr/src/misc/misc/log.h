@@ -18,6 +18,31 @@
 #ifndef __LIBGEBR_MISC_LOG_H
 #define __LIBGEBR_MISC_LOG_H
 
+#include <stdio.h>
 
+#include <glib.h>
+
+enum log_message_type {
+	START, END, ACTION, ERROR, WARNING,
+};
+
+struct log_message {
+	enum log_message_type	type;
+	GString *		string;
+};
+
+struct log {
+	GIOChannel *	io_channel;
+	GList *		messages;
+};
+
+struct log *
+log_open(const gchar * path);
+
+void
+log_close(struct log * log);
+
+void
+log_add_message(struct log * log, enum log_message_type type, GString * message);
 
 #endif //__LIBGEBR_MISC_LOG_H

@@ -15,54 +15,23 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_UI_PROP_H_
-#define _GEBR_UI_PROP_H_
+#ifndef __PARAMETERS_H
+#define __PARAMETERS_H
 
 #include <glib.h>
 #include <gtk/gtk.h>
 
 #define GTK_RESPONSE_DEFAULT GTK_RESPONSE_APPLY
 
-void
-progpar_config_window    (void);
+struct ui_parameters {
+	GtkWidget *	widget;
 
-GtkWidget *
-progpar_add_input_float    (GtkWidget    *wg,
-			    gchar * label_str,
-			    gboolean     required  );
+	int		program_index;
+	GtkWidget **	par_widgets;
+	int		par_widgets_number;
+}
 
-GtkWidget *
-progpar_add_input_int      (GtkWidget    *wg,
-			    gchar * label_str,
-			    gboolean     required  );
+struct ui_parameters *
+parameters_configure_setup_ui(void);
 
-GtkWidget *
-progpar_add_input_string   (GtkWidget    *wg,
-			    gchar * label_str,
-			    gboolean     required  );
-
-GtkWidget *
-progpar_add_input_range    (GtkWidget    *wg,
-			    gchar        *label_str,
-			    gdouble       min,
-			    gdouble       max,
-			    gdouble       step,
-			    gboolean      required );
-
-GtkWidget *
-progpar_add_input_flag     (GtkWidget    *wg,
-			    gchar        *label_str);
-
-GtkWidget *
-progpar_add_input_file     (GtkWidget *		wg,
-			    gchar *		label_str,
-			    gboolean		is_directory,
-			    gboolean		required,
-			    const gchar *	path);
-
-void
-responde                (GtkDialog *dialog,
-			 gint       arg1,
-			 gpointer   user_data);
-
-#endif //_GEBR_UI_PROP_H_
+#endif //__PARAMETERS_H

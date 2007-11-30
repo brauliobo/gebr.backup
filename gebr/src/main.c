@@ -18,25 +18,24 @@
 #include <locale.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include <gtk/gtk.h>
 
 #include "gebr.h"
+#include "interface.h"
 
 int
 main(int argc, char ** argv, char ** env)
 {
 	gtk_init(&argc, &argv);
 
-	/* temporary: necessary for representing fractional numbers only with comma */
+	/* FIXME: necessary for representing fractional numbers only with comma */
 	setlocale(LC_NUMERIC, "C");
 
 	assembly_interface();
-
-	/* read command line */
 	gebr_config_load(argc, argv);
 
 	gtk_widget_show_all(gebr.mainwin);
-
 	gtk_main();
 
 	return EXIT_SUCCESS;

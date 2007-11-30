@@ -23,17 +23,15 @@
 #include <geoxml.h>
 #include <gui/about.h>
 
+#include "cmdline.h"
 #include "ui_project_line.h"
 #include "ui_flow_browse.h"
 #include "ui_flow_edition.h"
 #include "ui_job_control.h"
+#include "ui_servers.h"
 
 /* global variable of common needed stuff */
 extern struct gebr gebr;
-
-enum msg_type {
-	START, END, ACTION, SERVER, ERROR, WARNING, INTERFACE
-};
 
 #define NABAS 4
 
@@ -46,49 +44,16 @@ enum {
 	MENUBAR_N
 };
 
+struct ui_preferences {
+	GtkWidget *	win;
 
-
-
-
-
-
-/* Server store field */
-enum {
-   SERVER_ADDRESS,
-   SERVER_POINTER,
-   SERVER_N_COLUMN
+	GtkWidget *	username;
+	GtkWidget *	email;
+	GtkWidget *	usermenus;
+	GtkWidget *	data;
+	GtkWidget *	editor;
+	GtkWidget *	browser;
 };
-
-typedef struct {
-	GtkWidget *hbox;
-
-	GtkWidget *entry;
-	GtkWidget *browse_button;
-} gebr_save_widget_t;
-
-typedef struct {
-
-   GtkWidget *win;
-
-   GtkWidget *username;
-   GtkWidget *email;
-   GtkWidget *usermenus;
-   GtkWidget *data;
-   GtkWidget *editor;
-   GtkWidget *browser;
-
-} gebrw_pref_t;
-
-typedef struct {
-   GtkWidget *win;
-
-   GtkWidget *title;
-   GtkWidget *description;
-   GtkWidget *help;
-   GtkWidget *author;
-   GtkWidget *email;
-
-} gebr_flow_prop_t;
 
 typedef struct {
 	GtkWidget *		win;
@@ -99,21 +64,19 @@ typedef struct {
 } gebr_flow_io_t;
 
 typedef struct {
+	GtkWidget *title;
+	GtkWidget *description;
 
-   GtkWidget *title;
-   GtkWidget *description;
+	GtkWidget *input_label;
+	GtkWidget *input;
+	GtkWidget *output_label;
+	GtkWidget *output;
+	GtkWidget *error_label;
+	GtkWidget *error;
 
-   GtkWidget *input_label;
-   GtkWidget *input;
-   GtkWidget *output_label;
-   GtkWidget *output;
-   GtkWidget *error_label;
-   GtkWidget *error;
+	GtkWidget *help;
 
-   GtkWidget *help;
-
-   GtkWidget *author;
-
+	GtkWidget *author;
 } gebr_flow_info_t;
 
 typedef struct {
@@ -129,6 +92,11 @@ struct gebr {
 	GtkWidget *			notebook;
 	GtkWidget *			statusbar;
 	struct about			about;
+
+	/* status menu items */
+	GtkWidget *			configured_menuitem;
+	GtkWidget *			disabled_menuitem;
+	GtkWidget *			unconfigured_menuitem;
 
 	struct config {
 		/* config options from gengetopt
@@ -150,7 +118,6 @@ struct gebr {
 	struct ui_job_control		ui_job_control;
 	struct ui_servers		ui_servers;
 
-
 	/* preferences window */
 	gebrw_pref_t		pref;
 	/* log file */
@@ -159,28 +126,15 @@ struct gebr {
 	/* flow info window */
 	gebr_flow_info_t	flow_info;
 
-	/* flow properties window */
-	gebr_flow_prop_t	flow_prop;
-
-	/* status menu items */
-	GtkWidget *		configured_menuitem;
-	GtkWidget *		disabled_menuitem;
-	GtkWidget *		unconfigured_menuitem;
-
 	/* flow io window. */
 	gebr_flow_io_t		flow_io;
-
-	GtkWidget *	parameters;
-	GtkWidget **	parwidgets;
-	int		parwidgets_number;
-	int		program_index;
 
 	/* Pixmaps */
 	gebr_pixmaps pixmaps;
 
 	/* List of temporary file to be deleted */
 	GSList * tmpfiles;
-}
+};
 
 void
 gebr_init(void);

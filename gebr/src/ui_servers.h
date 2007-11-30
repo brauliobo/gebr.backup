@@ -20,12 +20,19 @@
 
 #include <gtk/gtk.h>
 
+/* Store field */
+enum {
+   SERVER_ADDRESS,
+   SERVER_POINTER,
+   SERVER_N_COLUMN
+};
+
 struct ui_servers {
 	GtkWidget *		dialog;
 
 	GtkListStore *		store;
 	GtkWidget *		view;
-}
+};
 
 struct ui_servers
 servers_setup_ui(void);

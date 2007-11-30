@@ -35,6 +35,13 @@ AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 AC_HEADER_STDC
 
+dnl gettext stuff
+dnl GETTEXT_PACKAGE=$PACKAGE
+dnl AC_SUBST(GETTEXT_PACKAGE)
+dnl AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package.])
+dnl ALL_LINGUAS=""
+dnl AM_GLIB_GNU_GETTEXT
+
 dnl check for GLIB >= 2.8.0 (needed for g_access)
 PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.8.0],,AC_MSG_ERROR([Could not find glib >= 2.8.0]))
 AC_SUBST(GLIB_LIBS)

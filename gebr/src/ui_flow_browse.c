@@ -56,7 +56,6 @@ flow_browse_setup_ui(void)
 	gebr.flow_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (gebr.flow_store));
 
 	renderer = gtk_cell_renderer_text_new ();
-
 	g_object_set (renderer, "editable", TRUE, NULL);
 	g_signal_connect (GTK_OBJECT (renderer), "edited",
 			GTK_SIGNAL_FUNC  (flow_rename), NULL );

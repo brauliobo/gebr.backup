@@ -32,7 +32,7 @@
 #include "cmdline.h"
 #include "callbacks.h"
 #include "interface.h"
-#include "cb_proj.h"
+#include "project.h"
 #include "server.h"
 #include "menus.h"
 
@@ -43,19 +43,18 @@
 void
 gebr_init(void)
 {
-	gchar	fname[STRMAX];
-	gchar *	home;
+	GString *	log_filename;
+	gchar *		home;
 
 	/* initialization */
 	gebr.server_store = NULL;
 
 	/* assembly user's gebr directory */
-	home = getenv("HOME");
-	sprintf(fname, "%s/.gebr", home);
+	log_filename = g_string_new(NULL);
+	g_string_printf(log_filename, "%s/.gebr/gebr.log");
 
 	/* log file */
-	strcat(fname, "/gebr.log");
-	gebr.log_fp = fopen(fname, "a+");
+	gebr.log_fp = fopen(log_filename->str, "a+");
 
 	/* allocating list of temporary files */
 	gebr.tmpfiles = g_slist_alloc();
@@ -75,6 +74,8 @@ gebr_init(void)
 	}
 
 	log_message(START, "GêBR Initiating...", TRUE);
+
+	g_string_free(log_filename, TRUE);
 }
 
 /*
@@ -153,7 +154,7 @@ gebr_config_load(int argc, char ** argv)
 			gebr.config.editor_given &&
 			gebr.config.browser_given
 			)) {
-			assembly_preference_win();
+			assembly_preferences();
 			gtk_widget_show_all (gebr.pref.win);
 		} else {
 			menus_populate ();
@@ -185,8 +186,8 @@ gebr_config_load(int argc, char ** argv)
 		}
 	}
 	else {
-		assembly_preference_win();
-		gtk_widget_show_all (gebr.pref.win);
+		assembly_preferences();
+		gtk_widget_show_all(gebr.pref.win);
 	}
 
 	return EXIT_SUCCESS;

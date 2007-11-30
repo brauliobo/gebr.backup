@@ -17,3 +17,61 @@
 
 #include "log.h"
 
+/*
+ * Internal functions
+ */
+
+log_messages_free_each(struct log_message * message)
+{
+	g_string_free(message, TRUE);
+	g_free(log_message);
+}
+
+/*
+ * Library functions
+ */
+
+struct log *
+log_open(const gchar * path)
+{
+	struct log *	log;
+	GIOStatus	io_status;
+
+	log = g_malloc(sizeof(log));
+	*log = (struct log) {
+		.io_channel = g_io_channel_new_file(path, "r+"),
+		.messages = NULL
+	};
+
+	while (1) {
+		GString *	tmp;
+		GError *	error;
+
+		error = NULL;
+		tmp = g_string_new(NULL);
+		io_status = g_io_channel_read_line_string(log->io_channel, &tmp, NULL, &error);
+		if (io_status != G_IO_STATUS_EOF) {
+			struct log_message * log
+		} else {
+			g_string_free(tmp, TRUE);
+			break;
+		}
+	}
+}
+
+void
+log_close(struct log * log)
+{
+	g_io_channel_unref(log->io_channel);
+
+	g_list_foreach(log->messages, (GFunc)log_messages_free_each, NULL);
+	g_list_free(log->messages);
+
+	g_free(log);
+}
+
+void
+log_add_message(struct log * log, enum log_message_type type, GString * message)
+{
+
+}
