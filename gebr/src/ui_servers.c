@@ -55,7 +55,7 @@ servers_setup_ui(void)
 
    /* Take the apropriate action when a button is pressed */
    g_signal_connect_swapped (dialog, "response",
-			     G_CALLBACK (server_dialog_actions),
+			     G_CALLBACK (servers_dialog_actions),
 			     dialog);
 
    gtk_widget_set_size_request (dialog, 380, 300);
@@ -65,7 +65,7 @@ servers_setup_ui(void)
 
    entry = gtk_entry_new();
    g_signal_connect (GTK_OBJECT(entry), "activate",
-		     GTK_SIGNAL_FUNC(server_add), NULL);
+		     GTK_SIGNAL_FUNC(servers_add), NULL);
 
    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), entry, FALSE, TRUE, 0);
 
@@ -85,4 +85,89 @@ servers_setup_ui(void)
    gtk_widget_show_all(dialog);
    gtk_dialog_run(GTK_DIALOG(dialog));
 
+}
+
+/*
+ * Function: server_dialog_actions
+ * Take the appropriate action when the server dialog emmits
+ * a response signal.
+ */
+void
+servers_dialog_actions(GtkDialog * dialog, gint arg1)
+{
+	switch (arg1) {
+	case GEBR_SERVER_CLOSE:
+	   gtk_widget_destroy(GTK_WIDGET(dialog));
+	   break;
+	case GEBR_SERVER_REMOVE:
+	   servers_remove();
+	default:
+	   break;
+	}
+	gebr_config_save();
+}
+
+/*
+ * Function: server_add
+ * Callback to add a server to the server list
+ */
+void
+servers_add(GtkEntry * entry)
+{
+	GtkTreeIter	iter;
+	gboolean	valid;
+
+	/* check if it is already in list */
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(W.server_store), &iter);
+	while (valid) {
+		gchar *	server;
+
+		gtk_tree_model_get (GTK_TREE_MODEL(W.server_store), &iter,
+				SERVER_ADDRESS, &server,
+				-1);
+
+		if (!g_ascii_strcasecmp(server, gtk_entry_get_text(entry))) {
+			GtkTreeSelection *	selection;
+
+			selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.server_view));
+			gtk_tree_selection_select_iter(selection, &iter);
+
+			g_free(server);
+			return;
+		}
+
+		g_free(server);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(W.server_store), &iter);
+	}
+
+	gtk_list_store_append(W.server_store, &iter);
+	gtk_list_store_set(W.server_store, &iter,
+			SERVER_ADDRESS, gtk_entry_get_text(entry),
+			SERVER_POINTER, server_new(gtk_entry_get_text(entry)),
+			-1);
+	gtk_entry_set_text(entry, "");
+}
+
+/*
+ * Function: server_remove
+ * Callback to remove the selected server from the server list
+ */
+void
+servers_remove(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeIter       	iter;
+	GtkTreeModel     *	model;
+	struct server *		server;
+
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.server_view));
+	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+		return;
+
+	gtk_tree_model_get (GTK_TREE_MODEL(W.server_store), &iter,
+			SERVER_POINTER, &server,
+			-1);
+	server_free(server);
+
+	gtk_list_store_remove (GTK_LIST_STORE (W.server_store), &iter);
 }

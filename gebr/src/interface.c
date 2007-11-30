@@ -321,7 +321,7 @@ assembly_help_menu(void)
 	/* About entry */
 	submenu = gtk_image_menu_item_new_from_stock (GTK_STOCK_ABOUT, NULL);
 	g_signal_connect (GTK_OBJECT (submenu), "activate",
-			GTK_SIGNAL_FUNC (show_widget),
+			GTK_SIGNAL_FUNC (gtk_widget_show),
 			GTK_WIDGET (W.about));
 
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), submenu);

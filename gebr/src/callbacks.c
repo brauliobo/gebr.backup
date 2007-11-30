@@ -16,8 +16,9 @@
  *   <http://www.gnu.org/licenses/>.
  */
 
-/* File: callbacks.c
- * Main callbacks.
+/*
+ * File: callbacks.c
+ * Callbacks 
  */
 #include "callbacks.h"
 
