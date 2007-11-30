@@ -21,10 +21,12 @@ libgebr_gui_la_SOURCES = \
 libgebr_guisubincludedir = $(includedir)/libgebr/gui
 libgebr_guisubinclude_HEADERS = \
 	about.h utils.h gfileentry.h
-noinst_HEADERS =
+noinst_HEADERS = \
+	support.h
 EXTRA_DIST = ${noinst_HEADERS}
 
-INCLUDES =
+INCLUDES = \
+	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\" \
 AM_CFLAGS = -Wall $(GTK_CFLAGS)
-libgebr_gui_la_LIBADD = $(GTK_LIBS)
+libgebr_gui_la_LIBADD = $(INTLLIBS) $(GTK_LIBS)
 libgebr_gui_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@
