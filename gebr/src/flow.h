@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_CB_FLOW_H_
-#define _GEBR_CB_FLOW_H_
+#ifndef __FLOW_H
+#define __FLOW_H
 
 #include <gtk/gtk.h>
 #include <geoxml.h>
@@ -48,4 +48,4 @@ flow_program_move_down(void);
 void
 flow_run(void);
 
-#endif //_GEBR_CB_FLOW_H_
+#endif //__FLOW_H

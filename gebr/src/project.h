@@ -15,21 +15,19 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_CB_PROJ_H_
-#define _GEBR_CB_PROJ_H_
+#ifndef __PROJECT_H
+#define __PROJECT_H
 
 #include <gtk/gtk.h>
 #include <geoxml.h>
 
 void
-project_populate_list(void);
+project_new(void);
 
 void
-project_new     (GtkMenuItem *menuitem,
-		 gpointer     user_data);
+project_delete(void);
 
 void
-project_delete     (GtkMenuItem *menuitem,
-		    gpointer     user_data);
+project_list_populate(void);
 
-#endif //_GEBR_CB_PROJ_H_
+#endif //__PROJECT_H

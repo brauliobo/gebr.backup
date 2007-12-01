@@ -32,7 +32,7 @@ gebr_SOURCES = main.c \
 	help.c \
 	job.c \
 	server.c client.c \
-	menus.c \
+	menu.c \
 	support.c \
 	interface.c \
 	ui_flow.c \
@@ -43,7 +43,7 @@ gebr_SOURCES = main.c \
 	ui_flow_edition.c \
 	ui_job_control.c \
 	ui_preferences.c \
-	ui_servers.c
+	ui_server.c
 noinst_HEADERS = \
 	cmdline.h \
 	gebr.h \
@@ -55,7 +55,7 @@ noinst_HEADERS = \
 	help.h \
 	job.h \
 	server.h client.h \
-	menus.h \
+	menu.h \
 	support.h \
 	interface.h \
 	ui_flow.h \
@@ -66,7 +66,7 @@ noinst_HEADERS = \
 	ui_flow_edition.h \
 	ui_job_control.h \
 	ui_preferences.h \
-	ui_servers.h
+	ui_server.h
 EXTRA_DIST = gebr.ggo
 
 GEBR_PIXMAPS_DIR = $(datadir)/gebr/pixmaps/

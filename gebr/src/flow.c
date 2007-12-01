@@ -52,7 +52,7 @@ flow_load(void)
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.flow_view));
 	if (gtk_tree_selection_get_selected (selection, &model, &iter) == FALSE) {
 		if (flow != NULL) {
-			gtk_list_store_clear(gebr.fseq_store);
+			gtk_list_store_clear(gebr.ui_flow_edition.fseq_store);
 			geoxml_document_free (GEOXML_DOC (flow));
 			flow = NULL;
 		}
@@ -62,9 +62,9 @@ flow_load(void)
 	/* free previous flow */
 	if (flow != NULL)
 		geoxml_document_free(GEOXML_DOC(gebr.flow));
-	gtk_list_store_clear(gebr.fseq_store);
+	gtk_list_store_clear(gebr.ui_flow_edition.fseq_store);
 
-	gtk_tree_model_get (GTK_TREE_MODEL (gebr.flow_store), &iter,
+	gtk_tree_model_get (GTK_TREE_MODEL (gebr.ui_flow_browse.store), &iter,
 				FB_FILENAME, &filename,
 				-1);
 
@@ -145,8 +145,10 @@ out:
 void
 flow_free(void)
 {
-	geoxml_document_free(GEOXML_DOC(gebr.flow));
-	gebr.flow = NULL;
+	if (gebr.flow != NULL) {
+		geoxml_document_free(GEOXML_DOC(gebr.flow));
+		gebr.flow = NULL;
+	}
 	flow_browse_info_update();
 }
 
@@ -163,8 +165,8 @@ flow_add_programs_to_view   (GeoXmlFlow * f)
 
 		/* Add to the GUI */
 		GtkTreeIter piter;
-		gtk_list_store_append (gebr.fseq_store, &piter);
-		gtk_list_store_set (gebr.fseq_store, &piter,
+		gtk_list_store_append (gebr.ui_flow_edition.fseq_store, &piter);
+		gtk_list_store_set (gebr.ui_flow_edition.fseq_store, &piter,
 				FSEQ_TITLE_COLUMN, geoxml_program_get_title(program),
 				FSEQ_MENU_FILE_NAME_COLUMN, menu,
 				FSEQ_MENU_INDEX, prog_index,
@@ -182,7 +184,7 @@ flow_add_programs_to_view   (GeoXmlFlow * f)
 		   else
 		      continue;
 
-		   gtk_list_store_set (gebr.fseq_store, &piter,
+		   gtk_list_store_set (gebr.ui_flow_edition.fseq_store, &piter,
 				       FSEQ_STATUS_COLUMN, pixbuf, -1);
 		}
 	}
@@ -251,8 +253,8 @@ flow_new(void)
 	geoxml_document_free(GEOXML_DOC(flow));
 
 	/* Add to the GUI */
-	gtk_list_store_append (gebr.flow_store, &iter);
-	gtk_list_store_set (gebr.flow_store, &iter,
+	gtk_list_store_append (gebr.ui_flow_browse.store, &iter);
+	gtk_list_store_set (gebr.ui_flow_browse.store, &iter,
 			FB_TITLE, title,
 			FB_FILENAME, flow_filename,
 			-1);
@@ -282,7 +284,7 @@ flow_delete(void)
       GString *flow_path;
       GString *message;
 
-      gtk_tree_model_get ( GTK_TREE_MODEL(gebr.flow_store), &iter,
+      gtk_tree_model_get ( GTK_TREE_MODEL(gebr.ui_flow_browse.store), &iter,
 			   FB_TITLE, &name,
 			   FB_FILENAME, &flow_filename,
 			   -1);
@@ -334,8 +336,8 @@ flow_delete(void)
       g_string_free(flow_path, TRUE);
 
       /* Finally, from the GUI */
-      gtk_list_store_remove (GTK_LIST_STORE (gebr.flow_store), &iter);
-      gtk_list_store_clear(gebr.fseq_store);
+      gtk_list_store_remove (GTK_LIST_STORE (gebr.ui_flow_browse.store), &iter);
+      gtk_list_store_clear(gebr.ui_flow_edition.fseq_store);
 
 out:
       g_free(name);
@@ -354,10 +356,10 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text)
 {
 	GtkTreeIter	iter;
 
-	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL (gebr.flow_store),
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL (gebr.ui_flow_browse.store),
 					&iter,
 					path_string);
-	gtk_list_store_set (gebr.flow_store, &iter,
+	gtk_list_store_set (gebr.ui_flow_browse.store, &iter,
 			FB_TITLE, new_text,
 			-1);
 
@@ -394,7 +396,7 @@ flow_program_remove(void)
 	geoxml_flow_remove_program(gebr.flow, program);
 
 	flow_save();
-	gtk_list_store_remove (GTK_LIST_STORE (gebr.fseq_store), &iter);
+	gtk_list_store_remove (GTK_LIST_STORE (gebr.ui_flow_edition.fseq_store), &iter);
 }
 
 /*
@@ -417,7 +419,7 @@ flow_program_move_down(void)
 		return;
 	}
 	next = iter;
-	if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (gebr.fseq_store), &next) == FALSE)
+	if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (gebr.ui_flow_edition.fseq_store), &next) == FALSE)
 		return;
 
 	/* Get index */
@@ -431,7 +433,7 @@ flow_program_move_down(void)
 	flow_save();
 
 	/* Update GUI */
-	gtk_list_store_move_after (gebr.fseq_store, &iter, &next);
+	gtk_list_store_move_after (gebr.ui_flow_edition.fseq_store, &iter, &next);
 }
 
 /*
@@ -455,7 +457,7 @@ flow_program_move_up(void)
 		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
 		return;
 	}
-	previous_path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.fseq_store), &iter);
+	previous_path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_flow_edition.fseq_store), &iter);
 	if (gtk_tree_path_prev(previous_path) == FALSE)
 		goto out;
 
@@ -470,9 +472,9 @@ flow_program_move_up(void)
 	flow_save();
 
 	/* View change */
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (gebr.fseq_store),
+	gtk_tree_model_get_iter (GTK_TREE_MODEL (gebr.ui_flow_edition.fseq_store),
 				&previous, previous_path);
-	gtk_list_store_move_before (gebr.fseq_store, &iter, &previous);
+	gtk_list_store_move_before (gebr.ui_flow_edition.fseq_store, &iter, &previous);
 
 out:	gtk_tree_path_free(previous_path);
 }

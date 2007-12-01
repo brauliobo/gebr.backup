@@ -24,12 +24,12 @@
 #define GTK_RESPONSE_DEFAULT GTK_RESPONSE_APPLY
 
 struct ui_parameters {
-	GtkWidget *	widget;
+	GtkWidget *	dialog;
 
 	int		program_index;
 	GtkWidget **	par_widgets;
 	int		par_widgets_number;
-}
+};
 
 struct ui_parameters *
 parameters_configure_setup_ui(void);

@@ -27,7 +27,6 @@
 #include "interface.h"
 #include "gebr.h"
 #include "support.h"
-#include "menus.h"
 #include "callbacks.h"
 
 /*
@@ -68,12 +67,6 @@ assembly_interface(void)
 
 	gebr.about = about_setup_ui();
 	gebr.ui_preferences = preferences_setup_ui();
-
-	/*
-	* Parameters dialog
-	*(to be created on the fly)
-	*/
-	gebr.parameters = NULL;
 
 	/* Create the main window */
 	gebr.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -170,17 +163,17 @@ assembly_project_menu(void)
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(project_new), NULL);
+			GTK_SIGNAL_FUNC(on_project_new_activate), NULL);
 	/* Delete entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(project_delete), NULL);
+			GTK_SIGNAL_FUNC(on_project_delete_activate), NULL);
 	/* Refresh entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_REFRESH, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(project_populate_list, NULL);
+			GTK_SIGNAL_FUNC(on_project_refresh_activate, NULL);
 
 	/* Separation line */
 	submenu = gtk_menu_item_new();
@@ -190,7 +183,7 @@ assembly_project_menu(void)
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(project_line_properties), NULL);
+			GTK_SIGNAL_FUNC(on_project_properties_activate), NULL);
 
 	menuitem = gtk_menu_item_new_with_label(_("Project"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
@@ -220,7 +213,7 @@ assembly_line_menu(void)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(line_new), NULL);
+			GTK_SIGNAL_FUNC(on_line_new_activate), NULL);
 	/*
 	* TODO: Add entry
 	*
@@ -237,7 +230,7 @@ assembly_line_menu(void)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(line_delete), NULL);
+			GTK_SIGNAL_FUNC(on_line_delete_activate), NULL);
 
 	/* Separation line */
 	submenu = gtk_menu_item_new();
@@ -247,7 +240,7 @@ assembly_line_menu(void)
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(project_line_properties), NULL);
+			GTK_SIGNAL_FUNC(on_line_properties_activate), NULL);
 
 	menuitem = gtk_menu_item_new_with_label(_("Line"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
@@ -277,17 +270,17 @@ assembly_flow_menu(void)
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(flow_new), NULL);
+			GTK_SIGNAL_FUNC(on_flow_new_activate), NULL);
 	/* Export entry */
 	submenu = gtk_image_menu_item_new_with_label(_("Export"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(flow_export), NULL);
+			GTK_SIGNAL_FUNC(on_flow_export_activate), NULL);
 	/* Delete entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(flow_delete), NULL);
+			GTK_SIGNAL_FUNC(on_flow_delete_activate), NULL);
 
 	/* Separation line */
 	submenu = gtk_menu_item_new();
@@ -297,17 +290,17 @@ assembly_flow_menu(void)
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(flow_properties), NULL);
+			GTK_SIGNAL_FUNC(on_flow_properties_activate), NULL);
 	/* Input/Output entry */
 	submenu = gtk_image_menu_item_new_with_label(_("Input/Output"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(flow_io), NULL);
+			GTK_SIGNAL_FUNC(on_flow_io_activate), NULL);
 	/* Execute entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(flow_run), NULL);
+			GTK_SIGNAL_FUNC(on_flow_execute_activate), NULL);
 
 	menuitem = gtk_menu_item_new_with_label(_("Flow"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
@@ -337,14 +330,12 @@ assembly_flow_components_menu(void)
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(flow_component_properties_set), NULL);
+			GTK_SIGNAL_FUNC(on_flow_component_properties_activate), NULL);
 	/* Refresh entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_REFRESH, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(menus_create_index), NULL);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(menu_list_populate), NULL);
+			GTK_SIGNAL_FUNC(on_flow_component_refresh_activate), NULL);
 
 	/* separator */
 	submenu = gtk_separator_menu_item_new();
@@ -355,23 +346,57 @@ assembly_flow_components_menu(void)
 	W.configured_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Configured"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), W.configured_menuitem);
 	g_signal_connect(	GTK_OBJECT(W.configured_menuitem), "activate",
-				GTK_SIGNAL_FUNC(flow_component_set_status), NULL);
+				GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
 	/* disabled */
 	radio_slist = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(W.configured_menuitem));
 	W.disabled_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Disabled"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), W.disabled_menuitem);
 	g_signal_connect(	GTK_OBJECT(W.disabled_menuitem), "activate",
-				GTK_SIGNAL_FUNC(flow_component_set_status), NULL);
+				GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
 	/* unconfigured */
 	radio_slist = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(W.disabled_menuitem));
 	W.unconfigured_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Unconfigured"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), W.unconfigured_menuitem);
 	g_signal_connect(	GTK_OBJECT(W.unconfigured_menuitem), "activate",
-				GTK_SIGNAL_FUNC(flow_component_set_status), NULL);
+				GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
 
 	menuitem = gtk_menu_item_new_with_label(_("Flow component"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
 	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
+
+	return menuitem;
+}
+
+/*
+ * Function: assembly_config_menu
+ * Assembly the config menu
+ *
+ */
+static GtkWidget *
+assembly_config_menu(void)
+{
+	GtkWidget *	menuitem;
+	GtkWidget *	menu;
+	GtkWidget *	submenu;
+
+	menu = gtk_menu_new();
+	gtk_menu_set_title(GTK_MENU(menu), _("Config menu"));
+
+	/* Preferences entry */
+	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+	g_signal_connect(GTK_OBJECT(submenu), "activate",
+			G_CALLBACK(on_configure_preferences_activate), NULL);
+
+	/* Server entry */
+	submenu =  gtk_image_menu_item_new_with_mnemonic(_("_Servers"));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+	g_signal_connect(GTK_OBJECT(submenu), "activate",
+			GTK_SIGNAL_FUNC(on_configure_servers_activate),
+			NULL);
+
+	menuitem = gtk_menu_item_new_with_label(_("Configure"));
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
 
 	return menuitem;
 }
@@ -394,8 +419,7 @@ assembly_help_menu(void)
 	/* About entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(gtk_widget_show),
-			GTK_WIDGET(W.about.dialog));
+			GTK_SIGNAL_FUNC(on_help_about_activate), NULL);
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 
@@ -403,43 +427,6 @@ assembly_help_menu(void)
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
 
 	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
-
-	return menuitem;
-}
-
-/*
- * Function: assembly_config_menu
- * Assembly the config menu
- *
- */
-static GtkWidget *
-assembly_config_menu(void)
-{
-	GtkWidget *	menuitem;
-	GtkWidget *	menu;
-	GtkWidget *	submenu;
-
-	menu = gtk_menu_new();
-	gtk_menu_set_title(GTK_MENU(menu), _("Config menu"));
-
-	/* Pref entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			G_CALLBACK(assembly_preference_win), NULL);
-
-	/* Server entry */
-	submenu =  gtk_image_menu_item_new_with_mnemonic(_("_Servers"));
-
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(assembly_server_win),
-			NULL);
-
-	menuitem = gtk_menu_item_new_with_label(_("Configure"));
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
 
 	return menuitem;
 }

@@ -18,16 +18,20 @@
 
 /*
  * File: callbacks.c
- * Callbacks
+ * Callbacks for notebook and menus items
  */
 
 #include "callbacks.h"
 #include "gebr.h"
-#include "ui_document.h"
+#include "project.h"
+#include "line.h"
+#include "flow.h"
+#include "menu.h"
+#include "ui_parameters.h"
 
 /*
  * Function: switch_page
- * Hide/Show the corresponding menu to the selected page
+ * Hide/Show the corresponding menus to the selected page
  *
  */
 void
@@ -61,4 +65,214 @@ switch_page(GtkNotebook * notebook, GtkNotebookPage * page, guint page_num)
 	default:
 		break;
 	}
+}
+
+/*
+ * Function: on_project_new_activate
+ * Call <project_new> from <project.c>
+ *
+ */
+void
+on_project_new_activate(void)
+{
+	project_new();
+}
+
+/*
+ * Function: on_project_delete_activate
+ * Call <project_delete> from <project.c>
+ *
+ */
+void
+on_project_delete_activate(void)
+{
+	project_delete();
+}
+
+/*
+ * Function: on_project_properties_activate
+ *
+ *
+ */
+void
+on_project_properties_activate(void)
+{
+	/* TODO: */
+}
+
+/*
+ * Function: on_project_refresh_activate
+ * Call <project_list_populate> from <project.c>
+ *
+ */
+void
+on_project_refresh_activate(void)
+{
+	project_list_populate();
+}
+
+/*
+ * Function: on_line_new_activate
+ * Call <line_new> from <line.c>
+ *
+ */
+void
+on_line_new_activate(void)
+{
+	line_new();
+}
+
+/*
+ * Function: on_line_delete_activate
+ * Call <line_delete> from <line.c>
+ *
+ */
+void
+on_line_delete_activate(void)
+{
+	line_delete();
+}
+
+/*
+ * Function: on_line_properties_activate
+ *
+ *
+ */
+void
+on_line_properties_activate(void)
+{
+	/* TODO: */
+}
+
+/*
+ * Function: on_flow_new_activate
+ * Call <flow_new> from <flow.c>
+ *
+ */
+void
+on_flow_new_activate(void)
+{
+	flow_new();
+}
+
+/*
+ * Function: on_flow_export_activate
+ * Call <flow_export> from <flow.c>
+ *
+ */
+void
+on_flow_export_activate(void)
+{
+	flow_export();
+}
+
+/*
+ * Function: on_flow_delete_activate
+ * Call <flow_delete> from <flow.c>
+ *
+ */
+void
+on_flow_delete_activate(void)
+{
+	flow_delete();
+}
+
+/*
+ * Function:
+ * Call <flow_new> from <flow.c>
+ *
+ */
+void
+on_flow_properties_activate(void)
+{
+
+}
+
+/*
+ * Function: on_flow_io_activate
+ *
+ *
+ */
+void
+on_flow_io_activate(void)
+{
+
+}
+
+/*
+ * Function: on_flow_execute_activate
+ * Call <flow_run> from <flow.c>
+ *
+ */
+void
+on_flow_execute_activate(void)
+{
+	flow_run();
+}
+
+/*
+ * Function: on_flow_component_properties_activate
+ *
+ *
+ */
+void
+on_flow_component_properties_activate(void)
+{
+	parameters_configure_setup_ui();
+}
+
+/*
+ * Function: on_flow_component_refresh_activate
+ *
+ *
+ */
+void
+on_flow_component_refresh_activate(void)
+{
+	menu_list_create_index();
+	menu_list_populate();
+}
+
+/*
+ * Function: on_flow_component_status_activate
+ *
+ *
+ */
+void
+on_flow_component_status_activate(GtkMenuItem * menuitem)
+{
+
+}
+
+/*
+ * Function: on_configure_preferences_activate
+ *
+ *
+ */
+void
+on_configure_preferences_activate(void)
+{
+
+}
+
+/*
+ * Function: on_configure_servers_activate
+ *
+ *
+ */
+void
+on_configure_servers_activate(void)
+{
+
+}
+
+/*
+ * Function: on_help_about_activate
+ *
+ *
+ */
+void
+on_help_about_activate(void)
+{
+	gtk_widget_show(gebr.about.dialog);
 }

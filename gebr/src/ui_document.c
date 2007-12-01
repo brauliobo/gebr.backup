@@ -126,17 +126,13 @@ document_properties_actions(GtkDialog * dialog, gint arg1, GeoXmlDocument * docu
 		geoxml_document_set_author(GEOXML_DOC(gebr.flow), gtk_entry_get_text(GTK_ENTRY(gebr.flow_prop.author)));
 		geoxml_document_set_email(GEOXML_DOC(gebr.flow), gtk_entry_get_text(GTK_ENTRY(gebr.flow_prop.email)));
 
-		/* Update flow title in flow_store */
-		{
-
-
+		/* FIXME: !!!!*/
+		/* Update flow title in ui_flow_browse.store */
 		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.flow_view));
-		if(gtk_tree_selection_get_selected(selection, &model, &iter)){
-
-			gtk_list_store_set(gebr.flow_store, &iter,
+		if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+			gtk_list_store_set(gebr.ui_flow_browse.store, &iter,
 					FB_TITLE, geoxml_document_get_title(GEOXML_DOC(gebr.flow)),
 					-1);
-		}
 		}
 
 		flow_save();

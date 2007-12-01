@@ -54,11 +54,11 @@ flow_browse_setup_ui(void)
 	gtk_paned_pack1(GTK_PANED(hpanel), scrolledwin, FALSE, FALSE);
 	gtk_widget_set_size_request(scrolledwin, 180, -1);
 
-	ui_flow_browse.flow_store = gtk_list_store_new(FB_N_COLUMN,
+	ui_flow_browse.store = gtk_list_store_new(FB_N_COLUMN,
 					G_TYPE_STRING,  /* Name(title for libgeoxml) */
 					G_TYPE_STRING); /* Filename */
 
-	ui_flow_browse.flow_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_browse.flow_store));
+	ui_flow_browse.flow_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_browse.store));
 
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, NULL);

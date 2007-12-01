@@ -22,99 +22,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <time.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <fnmatch.h>
 
-#include "cb_proj.h"
+#include "project.h"
 #include "gebr.h"
+#include "support.h"
+#include "support.h"
+#include "document.h"
 #include "flow.h"
 #include "line.h"
 
-/*
- * Function: project_populate_list
- * Reload the projets from the data directory
- */
-void
-project_populate_list(void)
-{
-	struct dirent *	file;
-	DIR *		dir;
-
-	if (access(gebr.pref.data_value->str, F_OK | R_OK | W_OK)) {
-		gebr_message(ERROR, TRUE, FALSE, "Unable to access data directory");
-		return;
-	}
-
-	if (gebr.proj_line_selection_path != NULL) {
-		gtk_tree_path_free(gebr.proj_line_selection_path);
-		gebr.proj_line_selection_path = NULL;
-	}
-	if ((dir = opendir (gebr.pref.data_value->str)) == NULL)
-		return;
-
-	/* Remove any previous menus from the list */
-	gtk_tree_store_clear (gebr.proj_line_store);
-
-	while ((file = readdir (dir)) != NULL) {
-		if (fnmatch ("*.prj", file->d_name, 1))
-			continue;
-
-		GeoXmlProject * prj;
-		GString *projectfn;
-
-		data_fname(file->d_name, &projectfn);
-		prj = project_load(projectfn->str);
-		g_string_free(projectfn, TRUE);
-
-		if (prj == NULL)
-			goto out;
-
-		/* Gtk stuff */
-		GtkTreeIter iproj, iline;
-
-		gtk_tree_store_append (gebr.proj_line_store, &iproj, NULL);
-		gtk_tree_store_set (gebr.proj_line_store, &iproj,
-				PL_TITLE, geoxml_document_get_title(GEOXML_DOC(prj)),
-				PL_FILENAME, geoxml_document_get_filename(GEOXML_DOC(prj)),
-				-1);
-
-		GeoXmlProjectLine * project_line;
-		geoxml_project_get_line(prj, &project_line, 0);
-		while (project_line != NULL) {
-			GeoXmlLine * line;
-			/* full path to the project and line */
-			GString *lne_path;
-			data_fname(geoxml_project_get_line_source(project_line), &lne_path);
-			line = line_load(lne_path->str);
-			g_string_free(lne_path, TRUE);
-			if (line == NULL) {
-				geoxml_project_remove_line(prj, project_line);
-				geoxml_document_save (GEOXML_DOC(prj), geoxml_document_get_filename(GEOXML_DOC(prj)));
-				continue;
-			}
-
-			gtk_tree_store_append (gebr.proj_line_store, &iline, &iproj);
-			gtk_tree_store_set (gebr.proj_line_store, &iline,
-					PL_TITLE, geoxml_document_get_title(GEOXML_DOC(line)),
-					PL_FILENAME, geoxml_project_get_line_source(project_line),
-					-1);
-
-			geoxml_document_free(GEOXML_DOC(line));
-			geoxml_project_next_line(&project_line);
-		}
-
-		/* reset part of flow GUI */
-		gtk_list_store_clear(gebr.flow_store);
-		gtk_list_store_clear(gebr.fseq_store);
-		flow_free();
-
-		geoxml_document_free (GEOXML_DOC(prj));
-	}
-
-out:	closedir (dir);
-}
+gchar * no_project_selected_error = _("No project selected");
 
 /*
  * Function: project_new
@@ -122,43 +42,31 @@ out:	closedir (dir);
  *
  */
 void
-project_new     (GtkMenuItem *menuitem,
-		 gpointer     user_data)
+project_new(void)
 {
-   GeoXmlProject *prj;
-   GtkTreeIter iter;
-   time_t t;
-   struct tm *lt;
-   char filename[20];
-   static const char * title = "New project";
+	GeoXmlProject *	project;
+	GtkTreeIter	iter;
+	gchar *		title;
+	GString *	filename;
 
-   time (&t);
-   lt = localtime (&t);
+	title = _("New project");
+	filename = document_assembly_filename(".prj");
 
-   strftime (filename, STRMAX, "%Y_%m", lt);
-   strcat (filename, "_XXXXXX");
-   mktemp (filename);
-   strcat (filename, ".prj");
+	project = geoxml_project_new();
+	geoxml_document_set_filename(GEOXML_DOC(project), filename->str);
+	geoxml_document_set_title(GEOXML_DOC(project), title);
+	geoxml_document_set_author(GEOXML_DOC(project), gebr.config.username->str);
+	geoxml_document_set_email(GEOXML_DOC(project), gebr.config.email->str);
+	document_save(GEOXML_DOC(project));
 
-   prj = geoxml_project_new();
-   geoxml_document_set_filename(GEOXML_DOC(prj), filename);
-   geoxml_document_set_title(GEOXML_DOC(prj), title);
-   geoxml_document_set_author (GEOXML_DOC(prj), gebr.pref.username_value->str);
-   geoxml_document_set_email (GEOXML_DOC(prj), gebr.pref.email_value->str);
+	gtk_tree_store_append(gebr.ui_project_line.store, &iter, NULL);
+	gtk_tree_store_set(gebr.ui_project_line.store, &iter,
+			PL_TITLE, title,
+			PL_FILENAME, filename,
+			-1);
 
-   gtk_tree_store_append (gebr.proj_line_store, &iter, NULL);
-   gtk_tree_store_set (gebr.proj_line_store, &iter,
-		       PL_TITLE, title,
-		       PL_FILENAME, filename,
-		       -1);
-
-   /* assembly the file path */
-   GString *str;
-
-   data_fname(filename, &str);
-   geoxml_document_save(GEOXML_DOC(prj), str->str);
-   geoxml_document_free(GEOXML_DOC(prj));
-   g_string_free(str, TRUE);
+	geoxml_document_free(GEOXML_DOC(project));
+	g_string_free(filename, TRUE);
 }
 
 /*
@@ -172,59 +80,137 @@ project_new     (GtkMenuItem *menuitem,
  * * Project's line files should be deleted as well.
  */
 void
-project_delete     (GtkMenuItem *menuitem,
-		    gpointer     user_data)
+project_delete(void)
 {
-   GtkTreeIter        iter;
-   GtkTreeSelection  *selection;
-   GtkTreeModel      *model;
-   static const char *no_project_selected_error = "No project selected";
+	GtkTreeIter		iter;
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreePath *		path;
 
-   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.proj_line_view));
+	gchar *			title;
+	gchar *			filename;
 
-   if (gtk_tree_selection_get_selected (selection, &model, &iter)){
-      GtkTreePath *path;
-      gchar       *name, *filename;
+	GString *		message;
+	int			nlines;
 
-      gtk_tree_model_get (model, &iter,
-			  PL_TITLE, &name,
-     			  PL_FILENAME, &filename,
-			  -1);
-      path = gtk_tree_model_get_path (model, &iter);
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_project_line.view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+		gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
+		return;
+	}
 
-      if (gtk_tree_path_get_depth(path) > 1)
-	 gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
-      else {
-	 char message[STRMAX];
-	 int nlines;
+	gtk_tree_model_get(model, &iter,
+			PL_TITLE, &title,
+			PL_FILENAME, &filename,
+			-1);
+	path = gtk_tree_model_get_path(model, &iter);
+	message = g_string_new(NULL);
+
+	if (gtk_tree_path_get_depth(path) == 2) {
+		gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
+		goto out;
+	}
 
 	/* TODO: If this project is not empty,
-	    prompt the user to take about erasing its lines */
+	prompt the user to take about erasing its lines */
 
-	 /* Delete each line of the project */
-	 if ((nlines = gtk_tree_model_iter_n_children (model, &iter)) > 0){
-	    sprintf (message, "Project '%s' still has %i lines", name, nlines);
-	    gebr_message(ERROR, TRUE, FALSE, message);
-	 }
-	 else {
-	    sprintf (message, "Erasing project '%s'", name);
-	    gebr_message(ERROR, TRUE, FALSE, message);
+	/* Delete each line of the project */
+	if ((nlines = gtk_tree_model_iter_n_children(model, &iter)) > 0) {
+		g_string_printf(message, _("Project '%s' still has %i lines"), title, nlines);
+		gebr_message(ERROR, TRUE, FALSE, message->str);
+	} else {
+		GString *	path;
 
-	    /* Remove the project from the store (and its children) */
-	    gtk_tree_store_remove (GTK_TREE_STORE (gebr.proj_line_store), &iter);
+		/* message user */
+		g_string_printf(message, _("Erasing project '%s'"), title);
+		gebr_message(ERROR, TRUE, TRUE, message->str);
 
-	    /* finally, remove it from the disk */
-	    GString *str;
+		/* Remove the project from the store (and its children) */
+		gtk_tree_store_remove(GTK_TREE_STORE (gebr.ui_project_line.store), &iter);
 
-	    data_fname(filename, &str);
-	    unlink(str->str);
-	    g_string_free(str, TRUE);
+		/* finally, remove it from the disk */
+		path = document_get_path(filename);
+		unlink(path->str);
 
-	 }
-      }
+		g_string_free(path, TRUE);
+	}
 
-      gtk_tree_path_free(path);
-   }
-   else
-      gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
+out:	g_free(title);
+	g_free(filename);
+	gtk_tree_path_free(path);
+	g_string_free(message, TRUE);
+}
+
+/*
+ * Function: project_list_populate
+ * Reload the projets from the data directory
+ */
+void
+project_list_populate(void)
+{
+	struct dirent *	file;
+	DIR *		dir;
+
+	if (access(gebr.config.data->str, F_OK | R_OK)) {
+		gebr_message(ERROR, TRUE, FALSE, _("Unable to access data directory"));
+		return;
+	}
+	if ((dir = opendir(gebr.config.data->str)) == NULL)
+		return;
+
+	/* free previous selection path */
+	if (gebr.ui_project_line.selection_path != NULL) {
+		gtk_tree_path_free(gebr.ui_project_line.selection_path);
+		gebr.ui_project_line.selection_path = NULL;
+	}
+	gtk_tree_store_clear(gebr.ui_project_line.store);
+	gtk_list_store_clear(gebr.ui_flow_browse.store);
+	gtk_list_store_clear(gebr.ui_flow_edition.fseq_store);
+	flow_free();
+
+	while ((file = readdir (dir)) != NULL) {
+		if (fnmatch("*.prj", file->d_name, 1))
+			continue;
+
+		GtkTreeIter		project_iter, line_iter;
+		GeoXmlProject *		project;
+		GeoXmlProjectLine *	project_line;
+
+		project = GEOXML_PROJECT(document_load(file->d_name));
+		if (project == NULL)
+			goto out;
+
+		/* Gtk stuff */
+		gtk_tree_store_append(gebr.ui_project_line.store, &project_iter, NULL);
+		gtk_tree_store_set(gebr.ui_project_line.store, &project_iter,
+				PL_TITLE, geoxml_document_get_title(GEOXML_DOC(project)),
+				PL_FILENAME, geoxml_document_get_filename(GEOXML_DOC(project)),
+				-1);
+
+		geoxml_project_get_line(project, &project_line, 0);
+		while (project_line != NULL) {
+			GeoXmlLine *	line;
+			/* full path to the project and line */
+
+			line = GEOXML_LINE(document_load(geoxml_project_get_line_source(project_line)));
+			if (line == NULL) {
+				geoxml_project_remove_line(project, project_line);
+				geoxml_document_save (GEOXML_DOC(project), geoxml_document_get_filename(GEOXML_DOC(project)));
+				continue;
+			}
+
+			gtk_tree_store_append(gebr.ui_project_line.store, &line_iter, &project_iter);
+			gtk_tree_store_set(gebr.ui_project_line.store, &line_iter,
+					PL_TITLE, geoxml_document_get_title(GEOXML_DOC(line)),
+					PL_FILENAME, geoxml_project_get_line_source(project_line),
+					-1);
+
+			geoxml_document_free(GEOXML_DOC(line));
+			geoxml_project_next_line(&project_line);
+		}
+
+		geoxml_document_free(GEOXML_DOC(project));
+	}
+
+out:	closedir (dir);
 }

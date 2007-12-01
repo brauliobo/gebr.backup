@@ -35,7 +35,7 @@
 #include "project.h"
 #include "server.h"
 #include "job.h"
-#include "menus.h"
+#include "menu.h"
 
 /*
  * Function: gebr_init

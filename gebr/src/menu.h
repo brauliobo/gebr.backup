@@ -30,9 +30,9 @@ GString *
 menu_get_path(const gchar * filename);
 
 int
-menu_list_populate(void)
+menu_list_populate(void);
 
 gboolean
 menu_list_create_index(void);
 
-#endif //_GEBR_MENUS_H_
+#endif //__MENU_H_

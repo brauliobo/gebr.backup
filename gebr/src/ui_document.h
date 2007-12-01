@@ -18,8 +18,6 @@
 #ifndef __DOCUMENT_H
 #define __DOCUMENT_H
 
-
-
 void
 document_properties_setup_ui(GeoXmlDocument * document);
 

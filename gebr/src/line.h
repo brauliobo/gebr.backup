@@ -15,21 +15,19 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_CB_LINE_H_
-#define _GEBR_CB_LINE_H_
+#ifndef __LINE_H
+#define __LINE_H
 
 #include <gtk/gtk.h>
 #include <geoxml.h>
 
 void
-line_new     (GtkMenuItem *menuitem,
-	      gpointer     user_data);
+line_new(void);
 
 void
-line_delete     (GtkMenuItem *menuitem,
-		 gpointer     user_data);
+line_delete(void);
 
 void
-line_load_flows (void);
+line_load_flows(void);
 
-#endif //_GEBR_CB_LINE_H_
+#endif //__LINE_H

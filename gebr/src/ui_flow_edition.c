@@ -20,7 +20,7 @@
 #include "support.h"
 #include "flow.h"
 #include "document.h"
-#include "menus.h"
+#include "menu.h"
 
 gchar * no_flow_comp_selected_error =	_("No flow component selected");
 gchar * no_menu_selected_error =	_("No menu selected");

@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_SERVER_H_
-#define _GEBR_SERVER_H_
+#ifndef __SERVER_H
+#define __SERVER_H
 
 #include <misc/gtcpsocket.h>
 #include <misc/protocol.h>
@@ -48,4 +48,4 @@ server_run_flow(struct server * server);
 void
 server_list_flows(struct server * server);
 
-#endif //_GEBR_SERVER_H_
+#endif //__SERVER_H

@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_CB_JOB_H_
-#define _GEBR_CB_JOB_H_
+#ifndef __JOB_H
+#define __JOB_H
 
 #include <gtk/gtk.h>
 #include <geoxml.h>
@@ -97,4 +97,4 @@ job_translate_status(GString * status);
 void
 job_update_status(struct job * job);
 
-#endif //_GEBR_CB_JOB_H_
+#endif //__JOB_H

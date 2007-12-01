@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_INTERFACE_H_
-#define _GEBR_INTERFACE_H_
+#ifndef __INTERFACE_H
+#define __INTERFACE_H
 
 #include <gtk/gtk.h>
 
@@ -32,4 +32,4 @@ enum {
 void
 assembly_interface(void);
 
-#endif //_GEBR_INTERFACE_H_
+#endif //__INTERFACE_H

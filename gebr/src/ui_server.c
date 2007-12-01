@@ -16,12 +16,8 @@
  */
 
 /*
- * File: ui_server_list.c
- * Assembly the main components of the interface
+ * File: ui_server.c
  *
- * This function assemblies the main window, preference and about
- * dialogs. All other subcomponents of the interface are implemented
- * in the files initiated by "ui_".
  */
 
 #include <string.h>
