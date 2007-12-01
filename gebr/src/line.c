@@ -27,9 +27,8 @@
 #include <unistd.h>
 
 #include "gebr.h"
-#include "callbacks.h"
-#include "cb_flow.h"
-#include "cb_proj.h"
+#include "flow.h"
+#include "project.h"
 
 const char *no_line_selected_error = "No line selected";
 const char *no_selection_error     = "Nothing selected";
@@ -86,7 +85,7 @@ line_new     (GtkMenuItem *menuitem,
 		/* gtk stuff */
 		gtk_tree_store_append (W.proj_line_store, &iline, &iter);
 		gtk_tree_store_set (W.proj_line_store, &iline,
-				PL_NAME, title,
+				PL_TITLE, title,
 				PL_FILENAME, lne_filename,
 				-1);
 
@@ -158,7 +157,7 @@ line_delete     (GtkMenuItem *menuitem,
       gchar       *name, *lne_filename;
 
       gtk_tree_model_get (model, &iter,
-			  PL_NAME, &name,
+			  PL_TITLE, &name,
 			  PL_FILENAME, &lne_filename,
 			  -1);
       path = gtk_tree_model_get_path (model, &iter);
@@ -289,9 +288,7 @@ line_load_flows (void)
 		/* reset part of GUI */
 		gtk_list_store_clear(W.flow_store);
 		gtk_list_store_clear(W.fseq_store);
-		geoxml_document_free (GEOXML_DOC (flow));
-		flow = NULL;
-		flow_info_update ();
+		flow_free();
 
 		/* check if the item is a project */
 		path = gtk_tree_model_get_path (model, &iter);
@@ -299,7 +296,7 @@ line_load_flows (void)
 			return;
 
 		gtk_tree_model_get (model, &iter,
-					PL_NAME, &name,
+					PL_TITLE, &name,
 					PL_FILENAME, &lne_filename,
 					-1);
 
@@ -323,23 +320,19 @@ line_load_flows (void)
 		while (line_flow != NULL) {
 			GtkTreeIter	fiter;
 			GeoXmlFlow *	flow;
-			GString *	flow_path;
 			gchar *		flow_filename;
 
 			flow_filename = (gchar*)geoxml_line_get_flow_source(line_flow);
-			data_fname(flow_filename, &flow_path);
-			flow = flow_load_path (flow_path->str);
-			g_string_free(flow_path, TRUE);
+			flow = GEOXML_FLOW(document_load(flow_path->str));
 			if (flow == NULL) {
 				geoxml_line_next_flow(&line_flow);
 				continue;
 			}
 
-			/* FIXME: empty title leads to seg. fault! */
 			/* add to the flow browser. */
-			gtk_list_store_append (W.flow_store, &fiter);
-			gtk_list_store_set (W.flow_store, &fiter,
-					FB_NAME, geoxml_document_get_title(GEOXML_DOC(flow)),
+			gtk_list_store_append(W.flow_store, &fiter);
+			gtk_list_store_set(W.flow_store, &fiter,
+					FB_TITLE, geoxml_document_get_title(GEOXML_DOC(flow)),
 					FB_FILENAME, flow_filename,
 					-1);
 

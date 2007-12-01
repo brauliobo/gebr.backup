@@ -31,7 +31,7 @@
 #include "ui_flow_edition.h"
 #include "ui_job_control.h"
 #include "ui_preferences.h"
-#include "ui_servers.h"
+#include "ui_server.h"
 #include "ui_flow.h"
 
 /* global variable of common needed stuff */
@@ -57,7 +57,7 @@ struct gebr {
 	struct ui_flow_edition		ui_flow_edition;
 	struct ui_job_control		ui_job_control;
 	struct ui_preferences		ui_preferences;
-	struct ui_servers		ui_servers;
+	struct ui_server_list		ui_server_list;
 	struct ui_flow_io		ui_flow_io;
 
 	struct config {
@@ -101,7 +101,7 @@ gebr_config_load(int argc, char ** argv);
 int
 gebr_config_reload(void);
 
-int
+gboolean
 gebr_config_save(void);
 
 void

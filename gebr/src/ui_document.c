@@ -134,13 +134,12 @@ document_properties_actions(GtkDialog * dialog, gint arg1, GeoXmlDocument * docu
 		if(gtk_tree_selection_get_selected(selection, &model, &iter)){
 
 			gtk_list_store_set(gebr.flow_store, &iter,
-					FB_NAME, geoxml_document_get_title(GEOXML_DOC(gebr.flow)),
+					FB_TITLE, geoxml_document_get_title(GEOXML_DOC(gebr.flow)),
 					-1);
 		}
 		}
 
 		flow_save();
-		flow_info_update();
 		break;
 	} default:                  /* does nothing */
 		break;

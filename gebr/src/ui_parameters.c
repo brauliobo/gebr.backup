@@ -20,16 +20,18 @@
  * Program's parameter window stuff
  */
 
-#include <geoxml.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <geoxml.h>
 
 #include "ui_parameters.h"
 #include "gebr.h"
 #include "parameters.h"
+#include "menus.h"
 
 /*
- * Internal structures and functions
+ * Prototypes
  */
 
 GtkWidget *
@@ -649,8 +651,7 @@ parameters_response(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_para
 		GeoXmlFlow *		menu;
 		GeoXmlProgram *		program;
 		gulong			index;
-		gchar *			menu_fn;
-		GString *               menu_path;
+		gchar *			menu_filename;
 
 		selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.fseq_view));
 		if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
@@ -664,11 +665,9 @@ parameters_response(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_para
 
 		/* get the program and its path on menu */
 		geoxml_flow_get_program(gebr.flow, &program, index);
-		geoxml_program_get_menu(program, &menu_fn, &index);
+		geoxml_program_get_menu(program, &menu_filename, &index);
 
-		if (menus_fname(menu_fn, &menu_path) != EXIT_SUCCESS)
-			break;
-		menu = flow_load_path (menu_path->str);
+		menu = menu_load(menu_filename);
 		if (menu == NULL)
 			break;
 

@@ -180,7 +180,7 @@ assembly_project_menu(void)
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_REFRESH, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(projects_refresh), NULL);
+			GTK_SIGNAL_FUNC(project_populate_list, NULL);
 
 	/* Separation line */
 	submenu = gtk_menu_item_new();
@@ -344,7 +344,7 @@ assembly_flow_components_menu(void)
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
 			GTK_SIGNAL_FUNC(menus_create_index), NULL);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(menus_populate), NULL);
+			GTK_SIGNAL_FUNC(menu_list_populate), NULL);
 
 	/* separator */
 	submenu = gtk_separator_menu_item_new();

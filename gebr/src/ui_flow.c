@@ -18,6 +18,7 @@
 #include "ui_flow.h"
 #include "gebr.h"
 #include "support.h"
+#include "ui_flow_browse.h"
 
 extern gchar * no_flow_selected_error;
 
@@ -102,7 +103,6 @@ flow_io_actions(GtkDialog *dialog, gint arg1)
 			gtk_entry_get_text(GTK_ENTRY(gebr.flow_io.error.entry)));
 
 		flow_save();
-		flow_info_update();
 		break;
 	default:
 		break;

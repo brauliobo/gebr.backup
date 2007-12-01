@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_UI_SERVERS_H_
-#define _GEBR_UI_SERVERS_H_
+#ifndef __UI_SERVERS_H
+#define __UI_SERVERS_H
 
 #include <gtk/gtk.h>
 
@@ -27,14 +27,14 @@ enum {
 	SERVER_N_COLUMN
 };
 
-struct ui_servers {
+struct ui_server_list {
 	GtkWidget *		dialog;
 
 	GtkListStore *		store;
 	GtkWidget *		view;
 };
 
-struct ui_servers
-servers_setup_ui(void);
+struct ui_server_list
+server_list_setup_ui(void);
 
-#endif //_GEBR_UI_SERVERS_H_
+#endif //__UI_SERVERS_H

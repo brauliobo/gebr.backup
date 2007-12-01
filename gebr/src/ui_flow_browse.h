@@ -20,7 +20,7 @@
 
 /* Store fields */
 enum {
-	FB_NAME = 0,
+	FB_TITLE = 0,
 	FB_FILENAME,
 	FB_N_COLUMN
 };
@@ -49,5 +49,8 @@ struct ui_flow_browse {
 
 struct ui_flow_browse
 flow_browse_setup_ui(void);
+
+void
+flow_browse_info_update(void);
 
 #endif //__UI_FLOW_BROWSE_H

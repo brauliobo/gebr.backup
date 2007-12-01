@@ -363,8 +363,7 @@ flow_edition_menu_show_help(void)
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
 
-	gchar *		        menu_fn;
-	GString *	        menu_path;
+	gchar *		        menu_filename;
 	GeoXmlFlow *		menu;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.menu_view));
@@ -377,20 +376,16 @@ flow_edition_menu_show_help(void)
 		return;
 	}
 
-	gtk_tree_model_get ( GTK_TREE_MODEL (gebr.menu_store), &iter,
-			MENU_FILE_NAME_COLUMN, &menu_fn,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.menu_store), &iter,
+			MENU_FILE_NAME_COLUMN, &menu_filename,
 			-1);
 
-	if (menus_fname(menu_fn, &menu_path) != EXIT_SUCCESS)
-		goto out;
-	menu = flow_load_path (menu_path->str);
+	menu = menu_load(menu_filename);
 	if (menu == NULL)
 		goto out;
-	else
-		g_string_free(menu_path, TRUE);
 
 	show_help((gchar*)geoxml_document_get_help(GEOXML_DOC(menu)), _("Menu help"),
 		(gchar*)geoxml_document_get_filename(GEOXML_DOC(menu)));
 
-out:	g_free(menu_fn);
+out:	g_free(menu_filename);
 }

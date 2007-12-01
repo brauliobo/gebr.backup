@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_MENUS_H_
-#define _GEBR_MENUS_H_
+#ifndef __MENU_H_
+#define __MENU_H_
 
 #include <glib.h>
 
@@ -30,9 +30,9 @@ GString *
 menu_get_path(const gchar * filename);
 
 int
-menus_populate(void);
+menu_list_populate(void)
 
 gboolean
-menus_create_index(void);
+menu_list_create_index(void);
 
 #endif //_GEBR_MENUS_H_

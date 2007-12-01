@@ -55,9 +55,9 @@ job_add(struct server * server, GString * jid,
 	GString * cmd_line, GString * output,
 	gboolean go_to);
 
-/**
- * Occurs when cleaned or its server is removed
- */
+void
+job_free(struct job * job);
+
 void
 job_delete(struct job * job);
 

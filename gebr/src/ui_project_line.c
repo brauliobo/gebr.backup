@@ -15,7 +15,19 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * File: ui_project_line.c
+ * Builds the "Project and Lines" UI and distribute callbacks
+ */
+
 #include "ui_project_line.h"
+
+/*
+ * Prototypes
+ */
+
+static void
+project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text)
 
 /*
  * Function: project_line_setup_ui
@@ -59,14 +71,14 @@ project_line_setup_ui(void)
 
 	g_object_set(renderer, "editable", TRUE, NULL);
 	g_signal_connect(GTK_OBJECT(renderer), "edited",
-			GTK_SIGNAL_FUNC(proj_line_rename), NULL);
+			GTK_SIGNAL_FUNC(ui_project_line.rename), NULL);
 
 	col = gtk_tree_view_column_new_with_attributes(_("Projects/lines index"), renderer, NULL);
-	gtk_tree_view_column_set_sort_column_id(col, PL_NAME);
+	gtk_tree_view_column_set_sort_column_id(col, PL_TITLE);
 	gtk_tree_view_column_set_sort_indicator(col, TRUE);
 
 	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_project_line.view), col);
-	gtk_tree_view_column_add_attribute(col, renderer, "text", PL_NAME);
+	gtk_tree_view_column_add_attribute(col, renderer, "text", PL_TITLE);
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_project_line.view));
 	gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
@@ -75,4 +87,39 @@ project_line_setup_ui(void)
 			GTK_SIGNAL_FUNC(line_load_flows), NULL);
 
 	ui_project_line.selection_path = NULL;
+}
+
+/*
+ * Function: project_line_rename
+ * Rename a projet or a line upon double click
+ */
+static void
+project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text)
+{
+	GtkTreeIter		iter;
+	gchar *			filename;
+	GeoXmlDocument *	document;
+
+	if (gtk_tree_model_get_iter_from_string(
+		GTK_TREE_MODEL (gebr.ui_project_line.store), &iter, path_string) == FALSE)
+		return;
+
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line.store), &iter,
+			PL_FILENAME, &filename,
+			-1);
+
+	/* TODO: remove line or project if it doesn't exist? */
+	document = document_load(filename);
+	if (document == NULL)
+		goto out;
+
+	/* change it on the xml. */
+	geoxml_document_set_title(document, new_text);
+	document_save(document);
+	geoxml_document_free(document);
+
+	/* store's change */
+	gtk_tree_store_set(gebr.ui_project_line.store, &iter, PL_TITLE, new_text, -1);
+
+out:	g_free(filename);
 }

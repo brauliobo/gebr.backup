@@ -22,7 +22,7 @@
 
 /* Store fields */
 enum {
-	PL_NAME = 0,
+	PL_TITLE = 0,
 	PL_FILENAME,
 	PL_N_COLUMN
 };

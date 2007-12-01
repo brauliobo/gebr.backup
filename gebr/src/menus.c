@@ -16,8 +16,8 @@
  */
 
 /*
- * File: menus.c
- * Populate menus into GUI (see <menus_populate>)
+ * File: menu.c
+ *
  */
 
 #include <geoxml.h>
@@ -28,14 +28,14 @@
 #include <dirent.h>
 #include <fnmatch.h>
 
-#include "menus.h"
+#include "menu.h"
 #include "gebr.h"
 #include "support.h"
 #include "document.h"
 
 /*
  * Function: menu_load
- * Look for a given menu filename and load it if found
+ * Look for a given menu _filename_ and load it if found
  */
 GeoXmlFlow *
 menu_load(const gchar * filename)
@@ -94,11 +94,11 @@ out:	return path;
 }
 
 /*
- * Function: menus_populate
+ * Function: menu_list_populate
  * Read index and add menus from it to the view
  */
 int
-menus_populate (void)
+menu_list_populate(void)
 {
 	FILE *		menuindex_fp;
 	gchar		fname[STRMAX];
@@ -251,7 +251,7 @@ scan_dir (const char *path, FILE *fp)
  * Returns TRUE if successful
  */
 gboolean
-menus_create_index(void)
+menu_list_create_index(void);
 {
 	GString *	path;
 	FILE *		menuindex;

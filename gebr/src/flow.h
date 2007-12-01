@@ -34,27 +34,18 @@ void
 flow_free(void);
 
 void
-flow_new     (GtkMenuItem *menuitem,
-	      gpointer     user_data);
+flow_new(void);
 
 void
-flow_delete     (GtkMenuItem *menuitem,
-		 gpointer     user_data);
+flow_delete(void);
 
 void
-flow_rename  (GtkCellRendererText *cell,
-	      gchar               *path_string,
-	      gchar               *new_text,
-	      gpointer             user_data);
+flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text);
 
 void
 flow_program_move_down(void);
 
 void
 flow_run(void);
-
-void
-flow_show_help                  (GtkButton *button,
-				 gpointer   user_data);
 
 #endif //_GEBR_CB_FLOW_H_

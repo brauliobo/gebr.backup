@@ -22,7 +22,7 @@
 #include <geoxml.h>
 
 void
-projects_refresh (void);
+project_populate_list(void);
 
 void
 project_new     (GtkMenuItem *menuitem,
@@ -31,11 +31,5 @@ project_new     (GtkMenuItem *menuitem,
 void
 project_delete     (GtkMenuItem *menuitem,
 		    gpointer     user_data);
-
-void
-proj_line_rename  (GtkCellRendererText *cell,
-		   gchar               *path_string,
-		   gchar               *new_text,
-		   gpointer             user_data);
 
 #endif //_GEBR_CB_PROJ_H_

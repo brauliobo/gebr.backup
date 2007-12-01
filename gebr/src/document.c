@@ -15,6 +15,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <time.h>
+#include <unistd.h>
+
+#include <misc/utils.h>
+
 #include "document.h"
 #include "gebr.h"
 #include "support.h"
@@ -28,10 +33,9 @@ document_load(const gchar * filename)
 {
 	GeoXmlDocument *	document;
 	GString *		path;
-	int			ret;
 
 	path = document_get_path(filename);
-	document = document_load_path(path);
+	document = document_load_path(path->str);
 	g_string_free(path, TRUE);
 
 	return document;
@@ -51,7 +55,7 @@ document_load_path(const gchar * path)
 		GString *	error;
 
 		error = g_string_new(NULL);
-		g_string_printf(error, _("Can't load document at %s: "), path->str);
+		g_string_printf(error, _("Can't load document at %s: "), path);
 		switch (ret) {
 		case GEOXML_RETV_DTD_SPECIFIED:
 			g_string_append(error, _("DTD specified"));
@@ -78,8 +82,24 @@ document_load_path(const gchar * path)
 }
 
 /*
+ * Function: document_save
+ * Save _document_ using its filename field at data directory.
+ */
+void
+document_save(GeoXmlDocument * document)
+{
+	GString *	path;
+
+	/* TODO: check save */
+	path = document_get_path(geoxml_document_get_filename(document));
+	geoxml_document_save(document, path->str);
+
+	g_string_free(path, TRUE);
+}
+
+/*
  * Function: document_get_path
- * Prefix filename with data dir path
+ * Prefix filename with data diretory path
  */
 GString *
 document_get_path(const gchar * filename)
@@ -90,4 +110,28 @@ document_get_path(const gchar * filename)
 	g_string_printf(path, "%s/%s", gebr.config.data->str, filename);
 
 	return path;
+}
+
+/*
+ * Function: document_assembly_filename
+ * Creates a filename for a document
+ * Creates a filename for a document using the current date and a random
+ * generated string and _extension_.
+ */
+GString *
+document_assembly_filename(const gchar * extension)
+{
+	time_t 		t;
+	struct tm *	lt;
+	gchar		date[21];
+	GString *	filename;
+
+	time(&t);
+	lt = localtime(&t);
+	strftime(date, 20, "%Y_%m_%d", lt);
+
+	filename = g_string_new(NULL);
+	g_string_printf(filename, "%s_%s.%s", date, make_temp_filename(), extension);
+
+	return filename;
 }

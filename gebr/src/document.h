@@ -27,7 +27,13 @@ document_load(const gchar * filename);
 GeoXmlDocument *
 document_load_path(const gchar * path);
 
+void
+document_save(GeoXmlDocument * document);
+
 GString *
-document_get_path(const gchar * filename)
+document_get_path(const gchar * filename);
+
+GString *
+document_assembly_filename(const gchar * extension);
 
 #endif //__DOCUMENT_H

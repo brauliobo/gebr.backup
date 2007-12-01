@@ -110,10 +110,14 @@ job_add(struct server * server, GString * jid,
 	return job;
 }
 
+/*
+ * Function: job_free
+ * Frees job structure.
+ * Only called when GêBR quits.
+ */
 void
-job_delete(struct job * job)
+job_free(struct job * job)
 {
-	gtk_list_store_remove(W.job_store, &job->iter);
 	g_string_free(job->title, TRUE);
 	g_string_free(job->jid, TRUE);
 	g_string_free(job->hostname, TRUE);
@@ -123,6 +127,18 @@ job_delete(struct job * job)
 	g_string_free(job->issues, TRUE);
 	g_string_free(job->output, TRUE);
 	g_free(job);
+}
+
+/*
+ * Function: job_delete
+ * Frees job structure and delete it from list of jobs.
+ * Occurs when cleaned or its server is removed
+ */
+void
+job_delete(struct job * job)
+{
+	gtk_list_store_remove(W.job_store, &job->iter);
+	job_free(job);
 
 	__job_clear_or_select_first();
 }
