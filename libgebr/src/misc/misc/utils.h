@@ -23,4 +23,10 @@
 gchar *
 make_temp_filename(void);
 
+int
+home_mode(void);
+
+gboolean
+gebr_create_config_dirs(void);
+
 #endif //__LIBGEBR_MISC_UTILS_H
