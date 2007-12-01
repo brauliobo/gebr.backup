@@ -15,16 +15,18 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEBR_GUI_ABOUT_H
-#define __LIBGEBR_GUI_ABOUT_H
+#ifndef __LIBGEBR_GUI_PIXMAPS_H
+#define __LIBGEBR_GUI_PIXMAPS_H
 
-#include <gtk/gtk.h>
+#include <gdk/gdkpixbuf.h>
 
-struct about {
-	GtkWidget *	dialog;
-};
+GdkPixbuf *
+pixmaps_gebr_icon_32x32(void);
 
-struct about
-about_setup_ui(const gchar * program, const gchar * description);
+GdkPixbuf *
+pixmaps_gebr_icon_64x64(void);
 
-#endif //__LIBGEBR_GUI_ABOUT_H
+GdkPixbuf *
+pixmaps_gebr_logo(void);
+
+#endif //__LIBGEBR_GUI_PIXMAPS_H

@@ -16,17 +16,18 @@
 
 lib_LTLIBRARIES = libgebr_gui.la
 libgebr_gui_la_SOURCES = \
-	about.c utils.c gtkfileentry.c
+	about.c utils.c gtkfileentry.c pixmaps.c
 
 libgebr_guisubincludedir = $(includedir)/libgebr/gui
 libgebr_guisubinclude_HEADERS = \
-	about.h utils.h gtkfileentry.h
+	about.h utils.h gtkfileentry.h pixmaps.h
 noinst_HEADERS = \
 	support.h
 EXTRA_DIST = ${noinst_HEADERS}
 
 INCLUDES = \
-	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\"
+	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\" \
+	-DPIXMAPS_DIR=\"$(datadir)/libgebr/pixmaps/\"
 AM_CFLAGS = -Wall $(GTK_CFLAGS)
 libgebr_gui_la_LIBADD = $(INTLLIBS) $(GTK_LIBS)
 libgebr_gui_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@

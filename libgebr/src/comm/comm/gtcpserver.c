@@ -91,7 +91,7 @@ g_tcp_server_class_init(GTcpServerClass * class)
 	GParamSpec *	pspec;
 
 	/* virtual */
-	class->parent.new_connection = __g_tcp_server_new_connection;
+	class->parent.new_connection = (typeof(class->parent.new_connection))__g_tcp_server_new_connection;
 
 	/* signals */
 	object_signals[NEW_CONNECTION] = g_signal_new("new-connection",

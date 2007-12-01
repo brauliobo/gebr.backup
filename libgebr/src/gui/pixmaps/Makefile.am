@@ -14,12 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = gui pixmaps
+libgebr_guipixmapsdir = $(datadir)/libgebr/pixmaps/
+libgebr_guipixmaps_DATA = \
+		gebr-icon-32x32.png \
+		gebr-icon-64x64.png \
+		gebr-logo.png
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = gebr-gui.pc
+EXTRA_DIST = $(libgebr_guipixmaps_DATA)
 
-EXTRA_DIST = gebr-gui.pc
-
-libgebr_guiincludedir=$(includedir)/libgebr
-libgebr_guiinclude_HEADERS = gui.h

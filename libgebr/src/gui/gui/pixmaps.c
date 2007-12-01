@@ -15,16 +15,43 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEBR_GUI_ABOUT_H
-#define __LIBGEBR_GUI_ABOUT_H
+#include "pixmaps.h"
 
-#include <gtk/gtk.h>
+GdkPixbuf *
+pixmaps_gebr_icon_32x32(void)
+{
+	static GdkPixbuf *	gebr_icon_32x32 = NULL;
 
-struct about {
-	GtkWidget *	dialog;
-};
+	if (gebr_icon_32x32 == NULL) {
+		GError * error;
+		gebr_icon_32x32 = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr-icon-32x32.png", &error);
+	}
 
-struct about
-about_setup_ui(const gchar * program, const gchar * description);
+	return gebr_icon_32x32;
+}
 
-#endif //__LIBGEBR_GUI_ABOUT_H
+GdkPixbuf *
+pixmaps_gebr_icon_64x64(void)
+{
+	static GdkPixbuf *	gebr_icon_64x64 = NULL;
+
+	if (gebr_icon_64x64 == NULL) {
+		GError * error;
+		gebr_icon_64x64 = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr-icon-64x64.png", &error);
+	}
+
+	return gebr_icon_64x64;
+}
+
+GdkPixbuf *
+pixmaps_gebr_logo(void)
+{
+	static GdkPixbuf *	gebr_logo = NULL;
+
+	if (gebr_logo == NULL) {
+		GError * error;
+		gebr_logo = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr-logo.png", &error);
+	}
+
+	return gebr_logo;
+}

@@ -15,3 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* include all library headers */
+#include <gui/about.c>
+#include <gui/gtkfileentry.c>
+#include <gui/pixmaps.c>
+#include <gui/utils.c>

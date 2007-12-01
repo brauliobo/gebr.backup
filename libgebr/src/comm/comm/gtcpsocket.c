@@ -53,8 +53,8 @@ static void
 g_tcp_socket_class_init(GTcpSocketClass * class)
 {
 	/* virtual */
-	class->parent.connected = __g_tcp_socket_connected;
-	class->parent.disconnected = __g_tcp_socket_disconnected;
+	class->parent.connected = (typeof(class->parent.connected))__g_tcp_socket_connected;
+	class->parent.disconnected = (typeof(class->parent.disconnected))__g_tcp_socket_disconnected;
 
 	/* signals */
 	object_signals[CONNECTED] = g_signal_new ("connected",
