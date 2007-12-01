@@ -21,4 +21,3 @@ libgebr_guipixmaps_DATA = \
 		gebr-logo.png
 
 EXTRA_DIST = $(libgebr_guipixmaps_DATA)
-

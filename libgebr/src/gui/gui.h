@@ -16,7 +16,7 @@
  */
 
 /* include all library headers */
-#include <gui/about.c>
-#include <gui/gtkfileentry.c>
-#include <gui/pixmaps.c>
-#include <gui/utils.c>
+#include <gui/about.h>
+#include <gui/gtkfileentry.h>
+#include <gui/pixmaps.h>
+#include <gui/utils.h>

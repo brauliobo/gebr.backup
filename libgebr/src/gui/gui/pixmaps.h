@@ -18,7 +18,7 @@
 #ifndef __LIBGEBR_GUI_PIXMAPS_H
 #define __LIBGEBR_GUI_PIXMAPS_H
 
-#include <gdk/gdkpixbuf.h>
+#include <gtk/gtk.h>
 
 GdkPixbuf *
 pixmaps_gebr_icon_32x32(void);

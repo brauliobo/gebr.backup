@@ -27,6 +27,6 @@ libgebrincludedir = $(includedir)/libgebr
 libgebrinclude_HEADERS = libgebr.h
 
 INCLUDES = -Igeoxml -Icomm -Igui -Imisc
-AM_CFLAGS = -Wall $(GLIB_CFLAGS) $(GOBJECT_CFLAGS)
+AM_CFLAGS = -Wall $(GTK_CFLAGS) $(GDOME2_CFLAGS)
 libgebr_la_LIBADD = geoxml/geoxml/libgebr_geoxml.la comm/comm/libgebr_comm.la gui/gui/libgebr_gui.la misc/misc/libgebr_misc.la
 libgebr_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@

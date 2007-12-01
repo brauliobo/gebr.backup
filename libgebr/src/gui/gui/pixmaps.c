@@ -24,6 +24,7 @@ pixmaps_gebr_icon_32x32(void)
 
 	if (gebr_icon_32x32 == NULL) {
 		GError * error;
+		error = NULL;
 		gebr_icon_32x32 = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr-icon-32x32.png", &error);
 	}
 
@@ -37,6 +38,7 @@ pixmaps_gebr_icon_64x64(void)
 
 	if (gebr_icon_64x64 == NULL) {
 		GError * error;
+		error = NULL;
 		gebr_icon_64x64 = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr-icon-64x64.png", &error);
 	}
 
@@ -50,6 +52,7 @@ pixmaps_gebr_logo(void)
 
 	if (gebr_logo == NULL) {
 		GError * error;
+		error = NULL;
 		gebr_logo = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr-logo.png", &error);
 	}
 

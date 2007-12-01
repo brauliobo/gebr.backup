@@ -73,6 +73,6 @@ rpm/libgebr.fedora.spec rpm/libgebr.opensuse.spec rpm/libgebr.mandriva.spec
 Makefile src/gebr.pc src/Makefile
 src/geoxml/Makefile src/geoxml/gebr-geoxml.pc src/geoxml/geoxml/Makefile src/geoxml/data/Makefile src/geoxml/validate/Makefile src/geoxml/doc/Makefile src/geoxml/test/Makefile
 src/comm/Makefile src/comm/gebr-comm.pc src/comm/comm/Makefile
-src/gui/Makefile src/gui/gebr-gui.pc src/gui/gui/Makefile
+src/gui/Makefile src/gui/gebr-gui.pc src/gui/gui/Makefile src/gui/pixmaps/Makefile
 src/misc/Makefile src/misc/gebr-misc.pc src/misc/misc/Makefile
 ])

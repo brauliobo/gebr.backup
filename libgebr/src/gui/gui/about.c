@@ -17,6 +17,7 @@
 
 #include "about.h"
 #include "support.h"
+#include "pixmaps.h"
 
 static void
 about_actions(GtkDialog * dialog, gint arg)
@@ -51,6 +52,7 @@ about_setup_ui(const gchar * program, const gchar * description)
 
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(about.dialog), program);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(about.dialog), "1.0"); /* FIXME: use version define */
+	gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(about.dialog), pixmaps_gebr_logo());
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about.dialog),
 					_("GêBR Core Team"));
 
