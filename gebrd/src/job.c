@@ -19,9 +19,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <misc/protocol.h>
-#include <misc/gtcpsocket.h>
-#include <misc/ghostaddress.h>
+#include <comm/protocol.h>
+#include <comm/gtcpsocket.h>
+#include <comm/ghostaddress.h>
 
 #include "job.h"
 #include "gebrd.h"

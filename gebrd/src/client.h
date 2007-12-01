@@ -19,8 +19,7 @@
 #define __CLIENT_H
 
 #include <glib.h>
-#include <misc/gtcpsocket.h>
-#include <misc/ssh.h>
+#include <comm/gtcpsocket.h>
 
 struct protocol;
 

@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <misc/protocol.h>
+#include <comm/protocol.h>
 
 #include "client.h"
 #include "gebrd.h"

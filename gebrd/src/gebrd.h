@@ -18,8 +18,8 @@
 #ifndef __GEBRD_H
 #define __GEBRD_H
 
-#include <misc/gtcpserver.h>
-#include <misc/gtcpsocket.h>
+#include <comm/gtcpserver.h>
+#include <comm/gtcpsocket.h>
 
 extern struct gebrd	gebrd;
 

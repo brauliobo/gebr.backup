@@ -17,12 +17,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <signal.h>
+#include <unistd.h>
 
-#include <misc.h>
+#include <comm.h>
+#include <misc/utils.h>
 #include <geoxml.h>
 
 #include "server.h"
@@ -40,7 +39,7 @@ server_init(void)
 	struct sigaction  act;
 
 	/* run path */
-	run_filename = g_string_new(getenv("HOME"));
+	run_filename = g_string_new(NULL);
 
 	/* protocol */
 	protocol_init();
@@ -59,34 +58,14 @@ server_init(void)
 	g_signal_connect(gebrd.tcp_server, "new-connection",
 			G_CALLBACK(server_new_connection), NULL);
 
-	/* Test for gebr conf dir */
-	g_string_append(run_filename, "/.gebr");
-	if (g_file_test(run_filename->str, G_FILE_TEST_IS_DIR | G_FILE_TEST_EXISTS) == FALSE) {
-	   struct stat	home_stat;
-	   gchar *	home = getenv("HOME");
-	   stat(home, &home_stat);
-
-	   if (mkdir(run_filename->str, home_stat.st_mode)){
-	      ret = FALSE;
-	      goto out;
-	   }
+	/* from libgebr-misc */
+	if (gebr_create_config_dirs() == FALSE) {
+		g_print("Could not access GêBR configuration directories.\n");
+		goto out;
 	}
 
-	/* Test for .gebr/run conf dir */
-	g_string_append(run_filename, "/run");
-	if (g_file_test(run_filename->str, G_FILE_TEST_IS_DIR | G_FILE_TEST_EXISTS) == FALSE) {
-	   struct stat	home_stat;
-	   gchar *	home = getenv("HOME");
-	   stat(home, &home_stat);
-
-	   if (mkdir(run_filename->str, home_stat.st_mode)){
-	      ret = FALSE;
-	      goto out;
-	   }
-	}
-
-	g_string_append(run_filename, "/gebrd.run");
 	/* write on user's home directory a file with a port */
+	g_string_printf(run_filename, "%s/.gebr/run/gebrd.run", getenv("HOME"));
 	if (g_file_test(run_filename->str, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR) == TRUE) {
 		g_print("Run file (~/.gebr/run/gebrd.run) already exists or is not a regular file\n");
 		ret = FALSE;
@@ -97,12 +76,9 @@ server_init(void)
 		ret = FALSE;
 		goto out;
 	}
-	fprintf(run_fp, "%d\n", g_tcp_server_server_port(gebrd.tcp_server));
-	fclose(run_fp);
 
-
-	/* connecting signals TERM */
-	act.sa_sigaction = &gebrd_quit;
+	/* connecting signal TERM */
+	act.sa_sigaction = (typeof(act.sa_sigaction))&gebrd_quit;
 	sigemptyset(&act.sa_mask);
 	sigaction(SIGTERM, &act, NULL);
 
