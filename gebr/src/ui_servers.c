@@ -70,7 +70,7 @@ servers_setup_ui(void)
 
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), entry, FALSE, TRUE, 0);
 
-	gebr.server_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gebr.server_store));
+	gebr.server_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gebr.ui_servers.store));
 
 	renderer = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes("Servers", renderer, NULL);
@@ -118,11 +118,11 @@ servers_add(GtkEntry * entry)
 	gboolean	valid;
 
 	/* check if it is already in list */
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(W.server_store), &iter);
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(W.ui_servers.store), &iter);
 	while (valid) {
 		gchar *	server;
 
-		gtk_tree_model_get(GTK_TREE_MODEL(W.server_store), &iter,
+		gtk_tree_model_get(GTK_TREE_MODEL(W.ui_servers.store), &iter,
 				SERVER_ADDRESS, &server,
 				-1);
 
@@ -137,11 +137,11 @@ servers_add(GtkEntry * entry)
 		}
 
 		g_free(server);
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(W.server_store), &iter);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(W.ui_servers.store), &iter);
 	}
 
-	gtk_list_store_append(W.server_store, &iter);
-	gtk_list_store_set(W.server_store, &iter,
+	gtk_list_store_append(W.ui_servers.store, &iter);
+	gtk_list_store_set(W.ui_servers.store, &iter,
 			SERVER_ADDRESS, gtk_entry_get_text(entry),
 			SERVER_POINTER, server_new(gtk_entry_get_text(entry)),
 			-1);
@@ -164,10 +164,10 @@ servers_remove(void)
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
 		return;
 
-	gtk_tree_model_get(GTK_TREE_MODEL(W.server_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(W.ui_servers.store), &iter,
 			SERVER_POINTER, &server,
 			-1);
 	server_free(server);
 
-	gtk_list_store_remove(GTK_LIST_STORE(W.server_store), &iter);
+	gtk_list_store_remove(GTK_LIST_STORE(W.ui_servers.store), &iter);
 }

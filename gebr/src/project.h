@@ -21,9 +21,6 @@
 #include <gtk/gtk.h>
 #include <geoxml.h>
 
-GeoXmlProject *
-project_load (gchar * path);
-
 void
 projects_refresh (void);
 

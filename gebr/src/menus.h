@@ -20,20 +20,19 @@
 
 #include <glib.h>
 
-extern const gchar * no_menu_selected_error;
-extern const gchar * selected_menu_instead_error;
+GeoXmlFlow *
+menu_load(const gchar * filename);
+
+GeoXmlFlow *
+menu_load_path(const gchar * path);
+
+GString *
+menu_get_path(const gchar * filename);
 
 int
 menus_populate(void);
 
 gboolean
 menus_create_index(void);
-
-int
-menus_fname(const gchar *menu,
-	    GString    **fname);
-
-void
-menu_show_help (void);
 
 #endif //_GEBR_MENUS_H_

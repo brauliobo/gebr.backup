@@ -304,7 +304,7 @@ server_run_flow(struct server * server)
 	}
 
 	/* removes flow's help */
-	flow_wnh = GEOXML_FLOW(geoxml_document_clone(GEOXML_DOC(flow)));
+	flow_wnh = GEOXML_FLOW(geoxml_document_clone(GEOXML_DOC(gebr.flow)));
 	geoxml_document_set_help(GEOXML_DOC(flow_wnh), "");
 	/* removes programs' help */
 	geoxml_flow_get_program(flow_wnh, &program, 0);

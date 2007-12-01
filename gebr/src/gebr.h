@@ -18,39 +18,24 @@
 #ifndef __GEBR_H
 #define __GEBR_H
 
-#include <glib.h>
+#include <gtk/gtk.h>
 
 #include <geoxml.h>
 #include <gui/about.h>
-#include <misc/utils.h>
+#include <misc/log.h>
 
 #include "cmdline.h"
+#include "interface.h"
 #include "ui_project_line.h"
 #include "ui_flow_browse.h"
 #include "ui_flow_edition.h"
 #include "ui_job_control.h"
 #include "ui_preferences.h"
 #include "ui_servers.h"
+#include "ui_flow.h"
 
 /* global variable of common needed stuff */
 extern struct gebr gebr;
-
-/* Menubar entries */
-enum {
-	MENUBAR_PROJECT,
-	MENUBAR_LINE,
-	MENUBAR_FLOW,
-	MENUBAR_FLOW_COMPONENTS,
-	MENUBAR_N
-};
-
-typedef struct {
-	GtkWidget *		win;
-
-	gebr_save_widget_t	input;
-	gebr_save_widget_t	output;
-	gebr_save_widget_t	error;
-} gebr_flow_io_t;
 
 struct gebr {
 	GtkWidget *			window;
@@ -73,12 +58,7 @@ struct gebr {
 	struct ui_job_control		ui_job_control;
 	struct ui_preferences		ui_preferences;
 	struct ui_servers		ui_servers;
-
-		/* flow info window */
-	gebr_flow_info_t	flow_info;
-
-	/* flow io window. */
-	gebr_flow_io_t		flow_io;
+	struct ui_flow_io		ui_flow_io;
 
 	struct config {
 		/* config options from gengetopt
@@ -115,7 +95,7 @@ gebr_init(void);
 gboolean
 gebr_quit(void);
 
-int
+void
 gebr_config_load(int argc, char ** argv);
 
 int

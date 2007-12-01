@@ -20,6 +20,15 @@
 
 #include <gtk/gtk.h>
 
+/* Menubar entries */
+enum {
+	MENUBAR_PROJECT = 0,
+	MENUBAR_LINE,
+	MENUBAR_FLOW,
+	MENUBAR_FLOW_COMPONENTS,
+	MENUBAR_N
+};
+
 void
 assembly_interface(void);
 

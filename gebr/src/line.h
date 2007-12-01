@@ -21,9 +21,6 @@
 #include <gtk/gtk.h>
 #include <geoxml.h>
 
-GeoXmlLine *
-line_load (gchar * path);
-
 void
 line_new     (GtkMenuItem *menuitem,
 	      gpointer     user_data);

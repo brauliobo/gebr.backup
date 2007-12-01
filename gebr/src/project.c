@@ -43,7 +43,7 @@ projects_refresh (void)
 	DIR *		dir;
 
 	if (access(W.pref.data_value->str, F_OK | R_OK | W_OK)) {
-		log_message(INTERFACE, "Unable to access data directory", TRUE);
+		gebr_message(ERROR, TRUE, FALSE, "Unable to access data directory");
 		return;
 	}
 
@@ -196,7 +196,7 @@ project_delete     (GtkMenuItem *menuitem,
       path = gtk_tree_model_get_path (model, &iter);
 
       if (gtk_tree_path_get_depth(path) > 1)
-	 log_message(INTERFACE, no_project_selected_error, TRUE);
+	 gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
       else {
 	 char message[STRMAX];
 	 int nlines;
@@ -207,11 +207,11 @@ project_delete     (GtkMenuItem *menuitem,
 	 /* Delete each line of the project */
 	 if ((nlines = gtk_tree_model_iter_n_children (model, &iter)) > 0){
 	    sprintf (message, "Project '%s' still has %i lines", name, nlines);
-	    log_message(INTERFACE, message, TRUE);
+	    gebr_message(ERROR, TRUE, FALSE, message);
 	 }
 	 else {
 	    sprintf (message, "Erasing project '%s'", name);
-	    log_message(INTERFACE, message, TRUE);
+	    gebr_message(ERROR, TRUE, FALSE, message);
 
 	    /* Remove the project from the store (and its children) */
 	    gtk_tree_store_remove (GTK_TREE_STORE (W.proj_line_store), &iter);
@@ -229,7 +229,7 @@ project_delete     (GtkMenuItem *menuitem,
       gtk_tree_path_free(path);
    }
    else
-      log_message(INTERFACE, no_project_selected_error, TRUE);
+      gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
 }
 
 /*
@@ -260,13 +260,13 @@ proj_line_rename  (GtkCellRendererText *cell,
       if (gtk_tree_store_iter_depth(W.proj_line_store, &iter) > 0) {
          doc = GEOXML_DOC(line_load(path->str));
          if (doc == NULL) {
-	    log_message(INTERFACE, "Unable to access this line", TRUE);
+	    gebr_message(ERROR, TRUE, FALSE, "Unable to access this line");
 	    goto out;
          }
       } else {
          doc = GEOXML_DOC(project_load(path->str));
          if (doc == NULL) {
-	    log_message(INTERFACE, "Unable to access this project", TRUE);
+	    gebr_message(ERROR, TRUE, FALSE, "Unable to access this project");
 	    goto out;
          }
       }

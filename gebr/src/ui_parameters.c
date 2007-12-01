@@ -148,7 +148,7 @@ parameters_configure_setup_ui(void)
 
 	/* Starts reading program and its parameters
 	 */
-	geoxml_flow_get_program(flow, &program, gebr.program_index);
+	geoxml_flow_get_program(gebr.flow, &program, gebr.program_index);
 
 	/* Program title in bold */
 	{
@@ -491,7 +491,7 @@ parameters_response(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_para
 		GeoXmlProgramParameter *	parameter;
 		int				i;
 
-		geoxml_flow_get_program(flow, &program, W.program_index);
+		geoxml_flow_get_program(gebr.flow, &program, W.program_index);
 		parameter = geoxml_program_get_first_parameter(program);
 
 		/* Set program state to configured */
@@ -583,7 +583,7 @@ parameters_response(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_para
 		GeoXmlProgramParameter	*	program_parameter;
 		int			 	i;
 
-		geoxml_flow_get_program(flow, &program, W.program_index);
+		geoxml_flow_get_program(gebr.flow, &program, W.program_index);
 		program_parameter = geoxml_program_get_first_parameter(program);
 		for (i = 0; i < W.parwidgets_number; i++, geoxml_program_parameter_next(&program_parameter)) {
 			gchar *	default_str;
@@ -653,8 +653,8 @@ parameters_response(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_para
 		GString *               menu_path;
 
 		selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.fseq_view));
-		if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
-			log_message(INTERFACE, "No flow component selected", TRUE);
+		if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+			gebr_message(ERROR, TRUE, FALSE, _("No flow component selected"));
 			return;
 		}
 
@@ -663,7 +663,7 @@ parameters_response(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_para
 		gtk_tree_path_free(path);
 
 		/* get the program and its path on menu */
-		geoxml_flow_get_program(flow, &program, index);
+		geoxml_flow_get_program(gebr.flow, &program, index);
 		geoxml_program_get_menu(program, &menu_fn, &index);
 
 		if (menus_fname(menu_fn, &menu_path) != EXIT_SUCCESS)

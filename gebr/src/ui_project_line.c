@@ -1,10 +1,10 @@
 /*   GÍBR - An environment for seismic processing.
- *   Copyright (C) 2007 GÍBR core team (http://gebr.sourceforge.net)
+ *   Copyright(C) 2007 GÍBR core team(http://ui_project_line.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *  (at your option) any later version.
  *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,40 +39,40 @@ project_line_setup_ui(void)
 	GtkCellRenderer *renderer;
 
 	/* Create projects/lines ui_project_line.widget */
-	ui_project_line.widget = gtk_vbox_new (FALSE, 0);
+	ui_project_line.widget = gtk_vbox_new(FALSE, 0);
 
 	/* Project and line tree */
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
-	gtk_container_add (GTK_CONTAINER (ui_project_line.widget), scrolledwin);
+	gtk_container_add(GTK_CONTAINER(ui_project_line.widget), scrolledwin);
 
-	gebr.proj_line_store = gtk_tree_store_new(PL_N_COLUMN,
-						G_TYPE_STRING,  /* Name (title for libgeoxml) */
+	ui_project_line.store = gtk_tree_store_new(PL_N_COLUMN,
+						G_TYPE_STRING,  /* Name (title for libgebr-geoxml) */
 						G_TYPE_STRING); /* Filename */
 
-	gebr.proj_line_view = gtk_tree_view_new_with_model
-	(GTK_TREE_MODEL (gebr.proj_line_store));
+	ui_project_line.view = gtk_tree_view_new_with_model
+	(GTK_TREE_MODEL(ui_project_line.store));
 
-	gtk_container_add (GTK_CONTAINER (scrolledwin), gebr.proj_line_view);
+	gtk_container_add(GTK_CONTAINER(scrolledwin), ui_project_line.view);
 
 	/* Projects/lines column */
-	renderer = gtk_cell_renderer_text_new ();
+	renderer = gtk_cell_renderer_text_new();
 
-	g_object_set (renderer, "editable", TRUE, NULL);
-	g_signal_connect (GTK_OBJECT (renderer), "edited",
-			GTK_SIGNAL_FUNC (proj_line_rename), NULL );
+	g_object_set(renderer, "editable", TRUE, NULL);
+	g_signal_connect(GTK_OBJECT(renderer), "edited",
+			GTK_SIGNAL_FUNC(proj_line_rename), NULL);
 
-	col = gtk_tree_view_column_new_with_attributes ("Projects/lines index", renderer, NULL);
-	gtk_tree_view_column_set_sort_column_id (col, PL_NAME);
-	gtk_tree_view_column_set_sort_indicator (col, TRUE);
+	col = gtk_tree_view_column_new_with_attributes(_("Projects/lines index"), renderer, NULL);
+	gtk_tree_view_column_set_sort_column_id(col, PL_NAME);
+	gtk_tree_view_column_set_sort_indicator(col, TRUE);
 
-	gtk_tree_view_append_column (GTK_TREE_VIEW (gebr.proj_line_view), col);
-	gtk_tree_view_column_add_attribute (col, renderer, "text", PL_NAME);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_project_line.view), col);
+	gtk_tree_view_column_add_attribute(col, renderer, "text", PL_NAME);
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.proj_line_view));
-	gtk_tree_selection_set_mode (selection, GTK_SELECTION_BROWSE);
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_project_line.view));
+	gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
 
-	g_signal_connect (GTK_OBJECT (gebr.proj_line_view), "cursor-changed",
-			GTK_SIGNAL_FUNC (line_load_flows), NULL );
+	g_signal_connect(GTK_OBJECT(ui_project_line.view), "cursor-changed",
+			GTK_SIGNAL_FUNC(line_load_flows), NULL);
 
-	gebr.proj_line_selection_path = NULL;
+	ui_project_line.selection_path = NULL;
 }

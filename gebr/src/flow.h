@@ -21,10 +21,6 @@
 #include <gtk/gtk.h>
 #include <geoxml.h>
 
-
-GeoXmlFlow *
-flow_load_path(gchar * path);
-
 void
 flow_load(void);
 
@@ -32,7 +28,10 @@ int
 flow_save   (void);
 
 void
-flow_export();
+flow_export(void);
+
+void
+flow_free(void);
 
 void
 flow_new     (GtkMenuItem *menuitem,
@@ -50,14 +49,6 @@ flow_rename  (GtkCellRendererText *cell,
 
 void
 flow_program_move_down(void);
-
-void
-flow_io (void);
-
-void
-flow_io_actions			(GtkDialog *dialog,
-				 gint       arg1,
-				 gpointer   user_data);
 
 void
 flow_run(void);

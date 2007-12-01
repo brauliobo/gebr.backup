@@ -19,9 +19,8 @@
 #define _GEBR_CALLBACKS_H_
 
 #include <gtk/gtk.h>
-#include <glib.h>
 
 void
-switch_page(GtkNotebook * notebook, GtkNotebookPage * page, guint page_num)
+switch_page(GtkNotebook * notebook, GtkNotebookPage * page, guint page_num);
 
 #endif //_GEBR_CALLBACKS_H_

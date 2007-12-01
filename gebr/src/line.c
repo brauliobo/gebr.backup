@@ -34,38 +34,6 @@
 const char *no_line_selected_error = "No line selected";
 const char *no_selection_error     = "Nothing selected";
 
-/* Function: line_load
- * Load a line from its path, handling errors
- */
-GeoXmlLine *
-line_load (gchar * path)
-{
-	GeoXmlDocument * doc;
-	int ret;
-
-	/* TODO: handle errors in a different way, maybe using statusbar */
-	if ((ret = geoxml_document_load (&doc, path)))
-		switch (ret) {
-		case GEOXML_RETV_DTD_SPECIFIED:
-			printf("dtd specified\n");
-			break;
-		case GEOXML_RETV_INVALID_DOCUMENT:
-			printf("invalid document\n");
-			break;
-		case GEOXML_RETV_CANT_ACCESS_FILE:
-			printf("can't access file\n");
-			break;
-		case GEOXML_RETV_CANT_ACCESS_DTD:
-			printf("can't access dtd\n");
-			break;
-		default:
-			printf("unspecified error\n");
-			break;
-		}
-
-	return GEOXML_LINE(doc);
-}
-
 /*
  * Function: line_new
  * Create a new line
@@ -85,8 +53,8 @@ line_new     (GtkMenuItem *menuitem,
 	gchar *			prj_filename;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (W.proj_line_view));
-	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
-		log_message(INTERFACE, no_selection_error, TRUE);
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+		gebr_message(ERROR, TRUE, FALSE, no_selection_error);
 		return;
 	}
 
@@ -96,7 +64,7 @@ line_new     (GtkMenuItem *menuitem,
 	path = gtk_tree_model_get_path (model, &iter);
 
 	if (gtk_tree_path_get_depth(path) > 1) {
-		log_message(INTERFACE, no_project_selected_error, TRUE);
+		gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
 		gtk_tree_path_free(path);
 		g_free(prj_filename);
 		return;
@@ -196,7 +164,7 @@ line_delete     (GtkMenuItem *menuitem,
       path = gtk_tree_model_get_path (model, &iter);
 
       if (gtk_tree_path_get_depth(path) < 2)
-	 log_message(INTERFACE, no_line_selected_error, TRUE);
+	 gebr_message(ERROR, TRUE, FALSE, no_line_selected_error);
       else {
 	    GtkTreeIter  piter;
 	    GString     *message;
@@ -214,7 +182,7 @@ line_delete     (GtkMenuItem *menuitem,
 	    g_string_append(message, name);
 	    g_string_append(message, "'");
 
-	    log_message(INTERFACE, message->str, TRUE);
+	    gebr_message(ERROR, TRUE, FALSE, message->str);
 	    g_string_free(message, TRUE);
 
 	    /* Assembly paths */
@@ -258,11 +226,11 @@ line_delete     (GtkMenuItem *menuitem,
 	    GeoXmlLineFlow * line_flow;
 	    geoxml_line_get_flow(line, &line_flow, 0);
 	    while (line_flow != NULL) {
-		GString *flw_path;
+		GString *flow_path;
 
-		data_fname(geoxml_line_get_flow_source(line_flow), &flw_path);
-		unlink (flw_path->str);
-		g_string_free(flw_path, TRUE);
+		data_fname(geoxml_line_get_flow_source(line_flow), &flow_path);
+		unlink (flow_path->str);
+		g_string_free(flow_path, TRUE);
 
 		geoxml_line_next_flow(&line_flow);
 	    }
@@ -275,9 +243,7 @@ line_delete     (GtkMenuItem *menuitem,
 	    /* Clear the flow list */
             gtk_list_store_clear (W.flow_store);
 	    gtk_list_store_clear (W.fseq_store);
-	    geoxml_document_free(GEOXML_DOC(flow));
-	    flow = NULL;
-	    flow_info_update ();
+	    flow_free();
 	    g_string_free(prj_path, TRUE);
 	    g_string_free(lne_path, TRUE);
       }
@@ -288,7 +254,7 @@ out:
       g_free(lne_filename);
 
    } else
-	   log_message(INTERFACE, no_selection_error, TRUE);
+	   gebr_message(ERROR, TRUE, FALSE, no_selection_error);
 }
 
 /*
@@ -348,21 +314,22 @@ line_load_flows (void)
 		g_string_free(lne_path, TRUE);
 
 		if (line == NULL) {
-			log_message(INTERFACE, "Unable to load line", TRUE);
+			gebr_message(ERROR, TRUE, FALSE, "Unable to load line");
 			goto out;
 		}
 
 		GeoXmlLineFlow * line_flow;
 		geoxml_line_get_flow(line, &line_flow, 0);
 		while (line_flow != NULL) {
-			GtkTreeIter  fiter;
-			GeoXmlFlow  *flow;
-			GString     *flw_path;
-			const gchar *flw_filename = geoxml_line_get_flow_source(line_flow);
+			GtkTreeIter	fiter;
+			GeoXmlFlow *	flow;
+			GString *	flow_path;
+			gchar *		flow_filename;
 
-			data_fname(flw_filename, &flw_path);
-			flow = flow_load_path (flw_path->str);
-			g_string_free(flw_path, TRUE);
+			flow_filename = (gchar*)geoxml_line_get_flow_source(line_flow);
+			data_fname(flow_filename, &flow_path);
+			flow = flow_load_path (flow_path->str);
+			g_string_free(flow_path, TRUE);
 			if (flow == NULL) {
 				geoxml_line_next_flow(&line_flow);
 				continue;
@@ -373,14 +340,14 @@ line_load_flows (void)
 			gtk_list_store_append (W.flow_store, &fiter);
 			gtk_list_store_set (W.flow_store, &fiter,
 					FB_NAME, geoxml_document_get_title(GEOXML_DOC(flow)),
-					FB_FILENAME, flw_filename,
+					FB_FILENAME, flow_filename,
 					-1);
 
 			geoxml_document_free(GEOXML_DOC(flow));
 			geoxml_line_next_flow(&line_flow);
 		}
 
-		log_message(INTERFACE, "Flows loaded", TRUE);
+		gebr_message(ERROR, TRUE, FALSE, _("Flows loaded"));
 
 out:
 		gtk_tree_path_free(path);
@@ -390,6 +357,6 @@ out:
 		gtk_list_store_clear(W.fseq_store);
 		geoxml_document_free (GEOXML_DOC (flow));
 		flow = NULL;
-		log_message(INTERFACE, no_selection_error, TRUE);
+		gebr_message(ERROR, TRUE, FALSE, no_selection_error);
 	}
 }

@@ -22,7 +22,10 @@
 #include <geoxml.h>
 
 GeoXmlDocument *
-document_load(gchar * path);
+document_load(const gchar * filename);
+
+GeoXmlDocument *
+document_load_path(const gchar * path);
 
 GString *
 document_get_path(const gchar * filename)

@@ -18,6 +18,17 @@
 #ifndef __UI_FLOW_H
 #define __UI_FLOW_H
 
+#include <gui/gtkfileentry.h>
 
+struct ui_flow_io {
+	GtkWidget *		dialog;
+
+	GtkFileEntry *		input;
+	GtkFileEntry *		output;
+	GtkFileEntry *		error;
+};
+
+struct ui_flow_io
+flow_io_setup_ui(void);
 
 #endif //__UI_FLOW_H

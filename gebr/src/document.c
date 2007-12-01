@@ -19,7 +19,8 @@
 #include "gebr.h"
 #include "support.h"
 
-/* Function: document_load
+/*
+ * Function: document_load
  * Load a document (flow, line or project) from its filename, handling errors
  */
 GeoXmlDocument *
@@ -30,27 +31,48 @@ document_load(const gchar * filename)
 	int			ret;
 
 	path = document_get_path(filename);
-	if ((ret = geoxml_document_load(&document, path->str)) < 0) {
+	document = document_load_path(path);
+	g_string_free(path, TRUE);
+
+	return document;
+}
+
+/*
+ * Function: document_load_path
+ * Load a document from its path, handling errors
+ */
+GeoXmlDocument *
+document_load_path(const gchar * path)
+{
+	GeoXmlDocument *	document;
+	int			ret;
+
+	if ((ret = geoxml_document_load(&document, path)) < 0) {
+		GString *	error;
+
+		error = g_string_new(NULL);
+		g_string_printf(error, _("Can't load document at %s: "), path->str);
 		switch (ret) {
 		case GEOXML_RETV_DTD_SPECIFIED:
-			gebr_message(ERROR, TRUE, TRUE, _("DTD specified"));
+			g_string_append(error, _("DTD specified"));
 			break;
 		case GEOXML_RETV_INVALID_DOCUMENT:
-			printf("invalid documentument");
+			g_string_append(error, _("invalid document"));
 			break;
 		case GEOXML_RETV_CANT_ACCESS_FILE:
-			printf("can't access file");
+			g_string_append(error, _("can't access file"));
 			break;
 		case GEOXML_RETV_CANT_ACCESS_DTD:
-			printf("can't access dtd");
+			g_string_append(error, _("can't access DTD"));
 			break;
 		default:
-			printf("unspecified error");
+			g_string_append(error, _("unspecified error"));
 			break;
 		}
-	}
 
-	g_string_free(path, TRUE);
+		gebr_message(ERROR, TRUE, TRUE, error->str);
+		g_string_free(error, TRUE);
+	}
 
 	return document;
 }
@@ -69,4 +91,3 @@ document_get_path(const gchar * filename)
 
 	return path;
 }
-

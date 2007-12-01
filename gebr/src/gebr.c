@@ -17,8 +17,8 @@
 
 /*
  * File: gebr.c
+ * General purpose functions
  */
-#include "gebr.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,10 +27,10 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include "interface.h"
+#include <misc/utils.h>
+
+#include "gebr.h"
 #include "cmdline.h"
-#include "callbacks.h"
-#include "interface.h"
 #include "project.h"
 #include "server.h"
 #include "menus.h"
@@ -44,9 +44,6 @@ gebr_init(void)
 {
 	GString *	log_filename;
 	gchar *		home;
-
-	/* initialization */
-	gebr.server_store = NULL;
 
 	/* assembly user's gebr directory */
 	log_filename = g_string_new(NULL);
@@ -72,7 +69,7 @@ gebr_init(void)
 		gebr.pixmaps.running_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_running.png", &error);
 	}
 
-	log_message(START, "GêBR Initiating...", TRUE);
+	gebr_message(START, TRUE, TRUE, _("GêBR Initiating..."));
 
 	g_string_free(log_filename, TRUE);
 }
@@ -104,29 +101,14 @@ gebr_quit(void)
  * Function: gebr_config_load
  * Initialize configuration for G�BR
  */
-int
+void
 gebr_config_load(int argc, char ** argv)
 {
-	gchar	fname[STRMAX];
-	gchar *	home = getenv("HOME");
+	GString	*	config;
+	int		i;
 
-	/* assembly config. directory */
-	sprintf(fname, "%s/.gebr", home);
-	/* create it if necessary */
-	if (access(fname, F_OK)) {
-		struct stat	home_stat;
-
-		stat(home, &home_stat);
-		if (mkdir(fname, home_stat.st_mode))
-			exit(EXIT_FAILURE);
-	}
-
-	/* Init server list store */
-	gebr.server_store = gtk_list_store_new(SERVER_N_COLUMN,
-					G_TYPE_STRING,
-					G_TYPE_POINTER);
-	strcat(fname,"/gebr.conf");
-
+	/* initialization */
+	config = g_string_new(NULL);
 	gebr.config.username = g_string_new("");
 	gebr.config.email = g_string_new("");
 	gebr.config.editor = g_string_new("");
@@ -134,57 +116,66 @@ gebr_config_load(int argc, char ** argv)
 	gebr.config.data = g_string_new("");
 	gebr.config.browser = g_string_new("");
 
+	/* TODO: check return */
+	gebr_create_config_dirs();
+
+	g_string_printf(fname, "%s/.gebr", getenv("HOME"));
 	if (access (fname, F_OK) == 0) {
-		int i;
-		/* Initialize GeBR with option in gebr.conf */
-		if(cmdline_parser_configfile (fname, &gebr.config, 1, 1, 0) != 0) {
-			fprintf(stderr,"%s: try '--help' option\n", argv[0]);
-			exit(EXIT_FAILURE);
-		}
+		gtk_widget_show(gebr.ui_preferences.dialog);
+		goto out;
+	}
 
-		/* Filling our structure in */
-		g_string_append(gebr.config.username, gebr.config.name_arg);
-		g_string_append(gebr.config.email, gebr.config.email_arg);
-		g_string_append(gebr.config.editor, gebr.config.editor_arg);
-		g_string_append(gebr.config.usermenus, gebr.config.usermenus_arg);
-		g_string_append(gebr.config.data, gebr.config.data_arg);
-		g_string_append(gebr.config.browser, gebr.config.browser_arg);
+	/* Initialize GeBR with options in gebr.conf */
+	if (cmdline_parser_configfile(config->str, &gebr.config.ggopt, 1, 1, 0) != 0) {
+		fprintf(stderr,"%s: try '--help' option\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
 
-		if (!(gebr.config.usermenus_given && gebr.config.data_given &&
-			gebr.config.editor_given && gebr.config.browser_given))
-			gtk_widget_show(gebr.ui_preferences.dialog);
-		else {
-			menus_populate ();
-			projects_refresh();
-		}
+	/* Filling our structure in */
+	g_string_assign(gebr.config.username, gebr.config.ggopt.name_arg);
+	g_string_assign(gebr.config.email, gebr.config.ggopt.email_arg);
+	g_string_assign(gebr.config.editor, gebr.config.ggopt.editor_arg);
+	g_string_assign(gebr.config.usermenus, gebr.config.ggopt.usermenus_arg);
+	g_string_assign(gebr.config.data, gebr.config.ggopt.data_arg);
+	g_string_assign(gebr.config.browser, gebr.config.ggopt.browser_arg);
 
-		if (!gebr.config.server_given) {
+	if (!(gebr.config.ggopt.usermenus_given && gebr.config.data_given &&
+		gebr.config.ggopt.editor_given && gebr.config.browser_given))
+		gtk_widget_show(gebr.ui_preferences.dialog);
+	else {
+		menus_populate();
+		projects_refresh();
+	}
+
+	/* init server list store */
+	gebr.ui_servers.store = gtk_list_store_new(SERVER_N_COLUMN,
+					G_TYPE_STRING,
+					G_TYPE_POINTER);
+	if (!gebr.config.ggopt.server_given) {
+		GtkTreeIter	iter;
+		gchar hostname[100];
+
+		gethostname(hostname, 100);
+		gtk_list_store_append (gebr.ui_servers.store, &iter);
+		gtk_list_store_set (gebr.ui_servers.store, &iter,
+				SERVER_ADDRESS, hostname,
+				SERVER_POINTER, server_new(hostname),
+				-1);
+	} else {
+		for (i=0; i <gebr.config.ggopt.server_given; i++) {
 			GtkTreeIter	iter;
-			gchar hostname[100];
 
-			gethostname(hostname, 100);
-			gtk_list_store_append (gebr.server_store, &iter);
-			gtk_list_store_set (gebr.server_store, &iter,
-					SERVER_ADDRESS, hostname,
-					SERVER_POINTER, server_new(hostname),
-					-1);
-		} else {
-			for (i=0; i <gebr.config.server_given; i++) {
-				GtkTreeIter	iter;
-
-				/* TODO: free servers structs on exit */
-				gtk_list_store_append (gebr.server_store, &iter);
-				gtk_list_store_set (gebr.server_store, &iter,
-							SERVER_ADDRESS, gebr.config.server_arg[i],
-							SERVER_POINTER, server_new(gebr.config.server_arg[i]),
-							-1);
-			}
+			/* TODO: free servers structs on exit */
+			gtk_list_store_append (gebr.ui_servers.store, &iter);
+			gtk_list_store_set (gebr.ui_servers.store, &iter,
+						SERVER_ADDRESS, gebr.config.server_arg[i],
+						SERVER_POINTER, server_new(gebr.config.server_arg[i]),
+						-1);
 		}
 	}
-	else
-		gtk_widget_show(gebr.ui_preferences.dialog);
 
-	return EXIT_SUCCESS;
+	/* frees */
+out:	g_string_free(config, TRUE);
 }
 
 /*
@@ -240,17 +231,17 @@ gebr_config_save(void)
 		gboolean	valid;
 
 		/* check if it is already open */
-		valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.server_store), &iter);
+		valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_servers.store), &iter);
 		while (valid) {
 			gchar *	server;
 
-			gtk_tree_model_get (GTK_TREE_MODEL(gebr.server_store), &iter,
+			gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_servers.store), &iter,
 					SERVER_ADDRESS, &server,	-1);
 
 			fprintf(fp, "server = \"%s\"\n", server);
 
 			g_free(server);
-			valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.server_store), &iter);
+			valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_servers.store), &iter);
 		}
 	}
 
