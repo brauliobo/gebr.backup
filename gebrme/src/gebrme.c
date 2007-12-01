@@ -19,6 +19,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <misc/utils.h>
+
 #include "gebrme.h"
 #include "menu.h"
 #include "preferences.h"
@@ -91,6 +93,7 @@ gebrme_config_load(void)
 {
 	GError *	error;
 
+	gebr_create_config_dirs();
 	gebrme.config.path = g_string_new(getenv("HOME"));
 	g_string_append(gebrme.config.path, "/.gebr/gebrme.conf");
 

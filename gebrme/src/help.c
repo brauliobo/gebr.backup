@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <regex.h>
 
+#include <misc/utils.h>
+
 #include "help.h"
 #include "gebrme.h"
 #include "support.h"
@@ -30,7 +32,7 @@ help_fix_css(GString * help)
 	gchar *		gebrcsspos;
 
 	/* Change CSS's path to an absolute one. */
-	if ((gebrcsspos = strstr(help->str, "\"gebr.css")) != NULL){
+	if ((gebrcsspos = strstr(help->str, "\"gebr.css")) != NULL) {
 		int	pos;
 
 		pos = (gebrcsspos - help->str)/sizeof(char);
@@ -61,7 +63,7 @@ help_subst_fields(GString * help)
 
 	/* Description replacement */
 	content = (gchar*)geoxml_document_get_description(GEOXML_DOC(gebrme.current));
-	if (strlen(content) > 0){
+	if (strlen(content) > 0) {
 		ptr = strstr(help->str, "Put here an one-line description");
 
 		while (ptr != NULL){
@@ -73,7 +75,7 @@ help_subst_fields(GString * help)
 	}
 
 	/* Categories replacement */
-	if (geoxml_flow_get_categories_number(gebrme.current) > 0){
+	if (geoxml_flow_get_categories_number(gebrme.current) > 0) {
 		GeoXmlCategory *category;
 		GString * catstr;
 
@@ -114,9 +116,8 @@ help_show(const gchar * help)
 	help_fix_css(prepared_html);
 
 	/* create temporary filename */
-	htmlpath = g_string_new(tmpfile_template);
-	mktemp(htmlpath->str);
-	g_string_append(htmlpath, ".html");
+	htmlpath = g_string_new(NULL);
+	g_string_printf(htmlpath, "/tmp/gebrme_%s.html", make_temp_filename());
 
 	/* open temporary file with help from XML */
 	htmlfp = fopen(htmlpath->str, "w");
@@ -177,9 +178,8 @@ help_edit(const gchar * help)
 	help_fix_css(prepared_html);
 
 	/* create temporary filename */
-	htmlpath = g_string_new(tmpfile_template);
-	mktemp(htmlpath->str);
-	g_string_append(htmlpath, ".html");
+	htmlpath = g_string_new(NULL);
+	g_string_printf(htmlpath, "/tmp/gebrme_%s.html", make_temp_filename());
 
 	/* load html into a temporary file */
 	fp = fopen(htmlpath->str, "w");

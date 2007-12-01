@@ -39,7 +39,7 @@ on_open_activate(void)
 	gchar *			path;
 
 	/* create file chooser */
-	chooser_dialog = gtk_file_chooser_dialog_new(	"Open file", NULL,
+	chooser_dialog = gtk_file_chooser_dialog_new(	_("Open flow"), NULL,
 							GTK_FILE_CHOOSER_ACTION_OPEN,
 							GTK_STOCK_OPEN, GTK_RESPONSE_YES,
 							GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,

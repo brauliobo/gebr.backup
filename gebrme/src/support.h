@@ -44,8 +44,6 @@
 #  define N_(String) (String)
 #endif
 
-extern gchar * tmpfile_template;
-
 GtkWidget *
 create_depth(GtkWidget * expander);
 

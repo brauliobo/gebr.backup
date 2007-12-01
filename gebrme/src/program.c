@@ -256,8 +256,6 @@ program_create_ui(GeoXmlProgram * program, gboolean hidden)
 		gtk_box_pack_start(GTK_BOX(parameters_vbox), parameter_create_ui(parameter, hidden), FALSE, TRUE, 0);
 		geoxml_program_parameter_next(&parameter);
 	}
-
-	return program_expander;
 }
 
 void

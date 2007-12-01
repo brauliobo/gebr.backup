@@ -17,8 +17,6 @@
 
 #include "support.h"
 
-gchar * tmpfile_template = "/tmp/gebrme_XXXXXX";
-
 GtkWidget *
 create_depth(GtkWidget * expander)
 {
