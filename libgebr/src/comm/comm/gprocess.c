@@ -232,76 +232,6 @@ __g_process_read_string(GIOChannel * io_channel, gsize max_size)
 	return string;
 }
 
-static gchar **
-__g_process_parse_combined_arg_string(GString * program)
-{
-	/* Adapted from Qt 4.3 by Trolltech.
-	 * Defined at qprocess.cpp:1512
-	 * parseCombinedArgString(const QString &program)
-	 */
-	gchar **	argv;
-	GList *		args;
-	GString *	tmp;
-	int		i;
-	int		quote_count;
-	gboolean	in_quote;
-	gboolean	is_double_quote; /* TODO */
-
-	args = NULL;
-	tmp = g_string_new(NULL);
-	quote_count = 0;
-	in_quote = FALSE;
-	// handle quoting. tokens can be surrounded by double quotes
-	// "hello world". three consecutive double quotes represent
-	// the quote character itself.
-	for (i = 0; i < program->len; ++i) {
-		if (program->str[i] == '"') {
-			++quote_count;
-			if (quote_count == 3) {
-				// third consecutive quote
-				quote_count = 0;
-				g_string_append_printf(tmp, "%c", program->str[i]);
-			}
-			continue;
-		}
-		if (quote_count) {
-			if (quote_count == 1)
-				in_quote = in_quote == TRUE ? FALSE : TRUE;
-			quote_count = 0;
-		}
-		if (!in_quote && program->str[i] == ' ') {
-			if (tmp->len) {
-				args = g_list_append(args, tmp->str);
-				g_string_free(tmp, FALSE);
-				tmp = g_string_new(NULL);
-			}
-		} else {
-			g_string_append_printf(tmp, "%c", program->str[i]);
-		}
-	}
-	if (tmp->len) {
-		args = g_list_append(args, tmp->str);
-		g_string_free(tmp, FALSE);
-	} else
-		g_string_free(tmp, TRUE);
-
-	/* create argv */
-	GList *	link;
-	int	number_args;
-	number_args = g_list_length(args);
-	argv = g_malloc(sizeof(char *)*(number_args+1));
-	link = g_list_first(args);
-	for (i = 0; i < number_args; ++i) {
-		argv[i] = (char *)link->data;
-		link = g_list_next(link);
-	}
-	argv[number_args] = NULL;
-
-	g_list_free(args);
-
-	return argv;
-}
-
 /*
  * private functions
  */
@@ -339,6 +269,7 @@ g_process_start(GProcess * process, GString * cmd_line)
 {
 	gboolean	ret;
 	gchar **	argv;
+	gint		argc;
 	gint		stdin_fd, stdout_fd, stderr_fd;
 	GError *	error;
 
@@ -347,7 +278,7 @@ g_process_start(GProcess * process, GString * cmd_line)
 		__g_process_free(process);
 
 	error = NULL;
-	argv = __g_process_parse_combined_arg_string(cmd_line);
+	g_shell_parse_argv(cmd_line->str, &argc, &argv, &error);
 	ret = g_spawn_async_with_pipes(
 		NULL, /* working_directory */
 		argv,

@@ -26,7 +26,7 @@ noinst_HEADERS = \
 EXTRA_DIST = ${noinst_HEADERS}
 
 INCLUDES = \
-	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\" \
+	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\"
 AM_CFLAGS = -Wall $(GTK_CFLAGS)
 libgebr_gui_la_LIBADD = $(INTLLIBS) $(GTK_LIBS)
 libgebr_gui_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@

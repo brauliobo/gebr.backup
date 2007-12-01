@@ -18,6 +18,8 @@
 #ifndef __LIBGEBR_GUI_GTK_FILE_ENTRY_H
 #define __LIBGEBR_GUI_GTK_FILE_ENTRY_H
 
+#include <gtk/gtk.h>
+
 G_BEGIN_DECLS
 
 GType
@@ -33,32 +35,36 @@ gtk_file_entry_get_type(void);
 typedef struct _GtkFileEntry		GtkFileEntry;
 typedef struct _GtkFileEntryClass	GtkFileEntryClass;
 
-typedef struct _GtkFileEntry {
-	GWidget		parent;
+struct _GtkFileEntry {
+	GtkWidget	parent;
 
 	GtkWidget *	hbox;
-
 	GtkWidget *	entry;
 	GtkWidget *	browse_button;
+
+	gboolean	choose_directory;
 };
 struct _GtkFileEntryClass {
-	GWidgetClass		parent;
+	GtkWidgetClass	parent;
 
 	/* signals */
-	void			(*path_changed)(GtkFileEntry * self);
+	void		(*path_changed)(GtkFileEntry * self);
 };
 
 GtkFileEntry *
 gtk_file_entry_new();
 
 void
-gtk_file_entry_free(GtkFileEntry * file_entry);
-
-void
 gtk_file_entry_set_choose_directory(GtkFileEntry * file_entry, gboolean choose_directory);
 
 gboolean
-gtk_file_entry_get_choose_directory(GtkFileEntry * file_entry, gboolean choose_directory);
+gtk_file_entry_get_choose_directory(GtkFileEntry * file_entry);
+
+void
+gtk_file_entry_set_path(GtkFileEntry * file_entry, const gchar * path);
+
+gchar *
+gtk_file_entry_get_path(GtkFileEntry * file_entry);
 
 G_END_DECLS
 
