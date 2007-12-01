@@ -23,25 +23,4 @@
 void
 assembly_interface(void);
 
-void
-assembly_preferences(void);
-
-GtkWidget *
-assembly_config_menu(void);
-
-GtkWidget *
-assembly_helpmenu(void);
-
-GtkWidget *
-assembly_projectmenu(void);
-
-GtkWidget *
-assembly_line_menu(void);
-
-GtkWidget *
-assembly_flow_menu(void);
-
-GtkWidget *
-assembly_flow_components_menu(void)
-
 #endif //_GEBR_INTERFACE_H_

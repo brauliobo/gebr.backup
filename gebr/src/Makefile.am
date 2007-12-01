@@ -25,15 +25,15 @@ gebr_SOURCES = main.c \
 	cmdline.c \
 	gebr.c \
 	callbacks.c \
+	document.c \
 	project.c \
 	line.c \
 	flow.c \
 	help.c \
-	parameters.c \
 	job.c \
 	server.c client.c \
 	menus.c \
-	parse.c support.c \
+	support.c \
 	interface.c \
 	ui_flow.c \
 	ui_parameters.c \
@@ -42,22 +42,21 @@ gebr_SOURCES = main.c \
 	ui_flow_browse.c \
 	ui_flow_edition.c \
 	ui_job_control.c \
-	ui_pages.c \
-	ui_prop.c \
+	ui_preferences.c \
 	ui_servers.c
 noinst_HEADERS = \
 	cmdline.h \
 	gebr.h \
 	callbacks.h \
+	document.h \
 	project.h \
 	line.h \
 	flow.h \
 	help.h \
-	prop.h \
 	job.h \
 	server.h client.h \
 	menus.h \
-	parse.h support.h \
+	support.h \
 	interface.h \
 	ui_flow.h \
 	ui_parameters.h \
@@ -66,8 +65,7 @@ noinst_HEADERS = \
 	ui_flow_browse.h \
 	ui_flow_edition.h \
 	ui_job_control.h \
-	ui_pages.h \
-	ui_prop.h \
+	ui_preferences.h \
 	ui_servers.h
 EXTRA_DIST = gebr.ggo
 

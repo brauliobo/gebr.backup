@@ -41,8 +41,8 @@ help_show(gchar * help, gchar * title, gchar * fname)
 		return;
 
 	dialog = gtk_dialog_new_with_buttons(title,
-					GTK_WINDOW(gebr.mainwin),
-					GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_WINDOW(gebr.window),
+					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 					NULL);
 	g_signal_connect (GTK_OBJECT (dialog), "delete_event",
 			GTK_SIGNAL_FUNC (gtk_widget_destroy), NULL );
@@ -126,7 +126,7 @@ help_edit(GtkButton * button, GeoXmlDocument * document);
 	fclose(tmp_fp);
 
 	cmdline = g_string_new(NULL);
-	g_string_printf(cmdline, "%s %s", gebr.pref.editor_value->str, tmp_fn->str);
+	g_string_printf(cmdline, "%s %s", gebr.config.editor->str, tmp_fn->str);
 	system(cmdline->str);
 	g_string_free(cmdline, TRUE);
 

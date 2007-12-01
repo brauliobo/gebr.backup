@@ -15,15 +15,16 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_PARSE_H_
-#define _GEBR_PARSE_H_
+#ifndef __DOCUMENT_H
+#define __DOCUMENT_H
 
-#include <stdio.h>
+#include <glib.h>
+#include <geoxml.h>
 
-int
-read_line(char *string, int n, FILE *fp);
+GeoXmlDocument *
+document_load(gchar * path);
 
-int
-desmembra(char *string, int n, char **part);
+GString *
+document_get_path(const gchar * filename)
 
-#endif //_GEBR_PARSE_H_
+#endif //__DOCUMENT_H

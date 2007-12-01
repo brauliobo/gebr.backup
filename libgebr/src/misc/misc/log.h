@@ -23,7 +23,7 @@
 #include <glib.h>
 
 enum log_message_type {
-	START, END, ACTION, ERROR, WARNING,
+	START, END, INFO, ERROR, WARNING,
 };
 
 struct log_message {

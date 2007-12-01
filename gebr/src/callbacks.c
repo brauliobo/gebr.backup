@@ -18,144 +18,46 @@
 
 /*
  * File: callbacks.c
- * Callbacks 
+ * Callbacks
  */
+
 #include "callbacks.h"
-
-#include <time.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/stat.h>
-
-#include <misc/protocol.h>
-
-#include "menus.h"
 #include "gebr.h"
-#include "interface.h"
-#include "cb_proj.h"
-#include "server.h"
-
-extern struct ggopt arg;
 
 /*
- * Function: show_widget
- * Call gtk_widget_show_all
- */
-void
-show_widget   (GtkWidget *widget,
-	       GtkWidget *data)
-{
-   gtk_widget_show_all (data);
-}
-
-/*
- * Function: hide_widget
- * Call gtk_widget_hide
- */
-void
-hide_widget   (GtkWidget *widget,
-	       GtkWidget *data)
-{
-   gtk_widget_hide (data);
-}
-
-/*
- * Function: data_fname
- * Prefix filename with data dir path
- */
-void
-data_fname (const char *document,
-	    GString    **fname   )
-{
-   *fname = g_string_new(gebr.config.data_arg);
-   g_string_append(*fname, "/");
-   g_string_append(*fname, document);
-}
-
-/*
-  Function: pref_actions
-  Take the appropriate action when the parameter dialog emmits
-  a response signal.
- */
-void
-pref_actions                (GtkDialog *dialog,
-			     gint       arg1,
-			     gpointer   user_data)
-{
-
-   switch (arg1){
-   case GTK_RESPONSE_OK:
-      /* Save preferences to file and the relod */
-      g_string_assign(gebr.pref.username_value,
-		      gtk_entry_get_text (GTK_ENTRY (gebr.pref.username)));
-      g_string_assign(gebr.pref.email_value,
-		      gtk_entry_get_text (GTK_ENTRY (gebr.pref.email)));
-      g_string_assign(gebr.pref.usermenus_value,
-		      gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (gebr.pref.usermenus)));
-      g_string_assign(gebr.pref.data_value,
-		      gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (gebr.pref.data)));
-      g_string_assign(gebr.pref.editor_value,
-		      gtk_entry_get_text (GTK_ENTRY (gebr.pref.editor)));
-      g_string_assign(gebr.pref.browser_value,
-		      gtk_combo_box_get_active_text(GTK_COMBO_BOX(gebr.pref.browser)));
-
-      gebr_config_save();
-      gebr_config_reload();
-      break;
-   case GTK_RESPONSE_CANCEL: /* does nothing */
-   default:
-      break;
-   }
-
-   gtk_widget_destroy(GTK_WIDGET(dialog));
-   gebr.pref.win = NULL;
-}
-
-
-
-/*
- * Function: switch_menu
+ * Function: switch_page
  * Hide/Show the corresponding menu to the selected page
  *
  */
 void
-switch_menu     (GtkNotebook     *notebook,
-		 GtkNotebookPage *page,
-		 guint            page_num,
-		 gpointer         user_data)
+switch_page(GtkNotebook * notebook, GtkNotebookPage * page, guint page_num)
 {
-   switch (page_num){
-   case 0: /* Project page */
-      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", TRUE, NULL);
-      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", TRUE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", FALSE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
-      break;
-   case 1: /* Flow browse page */
-      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
-      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
-      break;
-   case 2: /* Flow edit page */
-      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
-      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", TRUE, NULL);
-      break;
-   case 3: /* Job control page*/
-      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
-      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", FALSE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
-      break;
-   default: /* Anything else */
-      g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", TRUE, NULL);
-      g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", TRUE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
-      g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", TRUE, NULL);
-   }
+	switch (page_num) {
+	case 0: /* Project page */
+		g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", TRUE, NULL);
+		g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", TRUE, NULL);
+		g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", FALSE, NULL);
+		g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
+		break;
+	case 1: /* Flow browse page */
+		g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
+		g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
+		g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
+		g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
+		break;
+	case 2: /* Flow edit page */
+		g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
+		g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
+		g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", TRUE, NULL);
+		g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", TRUE, NULL);
+		break;
+	case 3: /* Job control page*/
+		g_object_set (gebr.menu[MENUBAR_PROJECT], "sensitive", FALSE, NULL);
+		g_object_set (gebr.menu[MENUBAR_LINE], "sensitive", FALSE, NULL);
+		g_object_set (gebr.menu[MENUBAR_FLOW], "sensitive", FALSE, NULL);
+		g_object_set (gebr.menu[MENUBAR_FLOW_COMPONENTS], "sensitive", FALSE, NULL);
+		break;
+	default:
+		break;
+	}
 }

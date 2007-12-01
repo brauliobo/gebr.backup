@@ -29,11 +29,31 @@
 #include "menus.h"
 #include "callbacks.h"
 
-/* Pre-defined browser options */
-#define NBROWSER 5
-const char * browser[] = {
-	"epiphany", "firefox", "galeon", "konqueror", "mozilla"
-};
+/*
+ * Prototypes functions
+ */
+
+static GtkWidget *
+assembly_project_menu(void);
+
+static GtkWidget *
+assembly_line_menu(void);
+
+static GtkWidget *
+assembly_flow_menu(void);
+
+static GtkWidget *
+assembly_flow_components_menu(void);
+
+static GtkWidget *
+assembly_config_menu(void);
+
+static GtkWidget *
+assembly_help_menu(void);
+
+/*
+ * Public functions
+ */
 
 /*
  * Function: assembly_interface
@@ -45,11 +65,8 @@ assembly_interface(void)
 {
 	GtkWidget *	vboxmain;
 
-	/* Preferences dialog*/
-	gebr.pref.win = NULL;
-
-	/* About dialog */
-	gebr.about = assembly_about ();
+	gebr.about = about_setup_ui();
+	gebr.ui_preferences = preferences_setup_ui();
 
 	/*
 	* Parameters dialog
@@ -58,15 +75,15 @@ assembly_interface(void)
 	gebr.parameters = NULL;
 
 	/* Create the main window */
-	gebr.mainwin = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title (GTK_WINDOW (gebr.mainwin), "GêBR" );
-	gtk_widget_set_size_request (GTK_WIDGET (gebr.mainwin), 700, 400);
+	gebr.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title (GTK_WINDOW (gebr.window), "GêBR" );
+	gtk_widget_set_size_request (GTK_WIDGET (gebr.window), 700, 400);
 
 	/* Signals */
-	g_signal_connect (GTK_OBJECT (gebr.mainwin), "delete_event",
+	g_signal_connect (GTK_OBJECT (gebr.window), "delete_event",
 			GTK_SIGNAL_FUNC (gebr_quit),
 			NULL);
-	g_signal_connect (GTK_OBJECT (gebr.mainwin), "show",
+	g_signal_connect (GTK_OBJECT (gebr.window), "show",
 			GTK_SIGNAL_FUNC (gebr_init), NULL);
 
 	/* Define the function to be called when the main loops is finished */
@@ -75,7 +92,7 @@ assembly_interface(void)
 
 	/* Create the main vbox to hold menu, notebook and status bar */
 	vboxmain = gtk_vbox_new (FALSE, 1);
-	gtk_container_add (GTK_CONTAINER (gebr.mainwin), vboxmain );
+	gtk_container_add (GTK_CONTAINER (gebr.window), vboxmain );
 
 	/* Create the main menu */
 	{
@@ -109,7 +126,7 @@ assembly_interface(void)
 		gtk_box_pack_start(GTK_BOX(vboxmain), gebr.notebook, TRUE, TRUE, 0);
 
 		g_signal_connect(GTK_OBJECT (gebr.notebook), "switch-page",
-					GTK_SIGNAL_FUNC (switch_menu), NULL);
+					GTK_SIGNAL_FUNC (switch_page), NULL);
 
 		gebr.ui_project_line = project_line_setup_ui();
 		pagetitle = gtk_label_new(_("Projects and Lines"));
@@ -134,212 +151,11 @@ assembly_interface(void)
 }
 
 /*
- * Function: assembly_preference_win
- * Assembly preference window.
- *
- */
-void
-assembly_preferences(void)
-{
-	if (gebr.pref.win != NULL)
-		return;
-
-	GtkWidget *table;
-	GtkWidget *label;
-	GtkTooltips *tips;
-	GtkWidget *eventbox;
-
-	gebr.pref.win = gtk_dialog_new_with_buttons ("Preferences",
-					   GTK_WINDOW(gebr.pref.win),
-					   0,
-					   GTK_STOCK_OK,     GTK_RESPONSE_OK,
-					   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-					   NULL);
-	/* Tooltips */
-	tips = gtk_tooltips_new();
-
-	/* Take the apropriate action when a button is pressed */
-	g_signal_connect_swapped (gebr.pref.win, "response",
-				  G_CALLBACK (pref_actions),
-				  gebr.pref.win);
-
-	gtk_widget_set_size_request (gebr.pref.win, 380, 300);
-
-	table = gtk_table_new (6, 2, FALSE);
-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (gebr.pref.win)->vbox), table, TRUE, TRUE, 0);
-
-	/* User name */
-	label = gtk_label_new ("User name");
-	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	gebr.pref.username = gtk_entry_new ();
-	gtk_tooltips_set_tip(tips, gebr.pref.username, "You should know your name", "");
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), gebr.pref.username, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
-	/* read config */
-	if (gebr.pref.username_value->len > 0)
-	   gtk_entry_set_text (GTK_ENTRY (gebr.pref.username), gebr.pref.username_value->str);
-
-	/* User gebr.pref.email */
-	label = gtk_label_new ("Email");
-	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	gebr.pref.email = gtk_entry_new ();
-	gtk_tooltips_set_tip(tips, gebr.pref.email, "Your email address", "");
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), gebr.pref.email, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-	/* read config */
-	if (gebr.pref.email_value->len > 0)
-	   gtk_entry_set_text (GTK_ENTRY (gebr.pref.email), gebr.pref.email_value->str);
-
-	/* G�BR dir */
-	label = gtk_label_new ("User's menus directory");
-	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	/* Browse button for user's menus dir */
-	gebr.pref.usermenus = gtk_file_chooser_button_new ("GêBR dir",
-						GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-
-	eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(eventbox), gebr.pref.usermenus);
-	gtk_tooltips_set_tip(tips, eventbox, "Path to look for private user's menus", "");
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), eventbox, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-	/* read config */
- 	if (gebr.pref.usermenus_value->len > 0)
-	   gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (gebr.pref.usermenus),
-						gebr.pref.usermenus_value->str);
-
-	/* Data dir */
-	label = gtk_label_new ("Data directory");
-	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	/* Browse button for gebr.pref.data */
-	gebr.pref.data = gtk_file_chooser_button_new ("Browser data dir",
-						GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-
-	eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(eventbox), gebr.pref.data);
-	gtk_tooltips_set_tip(tips, eventbox, "Path to store projects, lines and flows", "");
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), eventbox, 1, 2, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
-	/* read config */
- 	if (gebr.pref.data_value->len > 0)
-	   gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (gebr.pref.data),
-						gebr.pref.data_value->str);
-
-	/* Editor */
-	label = gtk_label_new ("HTML editor");
-	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	gebr.pref.editor = gtk_entry_new ();
-	gtk_tooltips_set_tip(tips, gebr.pref.editor, "An HTML capable editor to edit helps and reports", "");
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), gebr.pref.editor, 1, 2, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
-	/* read config */
- 	if (gebr.pref.editor_value->len > 0)
-	   gtk_entry_set_text (GTK_ENTRY (gebr.pref.editor), gebr.pref.editor_value->str);
-
-	/* Browser */
-	label = gtk_label_new ("Browser");
-	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	gebr.pref.browser = gtk_combo_box_entry_new_text();
-	{
-	   int ii;
-	   int newbrowser = 1;
-	   for (ii=0; ii < NBROWSER; ii++){
-	      gtk_combo_box_append_text(GTK_COMBO_BOX(gebr.pref.browser), browser[ii]);
-	      if ( (gebr.pref.browser_value->len > 0) && newbrowser){
-		 if (strcmp(browser[ii], gebr.pref.browser_value->str)==0){
-		    newbrowser = 0;
-		    gtk_combo_box_set_active (GTK_COMBO_BOX(gebr.pref.browser), ii );
-		 }
-	      }
-	   }
-	   if ((gebr.pref.browser_value->len > 0) && newbrowser){
-	      gtk_combo_box_append_text(GTK_COMBO_BOX(gebr.pref.browser), gebr.pref.browser_value->str);
-	      gtk_combo_box_set_active (GTK_COMBO_BOX(gebr.pref.browser), NBROWSER );
-	   }
-	}
-
-	eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(eventbox), gebr.pref.browser);
-	gtk_tooltips_set_tip(tips, eventbox, "An HTML browser to display helps and reports", "");
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach (GTK_TABLE (table), eventbox, 1, 2, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
-
-	gtk_widget_show_all(gebr.pref.win);
-}
-
-/*
- * Function: assembly_config_menu
- * Assembly the config menu
- *
- */
-GtkWidget *
-assembly_config_menu(void)
-{
-	GtkWidget *	menuitem;
-	GtkWidget *	menu;
-	GtkWidget *	submenu;
-
-	menu = gtk_menu_new ();
-	gtk_menu_set_title (GTK_MENU (menu), "Config menu");
-
-	/* Pref entry */
-	submenu = gtk_image_menu_item_new_from_stock (GTK_STOCK_PREFERENCES, NULL);
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), submenu );
-
-	g_signal_connect (GTK_OBJECT (submenu), "activate",
-			G_CALLBACK (assembly_preference_win), NULL);
-
-	/* Server entry */
-	submenu =  gtk_image_menu_item_new_with_mnemonic("_Servers");
-
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), submenu );
-
-	g_signal_connect (GTK_OBJECT (submenu), "activate",
-			GTK_SIGNAL_FUNC (assembly_server_win),
-			NULL);
-
-	menuitem = gtk_menu_item_new_with_label ("Configure");
-	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
-
-	return menuitem;
-}
-
-/*
- * Function: assembly_help_menu
- * Assembly the help menu
- *
- */
-GtkWidget *
-assembly_help_menu(void)
-{
-	GtkWidget *menuitem;
-	GtkWidget *menu;
-	GtkWidget *submenu;
-
-	menu = gtk_menu_new ();
-	gtk_menu_set_title (GTK_MENU (menu), "Help menu");
-
-	/* About entry */
-	submenu = gtk_image_menu_item_new_from_stock (GTK_STOCK_ABOUT, NULL);
-	g_signal_connect (GTK_OBJECT (submenu), "activate",
-			GTK_SIGNAL_FUNC (gtk_widget_show),
-			GTK_WIDGET (W.about));
-
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), submenu);
-
-	menuitem = gtk_menu_item_new_with_label ("Help");
-	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
-
-	gtk_menu_item_right_justify (GTK_MENU_ITEM (menuitem));
-
-	return menuitem;
-}
-
-/*
  * Function: assembly_project_menu
  * Assembly the menu to the project page
  *
  */
-GtkWidget *
+static GtkWidget *
 assembly_project_menu(void)
 {
 	GtkWidget *	menuitem;
@@ -383,7 +199,7 @@ assembly_project_menu(void)
  * Assembly the menu to the line page
  *
  */
-GtkWidget *
+static GtkWidget *
 assembly_line_menu(void)
 {
 	GtkWidget *menuitem;
@@ -443,7 +259,7 @@ assembly_line_menu(void)
  * Assembly the menu to the flow page
  *
  */
-GtkWidget *
+static GtkWidget *
 assembly_flow_menu (void)
 {
 	GtkWidget *	menuitem;
@@ -509,7 +325,7 @@ assembly_flow_menu (void)
  * Assembly the menu to the flow edit page associated to flow_components
  *
  */
-GtkWidget *
+static GtkWidget *
 assembly_flow_components_menu(void)
 {
 	GtkWidget *	menuitem;
@@ -560,6 +376,74 @@ assembly_flow_components_menu(void)
 	menuitem = gtk_menu_item_new_with_label ("Flow component");
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
 	gtk_menu_item_right_justify (GTK_MENU_ITEM (menuitem));
+
+	return menuitem;
+}
+
+/*
+ * Function: assembly_help_menu
+ * Assembly the help menu
+ *
+ */
+static GtkWidget *
+assembly_help_menu(void)
+{
+	GtkWidget *menuitem;
+	GtkWidget *menu;
+	GtkWidget *submenu;
+
+	menu = gtk_menu_new ();
+	gtk_menu_set_title (GTK_MENU (menu), "Help menu");
+
+	/* About entry */
+	submenu = gtk_image_menu_item_new_from_stock (GTK_STOCK_ABOUT, NULL);
+	g_signal_connect(GTK_OBJECT(submenu), "activate",
+			GTK_SIGNAL_FUNC(gtk_widget_show),
+			GTK_WIDGET(W.about.dialog));
+
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), submenu);
+
+	menuitem = gtk_menu_item_new_with_label ("Help");
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
+
+	gtk_menu_item_right_justify (GTK_MENU_ITEM (menuitem));
+
+	return menuitem;
+}
+
+/*
+ * Function: assembly_config_menu
+ * Assembly the config menu
+ *
+ */
+static GtkWidget *
+assembly_config_menu(void)
+{
+	GtkWidget *	menuitem;
+	GtkWidget *	menu;
+	GtkWidget *	submenu;
+
+	menu = gtk_menu_new ();
+	gtk_menu_set_title (GTK_MENU (menu), "Config menu");
+
+	/* Pref entry */
+	submenu = gtk_image_menu_item_new_from_stock (GTK_STOCK_PREFERENCES, NULL);
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), submenu );
+
+	g_signal_connect (GTK_OBJECT (submenu), "activate",
+			G_CALLBACK (assembly_preference_win), NULL);
+
+	/* Server entry */
+	submenu =  gtk_image_menu_item_new_with_mnemonic("_Servers");
+
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), submenu );
+
+	g_signal_connect (GTK_OBJECT (submenu), "activate",
+			GTK_SIGNAL_FUNC (assembly_server_win),
+			NULL);
+
+	menuitem = gtk_menu_item_new_with_label ("Configure");
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
 
 	return menuitem;
 }

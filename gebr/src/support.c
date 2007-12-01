@@ -15,5 +15,46 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "support.h"
+#include <stdlib.h>
+#include <string.h>
 
+#include "support.h"
+#include "gebr.h"
+
+#define PARSE_TOKEN "|"
+
+/*
+ * Function: desmembra
+ *
+ * Quebra a linha armazenada em string em, no máximo, n partes e as
+ * armazena em part. Retorna o número de partes encontradas.
+ */
+int
+read_line (char *string, int n, FILE *fp)
+{
+   if (fgets (string, n, fp) == NULL) return (EXIT_SUCCESS);
+   if (string[0] == 0) return (EXIT_FAILURE);
+   if (string[strlen (string)-1] == '\n') string[strlen (string)-1]= 0;
+   return (EXIT_FAILURE);
+}
+
+/*
+ * Function: desmembra
+ *
+ * Quebra a linha armazenada em string em, no máximo, n partes e as
+ * armazena em part. Retorna o número de partes encontradas.
+ */
+int
+desmembra (char *string, int n, char **part)
+{
+   int ii = 0;
+
+   part[0] = strtok (string, PARSE_TOKEN);
+
+   while ((part[ii] != NULL) && (ii < n)){
+      ii++;
+      part[ii] = strtok (NULL, PARSE_TOKEN);
+   }
+
+   return ii;
+}

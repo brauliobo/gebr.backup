@@ -15,25 +15,21 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GEBR_MENUS_H_
-#define _GEBR_MENUS_H_
+#ifndef __UI_PREFERENCES_H
+#define __UI_PREFERENCES_H
 
-#include <glib.h>
+struct ui_preferences {
+	GtkWidget *	dialog;
 
-extern const gchar * no_menu_selected_error;
-extern const gchar * selected_menu_instead_error;
+	GtkWidget *	username;
+	GtkWidget *	email;
+	GtkWidget *	usermenus;
+	GtkWidget *	data;
+	GtkWidget *	editor;
+	GtkWidget *	browser;
+};
 
-int
-menus_populate(void);
+struct ui_preferences
+preferences_setup_ui(void);
 
-gboolean
-menus_create_index(void);
-
-int
-menus_fname(const gchar *menu,
-	    GString    **fname);
-
-void
-menu_show_help (void);
-
-#endif //_GEBR_MENUS_H_
+#endif //__UI_PREFERENCES_H

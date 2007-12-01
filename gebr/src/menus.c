@@ -17,8 +17,8 @@
 
 /*
  * File: menus.c
+ * Populate menus into GUI (see <menus_populate>)
  */
-#include "menus.h"
 
 #include <geoxml.h>
 #include <stdlib.h>
@@ -28,7 +28,9 @@
 #include <dirent.h>
 #include <fnmatch.h>
 
+#include "menus.h"
 #include "gebr.h"
+#
 #include "callbacks.h"
 #include "ui_pages.h"
 #include "ui_help.h"
@@ -192,37 +194,37 @@ scan_dir (const char *path, FILE *fp)
 /*
  * Function: menus_create_index
  * Create menus from found using scan_dir
+ *
+ * Returns TRUE if successful
  */
-int
+gboolean
 menus_create_index(void)
 {
+	GString *	path;
+	FILE *		menuindex;
 
-   gchar	fname[STRMAX];
-   FILE *	menuindex;
+	strcpy (fname, getenv ("HOME"));
+	strcat (fname, "/.gebr/menus.idx");
 
-   strcpy (fname, getenv ("HOME"));
-   strcat (fname, "/.gebr/menus.idx");
+	if ((menuindex = fopen(fname, "w")) == NULL ) {
+		log_message(INTERFACE, "Unable to access user's menus directory", TRUE);
+		return FALSE;
+	}
 
-   if ((menuindex = fopen(fname, "w")) == NULL ) {
-      log_message(INTERFACE, "Unable to access user's menus directory", TRUE);
-      return EXIT_FAILURE;
-   }
+	scan_dir(GEBRMENUSYS,   menuindex);
+	scan_dir(gebr.config.usermenus->str, menuindex);
 
-   scan_dir(GEBRMENUSYS,   menuindex);
-   scan_dir(gebr.pref.usermenus_value->str, menuindex);
+	fclose(menuindex);
 
-   fclose(menuindex);
+	/* Sort index */
+	{
+		char command[STRMAX];
+		sprintf(command, "sort %s >/tmp/gebrmenus.tmp; mv /tmp/gebrmenus.tmp %s",
+			fname, fname);
+		system(command);
+	}
 
-   /* Sort index */
-
-   {
-      char command[STRMAX];
-      sprintf(command, "sort %s >/tmp/gebrmenus.tmp; mv /tmp/gebrmenus.tmp %s",
-	      fname, fname);
-      system(command);
-   }
-
-   return EXIT_SUCCESS;
+	return TRUE;
 }
 
 /*
@@ -247,7 +249,7 @@ menus_fname   (const gchar  *menu,
    g_string_free(*fname, TRUE);
 
    /* user's menus directory */
-   *fname = g_string_new(gebr.pref.usermenus_value->str);
+   *fname = g_string_new(gebr.config.usermenus->str);
    g_string_append(*fname, "/");
    g_string_append(*fname, menu);
 
@@ -293,10 +295,10 @@ menu_show_help (void)
 	if (menu == NULL)
 		goto out;
 	else
-	   g_string_free(menu_path, TRUE);
+		g_string_free(menu_path, TRUE);
 
-	show_help( (gchar*)geoxml_document_get_help(GEOXML_DOC(menu)), "Menu help", (gchar*)geoxml_document_get_filename(GEOXML_DOC(menu)));
+	show_help((gchar*)geoxml_document_get_help(GEOXML_DOC(menu)), _("Menu help"),
+		(gchar*)geoxml_document_get_filename(GEOXML_DOC(menu)));
 
-out:
-	g_free(menu_fn);
+out:	g_free(menu_fn);
 }

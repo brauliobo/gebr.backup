@@ -110,7 +110,7 @@ flow_edition_setup_ui(void)
 		gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_REMOVE, 1));
 		gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 0);
 		g_signal_connect (GTK_OBJECT (button), "clicked",
-				GTK_SIGNAL_FUNC (program_remove_from_flow), NULL );
+				GTK_SIGNAL_FUNC (flow_program_remove), NULL );
 
 		button = gtk_button_new ();
 		gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_HELP, 1));
@@ -122,13 +122,13 @@ flow_edition_setup_ui(void)
 		gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_GO_DOWN, 1));
 		gtk_box_pack_end (GTK_BOX (vbox), button, FALSE, FALSE, 0);
 		g_signal_connect (GTK_OBJECT (button), "clicked",
-				GTK_SIGNAL_FUNC (program_move_down), NULL );
+				GTK_SIGNAL_FUNC (flow_program_move_down), NULL );
 
 		button = gtk_button_new ();
 		gtk_container_add (GTK_CONTAINER (button), gtk_image_new_from_stock (GTK_STOCK_GO_UP, 1));
 		gtk_box_pack_end (GTK_BOX (vbox), button, FALSE, FALSE, 0);
 		g_signal_connect (GTK_OBJECT (button), "clicked",
-				GTK_SIGNAL_FUNC (program_move_up), NULL );
+				GTK_SIGNAL_FUNC (flow_program_move_up), NULL );
 
 
 		/*

@@ -32,42 +32,8 @@
 #include "callbacks.h"
 #include "cb_line.h"
 
-#define PROJDIR "/projects"
-#define PROJIDX "/projects.idx"
-
-/* Function: project_load
- * Load a project from its filename, handling errors
- */
-GeoXmlProject *
-project_load (gchar * path)
-{
-	GeoXmlDocument * doc;
-	int ret;
-
-	/* TODO: handle errors in a different way, maybe using statusbar */
-	if ((ret = geoxml_document_load (&doc, path)))
-		switch (ret) {
-		case GEOXML_RETV_DTD_SPECIFIED:
-			printf("dtd specified\n");
-			break;
-		case GEOXML_RETV_INVALID_DOCUMENT:
-			printf("invalid document\n");
-			break;
-		case GEOXML_RETV_CANT_ACCESS_FILE:
-			printf("can't access file\n");
-			break;
-		case GEOXML_RETV_CANT_ACCESS_DTD:
-			printf("can't access dtd\n");
-			break;
-		default:
-			printf("unspecified error\n");
-			break;
-		}
-
-	return GEOXML_PROJECT(doc);
-}
-
-/* Function: projects_refresh
+/*
+ * Function: projects_refresh
  * Reload the projets from the data directory
  */
 void

@@ -23,13 +23,10 @@
 
 
 GeoXmlFlow *
-flow_load_path (gchar * path);
+flow_load_path(gchar * path);
 
 void
-flow_load (void);
-
-void
-flow_info_update (void);
+flow_load(void);
 
 int
 flow_save   (void);
@@ -52,12 +49,7 @@ flow_rename  (GtkCellRendererText *cell,
 	      gpointer             user_data);
 
 void
-flow_properties (void);
-
-void
-flow_properties_actions		(GtkDialog *dialog,
-				 gint       arg1,
-				 gpointer   user_data);
+flow_program_move_down(void);
 
 void
 flow_io (void);

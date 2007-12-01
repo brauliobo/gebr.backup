@@ -114,10 +114,10 @@ parameters_configure_setup_ui(void)
 		return;
 	}
 
-	gebr.parameters = gtk_dialog_new_with_buttons ("Parameters",
-						GTK_WINDOW(gebr.mainwin),
-						GTK_DIALOG_DESTROY_WITH_PARENT,
-						GTK_STOCK_OK,     GTK_RESPONSE_OK,
+	gebr.parameters = gtk_dialog_new_with_buttons(_("Parameters"),
+						GTK_WINDOW(gebr.window),
+						GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+						GTK_STOCK_OK, GTK_RESPONSE_OK,
 						GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 						NULL);
 	gtk_dialog_add_button(GTK_DIALOG(gebr.parameters), "Default", GTK_RESPONSE_DEFAULT);

@@ -29,7 +29,22 @@ struct ui_flow_browse {
 	GtkWidget *		widget;
 
 	GtkListStore *		store;
-	GtkWidget *		flow_view;
+	GtkWidget *		view;
+
+	struct info {
+		GtkWidget *	title;
+		GtkWidget *	description;
+
+		GtkWidget *	input_label;
+		GtkWidget *	input;
+		GtkWidget *	output_label;
+		GtkWidget *	output;
+		GtkWidget *	error_label;
+		GtkWidget *	error;
+
+		GtkWidget *	help;
+		GtkWidget *	author;
+	} info;
 };
 
 struct ui_flow_browse

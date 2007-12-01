@@ -22,9 +22,9 @@
 
 /* Store field */
 enum {
-   SERVER_ADDRESS,
-   SERVER_POINTER,
-   SERVER_N_COLUMN
+	SERVER_ADDRESS = 0,
+	SERVER_POINTER,
+	SERVER_N_COLUMN
 };
 
 struct ui_servers {

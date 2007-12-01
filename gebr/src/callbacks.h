@@ -22,27 +22,6 @@
 #include <glib.h>
 
 void
-show_widget   (GtkWidget *widget,
-	       GtkWidget *data   );
-void
-hide_widget   (GtkWidget *widget,
-	       GtkWidget *data   );
-
-void
-data_fname (const char *document,
-	    GString    **fname   );
-
-void
-pref_actions                (GtkDialog *dialog,
-			     gint       arg1,
-			     gpointer   user_data);
-
-void
-switch_menu     (GtkNotebook     *notebook,
-		 GtkNotebookPage *page,
-		 guint            page_num,
-		 gpointer         user_data);
-
-extern const char* browser[];
+switch_page(GtkNotebook * notebook, GtkNotebookPage * page, guint page_num)
 
 #endif //_GEBR_CALLBACKS_H_

@@ -89,8 +89,8 @@ ssh_read_stderr(GProcess * process, struct server * server)
 		g_process_kill(process);
 
 	error = g_process_read_stderr_string_all(process);
-	dialog = gtk_message_dialog_new(GTK_WINDOW(gebr.mainwin),
-		GTK_DIALOG_MODAL,
+	dialog = gtk_message_dialog_new(GTK_WINDOW(gebr.window),
+		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_MESSAGE_ERROR,
 		GTK_BUTTONS_CLOSE,
 		"Error contacting server host %s via ssh:\n%s",
@@ -299,18 +299,8 @@ server_run_flow(struct server * server)
 
 	/* TODO: check logged instead of connected */
 	if (g_socket_get_state(G_SOCKET(server->tcp_socket)) != G_SOCKET_STATE_CONNECTED) {
-	   GtkWidget *	dialog;
-
-	   dialog = gtk_message_dialog_new(GTK_WINDOW(gebr.mainwin),
-					   GTK_DIALOG_MODAL,
-					   GTK_MESSAGE_ERROR,
-					   GTK_BUTTONS_CLOSE,
-					   "You are not connected to this server");
-	   gtk_widget_show_all(dialog);
-	   gtk_dialog_run(GTK_DIALOG(dialog));
-
-	   gtk_widget_destroy(dialog);
-	   return;
+		log_message(ACTION, "You are not connected to this server", TRUE);
+		return;
 	}
 
 	/* removes flow's help */

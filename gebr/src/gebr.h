@@ -22,37 +22,26 @@
 
 #include <geoxml.h>
 #include <gui/about.h>
+#include <misc/utils.h>
 
 #include "cmdline.h"
 #include "ui_project_line.h"
 #include "ui_flow_browse.h"
 #include "ui_flow_edition.h"
 #include "ui_job_control.h"
+#include "ui_preferences.h"
 #include "ui_servers.h"
 
 /* global variable of common needed stuff */
 extern struct gebr gebr;
 
-#define NABAS 4
-
-/* Menubar */
+/* Menubar entries */
 enum {
 	MENUBAR_PROJECT,
 	MENUBAR_LINE,
 	MENUBAR_FLOW,
 	MENUBAR_FLOW_COMPONENTS,
 	MENUBAR_N
-};
-
-struct ui_preferences {
-	GtkWidget *	win;
-
-	GtkWidget *	username;
-	GtkWidget *	email;
-	GtkWidget *	usermenus;
-	GtkWidget *	data;
-	GtkWidget *	editor;
-	GtkWidget *	browser;
 };
 
 typedef struct {
@@ -63,40 +52,33 @@ typedef struct {
 	gebr_save_widget_t	error;
 } gebr_flow_io_t;
 
-typedef struct {
-	GtkWidget *title;
-	GtkWidget *description;
-
-	GtkWidget *input_label;
-	GtkWidget *input;
-	GtkWidget *output_label;
-	GtkWidget *output;
-	GtkWidget *error_label;
-	GtkWidget *error;
-
-	GtkWidget *help;
-
-	GtkWidget *author;
-} gebr_flow_info_t;
-
-typedef struct {
-   GdkPixbuf *	configured_icon;
-   GdkPixbuf *	unconfigured_icon;
-   GdkPixbuf *	disabled_icon;
-   GdkPixbuf *	running_icon;
-} gebr_pixmaps;
-
 struct gebr {
-	GtkWidget *			mainwin;
+	GtkWidget *			window;
 	GtkWidget *			menu[MENUBAR_N];
 	GtkWidget *			notebook;
 	GtkWidget *			statusbar;
 	struct about			about;
 
+	GeoXmlFlow *			flow;
+
 	/* status menu items */
 	GtkWidget *			configured_menuitem;
 	GtkWidget *			disabled_menuitem;
 	GtkWidget *			unconfigured_menuitem;
+
+	/* Persistant GUI */
+	struct ui_project_line		ui_project_line;
+	struct ui_flow_browse		ui_flow_browse;
+	struct ui_flow_edition		ui_flow_edition;
+	struct ui_job_control		ui_job_control;
+	struct ui_preferences		ui_preferences;
+	struct ui_servers		ui_servers;
+
+		/* flow info window */
+	gebr_flow_info_t	flow_info;
+
+	/* flow io window. */
+	gebr_flow_io_t		flow_io;
 
 	struct config {
 		/* config options from gengetopt
@@ -112,28 +94,19 @@ struct gebr {
 		GString *		browser;
 	} config;
 
-	struct ui_project_line		ui_project_line;
-	struct ui_flow_browse		ui_flow_browse;
-	struct ui_flow_edition		ui_flow_edition;
-	struct ui_job_control		ui_job_control;
-	struct ui_servers		ui_servers;
-
-	/* preferences window */
-	gebrw_pref_t		pref;
 	/* log file */
-	FILE *			log_fp;
-
-	/* flow info window */
-	gebr_flow_info_t	flow_info;
-
-	/* flow io window. */
-	gebr_flow_io_t		flow_io;
-
-	/* Pixmaps */
-	gebr_pixmaps pixmaps;
+	struct log *			log;
 
 	/* List of temporary file to be deleted */
-	GSList * tmpfiles;
+	GSList *			tmpfiles;
+
+	/* Pixmaps */
+	struct pixmaps {
+		GdkPixbuf *		configured_icon;
+		GdkPixbuf *		unconfigured_icon;
+		GdkPixbuf *		disabled_icon;
+		GdkPixbuf *		running_icon;
+	} pixmaps;
 };
 
 void
@@ -152,6 +125,6 @@ int
 gebr_config_save(void);
 
 void
-log_message(enum msg_type type, const gchar * message, gboolean in_statusbar);
+gebr_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message);
 
 #endif //__GEBR_H

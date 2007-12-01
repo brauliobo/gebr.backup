@@ -35,7 +35,7 @@ main(int argc, char ** argv, char ** env)
 	assembly_interface();
 	gebr_config_load(argc, argv);
 
-	gtk_widget_show_all(gebr.mainwin);
+	gtk_widget_show_all(gebr.window);
 	gtk_main();
 
 	return EXIT_SUCCESS;

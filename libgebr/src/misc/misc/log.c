@@ -15,16 +15,20 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <time.h>
+#include <stdio.h>
+
 #include "log.h"
 
 /*
  * Internal functions
  */
 
+void
 log_messages_free_each(struct log_message * message)
 {
-	g_string_free(message, TRUE);
-	g_free(log_message);
+	g_string_free(message->string, TRUE);
+	g_free(message);
 }
 
 /*
@@ -36,27 +40,33 @@ log_open(const gchar * path)
 {
 	struct log *	log;
 	GIOStatus	io_status;
+	GError *	error;
 
 	log = g_malloc(sizeof(log));
+	error = NULL;
 	*log = (struct log) {
-		.io_channel = g_io_channel_new_file(path, "r+"),
+		.io_channel = g_io_channel_new_file(path, "r+", &error),
 		.messages = NULL
 	};
 
-	while (1) {
-		GString *	tmp;
-		GError *	error;
+// 	while (1) {
+// 		GString *	tmp;
+// 		GError *	error;
+//
+// 		error = NULL;
+// 		tmp = g_string_new(NULL);
+// 		io_status = g_io_channel_read_line_string(log->io_channel, &tmp, NULL, &error);
+// 		if (io_status != G_IO_STATUS_EOF) {
+// 			struct log_message * log
+// 		} else {
+// 			g_string_free(tmp, TRUE);
+// 			break;
+// 		}
+// 	}
+	/* FIXME: */
+	g_io_channel_seek_position(log->io_channel, 0, G_SEEK_END, &error);
 
-		error = NULL;
-		tmp = g_string_new(NULL);
-		io_status = g_io_channel_read_line_string(log->io_channel, &tmp, NULL, &error);
-		if (io_status != G_IO_STATUS_EOF) {
-			struct log_message * log
-		} else {
-			g_string_free(tmp, TRUE);
-			break;
-		}
-	}
+	return log;
 }
 
 void
@@ -73,5 +83,49 @@ log_close(struct log * log)
 void
 log_add_message(struct log * log, enum log_message_type type, GString * message)
 {
+	GString *	line;
+	gchar *		ident_str;
+	gchar		time_str[30];
+	time_t		t;
+	struct tm *	lt;
+	gsize		bytes_written;
+	GError *	error;
 
+	/* initialization */
+	line = g_string_new(NULL);
+	error = NULL;
+
+	switch (type) {
+	case START:
+		ident_str = "[STR]";
+		break;
+	case END:
+		ident_str = "[END]";
+		break;
+	case INFO:
+		ident_str = "[INFO]";
+		break;
+	case ERROR:
+		ident_str = "[ERR]";
+		break;
+	case WARNING:
+		ident_str = "[WARN]";
+		break;
+	default:
+		ident_str = "[UNK]";
+		break;
+	}
+
+	/* TODO: use own date library */
+	time(&t);
+	lt = localtime(&t);
+	strftime(time_str, 30, "%F %T", lt);
+
+	/* assembly log line and write to file */
+	g_string_printf(line, "%s %s %s\n", ident_str, time_str, message->str);
+	g_io_channel_write_chars(log->io_channel, line->str, line->len, &bytes_written, &error);
+	g_io_channel_flush(log->io_channel, &error);
+
+	/* frees */
+	g_string_free(line, TRUE);
 }
