@@ -40,9 +40,12 @@ log_open(const gchar * path)
 {
 	struct log *	log;
 	GIOStatus	io_status;
+
+	GString *	line;
 	GError *	error;
 
 	log = g_malloc(sizeof(log));
+	line = g_string_new(NULL);
 	error = NULL;
 	*log = (struct log) {
 		.io_channel = g_io_channel_new_file(path, "r+", &error),
@@ -55,16 +58,17 @@ log_open(const gchar * path)
 //
 // 		error = NULL;
 // 		tmp = g_string_new(NULL);
-// 		io_status = g_io_channel_read_line_string(log->io_channel, &tmp, NULL, &error);
+// 		io_status = g_io_channel_read_line_string(log->io_channel, line, NULL, &error);
 // 		if (io_status != G_IO_STATUS_EOF) {
 // 			struct log_message * log
 // 		} else {
-// 			g_string_free(tmp, TRUE);
 // 			break;
 // 		}
 // 	}
 	/* FIXME: */
 	g_io_channel_seek_position(log->io_channel, 0, G_SEEK_END, &error);
+
+	g_string_free(line, TRUE);
 
 	return log;
 }
@@ -81,7 +85,7 @@ log_close(struct log * log)
 }
 
 void
-log_add_message(struct log * log, enum log_message_type type, GString * message)
+log_add_message(struct log * log, enum log_message_type type, const gchar * message)
 {
 	GString *	line;
 	gchar *		ident_str;
@@ -122,7 +126,7 @@ log_add_message(struct log * log, enum log_message_type type, GString * message)
 	strftime(time_str, 30, "%F %T", lt);
 
 	/* assembly log line and write to file */
-	g_string_printf(line, "%s %s %s\n", ident_str, time_str, message->str);
+	g_string_printf(line, "%s %s %s\n", ident_str, time_str, message);
 	g_io_channel_write_chars(log->io_channel, line->str, line->len, &bytes_written, &error);
 	g_io_channel_flush(log->io_channel, &error);
 

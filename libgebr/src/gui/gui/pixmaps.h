@@ -21,6 +21,9 @@
 #include <gtk/gtk.h>
 
 GdkPixbuf *
+pixmaps_gebr_icon_16x16(void);
+
+GdkPixbuf *
 pixmaps_gebr_icon_32x32(void);
 
 GdkPixbuf *

@@ -16,8 +16,9 @@
 
 libgebr_guipixmapsdir = $(datadir)/libgebr/pixmaps/
 libgebr_guipixmaps_DATA = \
-		gebr-icon-32x32.png \
-		gebr-icon-64x64.png \
-		gebr-logo.png
+	gebr-icon-16x16.png \
+	gebr-icon-32x32.png \
+	gebr-icon-64x64.png \
+	gebr-logo.png
 
 EXTRA_DIST = $(libgebr_guipixmaps_DATA)

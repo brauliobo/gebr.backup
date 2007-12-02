@@ -43,6 +43,6 @@ void
 log_close(struct log * log);
 
 void
-log_add_message(struct log * log, enum log_message_type type, GString * message);
+log_add_message(struct log * log, enum log_message_type type, const gchar * message);
 
 #endif //__LIBGEBR_MISC_LOG_H
