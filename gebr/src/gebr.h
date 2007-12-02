@@ -32,7 +32,6 @@
 #include "ui_job_control.h"
 #include "ui_preferences.h"
 #include "ui_server.h"
-#include "ui_flow.h"
 
 /* global variable of common needed stuff */
 extern struct gebr gebr;
@@ -52,13 +51,12 @@ struct gebr {
 	GtkWidget *			unconfigured_menuitem;
 
 	/* Persistant GUI */
-	struct ui_project_line		ui_project_line;
-	struct ui_flow_browse		ui_flow_browse;
-	struct ui_flow_edition		ui_flow_edition;
-	struct ui_job_control		ui_job_control;
-	struct ui_preferences		ui_preferences;
-	struct ui_server_list		ui_server_list;
-	struct ui_flow_io		ui_flow_io;
+	struct ui_project_line *	ui_project_line;
+	struct ui_flow_browse *		ui_flow_browse;
+	struct ui_flow_edition *	ui_flow_edition;
+	struct ui_job_control *		ui_job_control;
+	struct ui_preferences *		ui_preferences;
+	struct ui_server_list *		ui_server_list;
 
 	struct config {
 		/* config options from gengetopt
@@ -98,8 +96,8 @@ gebr_quit(void);
 void
 gebr_config_load(int argc, char ** argv);
 
-int
-gebr_config_reload(void);
+void
+gebr_config_apply(void);
 
 gboolean
 gebr_config_save(void);

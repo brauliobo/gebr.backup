@@ -26,16 +26,23 @@ gchar * no_flow_comp_selected_error =	_("No flow component selected");
 gchar * no_menu_selected_error =	_("No menu selected");
 gchar * selected_menu_instead_error =	_("Select a menu instead of a category");
 
+/*
+ * Prototypes
+ */
+
+static void
+flow_edition_component_selected(void);
+
 /* Function: flow_edition_setup_ui
  * Assembly the flow edit ui_flow_edition.widget.
  *
  * Return:
  * The structure containing relevant data.
  */
-struct ui_flow_edition
+struct ui_flow_edition *
 flow_edition_setup_ui(void)
 {
-	struct ui_flow_edition		ui_flow_edition;
+	struct ui_flow_edition *	ui_flow_edition;
 	GtkWidget *			hpanel;
 
 	/* Create flow edit ui_flow_edition.widget */
@@ -57,13 +64,13 @@ flow_edition_setup_ui(void)
 		scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 		gtk_container_add(GTK_CONTAINER(frame), scrolledwin);
 
-		ui_flow_edition.fseq_store = gtk_list_store_new(FSEQ_N_COLUMN,
+		ui_flow_edition->fseq_store = gtk_list_store_new(FSEQ_N_COLUMN,
 						GDK_TYPE_PIXBUF,
 						G_TYPE_STRING,
 						G_TYPE_STRING,
 						G_TYPE_ULONG);
 
-		ui_flow_edition.fseq_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_edition.fseq_store));
+		ui_flow_edition->fseq_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_edition->fseq_store));
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_flow_edition.fseq_view), FALSE);
 
 		renderer = gtk_cell_renderer_pixbuf_new();
@@ -80,7 +87,7 @@ flow_edition_setup_ui(void)
 		g_signal_connect(ui_flow_edition.fseq_view, "row-activated",
 				(GCallback) progpar_config_window, NULL);
 		g_signal_connect(GTK_OBJECT(ui_flow_edition.fseq_view), "cursor-changed",
-				GTK_SIGNAL_FUNC(flow_edition_selected), NULL);
+				GTK_SIGNAL_FUNC(flow_edition_component_selected), NULL);
 
 		gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_edition.fseq_view);
 		gtk_widget_set_size_request(GTK_WIDGET(scrolledwin), 180, 30);
@@ -143,12 +150,12 @@ flow_edition_setup_ui(void)
 		scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 		gtk_container_add(GTK_CONTAINER(vbox), scrolledwin);
 
-		ui_flow_edition.menu_store = gtk_tree_store_new(MENU_N_COLUMN,
+		ui_flow_edition->menu_store = gtk_tree_store_new(MENU_N_COLUMN,
 						G_TYPE_STRING,
 						G_TYPE_STRING,
 						G_TYPE_STRING);
 
-		ui_flow_edition.menu_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_edition.menu_store));
+		ui_flow_edition->menu_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_edition->menu_store));
 
 		g_signal_connect(GTK_OBJECT(ui_flow_edition.menu_view), "row-activated",
 				GTK_SIGNAL_FUNC(program_add_to_flow), NULL);
@@ -171,20 +178,21 @@ flow_edition_setup_ui(void)
 	return ui_flow_edition;
 }
 
-/* Function: flow_edition_selected
+/* Function: flow_edition_component_selected
  * When a flow component (a program in the flow) is selected
  * this funtions get the state of the program and set it on Flow Component Menu
  *
  * PS: this function is called when the signal "cursor-changed" is triggered
  * also by hand.
  */
-void
-flow_edition_selected(void)
+static void
+flow_edition_component_selected(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter;
 	GtkTreePath *		path;
+
 	GeoXmlProgram *		program;
 	gchar *			status;
 
@@ -199,11 +207,11 @@ flow_edition_selected(void)
 	status = (gchar *)geoxml_program_get_status(program);
 
 	if (!g_ascii_strcasecmp(status, "configured"))
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (gebr.configured_menuitem), TRUE);
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gebr.configured_menuitem), TRUE);
 	else if (!g_ascii_strcasecmp(status, "disabled"))
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (gebr.disabled_menuitem), TRUE);
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gebr.disabled_menuitem), TRUE);
 	else if (!g_ascii_strcasecmp(status, "unconfigured"))
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (gebr.unconfigured_menuitem), TRUE);
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gebr.unconfigured_menuitem), TRUE);
 
 	gtk_tree_path_free(path);
 }

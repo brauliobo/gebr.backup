@@ -29,13 +29,21 @@ extern gchar * no_flow_selected_error;
  * Prototypes
  */
 
-void
-flow_io_actions(GtkDialog * dialog, gint arg1);
+static void
+flow_io_actions(GtkDialog * dialog, gint arg1, struct ui_flow_io * ui_flow_io);
 
-struct ui_flow_io
+/*
+ * Function: flow_io_setup_ui
+ * A dialog for user selection of the flow IO files
+ *
+ * Return:
+ * The structure containing relevant data. It will be automatically freed when the
+ * dialog closes.
+ */
+struct ui_flow_io *
 flow_io_setup_ui(void)
 {
-	struct ui_flow_io	ui_flow_io;
+	struct ui_flow_io *	ui_flow_io;
 
 	GtkWidget *		dialog;
 	GtkWidget *		table;
@@ -43,8 +51,11 @@ flow_io_setup_ui(void)
 
 	if (gebr.flow == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
-		return ui_flow_io;
+		return NULL;
 	}
+
+	/* alloc */
+	ui_flow_io = g_malloc(sizeof(struct ui_flow_io));
 
 	dialog = gtk_dialog_new_with_buttons(_("Flow input/output"),
 						GTK_WINDOW(gebr.window),
@@ -52,7 +63,7 @@ flow_io_setup_ui(void)
 						GTK_STOCK_OK, GTK_RESPONSE_OK,
 						GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 						NULL);
-	ui_flow_io.dialog = dialog;
+	ui_flow_io->dialog = dialog;
 	gtk_widget_set_size_request(dialog, 390, 160);
 
 	g_signal_connect_swapped(dialog, "response",
@@ -67,49 +78,49 @@ flow_io_setup_ui(void)
 	/* Input */
 	label = gtk_label_new(_("Input file"));
 	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	ui_flow_io.input = gtk_file_entry_new();
-	gtk_widget_set_size_request(ui_flow_io.input, 140, 30);
+	ui_flow_io->input = gtk_file_entry_new();
+	gtk_widget_set_size_request(ui_flow_io->input, 140, 30);
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_io.input, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL,  3, 3);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_io->input, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL,  3, 3);
 	/* read */
-	gtk_file_entry_set_path(GTK_FILE_ENTRY(ui_flow_io.input), geoxml_flow_io_get_input(gebr.flow));
+	gtk_file_entry_set_path(GTK_FILE_ENTRY(ui_flow_io->input), geoxml_flow_io_get_input(gebr.flow));
 
 	/* Output */
 	label = gtk_label_new(_("Output file"));
 	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	ui_flow_io.output = gtk_file_entry_new();
-	gtk_widget_set_size_request(ui_flow_io.output, 140, 30);
+	ui_flow_io->output = gtk_file_entry_new();
+	gtk_widget_set_size_request(ui_flow_io->output, 140, 30);
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_io.output, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_io->output, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 	/* read */
-	gtk_file_entry_set_path(GTK_FILE_ENTRY(ui_flow_io.output), geoxml_flow_io_get_output(gebr.flow));
+	gtk_file_entry_set_path(GTK_FILE_ENTRY(ui_flow_io->output), geoxml_flow_io_get_output(gebr.flow));
 
 	/* Error */
 	label = gtk_label_new(_("Error log file"));
 	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
-	ui_flow_io.error = gtk_file_entry_new();
-	gtk_widget_set_size_request(ui_flow_io.error, 140, 30);
+	ui_flow_io->error = gtk_file_entry_new();
+	gtk_widget_set_size_request(ui_flow_io->error, 140, 30);
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_io.error, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_io->error, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
 	/* read */
-	gtk_file_entry_set_path(GTK_FILE_ENTRY(ui_flow_io.error), geoxml_flow_io_get_error(gebr.flow));
+	gtk_file_entry_set_path(GTK_FILE_ENTRY(ui_flow_io->error), geoxml_flow_io_get_error(gebr.flow));
 
 	gtk_widget_show_all(dialog);
 
 	return ui_flow_io;
 }
 
-void
-flow_io_actions(GtkDialog * dialog, gint arg1)
+static void
+flow_io_actions(GtkDialog * dialog, gint arg1, struct ui_flow_io * ui_flow_io)
 {
 	switch (arg1) {
 	case GTK_RESPONSE_OK:
 		geoxml_flow_io_set_input(gebr.flow,
-			gtk_file_entry_get_path(GTK_FILE_ENTRY(gebr.ui_flow_io.input)));
+			gtk_file_entry_get_path(GTK_FILE_ENTRY(ui_flow_io->input)));
 		geoxml_flow_io_set_output(gebr.flow,
-			gtk_file_entry_get_path(GTK_FILE_ENTRY(gebr.ui_flow_io.output)));
+			gtk_file_entry_get_path(GTK_FILE_ENTRY(ui_flow_io->output)));
 		geoxml_flow_io_set_error(gebr.flow,
-			gtk_file_entry_get_path(GTK_FILE_ENTRY(gebr.ui_flow_io.error)));
+			gtk_file_entry_get_path(GTK_FILE_ENTRY(ui_flow_io->error)));
 
 		flow_save();
 		break;
@@ -117,5 +128,6 @@ flow_io_actions(GtkDialog * dialog, gint arg1)
 		break;
 	}
 
-	gtk_widget_destroy(GTK_WIDGET(gebr.ui_flow_io.dialog));
+	gtk_widget_destroy(GTK_WIDGET(ui_flow_io->dialog));
+	g_free(ui_flow_io);
 }

@@ -25,6 +25,8 @@
 #include <unistd.h>
 #include <fnmatch.h>
 
+#include <glib/gstdio.h>
+
 #include "project.h"
 #include "gebr.h"
 #include "support.h"
@@ -58,8 +60,8 @@ project_new(void)
 	geoxml_document_set_email(GEOXML_DOC(project), gebr.config.email->str);
 	document_save(GEOXML_DOC(project));
 
-	gtk_tree_store_append(gebr.ui_project_line.store, &iter, NULL);
-	gtk_tree_store_set(gebr.ui_project_line.store, &iter,
+	gtk_tree_store_append(gebr.ui_project_line->store, &iter, NULL);
+	gtk_tree_store_set(gebr.ui_project_line->store, &iter,
 			PL_TITLE, title,
 			PL_FILENAME, filename,
 			-1);
@@ -91,7 +93,7 @@ project_delete(void)
 
 	int			nlines;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_project_line.view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_project_line->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
 		return;
@@ -121,7 +123,7 @@ project_delete(void)
 	gebr_message(ERROR, TRUE, TRUE, _("Erasing project '%s'"), title);
 
 	/* Remove the project from the store (and its children) */
-	gtk_tree_store_remove(GTK_TREE_STORE (gebr.ui_project_line.store), &iter);
+	gtk_tree_store_remove(GTK_TREE_STORE (gebr.ui_project_line->store), &iter);
 
 	/* finally, remove it from the disk */
 	document_delete(filename);
@@ -149,13 +151,13 @@ project_list_populate(void)
 		return;
 
 	/* free previous selection path */
-	if (gebr.ui_project_line.selection_path != NULL) {
-		gtk_tree_path_free(gebr.ui_project_line.selection_path);
-		gebr.ui_project_line.selection_path = NULL;
+	if (gebr.ui_project_line->selection_path != NULL) {
+		gtk_tree_path_free(gebr.ui_project_line->selection_path);
+		gebr.ui_project_line->selection_path = NULL;
 	}
-	gtk_tree_store_clear(gebr.ui_project_line.store);
-	gtk_list_store_clear(gebr.ui_flow_browse.store);
-	gtk_list_store_clear(gebr.ui_flow_edition.fseq_store);
+	gtk_tree_store_clear(gebr.ui_project_line->store);
+	gtk_list_store_clear(gebr.ui_flow_browse->store);
+	gtk_list_store_clear(gebr.ui_flow_edition->fseq_store);
 	flow_free();
 
 	while ((file = readdir (dir)) != NULL) {
@@ -171,8 +173,8 @@ project_list_populate(void)
 			goto out;
 
 		/* Gtk stuff */
-		gtk_tree_store_append(gebr.ui_project_line.store, &project_iter, NULL);
-		gtk_tree_store_set(gebr.ui_project_line.store, &project_iter,
+		gtk_tree_store_append(gebr.ui_project_line->store, &project_iter, NULL);
+		gtk_tree_store_set(gebr.ui_project_line->store, &project_iter,
 				PL_TITLE, geoxml_document_get_title(GEOXML_DOC(project)),
 				PL_FILENAME, geoxml_document_get_filename(GEOXML_DOC(project)),
 				-1);
@@ -189,8 +191,8 @@ project_list_populate(void)
 				continue;
 			}
 
-			gtk_tree_store_append(gebr.ui_project_line.store, &line_iter, &project_iter);
-			gtk_tree_store_set(gebr.ui_project_line.store, &line_iter,
+			gtk_tree_store_append(gebr.ui_project_line->store, &line_iter, &project_iter);
+			gtk_tree_store_set(gebr.ui_project_line->store, &line_iter,
 					PL_TITLE, geoxml_document_get_title(GEOXML_DOC(line)),
 					PL_FILENAME, geoxml_project_get_line_source(project_line),
 					-1);

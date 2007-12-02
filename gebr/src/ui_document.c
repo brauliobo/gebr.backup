@@ -16,37 +16,59 @@
  */
 
 #include "ui_document.h"
+#include "gebr.h"
+#include "support.h"
+#include "flow.h"
+#include "ui_help.h"
+
+/*
+ * Prototypes
+ */
+
+static void
+document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_properties * ui_document_properties);
 
 /*
  * Function: document_properties_setup_ui
  * Show the _document_ properties in a dialog
  * Create the user interface for editing _document_(flow, line or project) properties,
  * like author, email, report, etc.
+ *
+ * Return:
+ * The structure containing relevant data. It will be automatically freed when the
+ * dialog closes.
  */
-void
+struct ui_document_properties *
 document_properties_setup_ui(GeoXmlDocument * document)
 {
-	GtkTreeIter		iter;
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GtkWidget *		dialog;
-	GtkWidget *		table;
-	GtkWidget *		label;
+	struct ui_document_properties *	ui_document_properties;
+
+	GtkTreeSelection *		selection;
+	GtkTreeModel *			model;
+	GtkTreeIter			iter;
+
+	GtkWidget *			dialog;
+	GtkWidget *			table;
+	GtkWidget *			label;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.flow_view));
 	if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
-		return;
+		return NULL;
 	}
 
-	dialog = gtk_dialog_new_with_buttons("Flow properties",
-						GTK_WINDOW(gebr.window),
+	/* alloc */
+	ui_document_properties = g_malloc(sizeof(struct ui_document_properties));
+	ui_document_properties->document = document;
+
+	dialog = gtk_dialog_new_with_buttons(_("Flow properties"),
+						GTK_WINDOW(gebr.dialogdow),
 						GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 						GTK_STOCK_OK, GTK_RESPONSE_OK,
 						GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 						NULL);
 
-	gebr.flow_prop.win = GTK_WIDGET(dialog);
+	ui_document_properties->dialog = GTK_WIDGET(dialog);
 
 	g_signal_connect_swapped(dialog, "response",
 				G_CALLBACK(flow_properties_actions),
@@ -62,49 +84,53 @@ document_properties_setup_ui(GeoXmlDocument * document)
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 0);
 
 	/* Title */
-	label = gtk_label_new("Title");
+	label = gtk_label_new(_("Title"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	gebr.flow_prop.title = gtk_entry_new();
+	ui_document_properties->title = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), gebr.flow_prop.title, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
-	gtk_entry_set_text(GTK_ENTRY(gebr.flow_prop.title), geoxml_document_get_title(GEOXML_DOC(gebr.flow)));
+	gtk_table_attach(GTK_TABLE(table), ui_document_properties->title, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
+	/* read */
+	gtk_entry_set_text(GTK_ENTRY(ui_document_properties->title), geoxml_document_get_title(GEOXML_DOC(gebr.flow)));
 
 	/* Description */
-	label = gtk_label_new("Description");
+	label = gtk_label_new(_("Description"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	gebr.flow_prop.description = gtk_entry_new();
+	ui_document_properties->description = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), gebr.flow_prop.description, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_entry_set_text(GTK_ENTRY(gebr.flow_prop.description), geoxml_document_get_description(GEOXML_DOC(gebr.flow)));
+	gtk_table_attach(GTK_TABLE(table), ui_document_properties->description, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+	/* read */
+	gtk_entry_set_text(GTK_ENTRY(ui_document_properties->description), geoxml_document_get_description(GEOXML_DOC(gebr.flow)));
 
 	/* Help */
-	label = gtk_label_new("Help");
+	label = gtk_label_new(_("Help"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	gebr.flow_prop.help = gtk_button_new_from_stock(GTK_STOCK_EDIT);
+	ui_document_properties->help = gtk_button_new_from_stock(GTK_STOCK_EDIT);
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), gebr.flow_prop.help, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-	g_signal_connect(GTK_OBJECT(gebr.flow_prop.help), "clicked",
+	gtk_table_attach(GTK_TABLE(table), ui_document_properties->help, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+	g_signal_connect(GTK_OBJECT(ui_document_properties->help), "clicked",
 			GTK_SIGNAL_FUNC(help_edit), flow);
 
 	/* Author */
-	label = gtk_label_new("Author");
+	label = gtk_label_new(_("Author"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	gebr.flow_prop.author = gtk_entry_new();
+	ui_document_properties->author = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), gebr.flow_prop.author, 1, 2, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_entry_set_text(GTK_ENTRY(gebr.flow_prop.author), geoxml_document_get_author(GEOXML_DOC(gebr.flow)));
+	gtk_table_attach(GTK_TABLE(table), ui_document_properties->author, 1, 2, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
+	/* read */
+	gtk_entry_set_text(GTK_ENTRY(ui_document_properties->author), geoxml_document_get_author(GEOXML_DOC(gebr.flow)));
 
 	/* User email */
-	label = gtk_label_new("Email");
+	label = gtk_label_new(_("Email"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	gebr.flow_prop.email = gtk_entry_new();
+	ui_document_properties->email = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), gebr.flow_prop.email, 1, 2, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_entry_set_text(GTK_ENTRY(gebr.flow_prop.email), geoxml_document_get_email(GEOXML_DOC(gebr.flow)));
+	gtk_table_attach(GTK_TABLE(table), ui_document_properties->email, 1, 2, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
+	/* read */
+	gtk_entry_set_text(GTK_ENTRY(ui_document_properties->email), geoxml_document_get_email(GEOXML_DOC(gebr.flow)));
 
-	gtk_widget_show_all(dialog);
+	gtk_widget_show_all(ui_document_properties->dialog);
 
-	return;
+	return ui_document_properties;
 }
 
 /*
@@ -112,8 +138,8 @@ document_properties_setup_ui(GeoXmlDocument * document)
  * Take the appropriate action when the document properties dialog emmits
  * a response signal.
  */
-void
-document_properties_actions(GtkDialog * dialog, gint arg1, GeoXmlDocument * document)
+static void
+document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_properties * ui_document_properties)
 {
 	switch (arg1) {
 	case GTK_RESPONSE_OK: {
@@ -121,24 +147,30 @@ document_properties_actions(GtkDialog * dialog, gint arg1, GeoXmlDocument * docu
 		GtkTreeSelection *	selection;
 		GtkTreeModel *		model;
 
-		geoxml_document_set_title(GEOXML_DOC(gebr.flow), gtk_entry_get_text(GTK_ENTRY(gebr.flow_prop.title)));
-		geoxml_document_set_description(GEOXML_DOC(gebr.flow), gtk_entry_get_text(GTK_ENTRY(gebr.flow_prop.description)));
-		geoxml_document_set_author(GEOXML_DOC(gebr.flow), gtk_entry_get_text(GTK_ENTRY(gebr.flow_prop.author)));
-		geoxml_document_set_email(GEOXML_DOC(gebr.flow), gtk_entry_get_text(GTK_ENTRY(gebr.flow_prop.email)));
+		geoxml_document_set_title(ui_document_properties->document,
+			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->title)));
+		geoxml_document_set_description(ui_document_properties->document,
+			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->description)));
+		geoxml_document_set_author(ui_document_properties->document,
+			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->author)));
+		geoxml_document_set_email(ui_document_properties->document,
+			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->email)));
 
-		/* FIXME: !!!!*/
-		/* Update flow title in ui_flow_browse.store */
-		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.flow_view));
+		/* FIXME: make it work not only for flows!!!!*/
+		/* Update flow title in ui_flow_browse->store */
+		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
 		if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
-			gtk_list_store_set(gebr.ui_flow_browse.store, &iter,
+			gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
 					FB_TITLE, geoxml_document_get_title(GEOXML_DOC(gebr.flow)),
 					-1);
 		}
-
 		flow_save();
+
 		break;
 	} default:                  /* does nothing */
 		break;
 	}
-	gtk_widget_destroy(GTK_WIDGET(gebr.flow_prop.win));
+
+	gtk_widget_destroy(GTK_WIDGET(ui_document_properties->dialog));
+	g_free(ui_document_properties);
 }

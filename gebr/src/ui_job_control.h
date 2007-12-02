@@ -37,7 +37,7 @@ struct ui_job_control {
 	GtkTextBuffer *		text_buffer;
 };
 
-struct ui_job_control
+struct ui_job_control *
 job_control_setup_ui(void);
 
 #endif //__UI_JOB_CONTROL_H

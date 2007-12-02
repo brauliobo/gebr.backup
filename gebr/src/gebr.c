@@ -99,27 +99,34 @@ gebr_quit(void)
 	log_close(gebr.log);
 
 	/* Free servers structs */
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list.store), &iter);
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
 	while (valid) {
 		struct server *	server;
 
-		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list.store), &iter,
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter,
 				SERVER_POINTER, &server,
 				-1);
 		server_free(server);
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_server_list.store), &iter);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
 	}
 	/* Free jobs structs */
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control.store), &iter);
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
 	while (valid) {
 		struct job *	job;
 
-		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control.store), &iter,
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
 				JC_STRUCT, &job,
 				-1);
 		job_free(job);
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control.store), &iter);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
 	}
+
+	g_free(gebr.ui_project_line);
+	g_free(gebr.ui_flow_browse);
+	g_free(gebr.ui_flow_edition);
+	g_free(gebr.ui_job_control);
+	g_free(gebr.ui_preferences);
+	g_free(gebr.ui_server_list);
 
 	gtk_main_quit();
 
@@ -150,7 +157,7 @@ gebr_config_load(int argc, char ** argv)
 
 	g_string_printf(config, "%s/.gebr/.gebr.conf", getenv("HOME"));
 	if (g_access(config->str, F_OK)) {
-		gtk_widget_show(gebr.ui_preferences.dialog);
+		gtk_widget_show(gebr.ui_preferences->dialog);
 		goto out;
 	}
 
@@ -170,14 +177,14 @@ gebr_config_load(int argc, char ** argv)
 
 	if (!(gebr.config.ggopt.usermenus_given && gebr.config.ggopt.data_given &&
 		gebr.config.ggopt.editor_given && gebr.config.ggopt.browser_given))
-		gtk_widget_show(gebr.ui_preferences.dialog);
+		gtk_widget_show(gebr.ui_preferences->dialog);
 	else {
 		menu_list_populate();
 		project_list_populate();
 	}
 
 	/* init server list store */
-	gebr.ui_server_list.store = gtk_list_store_new(SERVER_N_COLUMN,
+	gebr.ui_server_list->store = gtk_list_store_new(SERVER_N_COLUMN,
 					G_TYPE_STRING,
 					G_TYPE_POINTER);
 	if (!gebr.config.ggopt.server_given) {
@@ -185,8 +192,8 @@ gebr_config_load(int argc, char ** argv)
 		gchar		hostname[100];
 
 		gethostname(hostname, 100);
-		gtk_list_store_append (gebr.ui_server_list.store, &iter);
-		gtk_list_store_set (gebr.ui_server_list.store, &iter,
+		gtk_list_store_append (gebr.ui_server_list->store, &iter);
+		gtk_list_store_set (gebr.ui_server_list->store, &iter,
 				SERVER_ADDRESS, hostname,
 				SERVER_POINTER, server_new(hostname),
 				-1);
@@ -194,8 +201,8 @@ gebr_config_load(int argc, char ** argv)
 		for (i=0; i < gebr.config.ggopt.server_given; ++i) {
 			GtkTreeIter	iter;
 
-			gtk_list_store_append(gebr.ui_server_list.store, &iter);
-			gtk_list_store_set(gebr.ui_server_list.store, &iter,
+			gtk_list_store_append(gebr.ui_server_list->store, &iter);
+			gtk_list_store_set(gebr.ui_server_list->store, &iter,
 						SERVER_ADDRESS, gebr.config.ggopt.server_arg[i],
 						SERVER_POINTER, server_new(gebr.config.ggopt.server_arg[i]),
 						-1);
@@ -207,17 +214,15 @@ out:	g_string_free(config, TRUE);
 }
 
 /*
- * Function: gebr_config_reload
- * Reload configuration for GêBR
+ * Function: gebr_config_apply
+ * Apply configurations to GêBR
  */
-int
-gebr_config_reload(void)
+void
+gebr_config_apply(void)
 {
 	menu_list_create_index();
 	menu_list_populate();
 	project_list_populate();
-
-	return EXIT_SUCCESS;
 }
 
 /*
@@ -259,18 +264,18 @@ gebr_config_save(void)
 		fprintf(fp, "browser = \"%s\"\n", gebr.config.browser->str);
 
 	/* Save list of servers */
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list.store), &iter);
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
 	while (valid) {
 		gchar *	server;
 
-		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list.store), &iter,
+		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list->store), &iter,
 				SERVER_ADDRESS, &server,
 				-1);
 
 		fprintf(fp, "server = \"%s\"\n", server);
 
 		g_free(server);
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_server_list.store), &iter);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
 	}
 
 	fclose(fp);

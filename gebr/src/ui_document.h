@@ -18,7 +18,23 @@
 #ifndef __DOCUMENT_H
 #define __DOCUMENT_H
 
-void
+#include <gtk/gtk.h>
+
+#include <geoxml.h>
+
+struct ui_document_properties {
+	GtkWidget *	dialog;
+
+	GeoXmlDocument *	document;
+
+	GtkWidget *	title;
+	GtkWidget *	description;
+	GtkWidget *	help;
+	GtkWidget *	author;
+	GtkWidget *	email;
+};
+
+struct ui_document_properties *
 document_properties_setup_ui(GeoXmlDocument * document);
 
 #endif //__DOCUMENT_H

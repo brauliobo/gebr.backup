@@ -34,7 +34,7 @@ struct ui_server_list {
 	GtkWidget *		view;
 };
 
-struct ui_server_list
+struct ui_server_list *
 server_list_setup_ui(void);
 
 #endif //__UI_SERVERS_H

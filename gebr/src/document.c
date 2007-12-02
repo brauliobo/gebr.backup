@@ -53,30 +53,27 @@ document_load_path(const gchar * path)
 	int			ret;
 
 	if ((ret = geoxml_document_load(&document, path)) < 0) {
-		GString *	error;
+		gchar *	error;
 
-		error = g_string_new(NULL);
-		g_string_printf(error, _("Can't load document at %s: "), path);
 		switch (ret) {
 		case GEOXML_RETV_DTD_SPECIFIED:
-			g_string_append(error, _("DTD specified"));
+			error = _("DTD specified");
 			break;
 		case GEOXML_RETV_INVALID_DOCUMENT:
-			g_string_append(error, _("invalid document"));
+			error = _("invalid document");
 			break;
 		case GEOXML_RETV_CANT_ACCESS_FILE:
-			g_string_append(error, _("can't access file"));
+			error = _("can't access file");
 			break;
 		case GEOXML_RETV_CANT_ACCESS_DTD:
-			g_string_append(error, _("can't access DTD"));
+			error = _("can't access DTD");
 			break;
 		default:
-			g_string_append(error, _("unspecified error"));
+			error = _("unspecified error");
 			break;
 		}
 
-		gebr_message(ERROR, TRUE, TRUE, error->str);
-		g_string_free(error, TRUE);
+		gebr_message(ERROR, TRUE, TRUE, _("Can't load document at %s: "), error);
 	}
 
 	return document;

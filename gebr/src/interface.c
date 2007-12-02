@@ -117,19 +117,19 @@ assembly_interface(void)
 
 	gebr.ui_project_line = project_line_setup_ui();
 	pagetitle = gtk_label_new(_("Projects and Lines"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_project_line.widget, pagetitle);
+	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_project_line->widget, pagetitle);
 
 	gebr.ui_flow_browse = flow_browse_setup_ui();
 	pagetitle = gtk_label_new(_("Flows"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_flow_browse.widget, pagetitle);
+	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_flow_browse->widget, pagetitle);
 
 	gebr.ui_flow_edition = flow_edition_setup_ui();
 	pagetitle = gtk_label_new(_("Flow edition"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_flow_edition.widget, pagetitle);
+	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_flow_edition->widget, pagetitle);
 
 	gebr.ui_job_control = job_control_setup_ui();
 	pagetitle = gtk_label_new(_("Job control"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_job_control.widget, pagetitle);
+	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_job_control->widget, pagetitle);
 
 	/* Create a status bar */
 	gebr.statusbar = gtk_statusbar_new();

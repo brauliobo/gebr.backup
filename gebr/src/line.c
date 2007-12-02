@@ -58,7 +58,7 @@ line_new(void)
 
 	title = _("New Line");
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line.view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &project_iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_selection_error);
 		return;
@@ -78,15 +78,15 @@ line_new(void)
 	}
 
 	/* gtk stuff */
-	gtk_tree_store_append(gebr.ui_project_line.store, &line_iter, &project_iter);
-	gtk_tree_store_set(gebr.ui_project_line.store, &line_iter,
+	gtk_tree_store_append(gebr.ui_project_line->store, &line_iter, &project_iter);
+	gtk_tree_store_set(gebr.ui_project_line->store, &line_iter,
 			PL_TITLE, title,
 			PL_FILENAME, line_filename->str,
 			-1);
 
 	gtk_tree_path_free(path);
-	path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_project_line.store), &line_iter);
-	gtk_tree_view_expand_to_path(GTK_TREE_VIEW(gebr.ui_project_line.view), path);
+	path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_project_line->store), &line_iter);
+	gtk_tree_view_expand_to_path(GTK_TREE_VIEW(gebr.ui_project_line->view), path);
 
 	/* libgeoxml stuff */
 	project = GEOXML_PROJECT(document_load(project_filename));
@@ -132,7 +132,7 @@ line_delete(void)
 	GeoXmlLine *		line;
 	GeoXmlLineFlow *	line_flow;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line.view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &line_iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_selection_error);
 		return;
@@ -178,7 +178,7 @@ line_delete(void)
 	}
 
 	/* finally, remove it from the disk and from the tree*/
-	gtk_tree_store_remove(GTK_TREE_STORE(gebr.ui_project_line.store), &line_iter);
+	gtk_tree_store_remove(GTK_TREE_STORE(gebr.ui_project_line->store), &line_iter);
 	document_delete(line_filename);
 	geoxml_document_free(GEOXML_DOC(line));
 
@@ -199,8 +199,8 @@ line_delete(void)
 	geoxml_document_free(GEOXML_DOC(project));
 
 	/* Clear the flow list */
-	gtk_list_store_clear (gebr.ui_flow_browse.store);
-	gtk_list_store_clear (gebr.ui_flow_edition.fseq_store);
+	gtk_list_store_clear (gebr.ui_flow_browse->store);
+	gtk_list_store_clear (gebr.ui_flow_edition->fseq_store);
 	flow_free();
 
 out:	g_free(title);
@@ -229,24 +229,24 @@ line_load_flows(void)
 	GeoXmlLine *		line;
 	GeoXmlLineFlow *	line_flow;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(gebr.ui_project_line.view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(gebr.ui_project_line->view));
 	if (gtk_tree_selection_get_selected (selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_selection_error);
 		flow_free();
 	}
 
 	selection_path = gtk_tree_model_get_path(model, &iter);
-	if (gebr.ui_project_line.selection_path != NULL && !gtk_tree_path_compare(selection_path, gebr.ui_project_line.selection_path)) {
+	if (gebr.ui_project_line->selection_path != NULL && !gtk_tree_path_compare(selection_path, gebr.ui_project_line->selection_path)) {
 		/* uhm, the same line/project is selected, don't need to do nothing */
 		gtk_tree_path_free(selection_path);
 		return;
 	}
-	gtk_tree_path_free(gebr.ui_project_line.selection_path);
-	gebr.ui_project_line.selection_path = selection_path;
+	gtk_tree_path_free(gebr.ui_project_line->selection_path);
+	gebr.ui_project_line->selection_path = selection_path;
 
 	/* reset part of GUI */
-	gtk_list_store_clear(gebr.ui_flow_browse.store);
-	gtk_list_store_clear(gebr.ui_flow_edition.fseq_store);
+	gtk_list_store_clear(gebr.ui_flow_browse->store);
+	gtk_list_store_clear(gebr.ui_flow_edition->fseq_store);
 	flow_free();
 
 	gtk_tree_model_get(model, &iter,
@@ -282,8 +282,8 @@ line_load_flows(void)
 		}
 
 		/* add to the flow browser. */
-		gtk_list_store_append(gebr.ui_flow_browse.store, &flow_iter);
-		gtk_list_store_set(gebr.ui_flow_browse.store, &flow_iter,
+		gtk_list_store_append(gebr.ui_flow_browse->store, &flow_iter);
+		gtk_list_store_set(gebr.ui_flow_browse->store, &flow_iter,
 				FB_TITLE, geoxml_document_get_title(GEOXML_DOC(flow)),
 				FB_FILENAME, flow_filename,
 				-1);

@@ -32,11 +32,11 @@ struct ui_project_line {
 
 	GtkTreeStore *		store;
 	GtkWidget *		view;
+	/* used to determine wether the selection changed */
 	GtkTreePath  *		selection_path;
-
 };
 
-struct ui_project_line
+struct ui_project_line *
 project_line_setup_ui(void);
 
 #endif //__UI_PROJECT_LINE_H

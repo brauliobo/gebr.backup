@@ -22,9 +22,6 @@
 #include <geoxml.h>
 
 void
-flow_load(void);
-
-void
 flow_save(void);
 
 void

@@ -25,8 +25,8 @@ struct ui_parameters {
 	GtkWidget *	dialog;
 
 	int		program_index;
-	GtkWidget **	par_widgets;
-	int		par_widgets_number;
+	GtkWidget **	widgets;
+	int		widgets_number;
 };
 
 struct ui_parameters *

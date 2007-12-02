@@ -122,7 +122,7 @@ menu_list_populate(void)
 		goto out;
 
 	/* Remove any previous menus from the list */
-	gtk_tree_store_clear(gebr.ui_flow_edition.menu_store);
+	gtk_tree_store_clear(gebr.ui_flow_edition->menu_store);
 	parent_iter = NULL;
 
 	index_io_channel = g_io_channel_new_file(index_path->str, "r", &error);
@@ -138,7 +138,7 @@ menu_list_populate(void)
 			goto cont;
 
 		if (!strlen(parts[0])) {
-			gtk_tree_store_append(gebr.ui_flow_edition.menu_store, &iter, parent_iter);
+			gtk_tree_store_append(gebr.ui_flow_edition->menu_store, &iter, parent_iter);
 			parent_iter = NULL;
 		} else {
 			GString *	titlebf;
@@ -150,14 +150,14 @@ menu_list_populate(void)
 			if (parent_iter != NULL) {
 				gchar *	category;
 
-				gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_edition.menu_store), parent_iter,
+				gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_edition->menu_store), parent_iter,
 						MENU_TITLE_COLUMN, &category,
 						-1);
 
 				/* different category? */
 				if (g_ascii_strcasecmp(category, titlebf->str)) {
-					gtk_tree_store_append(gebr.ui_flow_edition.menu_store, &category_iter, NULL);
-					gtk_tree_store_set(gebr.ui_flow_edition.menu_store, &category_iter,
+					gtk_tree_store_append(gebr.ui_flow_edition->menu_store, &category_iter, NULL);
+					gtk_tree_store_set(gebr.ui_flow_edition->menu_store, &category_iter,
 							MENU_TITLE_COLUMN, titlebf->str,
 							-1);
 					parent_iter = &category_iter;
@@ -165,8 +165,8 @@ menu_list_populate(void)
 
 				g_free(category);
 			} else {
-				gtk_tree_store_append(gebr.ui_flow_edition.menu_store, &category_iter, NULL);
-				gtk_tree_store_set(gebr.ui_flow_edition.menu_store, &category_iter,
+				gtk_tree_store_append(gebr.ui_flow_edition->menu_store, &category_iter, NULL);
+				gtk_tree_store_set(gebr.ui_flow_edition->menu_store, &category_iter,
 							MENU_TITLE_COLUMN, titlebf->str,
 							-1);
 				parent_iter = &category_iter;
@@ -175,7 +175,7 @@ menu_list_populate(void)
 			g_string_free(titlebf, TRUE);
 		}
 
-		gtk_tree_store_set(gebr.ui_flow_edition.menu_store, &iter,
+		gtk_tree_store_set(gebr.ui_flow_edition->menu_store, &iter,
 				MENU_TITLE_COLUMN, parts[1],
 				MENU_DESC_COLUMN, parts[2],
 				MENU_FILE_NAME_COLUMN, parts[3],

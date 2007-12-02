@@ -39,76 +39,6 @@ gchar * no_flow_selected_error =	_("No flow selected");
 gchar * no_program_selected_error =	_("No program selected");
 
 /*
- * Function: flow_load
- * Load a selected flow from file
- *
- * Load a selected flow from file when selected in "Flow Browse"
- */
-void
-flow_load(void)
-{
-	GtkTreeIter		iter;
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-
-	gchar *			filename;
-
-	GeoXmlProgram *		program;
-
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition.fseq_view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
-		if (gebr.flow != NULL)
-			flow_free();
-		return;
-	}
-
-	gtk_tree_model_get(GTK_TREE_MODEL (gebr.ui_flow_browse.store), &iter,
-			FB_FILENAME, &filename,
-			-1);
-
-	/* free previous flow */
-	if (gebr.flow != NULL)
-		flow_free();
-
-	gebr.flow = GEOXML_FLOW(document_load(filename));
-	if (gebr.flow == NULL)
-		goto out;
-	geoxml_flow_get_program(gebr.flow, &program, 0);
-	while (program != NULL) {
-		gchar *		menu;
-		gulong		prog_index;
-		GdkPixbuf *	pixbuf;
-
-		geoxml_program_get_menu(program, &menu, &prog_index);
-
-		if (strcmp(geoxml_program_get_status(program), "unconfigured") == 0)
-			pixbuf = gebr.pixmaps.unconfigured_icon;
-		else if (strcmp(geoxml_program_get_status(program), "configured") == 0)
-			pixbuf = gebr.pixmaps.configured_icon;
-		else if (strcmp(geoxml_program_get_status(program), "disabled") == 0)
-			pixbuf = gebr.pixmaps.disabled_icon;
-		else {
-			gebr_message(WARNING, TRUE, TRUE, _("Unknown flow program '%s' status"),
-				geoxml_program_get_title(program));
-			pixbuf = NULL;
-		}
-
-		/* Add to the GUI */
-		gtk_list_store_append(gebr.ui_flow_edition.fseq_store, &iter);
-		gtk_list_store_set(gebr.ui_flow_edition.fseq_store, &iter,
-				FSEQ_TITLE_COLUMN, geoxml_program_get_title(program),
-				FSEQ_STATUS_COLUMN, pixbuf,
-				FSEQ_MENU_FILE_NAME_COLUMN, menu,
-				FSEQ_MENU_INDEX, prog_index,
-				-1);
-
-		geoxml_program_next(&program);
-	}
-
-out:	g_free(filename);
-}
-
-/*
  * Function: flow_save
  * Save the current flow
  */
@@ -172,7 +102,7 @@ void
 flow_free(void)
 {
 	if (gebr.flow != NULL) {
-		gtk_list_store_clear(gebr.ui_flow_edition.fseq_store);
+		gtk_list_store_clear(gebr.ui_flow_edition->fseq_store);
 		geoxml_document_free(GEOXML_DOC(gebr.flow));
 		gebr.flow = NULL;
 	}
@@ -197,20 +127,20 @@ flow_new(void)
 	GeoXmlLine *		line;
 	GeoXmlFlow *		flow;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_project_line.view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_project_line->view));
 	if (gtk_tree_selection_get_selected (selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, _("Select a line to which a flow will be added to"));
 		return;
 	}
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line.store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->store), &iter,
 		PL_TITLE, &title,
 		PL_FILENAME, &line_filename,
 		-1);
 	title = _("New Flow");
 	flow_filename = document_assembly_filename(".flw");
 
-	if (gtk_tree_store_iter_depth(gebr.ui_project_line.store, &iter) < 1) {
+	if (gtk_tree_store_iter_depth(gebr.ui_project_line->store, &iter) < 1) {
 		gebr_message(ERROR, TRUE, FALSE, no_line_selected_error);
 		goto out;
 	}
@@ -238,8 +168,8 @@ flow_new(void)
 	geoxml_document_free(GEOXML_DOC(flow));
 
 	/* Add to the GUI */
-	gtk_list_store_append (gebr.ui_flow_browse.store, &iter);
-	gtk_list_store_set (gebr.ui_flow_browse.store, &iter,
+	gtk_list_store_append (gebr.ui_flow_browse->store, &iter);
+	gtk_list_store_set (gebr.ui_flow_browse->store, &iter,
 			FB_TITLE, title,
 			FB_FILENAME, flow_filename,
 			-1);
@@ -268,19 +198,19 @@ flow_delete(void)
 	GeoXmlLine *		line;
 	GeoXmlLineFlow *	line_flow;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition.fseq_view));
-	if (gtk_tree_selection_get_selected (selection, &model, &flow_iter) == FALSE) {
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
+	if (gtk_tree_selection_get_selected(selection, &model, &flow_iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
 		return;
 	}
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_browse.store), &flow_iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_browse->store), &flow_iter,
 			FB_TITLE, &title,
 			FB_FILENAME, &flow_filename,
 			-1);
 
 	/* get the line filename */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line.view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
 	gtk_tree_selection_get_selected(selection, &model, &line_iter);
 	gtk_tree_model_get(model, &line_iter,
 			PL_FILENAME, &line_filename,
@@ -310,8 +240,8 @@ flow_delete(void)
 	document_delete(flow_filename);
 
 	/* Finally, from the GUI */
-	gtk_list_store_remove(GTK_LIST_STORE (gebr.ui_flow_browse.store), &flow_iter);
-	gtk_list_store_clear(gebr.ui_flow_edition.fseq_store);
+	gtk_list_store_remove(GTK_LIST_STORE (gebr.ui_flow_browse->store), &flow_iter);
+	gtk_list_store_clear(gebr.ui_flow_edition->fseq_store);
 
 out:	g_free(title);
 	g_free(flow_filename);
@@ -333,7 +263,7 @@ flow_program_remove(void)
 	gulong 			nprogram;
 	gchar *			node;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition.fseq_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
 		return;
@@ -347,7 +277,7 @@ flow_program_remove(void)
 	geoxml_flow_remove_program(gebr.flow, program);
 
 	flow_save();
-	gtk_list_store_remove (GTK_LIST_STORE (gebr.ui_flow_edition.fseq_store), &iter);
+	gtk_list_store_remove (GTK_LIST_STORE (gebr.ui_flow_edition->fseq_store), &iter);
 }
 
 /*
@@ -364,13 +294,13 @@ flow_program_move_down(void)
 	gulong			nprogram;
 	gchar *			node;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition.fseq_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected (selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
 		return;
 	}
 	next = iter;
-	if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (gebr.ui_flow_edition.fseq_store), &next) == FALSE)
+	if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store), &next) == FALSE)
 		return;
 
 	/* Get index */
@@ -384,7 +314,7 @@ flow_program_move_down(void)
 	flow_save();
 
 	/* Update GUI */
-	gtk_list_store_move_after (gebr.ui_flow_edition.fseq_store, &iter, &next);
+	gtk_list_store_move_after (gebr.ui_flow_edition->fseq_store, &iter, &next);
 }
 
 /*
@@ -403,12 +333,12 @@ flow_program_move_up(void)
 	gulong 			nprogram;
 	gchar *			node;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition.fseq_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
 		return;
 	}
-	previous_path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_flow_edition.fseq_store), &iter);
+	previous_path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_flow_edition->fseq_store), &iter);
 	if (gtk_tree_path_prev(previous_path) == FALSE)
 		goto out;
 
@@ -423,9 +353,9 @@ flow_program_move_up(void)
 	flow_save();
 
 	/* View change */
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (gebr.ui_flow_edition.fseq_store),
+	gtk_tree_model_get_iter (GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store),
 				&previous, previous_path);
-	gtk_list_store_move_before (gebr.ui_flow_edition.fseq_store, &iter, &previous);
+	gtk_list_store_move_before (gebr.ui_flow_edition->fseq_store, &iter, &previous);
 
 out:	gtk_tree_path_free(previous_path);
 }
@@ -445,21 +375,21 @@ flow_run(void)
 	struct server *		server;
 
 	/* check for a flow selected */
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition.fseq_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
 		return;
 	}
 
-	has_first = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list.store), &first_iter);
+	has_first = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list->store), &first_iter);
 	if (!has_first) {
 		gebr_message(ERROR, TRUE, FALSE,
 			_("There is no servers available. Please add at least one at Configure/Server"));
 		return;
 	}
 
-	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebr.ui_server_list.store), NULL) == 1){
-		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list.store), &first_iter,
+	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebr.ui_server_list->store), NULL) == 1){
+		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list->store), &first_iter,
 			       SERVER_POINTER, &server,
 			       -1);
 		server_run_flow(server);
@@ -474,7 +404,7 @@ flow_run(void)
 						NULL);
 	gtk_widget_set_size_request(dialog, 380, 300);
 
-	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL (gebr.ui_server_list.store));
+	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL (gebr.ui_server_list->store));
 
 	renderer = gtk_cell_renderer_text_new ();
 	col = gtk_tree_view_column_new_with_attributes (_("Servers"), renderer, NULL);
@@ -496,7 +426,7 @@ flow_run(void)
 		GtkTreeIter       	iter;
 
 		gtk_tree_selection_get_selected(selection, &model, &iter);
-		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list.store), &iter,
+		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list->store), &iter,
 				SERVER_POINTER, &server,
 				-1);
 

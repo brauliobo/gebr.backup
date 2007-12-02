@@ -202,16 +202,16 @@ server_free(struct server * server)
 	gboolean	valid;
 
 	/* delete all jobs at server */
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control.store), &iter);
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
 	while (valid) {
 		struct job *	job;
 		GtkTreeIter	this;
 
-		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_job_control.store), &iter,
+		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
 				JC_STRUCT, &job,
 				-1);
 		this = iter;
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control.store), &iter);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
 
 		if (job->server == server)
 			job_delete(job);

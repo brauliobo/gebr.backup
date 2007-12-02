@@ -47,7 +47,7 @@ struct ui_flow_browse {
 	} info;
 };
 
-struct ui_flow_browse
+struct ui_flow_browse *
 flow_browse_setup_ui(void);
 
 void

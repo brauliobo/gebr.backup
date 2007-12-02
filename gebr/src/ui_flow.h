@@ -26,7 +26,7 @@ struct ui_flow_io {
 	GtkWidget *		error;
 };
 
-struct ui_flow_io
+struct ui_flow_io *
 flow_io_setup_ui(void);
 
 #endif //__UI_FLOW_H

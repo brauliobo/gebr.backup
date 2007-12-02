@@ -65,12 +65,10 @@ noinst_HEADERS = \
 	ui_job_control.h \
 	ui_preferences.h \
 	ui_server.h
-EXTRA_DIST = gebr.ggo
+EXTRA_DIST = gebr.ggo ${noinst_HEADERS}
 
 INCLUDES =	-DSYS_MENUS_DIR=\"$(datadir)/gebr/menus/\" \
 		-DPIXMAPS_DIR=\"$(datadir)/gebr/pixmaps/\" \
 		-DDATA_DIR=\"$(datadir)/gebr/\"
 AM_CFLAGS = -Wall $(GTK_CFLAGS) $(LIBGEBR_CFLAGS)
 gebr_LDADD = $(GTK_LIBS) $(LIBGEBR_LIBS)
-
-

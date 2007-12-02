@@ -47,11 +47,8 @@ struct ui_flow_edition {
 	GtkTreeStore *	menu_store;
 };
 
-struct ui_flow_edition
+struct ui_flow_edition *
 flow_edition_setup_ui(void);
-
-void
-flow_edition_selected(void);
 
 void
 flow_edition_change_properties(void);

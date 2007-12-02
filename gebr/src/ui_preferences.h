@@ -18,18 +18,20 @@
 #ifndef __UI_PREFERENCES_H
 #define __UI_PREFERENCES_H
 
-struct ui_preferences {
-	GtkWidget *	dialog;
+#include <gtk/gtk.h>
 
-	GtkWidget *	username;
-	GtkWidget *	email;
-	GtkWidget *	usermenus;
-	GtkWidget *	data;
-	GtkWidget *	editor;
-	GtkWidget *	browser;
+struct ui_preferences {
+	GtkWidget *		dialog;
+
+	GtkWidget *		username;
+	GtkWidget *		email;
+	GtkWidget *		usermenus;
+	GtkWidget *		data;
+	GtkWidget *		editor;
+	GtkWidget *		browser;
 };
 
-struct ui_preferences
+struct ui_preferences *
 preferences_setup_ui(void);
 
 #endif //__UI_PREFERENCES_H
