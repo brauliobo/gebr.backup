@@ -20,15 +20,15 @@
 GdkPixbuf *
 pixmaps_gebr_icon_16x16(void)
 {
-	static GdkPixbuf *	gebr_icon_32x32 = NULL;
+	static GdkPixbuf *	gebr_icon_16x16 = NULL;
 
-	if (gebr_icon_32x32 == NULL) {
+	if (gebr_icon_16x16 == NULL) {
 		GError * error;
 		error = NULL;
-		gebr_icon_32x32 = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr-icon-16x16.png", &error);
+		gebr_icon_16x16 = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr-icon-16x16.png", &error);
 	}
 
-	return gebr_icon_32x32;
+	return gebr_icon_16x16;
 }
 
 GdkPixbuf *
