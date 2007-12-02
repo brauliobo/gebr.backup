@@ -21,6 +21,13 @@
 #include "ui_help.h"
 
 /*
+ * Prototypes
+ */
+
+void
+flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text);
+
+/*
  * Function: add_flow_browse
  * Assembly the flow browse page.
  *
@@ -31,12 +38,17 @@ struct ui_flow_browse
 flow_browse_setup_ui(void)
 {
 	struct ui_flow_browse.	ui_flow_browse;
-	GtkWidget *		page;
-	GtkWidget *		hpanel;
-	GtkWidget *		scrolledwin;
+
 	GtkTreeSelection *	selection;
 	GtkTreeViewColumn *	col;
 	GtkCellRenderer *	renderer;
+
+	GtkWidget *		page;
+	GtkWidget *		hpanel;
+	GtkWidget *		scrolledwin;
+	GtkWidget *		frame;
+	GtkWidget *		infopage;
+
 	gchar *			label;
 
 	label = _("Flows");
@@ -81,73 +93,89 @@ flow_browse_setup_ui(void)
 	g_signal_connect(GTK_OBJECT(ui_flow_browse.flow_view), "cursor-changed",
 			GTK_SIGNAL_FUNC(flow_load), NULL);
 	g_signal_connect(GTK_OBJECT(ui_flow_browse.flow_view), "cursor-changed",
-			GTK_SIGNAL_FUNC(flow_browse_info_update();), NULL);
+			GTK_SIGNAL_FUNC(flow_browse_info_update()), NULL);
 
 	/*
 	 * Right side: flow info
 	 */
-	{
-		GtkWidget *	frame;
-		GtkWidget *	infopage;
+	frame = gtk_frame_new(_("Details"));
+	gtk_paned_pack2(GTK_PANED(hpanel), frame, TRUE, FALSE);
 
-		frame = gtk_frame_new(_("Details"));
-		gtk_paned_pack2(GTK_PANED(hpanel), frame, TRUE, FALSE);
+	infopage = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), infopage);
 
-		infopage = gtk_vbox_new(FALSE, 0);
-		gtk_container_add(GTK_CONTAINER(frame), infopage);
+	/* Title */
+	ui_flow_browse.flow_info.title = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.title), 0, 0);
+	gtk_box_pack_start(GTK_BOX(infopage), ui_flow_browse.flow_info.title, FALSE, TRUE, 0);
 
-		/* Title */
-		ui_flow_browse.flow_info.title = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.title), 0, 0);
-		gtk_box_pack_start(GTK_BOX(infopage), ui_flow_browse.flow_info.title, FALSE, TRUE, 0);
+	/* Description */
+	ui_flow_browse.flow_info.description = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.description), 0, 0);
+	gtk_box_pack_start(GTK_BOX(infopage), ui_flow_browse.flow_info.description, FALSE, TRUE, 10);
 
-		/* Description */
-		ui_flow_browse.flow_info.description = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.description), 0, 0);
-		gtk_box_pack_start(GTK_BOX(infopage), ui_flow_browse.flow_info.description, FALSE, TRUE, 10);
+	/* I/O */
+	GtkWidget *table;
+	table = gtk_table_new(3, 2, FALSE);
+	gtk_box_pack_start(GTK_BOX(infopage), table, FALSE, TRUE, 0);
 
-		/* I/O */
-		GtkWidget *table;
-		table = gtk_table_new(3, 2, FALSE);
-		gtk_box_pack_start(GTK_BOX(infopage), table, FALSE, TRUE, 0);
+	ui_flow_browse.flow_info.input_label = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.input_label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.input_label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
 
-		ui_flow_browse.flow_info.input_label = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.input_label), 0, 0);
-		gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.input_label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse.flow_info.input = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.input), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.input, 1, 2, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
 
-		ui_flow_browse.flow_info.input = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.input), 0, 0);
-		gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.input, 1, 2, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse.flow_info.output_label = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.output_label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.output_label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 
-		ui_flow_browse.flow_info.output_label = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.output_label), 0, 0);
-		gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.output_label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse.flow_info.output = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.output), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.output, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 
-		ui_flow_browse.flow_info.output = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.output), 0, 0);
-		gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.output, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse.flow_info.error_label = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.error_label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.error_label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
 
-		ui_flow_browse.flow_info.error_label = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.error_label), 0, 0);
-		gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.error_label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse.flow_info.error = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.error), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.error, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
 
-		ui_flow_browse.flow_info.error = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.error), 0, 0);
-		gtk_table_attach(GTK_TABLE(table), ui_flow_browse.flow_info.error, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+	/* Help */
+	ui_flow_browse.flow_info.help = gtk_button_new_from_stock(GTK_STOCK_INFO);
+	gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse.flow_info.help, FALSE, TRUE, 0);
+	g_signal_connect(GTK_OBJECT(ui_flow_browse.flow_info.help), "clicked",
+			GTK_SIGNAL_FUNC(flow_browse_show_help), flow);
 
-		/* Help */
-		ui_flow_browse.flow_info.help = gtk_button_new_from_stock(GTK_STOCK_INFO);
-		gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse.flow_info.help, FALSE, TRUE, 0);
-		g_signal_connect(GTK_OBJECT(ui_flow_browse.flow_info.help), "clicked",
-				GTK_SIGNAL_FUNC(flow_browse_show_help), flow);
-
-		/* Author */
-		ui_flow_browse.flow_info.author = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.author), 0, 0);
-		gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse.flow_info.author, FALSE, TRUE, 0);
-	}
+	/* Author */
+	ui_flow_browse.flow_info.author = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse.flow_info.author), 0, 0);
+	gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse.flow_info.author, FALSE, TRUE, 0);
 
 	return ui_flow_browse;
+}
+
+/*
+ * Function: flow_rename
+ * Rename a flow upon double click.
+ */
+void
+flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text)
+{
+	GtkTreeIter	iter;
+
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL (gebr.ui_flow_browse.store),
+					&iter,
+					path_string);
+	gtk_list_store_set (gebr.ui_flow_browse.store, &iter,
+			FB_TITLE, new_text,
+			-1);
+
+	/* Update XML */
+	geoxml_document_set_title(GEOXML_DOC(gebr.flow), new_text);
+	flow_save();
 }
 
 /*

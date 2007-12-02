@@ -21,8 +21,6 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#define GTK_RESPONSE_DEFAULT GTK_RESPONSE_APPLY
-
 struct ui_parameters {
 	GtkWidget *	dialog;
 

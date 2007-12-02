@@ -24,8 +24,8 @@
 void
 flow_load(void);
 
-int
-flow_save   (void);
+void
+flow_save(void);
 
 void
 flow_export(void);
@@ -38,9 +38,6 @@ flow_new(void);
 
 void
 flow_delete(void);
-
-void
-flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text);
 
 void
 flow_program_move_down(void);

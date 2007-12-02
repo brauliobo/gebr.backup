@@ -61,7 +61,7 @@ help_show(gchar * help, gchar * title, gchar * fname)
 		if ((gebrcsspos = strstr(ghelp->str, "gebr.css")) != NULL) {
 			pos = (gebrcsspos - ghelp->str)/sizeof(char);
 			g_string_erase(ghelp, pos, 8);
-			g_string_insert(ghelp, pos, "file://" GEBRDATADIR "/gebr.css");
+			g_string_insert(ghelp, pos, "file://" DATA_DIR "/gebr.css");
 		}
 	}
 
@@ -109,7 +109,7 @@ help_edit(GtkButton * button, GeoXmlDocument * document);
 
 	/* Call an editor */
 	if (!gebr.config.editor_given) {
-		log_message(ERROR, "No editor defined", TRUE);
+		gebr_message(ERROR, TRUE, FALSE, _("No editor defined. Choose one at Configure/Preferences"));
 		return;
 	}
 

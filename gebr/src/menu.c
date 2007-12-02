@@ -20,13 +20,16 @@
  *
  */
 
-#include <geoxml.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <fnmatch.h>
+
+#include <glib/gstdio.h>
+
+#include <geoxml.h>
 
 #include "menu.h"
 #include "gebr.h"
@@ -78,16 +81,17 @@ menu_get_path(const gchar * filename)
 
 	/* system directory */
 	path = g_string_new(NULL);
-	g_string_printf(path, "%s/%s", GEBRMENUSYS, filename);
-	if (access ((path)->str, F_OK) == 0)
+	g_string_printf(path, "%s/%s", SYS_MENUS_DIR, filename);
+	if (g_access((path)->str, F_OK) == 0)
 		goto out;
 
 	/* user's menus directory */
 	g_string_printf(path, "%s/%s", gebr.config.usermenus->str, filename);
-	if (access ((path)->str, F_OK) == 0)
+	if (g_access((path)->str, F_OK) == 0)
 		goto out;
 
-err:	g_string_free(path, TRUE);
+	/* an error occurred */
+	g_string_free(path, TRUE);
 	return NULL;
 
 out:	return path;
@@ -97,189 +101,183 @@ out:	return path;
  * Function: menu_list_populate
  * Read index and add menus from it to the view
  */
-int
+void
 menu_list_populate(void)
 {
-	FILE *		menuindex_fp;
-	gchar		fname[STRMAX];
-	gchar		line[STRMAX];
+	GIOChannel *	index_io_channel;
+	GError *	error;
+	GString *	index_path;
+	GString *	line;
+
 	GtkTreeIter	category_iter;
 	GtkTreeIter *	parent_iter;
 
-	strcpy (fname, getenv ("HOME"));
-	strcat (fname, "/.gebr/menus.idx");
+	/* initialization */
+	error = NULL;
+	index_path = g_string_new(NULL);
+	line = g_string_new(NULL);
 
-	if ( (menuindex_fp = fopen(fname, "r")) == NULL ) {
-		if (! menus_create_index ())
-			return EXIT_FAILURE;
-		else
-			menuindex_fp = fopen(fname, "r");
-	}
+	g_string_printf(index_path, "%s/.gebr/menus.idx", getenv("HOME"));
+	if (g_access(index_path->str, F_OK) && menu_list_create_index() == FALSE)
+		goto out;
 
 	/* Remove any previous menus from the list */
-	gtk_tree_store_clear (gebr.menu_store);
+	gtk_tree_store_clear(gebr.ui_flow_edition.menu_store);
 	parent_iter = NULL;
 
-	while (read_line(line, STRMAX, menuindex_fp)){
-		gchar *	parts[5];
-		GString * dummy;
-		GString *	titlebf;
+	index_io_channel = g_io_channel_new_file(index_path->str, "r", &error);
 
-		desmembra(line, 4, parts);
-		titlebf = g_string_new(NULL);
-		g_string_printf(titlebf, "<b>%s</b>", parts[0]);
+	while (g_io_channel_read_line_string(index_io_channel, line, NULL, &error) == G_IO_STATUS_NORMAL) {
+		gchar **	parts;
+		GString *	path;
+		GtkTreeIter	iter;
 
-		if (menus_fname(parts[3], &dummy) == EXIT_SUCCESS) {
-			GtkTreeIter iter;
+		parts = g_strsplit(line->str, "|", 4);
+		path = menu_get_path(parts[3]);
+		if (path == NULL)
+			goto cont;
 
-			if (parts[0] == NULL || !strlen(parts[0]))
-				parent_iter = NULL;
-			else {
-				gchar * category;
+		if (!strlen(parts[0])) {
+			gtk_tree_store_append(gebr.ui_flow_edition.menu_store, &iter, parent_iter);
+			parent_iter = NULL;
+		} else {
+			GString *	titlebf;
 
-				if (parent_iter != NULL) {
-					gtk_tree_model_get ( GTK_TREE_MODEL(gebr.menu_store), parent_iter,
-								MENU_TITLE_COLUMN, &category,
-								-1);
+			titlebf = g_string_new(NULL);
+			g_string_printf(titlebf, "<b>%s</b>", parts[0]);
 
+			/* is there a category? */
+			if (parent_iter != NULL) {
+				gchar *	category;
 
-					/* different category? */
-					if (g_ascii_strcasecmp(category, titlebf->str)) {
-						gtk_tree_store_append (gebr.menu_store, &category_iter, NULL);
+				gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_edition.menu_store), parent_iter,
+						MENU_TITLE_COLUMN, &category,
+						-1);
 
-
-						gtk_tree_store_set (gebr.menu_store, &category_iter,
-								MENU_TITLE_COLUMN, titlebf->str,
-								-1);
-
-						parent_iter = &category_iter;
-					}
-
-					g_free(category);
-				} else {
-					gtk_tree_store_append (gebr.menu_store, &category_iter, NULL);
-
-					gtk_tree_store_set (gebr.menu_store, &category_iter,
-								MENU_TITLE_COLUMN, titlebf->str,
-								-1);
+				/* different category? */
+				if (g_ascii_strcasecmp(category, titlebf->str)) {
+					gtk_tree_store_append(gebr.ui_flow_edition.menu_store, &category_iter, NULL);
+					gtk_tree_store_set(gebr.ui_flow_edition.menu_store, &category_iter,
+							MENU_TITLE_COLUMN, titlebf->str,
+							-1);
 					parent_iter = &category_iter;
 				}
+
+				g_free(category);
+			} else {
+				gtk_tree_store_append(gebr.ui_flow_edition.menu_store, &category_iter, NULL);
+				gtk_tree_store_set(gebr.ui_flow_edition.menu_store, &category_iter,
+							MENU_TITLE_COLUMN, titlebf->str,
+							-1);
+				parent_iter = &category_iter;
 			}
 
-			gtk_tree_store_append (gebr.menu_store, &iter, parent_iter);
-			gtk_tree_store_set (gebr.menu_store, &iter,
-					MENU_TITLE_COLUMN, parts[1],
-					MENU_DESC_COLUMN, parts[2],
-					MENU_FILE_NAME_COLUMN, parts[3],
-					-1);
+			g_string_free(titlebf, TRUE);
 		}
-		g_string_free(titlebf, TRUE);
+
+		gtk_tree_store_set(gebr.ui_flow_edition.menu_store, &iter,
+				MENU_TITLE_COLUMN, parts[1],
+				MENU_DESC_COLUMN, parts[2],
+				MENU_FILE_NAME_COLUMN, parts[3],
+				-1);
+
+		g_string_free(path, TRUE);
+cont:		g_strfreev(parts);
 	}
 
-	fclose (menuindex_fp);
-	return EXIT_SUCCESS;
+	g_io_channel_unref(index_io_channel);
+out:	g_string_free(index_path, TRUE);
+	g_string_free(line, TRUE);
 }
 
 /*
- * Function: scan_dir
- * Scans user's and system menus' directories for menus
+ * Function: menu_scan_directory
+ * Scans _directory_ for menus
  */
-void
-scan_dir (const char *path, FILE *fp)
+static void
+menu_scan_directory(const gchar * directory, FILE * index_fp)
 {
-	DIR *		dir;
-	struct dirent *	file;
+	DIR *			dir;
+	struct dirent *		file;
+	GString *		path;
 
-	if ((dir = opendir(path)) == NULL)
+	if ((dir = opendir(directory)) == NULL)
 		return;
 
-	while ((file = readdir (dir)) != NULL){
-		if (fnmatch ("*.mnu", file->d_name, 1))
+	path = g_string_new(NULL);
+	while ((file = readdir(dir)) != NULL) {
+		if (fnmatch("*.mnu", file->d_name, 1))
 			continue;
 
-		GeoXmlDocument *	doc;
+		GeoXmlDocument *	document;
 		GeoXmlCategory *	category;
-		gchar *			category_str;
-		int			ret;
-		gchar			filename[STRMAX];
 
-		sprintf(filename, "%s/%s", path, file->d_name);
+		g_string_printf(path, "%s/%s", directory, file->d_name);
 
-		if ((ret = geoxml_document_load (&doc, filename))) {
-			/* TODO: */
-			switch (ret) {
-			case GEOXML_RETV_DTD_SPECIFIED:
-
-			break;
-			case GEOXML_RETV_INVALID_DOCUMENT:
-
-			break;
-			case GEOXML_RETV_CANT_ACCESS_FILE:
-
-			break;
-			case GEOXML_RETV_CANT_ACCESS_DTD:
-
-			break;
-			default:
-
-			break;
-			}
-			return;
+		document = document_load_path(path->str);
+		if (document == NULL) {
+			g_string_free(path, TRUE);
+			continue;
 		}
 
-		geoxml_flow_get_category(GEOXML_FLOW(doc), &category, 0);
-		while ( category != NULL ){
-		        category_str = (gchar *)geoxml_category_get_name(category);
+		geoxml_flow_get_category(GEOXML_FLOW(document), &category, 0);
+		while (category != NULL) {
+			gchar *	category_name;
 
-			fprintf(fp, "%s|%s|%s|%s\n",
-				category_str,
-				geoxml_document_get_title(doc),
-				geoxml_document_get_description(doc),
-				geoxml_document_get_filename(doc) );
+		        category_name = (gchar *)geoxml_category_get_name(category);
+			fprintf(index_fp, "%s|%s|%s|%s\n",
+				category_name,
+				geoxml_document_get_title(document),
+				geoxml_document_get_description(document),
+				geoxml_document_get_filename(document));
 
 			geoxml_category_next(&category);
 		}
-		geoxml_document_free (doc);
+
+		geoxml_document_free(document);
 	}
-	closedir (dir);
+
+	closedir(dir);
+	g_string_free(path, TRUE);
 }
 
 /*
- * Function: menus_create_index
- * Create menus from found using scan_dir
+ * Function: menu_list_create_index
+ * Create menus from found using menu_scan_directory
  *
  * Returns TRUE if successful
  */
 gboolean
-menu_list_create_index(void);
+menu_list_create_index(void)
 {
 	GString *	path;
-	FILE *		menuindex;
+	FILE *		index_fp;
+	GString	*	sort_cmd_line;
+	gboolean	ret;
 
-	strcpy (fname, getenv ("HOME"));
-	strcat (fname, "/.gebr/menus.idx");
+	/* initialization */
+	ret = TRUE;
+	path = g_string_new(NULL);
+	sort_cmd_line = g_string_new(NULL);
 
-	if ((menuindex = fopen(fname, "w")) == NULL ) {
-		gebr_message(ERROR, TRUE, FALSE, "Unable to access user's menus directory");
-		return FALSE;
+	g_string_printf(path, "%s/.gebr/menus.idx", getenv("HOME"));
+	if ((index_fp = fopen(path->str, "w")) == NULL) {
+		gebr_message(ERROR, TRUE, FALSE, "Unable to write menus' index");
+		ret = FALSE;
+		goto out;
 	}
-
-	scan_dir(GEBRMENUSYS,   menuindex);
-	scan_dir(gebr.config.usermenus->str, menuindex);
-
-	fclose(menuindex);
+	menu_scan_directory(SYS_MENUS_DIR, index_fp);
+	menu_scan_directory(gebr.config.usermenus->str, index_fp);
+	fclose(index_fp);
 
 	/* Sort index */
-	{
-		GString	*	cmd_line;
+	g_string_printf(sort_cmd_line, "sort %s >/tmp/gebrmenus.tmp; mv /tmp/gebrmenus.tmp %s",
+		path->str, path->str);
+	system(sort_cmd_line->str);
 
-		cmd_line = g_string_new(NULL);
-		g_string_printf(cmd_line, "sort %s >/tmp/gebrmenus.tmp; mv /tmp/gebrmenus.tmp %s",
-			fname, fname);
+	/* frees */
+out:	g_string_free(path, TRUE);
+	g_string_free(sort_cmd_line, TRUE);
 
-		system(cmd_line->str);
-		g_string_free(cmd_line, TRUE);
-	}
-
-	return TRUE;
+	return ret;
 }

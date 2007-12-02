@@ -29,7 +29,7 @@ menu_load_path(const gchar * path);
 GString *
 menu_get_path(const gchar * filename);
 
-int
+void
 menu_list_populate(void);
 
 gboolean

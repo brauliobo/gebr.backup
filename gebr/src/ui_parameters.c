@@ -26,9 +26,9 @@
 #include <geoxml.h>
 
 #include "ui_parameters.h"
-#include "ui_parameters.h"
-#include "parameters.h"
 #include "menu.h"
+
+#define GTK_RESPONSE_DEFAULT	GTK_RESPONSE_APPLY
 
 /*
  * Prototypes

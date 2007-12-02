@@ -105,6 +105,6 @@ gboolean
 gebr_config_save(void);
 
 void
-gebr_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message);
+gebr_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message, ...);
 
 #endif //__GEBR_H

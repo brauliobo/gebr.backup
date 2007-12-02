@@ -44,10 +44,4 @@
 #  define N_(String) (String)
 #endif
 
-int
-read_line(const gchar * string, int n, FILE * fp);
-
-int
-desmembra(const gchar * string, int n, gchar ** part);
-
 #endif //__SUPPORT_H

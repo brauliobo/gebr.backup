@@ -33,6 +33,9 @@ document_save(GeoXmlDocument * document);
 GString *
 document_get_path(const gchar * filename);
 
+void
+document_delete(const gchar * filename);
+
 GString *
 document_assembly_filename(const gchar * extension);
 

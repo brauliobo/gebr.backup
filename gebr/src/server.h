@@ -18,9 +18,9 @@
 #ifndef __SERVER_H
 #define __SERVER_H
 
-#include <misc/gtcpsocket.h>
-#include <misc/protocol.h>
-#include <misc/ssh.h>
+#include <comm/gtcpsocket.h>
+#include <comm/protocol.h>
+#include <comm/ssh.h>
 
 struct server {
 	/* the communication channel. */
@@ -31,7 +31,7 @@ struct server {
 	GString *		address;
 	guint16			port;
 	/* ssh tunneling */
-	struct ssh_tunnel	ssh_tunnel;
+	struct ssh_tunnel *	ssh_tunnel;
 
 	guint			retries;
 };

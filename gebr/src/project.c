@@ -19,7 +19,6 @@
  * Functions for projects manipulation
  */
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <dirent.h>
@@ -90,7 +89,6 @@ project_delete(void)
 	gchar *			title;
 	gchar *			filename;
 
-	GString *		message;
 	int			nlines;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_project_line.view));
@@ -104,7 +102,6 @@ project_delete(void)
 			PL_FILENAME, &filename,
 			-1);
 	path = gtk_tree_model_get_path(model, &iter);
-	message = g_string_new(NULL);
 
 	if (gtk_tree_path_get_depth(path) == 2) {
 		gebr_message(ERROR, TRUE, FALSE, no_project_selected_error);
@@ -112,33 +109,26 @@ project_delete(void)
 	}
 
 	/* TODO: If this project is not empty,
-	prompt the user to take about erasing its lines */
-
+	   prompt the user to take about erasing its lines */
 	/* Delete each line of the project */
+
 	if ((nlines = gtk_tree_model_iter_n_children(model, &iter)) > 0) {
-		g_string_printf(message, _("Project '%s' still has %i lines"), title, nlines);
-		gebr_message(ERROR, TRUE, FALSE, message->str);
-	} else {
-		GString *	path;
-
-		/* message user */
-		g_string_printf(message, _("Erasing project '%s'"), title);
-		gebr_message(ERROR, TRUE, TRUE, message->str);
-
-		/* Remove the project from the store (and its children) */
-		gtk_tree_store_remove(GTK_TREE_STORE (gebr.ui_project_line.store), &iter);
-
-		/* finally, remove it from the disk */
-		path = document_get_path(filename);
-		unlink(path->str);
-
-		g_string_free(path, TRUE);
+		gebr_message(ERROR, TRUE, FALSE, _("Project '%s' still has %i lines"), title, nlines);
+		goto out;
 	}
+
+	/* message user */
+	gebr_message(ERROR, TRUE, TRUE, _("Erasing project '%s'"), title);
+
+	/* Remove the project from the store (and its children) */
+	gtk_tree_store_remove(GTK_TREE_STORE (gebr.ui_project_line.store), &iter);
+
+	/* finally, remove it from the disk */
+	document_delete(filename);
 
 out:	g_free(title);
 	g_free(filename);
 	gtk_tree_path_free(path);
-	g_string_free(message, TRUE);
 }
 
 /*
@@ -151,7 +141,7 @@ project_list_populate(void)
 	struct dirent *	file;
 	DIR *		dir;
 
-	if (access(gebr.config.data->str, F_OK | R_OK)) {
+	if (g_access(gebr.config.data->str, F_OK | R_OK)) {
 		gebr_message(ERROR, TRUE, FALSE, _("Unable to access data directory"));
 		return;
 	}

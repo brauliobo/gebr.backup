@@ -64,8 +64,10 @@ void
 assembly_interface(void)
 {
 	GtkWidget *	vboxmain;
+	GtkWidget *	mainmenu;
+	GtkWidget *	pagetitle;
 
-	gebr.about = about_setup_ui();
+	gebr.about = about_setup_ui("GêBR", _("A plug-and-play environment to\nseismic processing tools"));
 	gebr.ui_preferences = preferences_setup_ui();
 
 	/* Create the main window */
@@ -75,69 +77,59 @@ assembly_interface(void)
 
 	/* Signals */
 	g_signal_connect(GTK_OBJECT(gebr.window), "delete_event",
-			GTK_SIGNAL_FUNC(gebr_quit),
-			NULL);
+			GTK_SIGNAL_FUNC(gebr_quit), NULL);
 	g_signal_connect(GTK_OBJECT(gebr.window), "show",
 			GTK_SIGNAL_FUNC(gebr_init), NULL);
-
-	/* Define the function to be called when the main loops is finished */
-	/*(Not implemented yet) */
-	/* gtk_quit_add(0, save_and_quit, NULL); */
 
 	/* Create the main vbox to hold menu, notebook and status bar */
 	vboxmain = gtk_vbox_new(FALSE, 1);
 	gtk_container_add(GTK_CONTAINER(gebr.window), vboxmain);
 
-	/* Create the main menu */
-	{
-		GtkWidget *mainmenu;
+	/*
+	 * Create the main menu
+	 */
+	mainmenu = gtk_menu_bar_new();
+	gtk_box_pack_start(GTK_BOX(vboxmain), mainmenu, FALSE, FALSE, 0);
 
-		mainmenu = gtk_menu_bar_new();
-		gtk_box_pack_start(GTK_BOX(vboxmain), mainmenu, FALSE, FALSE, 0);
+	gebr.menu[MENUBAR_PROJECT] = assembly_project_menu();
+	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_PROJECT]);
 
+	gebr.menu[MENUBAR_LINE] = assembly_line_menu();
+	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_LINE]);
 
-		gebr.menu[MENUBAR_PROJECT] = assembly_project_menu();
-		gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_PROJECT]);
+	gebr.menu[MENUBAR_FLOW] = assembly_flow_menu();
+	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_FLOW]);
 
-		gebr.menu[MENUBAR_LINE] = assembly_line_menu();
-		gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_LINE]);
+	gebr.menu[MENUBAR_FLOW_COMPONENTS] = assembly_flow_components_menu();
+	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_FLOW_COMPONENTS]);
 
-		gebr.menu[MENUBAR_FLOW] = assembly_flow_menu();
-		gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_FLOW]);
+	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), assembly_config_menu());
+	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), assembly_help_menu());
 
-		gebr.menu[MENUBAR_FLOW_COMPONENTS] = assembly_flowcomponentsmenu();
-		gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_FLOW_COMPONENTS]);
+	/*
+	 * Create a notebook to hold several pages
+	 */
+	gebr.notebook = gtk_notebook_new();
+	gtk_box_pack_start(GTK_BOX(vboxmain), gebr.notebook, TRUE, TRUE, 0);
 
-		gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), assembly_config_menu());
-		gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), assembly_help_menu());
-	}
+	g_signal_connect(GTK_OBJECT(gebr.notebook), "switch-page",
+			GTK_SIGNAL_FUNC(switch_page), NULL);
 
-	/* Create a notebook to hold several pages */
-	{
-		GtkWidget *	pagetitle;
+	gebr.ui_project_line = project_line_setup_ui();
+	pagetitle = gtk_label_new(_("Projects and Lines"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_project_line.widget, pagetitle);
 
-		gebr.notebook = gtk_notebook_new();
-		gtk_box_pack_start(GTK_BOX(vboxmain), gebr.notebook, TRUE, TRUE, 0);
+	gebr.ui_flow_browse = flow_browse_setup_ui();
+	pagetitle = gtk_label_new(_("Flows"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_flow_browse.widget, pagetitle);
 
-		g_signal_connect(GTK_OBJECT(gebr.notebook), "switch-page",
-					GTK_SIGNAL_FUNC(switch_page), NULL);
+	gebr.ui_flow_edition = flow_edition_setup_ui();
+	pagetitle = gtk_label_new(_("Flow edition"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_flow_edition.widget, pagetitle);
 
-		gebr.ui_project_line = project_line_setup_ui();
-		pagetitle = gtk_label_new(_("Projects and Lines"));
-		gtk_notebook_append_page(GTK_NOTE_BOOK(gebr.notebook), gebr.ui_project_line.widget, pagetitle);
-
-		gebr.ui_flow_browse = flow_browse_setup_ui();
-		pagetitle = gtk_label_new(_("Flows"));
-		gtk_notebook_append_page(GTK_NOTE_BOOK(gebr.notebook), gebr.ui_flow_browse.widget, pagetitle);
-
-		gebr.ui_flow_edition = flow_edition_setup_ui();
-		pagetitle = gtk_label_new(_("Flow edition"));
-		gtk_notebook_append_page(GTK_NOTE_BOOK(gebr.notebook), gebr.ui_flow_edition.widget, pagetitle);
-
-		gebr.ui_job_control = job_control_setup_ui();
-		pagetitle = gtk_label_new(_("Job control"));
-		gtk_notebook_append_page(GTK_NOTE_BOOK(gebr.notebook), gebr.ui_job_control.widget, pagetitle);
-	}
+	gebr.ui_job_control = job_control_setup_ui();
+	pagetitle = gtk_label_new(_("Job control"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_job_control.widget, pagetitle);
 
 	/* Create a status bar */
 	gebr.statusbar = gtk_statusbar_new();
@@ -173,7 +165,7 @@ assembly_project_menu(void)
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_REFRESH, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_project_refresh_activate, NULL);
+			GTK_SIGNAL_FUNC(on_project_refresh_activate), NULL);
 
 	/* Separation line */
 	submenu = gtk_menu_item_new();
@@ -187,7 +179,6 @@ assembly_project_menu(void)
 
 	menuitem = gtk_menu_item_new_with_label(_("Project"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-
 	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
 
 	return menuitem;
@@ -211,7 +202,6 @@ assembly_line_menu(void)
 	/* New entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
 			GTK_SIGNAL_FUNC(on_line_new_activate), NULL);
 	/*
@@ -244,11 +234,9 @@ assembly_line_menu(void)
 
 	menuitem = gtk_menu_item_new_with_label(_("Line"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-
 	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
 
 	return menuitem;
-
 }
 
 /*
@@ -343,22 +331,22 @@ assembly_flow_components_menu(void)
 	/* component status items */
 	/* configured */
 	radio_slist = NULL;
-	W.configured_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Configured"));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), W.configured_menuitem);
-	g_signal_connect(	GTK_OBJECT(W.configured_menuitem), "activate",
-				GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
+	gebr.configured_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Configured"));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gebr.configured_menuitem);
+	g_signal_connect(GTK_OBJECT(gebr.configured_menuitem), "activate",
+			GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
 	/* disabled */
-	radio_slist = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(W.configured_menuitem));
-	W.disabled_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Disabled"));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), W.disabled_menuitem);
-	g_signal_connect(	GTK_OBJECT(W.disabled_menuitem), "activate",
-				GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
+	radio_slist = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(gebr.configured_menuitem));
+	gebr.disabled_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Disabled"));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gebr.disabled_menuitem);
+	g_signal_connect(GTK_OBJECT(gebr.disabled_menuitem), "activate",
+			GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
 	/* unconfigured */
-	radio_slist = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(W.disabled_menuitem));
-	W.unconfigured_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Unconfigured"));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), W.unconfigured_menuitem);
-	g_signal_connect(	GTK_OBJECT(W.unconfigured_menuitem), "activate",
-				GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
+	radio_slist = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(gebr.disabled_menuitem));
+	gebr.unconfigured_menuitem = gtk_radio_menu_item_new_with_label(radio_slist, _("Unconfigured"));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gebr.unconfigured_menuitem);
+	g_signal_connect(GTK_OBJECT(gebr.unconfigured_menuitem), "activate",
+			GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
 
 	menuitem = gtk_menu_item_new_with_label(_("Flow component"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
@@ -392,8 +380,7 @@ assembly_config_menu(void)
 	submenu =  gtk_image_menu_item_new_with_mnemonic(_("_Servers"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_configure_servers_activate),
-			NULL);
+			GTK_SIGNAL_FUNC(on_configure_servers_activate), NULL);
 
 	menuitem = gtk_menu_item_new_with_label(_("Configure"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
@@ -418,14 +405,12 @@ assembly_help_menu(void)
 
 	/* About entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
 			GTK_SIGNAL_FUNC(on_help_about_activate), NULL);
 
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-
 	menuitem = gtk_menu_item_new_with_label(_("Help"));
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-
 	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
 
 	return menuitem;

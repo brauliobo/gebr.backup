@@ -29,7 +29,6 @@ gebr_SOURCES = main.c \
 	project.c \
 	line.c \
 	flow.c \
-	help.c \
 	job.c \
 	server.c client.c \
 	menu.c \
@@ -52,7 +51,6 @@ noinst_HEADERS = \
 	project.h \
 	line.h \
 	flow.h \
-	help.h \
 	job.h \
 	server.h client.h \
 	menu.h \
@@ -69,13 +67,9 @@ noinst_HEADERS = \
 	ui_server.h
 EXTRA_DIST = gebr.ggo
 
-GEBR_PIXMAPS_DIR = $(datadir)/gebr/pixmaps/
-GEBR_MENUSYS_DIR = $(datadir)/gebr/menus/
-GEBR_DATA_DIR = $(datadir)/gebr/
-
-INCLUDES =	-D GEBRMENUSYS=\"$(GEBR_MENUSYS_DIR)\" \
-		-D GEBR_PIXMAPS_DIR=\"$(GEBR_PIXMAPS_DIR)\" \
-		-D GEBRDATADIR=\"$(GEBR_DATA_DIR)\"
+INCLUDES =	-DSYS_MENUS_DIR=\"$(datadir)/gebr/menus/\" \
+		-DPIXMAPS_DIR=\"$(datadir)/gebr/pixmaps/\" \
+		-DDATA_DIR=\"$(datadir)/gebr/\"
 AM_CFLAGS = -Wall $(GTK_CFLAGS) $(LIBGEBR_CFLAGS)
 gebr_LDADD = $(GTK_LIBS) $(LIBGEBR_LIBS)
 

@@ -116,9 +116,9 @@ job_control_setup_ui(void)
 	scrolledwin = gtk_scrolled_window_new (NULL, NULL);
 	gtk_container_add (GTK_CONTAINER (frame), scrolledwin);
 
-	gebr.job_store = gtk_list_store_new (JC_N_COLUMN,
+	gebr.job_store = gtk_list_store_new(JC_N_COLUMN,
 					GDK_TYPE_PIXBUF,	/* Icon		*/
-					G_TYPE_STRING,	/* Title	*/
+					G_TYPE_STRING,		/* Title	*/
 					G_TYPE_POINTER);	/* struct job	*/
 
 	gebr.job_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (gebr.job_store));

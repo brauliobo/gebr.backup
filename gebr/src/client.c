@@ -15,12 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <misc/protocol.h>
+#include <comm/protocol.h>
 
 #include "client.h"
-#include "server.h"
-#include "cb_job.h"
 #include "gebr.h"
+#include "server.h"
+#include "job.h"
 
 gboolean
 client_parse_server_messages(struct server * server)

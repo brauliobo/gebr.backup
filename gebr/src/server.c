@@ -17,8 +17,8 @@
 
 #include <gtk/gtk.h>
 
-#include <misc/gtcpserver.h>
-#include <misc/gprocess.h>
+#include <comm/gtcpserver.h>
+#include <comm/gprocess.h>
 
 #include <string.h>
 #include <unistd.h>
@@ -27,9 +27,10 @@
 #include <stdio.h>
 
 #include "server.h"
-#include "client.h"
 #include "gebr.h"
-#include "cb_job.h"
+#include "support.h"
+#include "client.h"
+#include "job.h"
 #include "callbacks.h"
 
 /*
@@ -112,17 +113,13 @@ ssh_read_finished(GProcess * process, struct server * server)
 		GHostAddress *	host;
 		host = g_host_address_new();
 		g_host_address_set_ipv4_string(host, "127.0.0.1");
-		g_tcp_socket_connect(server->tcp_socket, host, server->ssh_tunnel.port);
+		g_tcp_socket_connect(server->tcp_socket, host, server->ssh_tunnel->port);
 	} else {
-		GString *	status;
 		GString *	cmd_line;
 		gchar		hostname[100];
 
 		cmd_line = g_string_new(NULL);
-		status = g_string_new(NULL);
-		g_string_printf(status, "Running server at %s...", server->address->str);
-		log_message(ACTION, status->str, TRUE);
-		g_string_free(status, TRUE);
+		gebr_message(INFO, TRUE, TRUE, _("Running server at %s..."), server->address->str);
 
 		/* run gebrd via ssh for remote hosts */
 		gethostname(hostname, 100);
@@ -205,16 +202,16 @@ server_free(struct server * server)
 	gboolean	valid;
 
 	/* delete all jobs at server */
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.job_store), &iter);
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control.store), &iter);
 	while (valid) {
 		struct job *	job;
 		GtkTreeIter	this;
 
-		gtk_tree_model_get (GTK_TREE_MODEL(gebr.job_store), &iter,
+		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_job_control.store), &iter,
 				JC_STRUCT, &job,
 				-1);
 		this = iter;
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.job_store), &iter);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control.store), &iter);
 
 		if (job->server == server)
 			job_delete(job);
@@ -299,7 +296,7 @@ server_run_flow(struct server * server)
 
 	/* TODO: check logged instead of connected */
 	if (g_socket_get_state(G_SOCKET(server->tcp_socket)) != G_SOCKET_STATE_CONNECTED) {
-		log_message(ACTION, "You are not connected to this server", TRUE);
+		gebr_message(ERROR, TRUE, FALSE, _("You are not connected to this server"));
 		return;
 	}
 

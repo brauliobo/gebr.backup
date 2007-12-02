@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#include <glib/gstdio.h>
+
 #include <misc/utils.h>
 
 #include "gebr.h"
@@ -64,10 +66,10 @@ gebr_init(void)
 		GError *	error;
 
 		error = NULL;
-		gebr.pixmaps.unconfigured_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_unconfigured.png", &error);
-		gebr.pixmaps.configured_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_configured.png", &error);
-		gebr.pixmaps.disabled_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_disabled.png", &error);
-		gebr.pixmaps.running_icon = gdk_pixbuf_new_from_file(GEBR_PIXMAPS_DIR "gebr_running.png", &error);
+		gebr.pixmaps.unconfigured_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_unconfigured.png", &error);
+		gebr.pixmaps.configured_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_configured.png", &error);
+		gebr.pixmaps.disabled_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_disabled.png", &error);
+		gebr.pixmaps.running_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_running.png", &error);
 	}
 
 	gebr_message(START, TRUE, TRUE, _("GêBR Initiating..."));
@@ -147,7 +149,7 @@ gebr_config_load(int argc, char ** argv)
 	gebr_create_config_dirs();
 
 	g_string_printf(config, "%s/.gebr/.gebr.conf", getenv("HOME"));
-	if (access(config->str, F_OK)) {
+	if (g_access(config->str, F_OK)) {
 		gtk_widget_show(gebr.ui_preferences.dialog);
 		goto out;
 	}
@@ -283,10 +285,21 @@ gebr_config_save(void)
  *
  */
 void
-gebr_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message)
+gebr_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message, ...)
 {
+	GString *	string;
+	va_list		argp;
+
+	string = g_string_new(NULL);
+
+	va_start(argp, message);
+	g_string_vprintf(string, message, argp);
+	va_end(argp);
+
 	if (in_log_file)
-		log_add_message(gebr.log, type, message);
+		log_add_message(gebr.log, type, string->str);
 	if (in_statusbar)
-		gtk_statusbar_push(GTK_STATUSBAR (gebr.statusbar), 0, message);
+		gtk_statusbar_push(GTK_STATUSBAR (gebr.statusbar), 0, string->str);
+
+	g_string_free(string, TRUE);
 }

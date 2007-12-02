@@ -17,6 +17,7 @@
 
 #include <time.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <misc/utils.h>
 
@@ -113,10 +114,27 @@ document_get_path(const gchar * filename)
 }
 
 /*
+ * Function: document_delete
+ * Delete document with _filename_ from data directory.
+ */
+void
+document_delete(const gchar * filename)
+{
+	GString *	path;
+
+	path = document_get_path(filename);
+	unlink(path->str);
+
+	g_string_free(path, TRUE);
+}
+
+/*
  * Function: document_assembly_filename
  * Creates a filename for a document
  * Creates a filename for a document using the current date and a random
  * generated string and _extension_.
+ *
+ * TODO: replace by document_new, with receives the document type
  */
 GString *
 document_assembly_filename(const gchar * extension)
