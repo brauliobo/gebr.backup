@@ -218,7 +218,7 @@ on_flow_execute_activate(void)
 void
 on_flow_component_properties_activate(void)
 {
-	parameters_configure_setup_ui();
+	flow_edition_component_change_parameters();
 }
 
 /*
@@ -252,7 +252,7 @@ on_flow_component_status_activate(GtkMenuItem * menuitem)
 void
 on_configure_preferences_activate(void)
 {
-
+	preferences_setup_ui();
 }
 
 /*
@@ -263,7 +263,7 @@ on_configure_preferences_activate(void)
 void
 on_configure_servers_activate(void)
 {
-
+	gtk_widget_show(gebr.ui_server_list->dialog);
 }
 
 /*

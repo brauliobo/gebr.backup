@@ -15,48 +15,58 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+
 #include <glib.h>
 
 #include <misc/utils.h>
 
 #include "ui_help.h"
 #include "gebr.h"
-#include "callbacks.h"
+#include "support.h"
 
+#define BUFFER_SIZE 1024
+
+gchar * unable_to_write_help_error = _("Unable to write help in temporary file");
+
+/*
+ * Function: help_show
+ * Open user's browser with _help_
+ */
 void
 help_show(gchar * help, gchar * title, gchar * fname)
 {
-	GtkWidget *	dialog;
-	GtkWidget *	scrolled_window;
-	GtkWidget *	html;
 	FILE *		html_fp;
-	GString *	html_filename;
-	GString *	url;
+	GString *	html_path;
+
 	GString *	ghelp;
+	GString *	url;
+	GString *	cmd_line;
 
-	if (help == NULL || !strlen(help))
+	if (!strlen(help))
 		return;
+	if (!gebr.config.browser->len) {
+		gebr_message(ERROR, TRUE, FALSE, _("No editor defined. Choose one at Configure/Preferences"));
+		return;
+	}
 
-	dialog = gtk_dialog_new_with_buttons(title,
-					GTK_WINDOW(gebr.window),
-					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-					NULL);
-	g_signal_connect (GTK_OBJECT (dialog), "delete_event",
-			GTK_SIGNAL_FUNC (gtk_widget_destroy), NULL );
+	/* initialization */
+	html_path = g_string_new(NULL);
+	ghelp = g_string_new(NULL);
+	url = g_string_new(NULL);
+	cmd_line = g_string_new(NULL);
 
 	/* Temporary file */
-	html_filename = g_string_new(NULL);
-	g_string_printf(tmp_fn, "/tmp/gebr_%s.html", make_temp_filename());
+	g_string_printf(html_path, "/tmp/gebr_%s.html", make_temp_filename());
 
 	/* Gambiarra */
 	{
 		gchar *	gebrcsspos;
 		int	pos;
 
-		ghelp = g_string_new(help);
+		g_string_assign(ghelp, help);
 
 		if ((gebrcsspos = strstr(ghelp->str, "gebr.css")) != NULL) {
 			pos = (gebrcsspos - ghelp->str)/sizeof(char);
@@ -65,92 +75,82 @@ help_show(gchar * help, gchar * title, gchar * fname)
 		}
 	}
 
-	htmlfp = fopen(html_filename->str,"w");
-	if (htmlfp == NULL) {
-		/* TODO */
-		return;
+	html_fp = fopen(html_path->str, "w");
+	if (html_fp == NULL) {
+		gebr_message(ERROR, TRUE, TRUE, unable_to_write_help_error);
+		goto out;
 	}
-	fwrite(ghelp->str, sizeof(char), strlen(ghelp->str), htmlfp);
-	fclose(htmlfp);
-	g_string_free(ghelp, TRUE);
+	fwrite(ghelp->str, sizeof(char), strlen(ghelp->str), html_fp);
+	fclose(html_fp);
 
 	/* Add file to list of files to be removed */
-	gebr.tmpfiles = g_slist_append(gebr.tmpfiles, html_filename->str);
-
-	url = g_string_new("file://");
-	g_string_append(url, html_filename->str);
+	gebr.tmpfiles = g_slist_append(gebr.tmpfiles, html_path->str);
 
 	/* Launch an external browser */
-	{
-	GString *cmdline;
+	g_string_printf(url, "file://%s", html_path->str);
+	g_string_printf(cmd_line, "%s %s &", gebr.config.browser->str, url->str);
+	system(cmd_line->str);
 
-	cmdline = g_string_new (gebr.config.browser_arg);
-	g_string_append(cmdline, " ");
-	g_string_append(cmdline, html_filename->str);
-	g_string_append(cmdline, " &");
-	system(cmdline->str);
-	}
-
-	g_string_free(url, FALSE);
-	g_string_free(html_filename, FALSE);
+	/* frees */
+out:	g_string_free(html_path, FALSE);
+	g_string_free(ghelp, TRUE);
+	g_string_free(url, TRUE);
+	g_string_free(cmd_line, TRUE);
 }
 
-/* Function ui_help_edit
- *
+/* Function: ui_help_edit
+ * Edit help in editor.
+ * Edit help in editor as reponse to button clicks.
  */
 void
-help_edit(GtkButton * button, GeoXmlDocument * document);
+help_edit(GtkButton * button, GeoXmlDocument * document)
 {
-	FILE *		tmp_fp;
-	GString *	tmp_fn;
-	gchar *		buffer;
+	FILE *		html_fp;
+	GString *	html_path;
+
+	gchar		buffer[BUFFER_SIZE];
 	GString *	help;
-	GString *	cmdline;
+	GString *	cmd_line;
 
 	/* Call an editor */
-	if (!gebr.config.editor_given) {
+	if (!gebr.config.editor->len) {
 		gebr_message(ERROR, TRUE, FALSE, _("No editor defined. Choose one at Configure/Preferences"));
 		return;
 	}
 
-	/* Temporary file */
-	tmp_fn = g_string_new(NULL);
-	g_string_printf(tmp_fn, "/tmp/gebr_%s.html", make_temp_filename());
-
-	/* Write current help to temporary file */
-	tmp_fp = fopen(tmp_fn->str, "w");
-
-	buffer = geoxml_document_get_help(document);
-	if ((buffer != NULL) && (strlen(buffer)>1))
-		fputs(buffer, tmp_fp);
-	fclose(tmp_fp);
-
-	cmdline = g_string_new(NULL);
-	g_string_printf(cmdline, "%s %s", gebr.config.editor->str, tmp_fn->str);
-	system(cmdline->str);
-	g_string_free(cmdline, TRUE);
-
-	/* Read back the help from file */
-	tmp_fp = fopen(tmp_fn->str, "r");
-	buffer = malloc (sizeof(char) * STRMAX);
+	/* initialization */
+	html_path = g_string_new(NULL);
+	cmd_line = g_string_new(NULL);
 	help = g_string_new(NULL);
 
-	if (fgets(buffer, STRMAX, tmp_fp) != NULL)
-		g_string_append(help, buffer);
+	/* Temporary file */
+	g_string_printf(html_path, "/tmp/gebr_%s.html", make_temp_filename());
 
-	while (!feof(tmp_fp)) {
-	if (fgets(buffer, STRMAX, tmp_fp) != NULL)
-		g_string_append(help, buffer);
+	/* Write current help to temporary file */
+	html_fp = fopen(html_path->str, "w");
+	if (html_fp == NULL) {
+		gebr_message(ERROR, TRUE, TRUE, unable_to_write_help_error);
+		goto out;
 	}
+	fputs(geoxml_document_get_help(document), html_fp);
+	fclose(html_fp);
 
-	free(buffer);
-	fclose(tmp_fp);
+	/* Run editor and wait for user... */
+	g_string_printf(cmd_line, "%s %s", gebr.config.editor->str, html_path->str);
+	system(cmd_line->str);
 
+	/* Read back the help from file */
+	html_fp = fopen(html_path->str, "r");
+	while (fgets(buffer, BUFFER_SIZE, html_fp) != NULL)
+		g_string_append(help, buffer);
+	fclose(html_fp);
+	unlink(html_path->str);
+
+	/* Finally, the edited help back to the document */
 	geoxml_document_set_help(document, help->str);
 
-	unlink(tmp_fn->str);
-	g_string_free(tmp_fn, TRUE);
+	/* frees */
+out:	g_string_free(html_path, TRUE);
+	g_string_free(cmd_line, TRUE);
 	g_string_free(help, TRUE);
-
 }
-

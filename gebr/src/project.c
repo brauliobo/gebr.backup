@@ -161,16 +161,17 @@ project_list_populate(void)
 	flow_free();
 
 	while ((file = readdir (dir)) != NULL) {
-		if (fnmatch("*.prj", file->d_name, 1))
-			continue;
-
 		GtkTreeIter		project_iter, line_iter;
+
 		GeoXmlProject *		project;
 		GeoXmlProjectLine *	project_line;
 
+		if (fnmatch("*.prj", file->d_name, 1))
+			continue;
+
 		project = GEOXML_PROJECT(document_load(file->d_name));
 		if (project == NULL)
-			goto out;
+			continue;
 
 		/* Gtk stuff */
 		gtk_tree_store_append(gebr.ui_project_line->store, &project_iter, NULL);
@@ -182,7 +183,6 @@ project_list_populate(void)
 		geoxml_project_get_line(project, &project_line, 0);
 		while (project_line != NULL) {
 			GeoXmlLine *	line;
-			/* full path to the project and line */
 
 			line = GEOXML_LINE(document_load(geoxml_project_get_line_source(project_line)));
 			if (line == NULL) {
@@ -204,5 +204,5 @@ project_list_populate(void)
 		geoxml_document_free(GEOXML_DOC(project));
 	}
 
-out:	closedir (dir);
+	closedir (dir);
 }

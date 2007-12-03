@@ -15,13 +15,22 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ui_flowcomp.h"
+/* File: ui_flow_edition->c
+ * Interface functions and callbacks for the "Flow Edition" page.
+ *
+ */
+
+#include "ui_flow_edition.h"
 #include "gebr.h"
 #include "support.h"
 #include "flow.h"
 #include "document.h"
 #include "menu.h"
+#include "ui_flow.h"
+#include "ui_parameters.h"
+#include "ui_help.h"
 
+extern gchar * no_flow_selected_error;
 gchar * no_flow_comp_selected_error =	_("No flow component selected");
 gchar * no_menu_selected_error =	_("No menu selected");
 gchar * selected_menu_instead_error =	_("Select a menu instead of a category");
@@ -31,10 +40,16 @@ gchar * selected_menu_instead_error =	_("Select a menu instead of a category");
  */
 
 static void
+flow_edition_menu_add(void);
+
+static void
+flow_edition_menu_show_help(void);
+
+static void
 flow_edition_component_selected(void);
 
 /* Function: flow_edition_setup_ui
- * Assembly the flow edit ui_flow_edition.widget.
+ * Assembly the flow edit ui_flow_edition->widget.
  *
  * Return:
  * The structure containing relevant data.
@@ -43,21 +58,26 @@ struct ui_flow_edition *
 flow_edition_setup_ui(void)
 {
 	struct ui_flow_edition *	ui_flow_edition;
-	GtkWidget *			hpanel;
 
-	/* Create flow edit ui_flow_edition.widget */
-	ui_flow_edition.widget = gtk_vbox_new(FALSE, 0);
+	GtkWidget *			frame;
+	GtkWidget *			hpanel;
+	GtkWidget *			scrolledwin;
+	GtkWidget *			button;
+	GtkWidget *			vbox;
+	GtkWidget *			hbox;
+	GtkTreeViewColumn *		col;
+	GtkCellRenderer *		renderer;
+
+	/* alloc */
+	ui_flow_edition = g_malloc(sizeof(struct ui_flow_edition));
+
+	/* Create flow edit ui_flow_edition->widget */
+	ui_flow_edition->widget = gtk_vbox_new(FALSE, 0);
 	hpanel = gtk_hpaned_new();
-	gtk_container_add(GTK_CONTAINER(ui_flow_edition.widget), hpanel);
+	gtk_container_add(GTK_CONTAINER(ui_flow_edition->widget), hpanel);
 
 	/* Left side */
 	{
-		GtkWidget *		hpanel;
-		GtkWidget *		scrolledwin;
-		GtkWidget *		frame;
-		GtkTreeViewColumn *	col;
-		GtkCellRenderer *	renderer;
-
 		frame = gtk_frame_new(_("Flow sequence"));
 		gtk_paned_pack1(GTK_PANED(hpanel), frame, FALSE, FALSE);
 
@@ -71,34 +91,30 @@ flow_edition_setup_ui(void)
 						G_TYPE_ULONG);
 
 		ui_flow_edition->fseq_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_edition->fseq_store));
-		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_flow_edition.fseq_view), FALSE);
+		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_flow_edition->fseq_view), FALSE);
 
 		renderer = gtk_cell_renderer_pixbuf_new();
 		col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_edition.fseq_view), col);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_edition->fseq_view), col);
 		gtk_tree_view_column_add_attribute(col, renderer, "pixbuf", FSEQ_STATUS_COLUMN);
 
 		renderer = gtk_cell_renderer_text_new();
 		col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_edition.fseq_view), col);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_edition->fseq_view), col);
 		gtk_tree_view_column_add_attribute(col, renderer, "text", FSEQ_TITLE_COLUMN);
 
 		/* Double click on flow component open its parameter window */
-		g_signal_connect(ui_flow_edition.fseq_view, "row-activated",
-				(GCallback) progpar_config_window, NULL);
-		g_signal_connect(GTK_OBJECT(ui_flow_edition.fseq_view), "cursor-changed",
+		g_signal_connect(ui_flow_edition->fseq_view, "row-activated",
+				GTK_SIGNAL_FUNC(flow_edition_component_change_parameters), NULL);
+		g_signal_connect(GTK_OBJECT(ui_flow_edition->fseq_view), "cursor-changed",
 				GTK_SIGNAL_FUNC(flow_edition_component_selected), NULL);
 
-		gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_edition.fseq_view);
+		gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_edition->fseq_view);
 		gtk_widget_set_size_request(GTK_WIDGET(scrolledwin), 180, 30);
 	}
 
 	/* Right side */
 	{
-		GtkWidget *	hbox;
-		GtkWidget *	button;
-		GtkWidget *	vbox;
-
 		frame = gtk_frame_new(_("Flow components"));
 		gtk_paned_pack2(GTK_PANED(hpanel), frame, TRUE, TRUE);
 
@@ -157,22 +173,22 @@ flow_edition_setup_ui(void)
 
 		ui_flow_edition->menu_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_edition->menu_store));
 
-		g_signal_connect(GTK_OBJECT(ui_flow_edition.menu_view), "row-activated",
-				GTK_SIGNAL_FUNC(program_add_to_flow), NULL);
+		g_signal_connect(GTK_OBJECT(ui_flow_edition->menu_view), "row-activated",
+				GTK_SIGNAL_FUNC(flow_edition_menu_add), NULL);
 
 		renderer = gtk_cell_renderer_text_new();
 		col = gtk_tree_view_column_new_with_attributes("Flow", renderer, NULL);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_edition.menu_view), col);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_edition->menu_view), col);
 		gtk_tree_view_column_add_attribute(col, renderer, "markup", MENU_TITLE_COLUMN);
 		gtk_tree_view_column_set_sort_column_id(col, MENU_TITLE_COLUMN);
 		gtk_tree_view_column_set_sort_indicator(col, TRUE);
 
 		renderer = gtk_cell_renderer_text_new();
 		col = gtk_tree_view_column_new_with_attributes("Description", renderer, NULL);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_edition.menu_view), col);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_edition->menu_view), col);
 		gtk_tree_view_column_add_attribute(col, renderer, "text", MENU_DESC_COLUMN);
 
-		gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_edition.menu_view);
+		gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_edition->menu_view);
 	}
 
 	return ui_flow_edition;
@@ -196,7 +212,7 @@ flow_edition_component_selected(void)
 	GeoXmlProgram *		program;
 	gchar *			status;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.fseq_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_comp_selected_error);
 		return;
@@ -217,40 +233,36 @@ flow_edition_component_selected(void)
 }
 
 /*
- * Function: flow_edition_change_properties
+ * Function: flow_edition_component_change_parameters
  * Show the current selected flow components parameters
  */
 void
-flow_edition_change_properties(void)
+flow_edition_component_change_parameters(void)
 {
 	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
-	gchar *			title;
-	GString *		message;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.fseq_view));
+	gchar *			title;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_comp_selected_error);
 		return;
 	}
 
-	message = g_string_new(NULL);
 	gtk_tree_model_get(model, &iter,
 			FSEQ_TITLE_COLUMN, &title,
 			-1);
 
-	g_string_printf(message, _("Configuring flow component '%s'"), title);
-	gebr_message(ERROR, TRUE, FALSE, message);
+	gebr_message(ERROR, TRUE, FALSE, _("Configuring flow component '%s'"), title);
+	parameters_configure_setup_ui();
 
-	progpar_config_window();
-
-	g_string_free(message, NULL);
 	g_free(title);
 }
 
 /*
- * Function: flow_edition_change_properties
+ * Function: flow_edition_component_change_parameters
  * Change the flow status when select the status from the "Flow Component" menu.
  */
 void
@@ -264,7 +276,7 @@ flow_edition_set_status(GtkMenuItem * menuitem)
 	GeoXmlProgram *		program;
 	GdkPixbuf *		pixbuf;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.fseq_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_comp_selected_error);
 		return;
@@ -287,8 +299,8 @@ flow_edition_set_status(GtkMenuItem * menuitem)
 	} else
 		return;
 
-	gtk_list_store_set (gebr.fseq_store, &iter,
-			    FSEQ_STATUS_COLUMN, pixbuf, -1);
+	gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &iter,
+			FSEQ_STATUS_COLUMN, pixbuf, -1);
 
 	flow_save();
 }
@@ -298,7 +310,7 @@ flow_edition_set_status(GtkMenuItem * menuitem)
  * Add selected menu to flow sequence
  *
  */
-void
+static void
 flow_edition_menu_add(void)
 {
 	GtkTreeIter			iter;
@@ -310,21 +322,21 @@ flow_edition_menu_add(void)
 	GeoXmlProgram *			program;
 	GeoXmlProgramParameter *	program_parameter;
 
-	if (flow == NULL) {
+	if (gebr.flow == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
 		return;
 	}
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.menu_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(gebr.ui_flow_edition->menu_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_menu_selected_error);
 		return;
 	}
-	if (!gtk_tree_store_iter_depth(gebr.menu_store, &iter)) {
+	if (!gtk_tree_store_iter_depth(gebr.ui_flow_edition->menu_store, &iter)) {
 		gebr_message(ERROR, TRUE, FALSE, selected_menu_instead_error);
 		return;
 	}
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.menu_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_edition->menu_store), &iter,
 			MENU_TITLE_COLUMN, &name,
 			MENU_FILE_NAME_COLUMN, &filename,
 			-1);
@@ -350,10 +362,10 @@ flow_edition_menu_add(void)
 	}
 
 	/* add it to the file and to the view */
-	geoxml_flow_add_flow (gebr.flow, menu);
-	flow_add_programs_to_view (menu);
+	geoxml_flow_add_flow(gebr.flow, menu);
+	flow_add_programs_to_view(menu);
 
-	geoxml_document_free (GEOXML_DOC(menu));
+	geoxml_document_free(GEOXML_DOC(menu));
 	flow_save();
 
 out:	g_free(name);
@@ -364,7 +376,7 @@ out:	g_free(name);
  * Function: menus_show_help
  * Show's menus help
  */
-void
+static void
 flow_edition_menu_show_help(void)
 {
 	GtkTreeIter		iter;
@@ -374,17 +386,17 @@ flow_edition_menu_show_help(void)
 	gchar *		        menu_filename;
 	GeoXmlFlow *		menu;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.menu_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->menu_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_menu_selected_error);
 		return;
 	}
-	if (!gtk_tree_store_iter_depth(gebr.menu_store, &iter)) {
+	if (!gtk_tree_store_iter_depth(gebr.ui_flow_edition->menu_store, &iter)) {
 		gebr_message(ERROR, TRUE, FALSE, selected_menu_instead_error);
 		return;
 	}
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.menu_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_edition->menu_store), &iter,
 			MENU_FILE_NAME_COLUMN, &menu_filename,
 			-1);
 
@@ -392,7 +404,7 @@ flow_edition_menu_show_help(void)
 	if (menu == NULL)
 		goto out;
 
-	show_help((gchar*)geoxml_document_get_help(GEOXML_DOC(menu)), _("Menu help"),
+	help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(menu)), _("Menu help"),
 		(gchar*)geoxml_document_get_filename(GEOXML_DOC(menu)));
 
 out:	g_free(menu_filename);

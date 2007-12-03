@@ -55,7 +55,6 @@ struct gebr {
 	struct ui_flow_browse *		ui_flow_browse;
 	struct ui_flow_edition *	ui_flow_edition;
 	struct ui_job_control *		ui_job_control;
-	struct ui_preferences *		ui_preferences;
 	struct ui_server_list *		ui_server_list;
 
 	struct config {

@@ -38,6 +38,9 @@
 #include "server.h"
 #include "job.h"
 #include "menu.h"
+#include "callbacks.h"
+
+struct gebr gebr;
 
 /*
  * Function: gebr_init
@@ -87,14 +90,21 @@ gebr_quit(void)
 	GtkTreeIter	iter;
 	gboolean	valid;
 
+	/*
+	 * Data frees and cleanups
+	 */
+
 	g_slist_foreach(gebr.tmpfiles, (GFunc) unlink, NULL);
 	g_slist_foreach(gebr.tmpfiles, (GFunc) free, NULL);
 
 	g_slist_free(gebr.tmpfiles);
 
-	g_object_unref(gebr.pixmaps.unconfigured_icon);
-	g_object_unref(gebr.pixmaps.configured_icon);
-	g_object_unref(gebr.pixmaps.disabled_icon);
+	g_string_free(gebr.config.username, TRUE);
+	g_string_free(gebr.config.email, TRUE);
+	g_string_free(gebr.config.editor, TRUE);
+	g_string_free(gebr.config.usermenus, TRUE);
+	g_string_free(gebr.config.data, TRUE);
+	g_string_free(gebr.config.browser, TRUE);
 
 	log_close(gebr.log);
 
@@ -121,14 +131,21 @@ gebr_quit(void)
 		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
 	}
 
+	gtk_main_quit();
+
+	/*
+	 * Interface frees
+	 */
+
 	g_free(gebr.ui_project_line);
 	g_free(gebr.ui_flow_browse);
 	g_free(gebr.ui_flow_edition);
 	g_free(gebr.ui_job_control);
-	g_free(gebr.ui_preferences);
 	g_free(gebr.ui_server_list);
 
-	gtk_main_quit();
+	g_object_unref(gebr.pixmaps.unconfigured_icon);
+	g_object_unref(gebr.pixmaps.configured_icon);
+	g_object_unref(gebr.pixmaps.disabled_icon);
 
 	return FALSE;
 }
@@ -155,9 +172,9 @@ gebr_config_load(int argc, char ** argv)
 	/* TODO: check return */
 	gebr_create_config_dirs();
 
-	g_string_printf(config, "%s/.gebr/.gebr.conf", getenv("HOME"));
+	g_string_printf(config, "%s/.gebr/gebr.conf", getenv("HOME"));
 	if (g_access(config->str, F_OK)) {
-		gtk_widget_show(gebr.ui_preferences->dialog);
+		on_configure_preferences_activate();
 		goto out;
 	}
 
@@ -177,28 +194,24 @@ gebr_config_load(int argc, char ** argv)
 
 	if (!(gebr.config.ggopt.usermenus_given && gebr.config.ggopt.data_given &&
 		gebr.config.ggopt.editor_given && gebr.config.ggopt.browser_given))
-		gtk_widget_show(gebr.ui_preferences->dialog);
+		on_configure_preferences_activate();
 	else {
 		menu_list_populate();
 		project_list_populate();
 	}
 
-	/* init server list store */
-	gebr.ui_server_list->store = gtk_list_store_new(SERVER_N_COLUMN,
-					G_TYPE_STRING,
-					G_TYPE_POINTER);
 	if (!gebr.config.ggopt.server_given) {
 		GtkTreeIter	iter;
 		gchar		hostname[100];
 
 		gethostname(hostname, 100);
-		gtk_list_store_append (gebr.ui_server_list->store, &iter);
-		gtk_list_store_set (gebr.ui_server_list->store, &iter,
+		gtk_list_store_append(gebr.ui_server_list->store, &iter);
+		gtk_list_store_set(gebr.ui_server_list->store, &iter,
 				SERVER_ADDRESS, hostname,
 				SERVER_POINTER, server_new(hostname),
 				-1);
 	} else {
-		for (i=0; i < gebr.config.ggopt.server_given; ++i) {
+		for (i = 0; i < gebr.config.ggopt.server_given; ++i) {
 			GtkTreeIter	iter;
 
 			gtk_list_store_append(gebr.ui_server_list->store, &iter);

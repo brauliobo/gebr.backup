@@ -170,6 +170,7 @@ parameters_configure_setup_ui(void)
 			widget = parameters_add_input_file(program_parameter);
 			break;
 		default:
+			widget = NULL;
 			break;
 		}
 

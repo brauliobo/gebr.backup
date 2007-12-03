@@ -248,118 +248,6 @@ out:	g_free(title);
 	g_free(line_filename);
 }
 
-/*
- * Function: flow_program_remove
- * Remove selected program from flow process
- */
-void
-flow_program_remove(void)
-{
-	GtkTreeIter		iter;
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-
-	GeoXmlProgram *		program;
-	gulong 			nprogram;
-	gchar *			node;
-
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
-		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
-		return;
-	}
-
-	node = gtk_tree_model_get_string_from_iter(model, &iter);
-	nprogram = (gulong) atoi(node);
-	g_free(node);
-
-	geoxml_flow_get_program(gebr.flow, &program, nprogram);
-	geoxml_flow_remove_program(gebr.flow, program);
-
-	flow_save();
-	gtk_list_store_remove (GTK_LIST_STORE (gebr.ui_flow_edition->fseq_store), &iter);
-}
-
-/*
- * Function: flow_program_move_down
- * Move selected program down in the processing flow
- */
-void
-flow_program_move_down(void)
-{
-	GtkTreeIter		iter, next;
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GeoXmlProgram *		program;
-	gulong			nprogram;
-	gchar *			node;
-
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
-	if (gtk_tree_selection_get_selected (selection, &model, &iter) == FALSE) {
-		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
-		return;
-	}
-	next = iter;
-	if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store), &next) == FALSE)
-		return;
-
-	/* Get index */
-	node = gtk_tree_model_get_string_from_iter(model, &iter);
-	nprogram = (gulong) atoi(node);
-	g_free(node);
-
-	/* Update flow */
-	geoxml_flow_get_program(gebr.flow, &program, nprogram);
-	geoxml_flow_move_program_down(gebr.flow, program);
-	flow_save();
-
-	/* Update GUI */
-	gtk_list_store_move_after (gebr.ui_flow_edition->fseq_store, &iter, &next);
-}
-
-/*
- * Function: flow_program_move_up
- * Move selected program up in the processing flow
- */
-void
-flow_program_move_up(void)
-{
-	GtkTreeIter		iter;
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GtkTreePath *		previous_path;
-	GtkTreeIter 		previous;
-	GeoXmlProgram *		program;
-	gulong 			nprogram;
-	gchar *			node;
-
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
-	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
-		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
-		return;
-	}
-	previous_path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_flow_edition->fseq_store), &iter);
-	if (gtk_tree_path_prev(previous_path) == FALSE)
-		goto out;
-
-	/* Get the index. */
-	node = gtk_tree_model_get_string_from_iter(model, &iter);
-	nprogram = (gulong) atoi(node);
-	g_free(node);
-
-	/* XML change */
-	geoxml_flow_get_program(gebr.flow, &program, nprogram);
-	geoxml_flow_move_program_up(gebr.flow, program);
-	flow_save();
-
-	/* View change */
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store),
-				&previous, previous_path);
-	gtk_list_store_move_before (gebr.ui_flow_edition->fseq_store, &iter, &previous);
-
-out:	gtk_tree_path_free(previous_path);
-}
-
 void
 flow_run(void)
 {
@@ -438,4 +326,116 @@ flow_run(void)
 		break;
 	}
 	gtk_widget_destroy(dialog);
+}
+
+/*
+ * Function: flow_program_remove
+ * Remove selected program from flow process
+ */
+void
+flow_program_remove(void)
+{
+	GtkTreeIter		iter;
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+
+	GeoXmlProgram *		program;
+	gulong 			nprogram;
+	gchar *			node;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
+		return;
+	}
+
+	node = gtk_tree_model_get_string_from_iter(model, &iter);
+	nprogram = (gulong) atoi(node);
+	g_free(node);
+
+	geoxml_flow_get_program(gebr.flow, &program, nprogram);
+	geoxml_flow_remove_program(gebr.flow, program);
+
+	flow_save();
+	gtk_list_store_remove (GTK_LIST_STORE (gebr.ui_flow_edition->fseq_store), &iter);
+}
+
+/*
+ * Function: flow_program_move_up
+ * Move selected program up in the processing flow
+ */
+void
+flow_program_move_up(void)
+{
+	GtkTreeIter		iter;
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreePath *		previous_path;
+	GtkTreeIter 		previous;
+	GeoXmlProgram *		program;
+	gulong 			nprogram;
+	gchar *			node;
+
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
+	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
+		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
+		return;
+	}
+	previous_path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_flow_edition->fseq_store), &iter);
+	if (gtk_tree_path_prev(previous_path) == FALSE)
+		goto out;
+
+	/* Get the index. */
+	node = gtk_tree_model_get_string_from_iter(model, &iter);
+	nprogram = (gulong) atoi(node);
+	g_free(node);
+
+	/* XML change */
+	geoxml_flow_get_program(gebr.flow, &program, nprogram);
+	geoxml_flow_move_program_up(gebr.flow, program);
+	flow_save();
+
+	/* View change */
+	gtk_tree_model_get_iter (GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store),
+				&previous, previous_path);
+	gtk_list_store_move_before (gebr.ui_flow_edition->fseq_store, &iter, &previous);
+
+out:	gtk_tree_path_free(previous_path);
+}
+
+/*
+ * Function: flow_program_move_down
+ * Move selected program down in the processing flow
+ */
+void
+flow_program_move_down(void)
+{
+	GtkTreeIter		iter, next;
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GeoXmlProgram *		program;
+	gulong			nprogram;
+	gchar *			node;
+
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
+	if (gtk_tree_selection_get_selected (selection, &model, &iter) == FALSE) {
+		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
+		return;
+	}
+	next = iter;
+	if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store), &next) == FALSE)
+		return;
+
+	/* Get index */
+	node = gtk_tree_model_get_string_from_iter(model, &iter);
+	nprogram = (gulong) atoi(node);
+	g_free(node);
+
+	/* Update flow */
+	geoxml_flow_get_program(gebr.flow, &program, nprogram);
+	geoxml_flow_move_program_down(gebr.flow, program);
+	flow_save();
+
+	/* Update GUI */
+	gtk_list_store_move_after (gebr.ui_flow_edition->fseq_store, &iter, &next);
 }

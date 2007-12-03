@@ -37,9 +37,15 @@ void
 flow_delete(void);
 
 void
-flow_program_move_down(void);
+flow_run(void);
 
 void
-flow_run(void);
+flow_program_remove(void);
+
+void
+flow_program_move_up(void);
+
+void
+flow_program_move_down(void);
 
 #endif //__FLOW_H

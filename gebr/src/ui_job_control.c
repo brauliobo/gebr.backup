@@ -1,5 +1,5 @@
 /*   GêBR - An environment for seismic processing.
- *   Copyright(C) 2007 GêBR core team(http://gebr.sourceforge.net)
+ *   Copyright(C) 2007 GêBR core team(http://sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,6 +16,9 @@
  */
 
 #include "ui_job_control.h"
+#include "gebr.h"
+#include "support.h"
+#include "job.h"
 
 /*
  * Function: job_control_setup_ui
@@ -46,10 +49,12 @@ job_control_setup_ui(void)
 
 	GtkWidget *			text_view;
 
+	/* alloc */
 	ui_job_control = g_malloc(sizeof(struct ui_job_control));
 
 	/* Create flow edit page */
 	page = gtk_vbox_new(FALSE, 0);
+	ui_job_control->widget = page;
 
 	/* Vbox to hold toolbar and main content */
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -71,7 +76,6 @@ job_control_setup_ui(void)
 	button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
-
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_cancel), NULL);
 
@@ -118,48 +122,48 @@ job_control_setup_ui(void)
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_add(GTK_CONTAINER(frame), scrolledwin);
 
-	gebr.ui_job_control->store = gtk_list_store_new(JC_N_COLUMN,
+	ui_job_control->store = gtk_list_store_new(JC_N_COLUMN,
 					GDK_TYPE_PIXBUF,	/* Icon		*/
 					G_TYPE_STRING,		/* Title	*/
 					G_TYPE_POINTER);	/* struct job	*/
 
-	gebr.ui_job_control->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gebr.ui_job_control->store));
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(gebr.ui_job_control->view), FALSE);
+	ui_job_control->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_job_control->store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_job_control->view), FALSE);
 
-	g_signal_connect(GTK_OBJECT(gebr.ui_job_control->view), "cursor-changed",
+	g_signal_connect(GTK_OBJECT(ui_job_control->view), "cursor-changed",
 		GTK_SIGNAL_FUNC(job_clicked), NULL);
 
 	renderer = gtk_cell_renderer_pixbuf_new();
 	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(gebr.ui_job_control->view), col);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_job_control->view), col);
 	gtk_tree_view_column_add_attribute(col, renderer, "pixbuf", JC_ICON);
 
 	renderer = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(gebr.ui_job_control->view), col);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_job_control->view), col);
 	gtk_tree_view_column_add_attribute(col, renderer, "text", JC_TITLE);
 
-	gtk_container_add(GTK_CONTAINER(scrolledwin), gebr.ui_job_control->view);
+	gtk_container_add(GTK_CONTAINER(scrolledwin), ui_job_control->view);
 	gtk_widget_set_size_request(GTK_WIDGET(scrolledwin), 180, 30);
 
 	/* Right side */
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_paned_pack2(GTK_PANED(hpanel), vbox, TRUE, TRUE);
 
-	gebr.ui_job_control->job_label = gtk_label_new("");
-	gtk_box_pack_start(GTK_BOX(vbox), gebr.ui_job_control->job_label, FALSE, TRUE, 0);
+	ui_job_control->label = gtk_label_new("");
+	gtk_box_pack_start(GTK_BOX(vbox), ui_job_control->label, FALSE, TRUE, 0);
 
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_box_pack_end(GTK_BOX(vbox), scrolledwin, TRUE, TRUE, 0);
 
-	gebr.ui_job_control->text_buffer = gtk_text_buffer_new(NULL);
-	text_view = gtk_text_view_new_with_buffer(gebr.ui_job_control->text_buffer);
+	ui_job_control->text_buffer = gtk_text_buffer_new(NULL);
+	text_view = gtk_text_view_new_with_buffer(ui_job_control->text_buffer);
 	g_object_set(G_OBJECT(text_view),
 		"editable", FALSE,
 		"cursor-visible", FALSE,
 		NULL);
-	gebr.ui_job_control->text_view = text_view;
+	ui_job_control->text_view = text_view;
 	gtk_container_add(GTK_CONTAINER(scrolledwin), text_view);
 
-	return ui_job_control
+	return ui_job_control;
 }

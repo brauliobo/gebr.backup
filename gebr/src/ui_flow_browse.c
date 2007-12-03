@@ -21,8 +21,14 @@
  *
  */
 
+#include <string.h>
+
 #include "ui_flow_browse.h"
+#include "gebr.h"
 #include "support.h"
+#include "document.h"
+#include "flow.h"
+#include "ui_flow.h"
 #include "ui_help.h"
 
 /*
@@ -30,7 +36,13 @@
  */
 
 static void
+flow_browse_load(void);
+
+static void
 flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_flow_browse * ui_flow_browse);
+
+static void
+flow_browse_show_help(void);
 
 /*
  * Function: add_flow_browse
@@ -61,6 +73,7 @@ flow_browse_setup_ui(void)
 
 	/* Create flow browse page */
 	page = gtk_vbox_new(FALSE, 0);
+	ui_flow_browse->widget = page;
 	label = _("Flows");
 	hpanel = gtk_hpaned_new();
 	gtk_container_add(GTK_CONTAINER(page), hpanel);
@@ -76,7 +89,7 @@ flow_browse_setup_ui(void)
 					G_TYPE_STRING,  /* Name(title for libgeoxml) */
 					G_TYPE_STRING); /* Filename */
 
-	ui_flow_browse->flow_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_browse->store));
+	ui_flow_browse->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_browse->store));
 
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, NULL);
@@ -88,18 +101,17 @@ flow_browse_setup_ui(void)
 	col = gtk_tree_view_column_new_with_attributes(label, renderer, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, FB_TITLE);
 	gtk_tree_view_column_set_sort_indicator(col, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_browse->flow_view), col);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_browse->view), col);
 	gtk_tree_view_column_add_attribute(col, renderer, "text", FB_TITLE);
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_flow_browse->flow_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_flow_browse->view));
 	gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
+	gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_browse->view);
 
-	gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_browse->flow_view);
-
-	g_signal_connect(GTK_OBJECT(ui_flow_browse->flow_view), "cursor-changed",
+	g_signal_connect(GTK_OBJECT(ui_flow_browse->view), "cursor-changed",
 			GTK_SIGNAL_FUNC(flow_browse_load), NULL);
-	g_signal_connect(GTK_OBJECT(ui_flow_browse->flow_view), "cursor-changed",
-			GTK_SIGNAL_FUNC(flow_browse_info_update()), NULL);
+	g_signal_connect(GTK_OBJECT(ui_flow_browse->view), "cursor-changed",
+			GTK_SIGNAL_FUNC(flow_browse_info_update), NULL);
 
 	/*
 	 * Right side: flow info
@@ -111,54 +123,54 @@ flow_browse_setup_ui(void)
 	gtk_container_add(GTK_CONTAINER(frame), infopage);
 
 	/* Title */
-	ui_flow_browse->flow_info.title = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.title), 0, 0);
-	gtk_box_pack_start(GTK_BOX(infopage), ui_flow_browse->flow_info.title, FALSE, TRUE, 0);
+	ui_flow_browse->info.title = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.title), 0, 0);
+	gtk_box_pack_start(GTK_BOX(infopage), ui_flow_browse->info.title, FALSE, TRUE, 0);
 
 	/* Description */
-	ui_flow_browse->flow_info.description = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.description), 0, 0);
-	gtk_box_pack_start(GTK_BOX(infopage), ui_flow_browse->flow_info.description, FALSE, TRUE, 10);
+	ui_flow_browse->info.description = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.description), 0, 0);
+	gtk_box_pack_start(GTK_BOX(infopage), ui_flow_browse->info.description, FALSE, TRUE, 10);
 
 	/* I/O */
 	GtkWidget *table;
 	table = gtk_table_new(3, 2, FALSE);
 	gtk_box_pack_start(GTK_BOX(infopage), table, FALSE, TRUE, 0);
 
-	ui_flow_browse->flow_info.input_label = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.input_label), 0, 0);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->flow_info.input_label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse->info.input_label = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.input_label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.input_label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
 
-	ui_flow_browse->flow_info.input = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.input), 0, 0);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->flow_info.input, 1, 2, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse->info.input = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.input), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.input, 1, 2, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
 
-	ui_flow_browse->flow_info.output_label = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.output_label), 0, 0);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->flow_info.output_label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse->info.output_label = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.output_label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.output_label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 
-	ui_flow_browse->flow_info.output = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.output), 0, 0);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->flow_info.output, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse->info.output = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.output), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.output, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 
-	ui_flow_browse->flow_info.error_label = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.error_label), 0, 0);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->flow_info.error_label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse->info.error_label = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.error_label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.error_label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
 
-	ui_flow_browse->flow_info.error = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.error), 0, 0);
-	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->flow_info.error, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+	ui_flow_browse->info.error = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.error), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.error, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
 
 	/* Help */
-	ui_flow_browse->flow_info.help = gtk_button_new_from_stock(GTK_STOCK_INFO);
-	gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse->flow_info.help, FALSE, TRUE, 0);
-	g_signal_connect(GTK_OBJECT(ui_flow_browse->flow_info.help), "clicked",
-			GTK_SIGNAL_FUNC(flow_browse_show_help), flow);
+	ui_flow_browse->info.help = gtk_button_new_from_stock(GTK_STOCK_INFO);
+	gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse->info.help, FALSE, TRUE, 0);
+	g_signal_connect(GTK_OBJECT(ui_flow_browse->info.help), "clicked",
+			GTK_SIGNAL_FUNC(flow_browse_show_help), NULL);
 
 	/* Author */
-	ui_flow_browse->flow_info.author = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->flow_info.author), 0, 0);
-	gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse->flow_info.author, FALSE, TRUE, 0);
+	ui_flow_browse->info.author = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.author), 0, 0);
+	gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse->info.author, FALSE, TRUE, 0);
 
 	return ui_flow_browse;
 }
@@ -178,8 +190,6 @@ flow_browse_load(void)
 
 	gchar *			filename;
 
-	GeoXmlProgram *		program;
-
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		if (gebr.flow != NULL)
@@ -198,37 +208,7 @@ flow_browse_load(void)
 	gebr.flow = GEOXML_FLOW(document_load(filename));
 	if (gebr.flow == NULL)
 		goto out;
-	geoxml_flow_get_program(gebr.flow, &program, 0);
-	while (program != NULL) {
-		gchar *		menu;
-		gulong		prog_index;
-		GdkPixbuf *	pixbuf;
-
-		geoxml_program_get_menu(program, &menu, &prog_index);
-
-		if (g_ascii_strcasecmp(geoxml_program_get_status(program), "unconfigured") == 0)
-			pixbuf = gebr.pixmaps.unconfigured_icon;
-		else if (g_ascii_strcasecmp(geoxml_program_get_status(program), "configured") == 0)
-			pixbuf = gebr.pixmaps.configured_icon;
-		else if (g_ascii_strcasecmp(geoxml_program_get_status(program), "disabled") == 0)
-			pixbuf = gebr.pixmaps.disabled_icon;
-		else {
-			gebr_message(WARNING, TRUE, TRUE, _("Unknown flow program '%s' status"),
-				geoxml_program_get_title(program));
-			pixbuf = NULL;
-		}
-
-		/* Add to the GUI */
-		gtk_list_store_append(gebr.ui_flow_edition->fseq_store, &iter);
-		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &iter,
-				FSEQ_TITLE_COLUMN, geoxml_program_get_title(program),
-				FSEQ_STATUS_COLUMN, pixbuf,
-				FSEQ_MENU_FILE_NAME_COLUMN, menu,
-				FSEQ_MENU_INDEX, prog_index,
-				-1);
-
-		geoxml_program_next(&program);
-	}
+	flow_add_programs_to_view(gebr.flow);
 
 out:	g_free(filename);
 }
@@ -262,17 +242,17 @@ void
 flow_browse_info_update(void)
 {
 	if (gebr.flow == NULL) {
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.title), "");
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.description), "");
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.input_label), "");
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.input), "");
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.output_label), "");
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.output), "");
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.error_label), "");
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.error), "");
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.author), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.title), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.description), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.input_label), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.input), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.output_label), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.output), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.error_label), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.error), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.author), "");
 
-		g_object_set(gebr.ui_flow_browse->flow_info.help, "sensitive", FALSE, NULL);
+		g_object_set(gebr.ui_flow_browse->info.help, "sensitive", FALSE, NULL);
 		return;
 	}
 
@@ -281,54 +261,54 @@ flow_browse_info_update(void)
 
 	/* Title in bold */
 	markup = g_markup_printf_escaped("<b>%s</b>", geoxml_document_get_title(GEOXML_DOC(gebr.flow)));
-	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->flow_info.title), markup);
+	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.title), markup);
 	g_free(markup);
 
 	/* Description in italic */
 	markup = g_markup_printf_escaped("<i>%s</i>", geoxml_document_get_description(GEOXML_DOC(gebr.flow)));
-	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->flow_info.description), markup);
+	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.description), markup);
 	g_free(markup);
 
 	/* I/O labels */
-	markup = g_markup_printf_escaped("<b>"_("Input:")"</b>");
-	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->flow_info.input_label), markup);
+	markup = g_markup_printf_escaped("<b>%s</b>", _("Input:"));
+	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.input_label), markup);
 	g_free(markup);
-	markup = g_markup_printf_escaped("<b>"_("Output:")"</b>");
-	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->flow_info.output_label), markup);
+	markup = g_markup_printf_escaped("<b>%s</b>", _("Output:"));
+	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.output_label), markup);
 	g_free(markup);
-	markup = g_markup_printf_escaped("<b>"_("Error log:")"</b>");
-	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->flow_info.error_label), markup);
+	markup = g_markup_printf_escaped("<b>%s</b>", _("Error log:"));
+	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.error_label), markup);
 	g_free(markup);
 
 	/* Input file */
-	if (strlen(geoxml_flow_io_get_input(flow)) > 0)
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.input), geoxml_flow_io_get_input(flow));
+	if (strlen(geoxml_flow_io_get_input(gebr.flow)))
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.input), geoxml_flow_io_get_input(gebr.flow));
 	else
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.input), "(none)");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.input), _("(none)"));
 	/* Output file */
-	if (strlen(geoxml_flow_io_get_output(flow)) > 0)
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.output), geoxml_flow_io_get_output(flow));
+	if (strlen(geoxml_flow_io_get_output(gebr.flow)))
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.output), geoxml_flow_io_get_output(gebr.flow));
 	else
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.output), "(none)");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.output), _("(none)"));
 	/* Error file */
-	if(strlen(geoxml_flow_io_get_error(flow)) > 0)
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.error), geoxml_flow_io_get_error(flow));
+	if(strlen(geoxml_flow_io_get_error(gebr.flow)))
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.error), geoxml_flow_io_get_error(gebr.flow));
 	else
-		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.error), "(none)");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.error), _("(none)"));
 
 	/* Author and email */
 	text = g_string_new(NULL);
 	g_string_printf(text, "%s <%s>",
 			geoxml_document_get_author(GEOXML_DOC(gebr.flow)),
 			geoxml_document_get_email(GEOXML_DOC(gebr.flow)));
-	gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->flow_info.author), text->text);
+	gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.author), text->str);
 	g_string_free(text, TRUE);
 
 	/* Info button */
-	g_object_set(gebr.ui_flow_browse->flow_info.help, "sensitive", TRUE, NULL);
+	g_object_set(gebr.ui_flow_browse->info.help, "sensitive", TRUE, NULL);
 }
 
-void
+static void
 flow_browse_show_help(void)
 {
 	help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(gebr.flow)),

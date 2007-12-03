@@ -23,6 +23,8 @@
  * according to user's change
  */
 
+#include <string.h>
+
 #include "ui_preferences.h"
 #include "gebr.h"
 #include "support.h"
@@ -59,7 +61,7 @@ preferences_setup_ui(void)
 	GtkWidget *			eventbox;
 
 	/* alloc */
-	ui_preferences->= g_malloc(sizeof(struct ui_preferences);
+	ui_preferences = g_malloc(sizeof(struct ui_preferences));
 
 	ui_preferences->dialog = gtk_dialog_new_with_buttons(_("Preferences"),
 					GTK_WINDOW(ui_preferences->dialog),
@@ -73,8 +75,7 @@ preferences_setup_ui(void)
 
 	/* Take the apropriate action when a button is pressed */
 	g_signal_connect_swapped(ui_preferences->dialog, "response",
-				  G_CALLBACK(preferences_ac),
-				  ui_preferences->dialog);
+				G_CALLBACK(preferences_actions), ui_preferences->dialog);
 
 	gtk_widget_set_size_request(ui_preferences->dialog, 380, 300);
 
@@ -89,7 +90,7 @@ preferences_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_table_attach(GTK_TABLE(table), ui_preferences->username, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
 	/* read config */
-	gtk_entry_set_text(GTK_ENTRY(gebr.config.username), ui_preferences->username->str);
+	gtk_entry_set_text(GTK_ENTRY(gebr.config.username), gebr.config.username->str);
 
 	/* User ui_preferences->email */
 	label = gtk_label_new(_("Email"));
@@ -99,7 +100,7 @@ preferences_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_table_attach(GTK_TABLE(table), ui_preferences->email, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 	/* read config */
-	gtk_entry_set_text(GTK_ENTRY(gebr.config.email), ui_preferences->email->str);
+	gtk_entry_set_text(GTK_ENTRY(gebr.config.email), gebr.config.email->str);
 
 	/* GêBR dir */
 	label = gtk_label_new(_("User's menus directory"));
@@ -164,7 +165,7 @@ preferences_setup_ui(void)
 			}
 		}
 		if (gebr.config.browser->len > 0 && new_browser) {
-			gtk_combo_box_append_text(GTK_COMBO_BOX(gebr.config.browser), ui_preferences->browser->str);
+			gtk_combo_box_append_text(GTK_COMBO_BOX(gebr.config.browser), gebr.config.browser->str);
 			gtk_combo_box_set_active(GTK_COMBO_BOX(ui_preferences->browser), NBROWSER );
 		}
 	}
@@ -174,6 +175,8 @@ preferences_setup_ui(void)
 	gtk_tooltips_set_tip(tips, eventbox, _("An HTML browser to display helps and reports"), "");
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_table_attach(GTK_TABLE(table), eventbox, 1, 2, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
+
+	gtk_widget_show(ui_preferences->dialog);
 
 	return ui_preferences;
 }
@@ -189,17 +192,17 @@ preferences_actions(GtkDialog * dialog, gint arg1, struct ui_preferences * ui_pr
 	switch (arg1) {
 	case GTK_RESPONSE_OK:
 		/* Save preferences to file and the relod */
-		g_string_assign(ui_preferences->username,
+		g_string_assign(gebr.config.username,
 				gtk_entry_get_text(GTK_ENTRY(ui_preferences->username)));
-		g_string_assign(ui_preferences->email,
+		g_string_assign(gebr.config.email,
 				gtk_entry_get_text(GTK_ENTRY(ui_preferences->email)));
-		g_string_assign(ui_preferences->usermenus,
+		g_string_assign(gebr.config.usermenus,
 				gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(ui_preferences->usermenus)));
-		g_string_assign(ui_preferences->data,
+		g_string_assign(gebr.config.data,
 				gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(ui_preferences->data)));
-		g_string_assign(ui_preferences->editor,
+		g_string_assign(gebr.config.editor,
 				gtk_entry_get_text(GTK_ENTRY(ui_preferences->editor)));
-		g_string_assign(ui_preferences->browser,
+		g_string_assign(gebr.config.browser,
 				gtk_combo_box_get_active_text(GTK_COMBO_BOX(ui_preferences->browser)));
 
 		gebr_config_save();

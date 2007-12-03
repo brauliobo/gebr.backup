@@ -18,6 +18,8 @@
 #ifndef __UI_FLOW_BROWSE_H
 #define __UI_FLOW_BROWSE_H
 
+#include <gtk/gtk.h>
+
 /* Store fields */
 enum {
 	FB_TITLE = 0,

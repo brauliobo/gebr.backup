@@ -19,6 +19,7 @@
 #define __LINE_H
 
 #include <gtk/gtk.h>
+
 #include <geoxml.h>
 
 void

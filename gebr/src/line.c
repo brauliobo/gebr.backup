@@ -32,9 +32,9 @@
 #include "project.h"
 #include "flow.h"
 
-gchar * no_line_selected_error =	_("No line selected");
-gchar * no_selection_error =		_("Nothing selected");
-gchar * no_project_selected_error =	_("Select a project to which a line will be added to");
+gchar * no_line_selected_error =		_("No line selected");
+gchar * no_selection_error =			_("Nothing selected");
+static gchar * no_project_selected_error =	_("Select a project to which a line will be added to");
 
 /*
  * Function: line_new

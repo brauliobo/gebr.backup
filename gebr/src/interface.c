@@ -68,7 +68,7 @@ assembly_interface(void)
 	GtkWidget *	pagetitle;
 
 	gebr.about = about_setup_ui("GêBR", _("A plug-and-play environment to\nseismic processing tools"));
-	gebr.ui_preferences = preferences_setup_ui();
+	gebr.ui_server_list = server_list_setup_ui();
 
 	/* Create the main window */
 	gebr.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -111,7 +111,6 @@ assembly_interface(void)
 	 */
 	gebr.notebook = gtk_notebook_new();
 	gtk_box_pack_start(GTK_BOX(vboxmain), gebr.notebook, TRUE, TRUE, 0);
-
 	g_signal_connect(GTK_OBJECT(gebr.notebook), "switch-page",
 			GTK_SIGNAL_FUNC(switch_page), NULL);
 

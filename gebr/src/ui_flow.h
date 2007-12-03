@@ -18,6 +18,10 @@
 #ifndef __UI_FLOW_H
 #define __UI_FLOW_H
 
+#include <gtk/gtk.h>
+
+#include <geoxml.h>
+
 struct ui_flow_io {
 	GtkWidget *		dialog;
 
@@ -28,5 +32,8 @@ struct ui_flow_io {
 
 struct ui_flow_io *
 flow_io_setup_ui(void);
+
+void
+flow_add_programs_to_view(GeoXmlFlow * flow);
 
 #endif //__UI_FLOW_H

@@ -27,5 +27,4 @@ help_show(gchar * help, gchar * title, gchar * fname);
 void
 help_edit(GtkButton * button, GeoXmlDocument * document);
 
-
 #endif //__UI_HELP_H

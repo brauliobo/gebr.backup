@@ -21,6 +21,10 @@
  */
 
 #include "ui_project_line.h"
+#include "gebr.h"
+#include "support.h"
+#include "line.h"
+#include "document.h"
 
 /*
  * Prototypes
@@ -43,7 +47,7 @@ struct ui_project_line *
 project_line_setup_ui(void)
 {
 	struct ui_project_line *	ui_project_line;
-	GtkWidget 			widget;
+
 	GtkWidget *			scrolledwin;
 
 	GtkTreeSelection *		selection;
@@ -63,10 +67,7 @@ project_line_setup_ui(void)
 	ui_project_line->store = gtk_tree_store_new(PL_N_COLUMN,
 						G_TYPE_STRING,  /* Name (title for libgeoxml) */
 						G_TYPE_STRING); /* Filename */
-
-	ui_project_line->view = gtk_tree_view_new_with_model
-	(GTK_TREE_MODEL(ui_project_line->store));
-
+	ui_project_line->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_project_line->store));
 	gtk_container_add(GTK_CONTAINER(scrolledwin), ui_project_line->view);
 
 	/* Projects/lines column */
@@ -74,7 +75,7 @@ project_line_setup_ui(void)
 
 	g_object_set(renderer, "editable", TRUE, NULL);
 	g_signal_connect(GTK_OBJECT(renderer), "edited",
-			GTK_SIGNAL_FUNC(ui_project_line->rename), ui_project_line);
+			GTK_SIGNAL_FUNC(project_line_rename), ui_project_line);
 
 	col = gtk_tree_view_column_new_with_attributes(_("Projects/lines index"), renderer, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, PL_TITLE);

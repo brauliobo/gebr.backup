@@ -18,6 +18,8 @@
 #ifndef __UI_FLOW_COMPONENT_H
 #define __UI_FLOW_COMPONENT_H
 
+#include <gtk/gtk.h>
+
 /* Flow sequence store fields */
 enum {
 	FSEQ_STATUS_COLUMN = 0,
@@ -51,7 +53,7 @@ struct ui_flow_edition *
 flow_edition_setup_ui(void);
 
 void
-flow_edition_change_properties(void);
+flow_edition_component_change_parameters(void);
 
 void
 flow_edition_set_status(GtkMenuItem * menuitem);

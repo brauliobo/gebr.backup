@@ -18,6 +18,8 @@
 #ifndef __UI_JOB_CONTROL_H
 #define __UI_JOB_CONTROL_H
 
+#include <gtk/gtk.h>
+
 /* Store fields */
 enum {
 	JC_ICON = 0,
