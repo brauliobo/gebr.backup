@@ -17,6 +17,9 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <unistd.h>
+
+#include <glib/gstdio.h>
 
 #include "log.h"
 
@@ -43,6 +46,14 @@ log_open(const gchar * path)
 
 	GString *	line;
 	GError *	error;
+
+	/* does it exist? */
+	if (g_access(path, F_OK)) {
+		FILE *	fp;
+
+		fp = fopen(path, "w");
+		fclose(fp);
+	}
 
 	log = g_malloc(sizeof(log));
 	line = g_string_new(NULL);

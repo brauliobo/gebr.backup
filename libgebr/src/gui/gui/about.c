@@ -70,7 +70,7 @@ about_setup_ui(const gchar * program, const gchar * description)
 		"GNU General Public License for more details.\n"
 		"\n"
 		"You should have received a copy of the GNU General Public License "
-		"along with this program.  If not, see <http://www.gnu.org/licenses/>."
+		"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
 		"\n"
 		"In Brazil, this program is under protection against unauthorized usage, "
 		"in accordance to brazilian laws #9609, Feb 19, 1998, #2556, "

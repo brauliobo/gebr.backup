@@ -25,33 +25,31 @@ G_BEGIN_DECLS
 GType
 gtk_file_entry_get_type(void);
 
-#define GTK_FILE_ENTRY_TYPE		(gtk_file_entry_get_type())
-#define GTK_FILE_ENTRY(obj)		(G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_FILE_ENTRY_TYPE, GtkFileEntry))
-#define GTK_FILE_ENTRY_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), GTK_FILE_ENTRY_TYPE, GtkFileEntryClass))
-#define GTK_IS_FILE_ENTRY(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), GTK_FILE_ENTRY_TYPE))
-#define GTK_IS_FILE_ENTRY_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_FILE_ENTRY_TYPE))
-#define GTK_FILE_ENTRY_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj), GTK_FILE_ENTRY_TYPE, GtkFileEntryClass))
+#define GTK_TYPE_FILE_ENTRY		(gtk_file_entry_get_type())
+#define GTK_FILE_ENTRY(obj)		(G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_FILE_ENTRY, GtkFileEntry))
+#define GTK_FILE_ENTRY_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), GTK_TYPE_FILE_ENTRY, GtkFileEntryClass))
+#define GTK_IS_FILE_ENTRY(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), GTK_TYPE_FILE_ENTRY))
+#define GTK_IS_FILE_ENTRY_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_FILE_ENTRY))
+#define GTK_FILE_ENTRY_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj), GTK_TYPE_FILE_ENTRY, GtkFileEntryClass))
 
 typedef struct _GtkFileEntry		GtkFileEntry;
 typedef struct _GtkFileEntryClass	GtkFileEntryClass;
 
 struct _GtkFileEntry {
-	GtkWidget	parent;
+	GtkBin		parent;
 
-	GtkWidget *	hbox;
 	GtkWidget *	entry;
-	GtkWidget *	browse_button;
 
 	gboolean	choose_directory;
 };
 struct _GtkFileEntryClass {
-	GtkWidgetClass	parent;
+	GtkBinClass	parent;
 
 	/* signals */
 	void		(*path_changed)(GtkFileEntry * self);
 };
 
-GtkFileEntry *
+GtkWidget *
 gtk_file_entry_new();
 
 void
