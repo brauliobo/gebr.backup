@@ -27,7 +27,8 @@
 #include "line.h"
 #include "flow.h"
 #include "menu.h"
-#include "ui_parameters.h"
+#include "ui_flow.h"
+#include "ui_document.h"
 
 /*
  * Function: switch_page
@@ -185,7 +186,7 @@ on_flow_delete_activate(void)
 void
 on_flow_properties_activate(void)
 {
-
+	document_properties_setup_ui(GEOXML_DOC(gebr.flow));
 }
 
 /*
@@ -196,7 +197,7 @@ on_flow_properties_activate(void)
 void
 on_flow_io_activate(void)
 {
-
+	flow_io_setup_ui();
 }
 
 /*
@@ -241,7 +242,7 @@ on_flow_component_refresh_activate(void)
 void
 on_flow_component_status_activate(GtkMenuItem * menuitem)
 {
-
+	flow_edition_set_status(menuitem);
 }
 
 /*
@@ -263,7 +264,7 @@ on_configure_preferences_activate(void)
 void
 on_configure_servers_activate(void)
 {
-	gtk_widget_show(gebr.ui_server_list->dialog);
+	gtk_widget_show_all(gebr.ui_server_list->dialog);
 }
 
 /*
@@ -274,5 +275,5 @@ on_configure_servers_activate(void)
 void
 on_help_about_activate(void)
 {
-	gtk_widget_show(gebr.about.dialog);
+	gtk_widget_show_all(gebr.about.dialog);
 }

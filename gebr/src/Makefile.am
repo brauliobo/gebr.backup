@@ -34,6 +34,7 @@ gebr_SOURCES = main.c \
 	menu.c \
 	support.c \
 	interface.c \
+	ui_document.c \
 	ui_flow.c \
 	ui_parameters.c \
 	ui_help.c \
@@ -56,6 +57,7 @@ noinst_HEADERS = \
 	menu.h \
 	support.h \
 	interface.h \
+	ui_document.h \
 	ui_flow.h \
 	ui_parameters.h \
 	ui_help.h \

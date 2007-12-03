@@ -160,7 +160,7 @@ project_list_populate(void)
 	gtk_list_store_clear(gebr.ui_flow_edition->fseq_store);
 	flow_free();
 
-	while ((file = readdir (dir)) != NULL) {
+	while ((file = readdir(dir)) != NULL) {
 		GtkTreeIter		project_iter, line_iter;
 
 		GeoXmlProject *		project;

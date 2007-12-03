@@ -180,7 +180,7 @@ gebr_config_load(int argc, char ** argv)
 
 	/* Initialize GêBR with options in gebr.conf */
 	if (cmdline_parser_configfile(config->str, &gebr.config.ggopt, 1, 1, 0) != 0) {
-		fprintf(stderr,"%s: try '--help' option\n", argv[0]);
+		fprintf(stderr, "%s: try '--help' option\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -255,7 +255,7 @@ gebr_config_save(void)
 
 	/* initialization */
 	config = g_string_new(NULL);
-	g_string_printf(config, "%s/.gebr/.gebr.conf", getenv("HOME"));
+	g_string_printf(config, "%s/.gebr/gebr.conf", getenv("HOME"));
 
 	fp = fopen(config->str, "w");
 	if (fp == NULL) {
@@ -263,18 +263,12 @@ gebr_config_save(void)
 		return FALSE;
 	}
 
-	if (gebr.config.username->str != NULL)
-		fprintf(fp, "name = \"%s\"\n", gebr.config.username->str);
-	if (gebr.config.email->str != NULL)
-		fprintf(fp, "email = \"%s\"\n", gebr.config.email->str);
-	if (gebr.config.usermenus->str != NULL)
-		fprintf(fp, "usermenus = \"%s\"\n", gebr.config.usermenus->str);
-	if (gebr.config.data->str != NULL)
-		fprintf(fp, "data = \"%s\"\n",  gebr.config.data->str);
-	if (gebr.config.editor->str != NULL)
-		fprintf(fp, "editor = \"%s\"\n", gebr.config.editor->str);
-	if (gebr.config.browser->str != NULL)
-		fprintf(fp, "browser = \"%s\"\n", gebr.config.browser->str);
+	fprintf(fp, "name = \"%s\"\n", gebr.config.username->str);
+	fprintf(fp, "email = \"%s\"\n", gebr.config.email->str);
+	fprintf(fp, "usermenus = \"%s\"\n", gebr.config.usermenus->str);
+	fprintf(fp, "data = \"%s\"\n",  gebr.config.data->str);
+	fprintf(fp, "editor = \"%s\"\n", gebr.config.editor->str);
+	fprintf(fp, "browser = \"%s\"\n", gebr.config.browser->str);
 
 	/* Save list of servers */
 	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);

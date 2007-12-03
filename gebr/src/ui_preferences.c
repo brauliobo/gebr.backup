@@ -64,7 +64,7 @@ preferences_setup_ui(void)
 	ui_preferences = g_malloc(sizeof(struct ui_preferences));
 
 	ui_preferences->dialog = gtk_dialog_new_with_buttons(_("Preferences"),
-					GTK_WINDOW(ui_preferences->dialog),
+					GTK_WINDOW(gebr.window),
 					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_STOCK_OK, GTK_RESPONSE_OK,
 					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -74,8 +74,8 @@ preferences_setup_ui(void)
 	tips = gtk_tooltips_new();
 
 	/* Take the apropriate action when a button is pressed */
-	g_signal_connect_swapped(ui_preferences->dialog, "response",
-				G_CALLBACK(preferences_actions), ui_preferences->dialog);
+	g_signal_connect(ui_preferences->dialog, "response",
+			G_CALLBACK(preferences_actions), ui_preferences);
 
 	gtk_widget_set_size_request(ui_preferences->dialog, 380, 300);
 
@@ -90,7 +90,7 @@ preferences_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_table_attach(GTK_TABLE(table), ui_preferences->username, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
 	/* read config */
-	gtk_entry_set_text(GTK_ENTRY(gebr.config.username), gebr.config.username->str);
+	gtk_entry_set_text(GTK_ENTRY(ui_preferences->username), gebr.config.username->str);
 
 	/* User ui_preferences->email */
 	label = gtk_label_new(_("Email"));
@@ -100,7 +100,7 @@ preferences_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_table_attach(GTK_TABLE(table), ui_preferences->email, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 	/* read config */
-	gtk_entry_set_text(GTK_ENTRY(gebr.config.email), gebr.config.email->str);
+	gtk_entry_set_text(GTK_ENTRY(ui_preferences->email), gebr.config.email->str);
 
 	/* GêBR dir */
 	label = gtk_label_new(_("User's menus directory"));
@@ -144,7 +144,7 @@ preferences_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_table_attach(GTK_TABLE(table), ui_preferences->editor, 1, 2, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
 	/* read config */
-	gtk_entry_set_text(GTK_ENTRY(gebr.config.editor), gebr.config.editor->str);
+	gtk_entry_set_text(GTK_ENTRY(ui_preferences->editor), gebr.config.editor->str);
 
 	/* Browser */
 	label = gtk_label_new(_("Browser"));
@@ -176,7 +176,7 @@ preferences_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_table_attach(GTK_TABLE(table), eventbox, 1, 2, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
 
-	gtk_widget_show(ui_preferences->dialog);
+	gtk_widget_show_all(ui_preferences->dialog);
 
 	return ui_preferences;
 }
@@ -190,25 +190,38 @@ static void
 preferences_actions(GtkDialog * dialog, gint arg1, struct ui_preferences * ui_preferences)
 {
 	switch (arg1) {
-	case GTK_RESPONSE_OK:
-		/* Save preferences to file and the relod */
+	case GTK_RESPONSE_OK: {
+		gchar *	tmp;
+		gchar *	tmp2;
+		gchar *	tmp3;
+
+		tmp = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(ui_preferences->usermenus));
+		tmp2 = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(ui_preferences->data));
+		tmp3 = gtk_combo_box_get_active_text(GTK_COMBO_BOX(ui_preferences->browser));
+		if (tmp3 == NULL)
+			tmp3 = "";
+
 		g_string_assign(gebr.config.username,
 				gtk_entry_get_text(GTK_ENTRY(ui_preferences->username)));
 		g_string_assign(gebr.config.email,
 				gtk_entry_get_text(GTK_ENTRY(ui_preferences->email)));
 		g_string_assign(gebr.config.usermenus,
-				gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(ui_preferences->usermenus)));
+				tmp);
 		g_string_assign(gebr.config.data,
-				gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(ui_preferences->data)));
+				tmp2);
 		g_string_assign(gebr.config.editor,
 				gtk_entry_get_text(GTK_ENTRY(ui_preferences->editor)));
 		g_string_assign(gebr.config.browser,
-				gtk_combo_box_get_active_text(GTK_COMBO_BOX(ui_preferences->browser)));
+				tmp3);
 
 		gebr_config_save();
 		gebr_config_apply();
+
+		g_free(tmp);
+		g_free(tmp2);
+		g_free(tmp3);
 		break;
-	case GTK_RESPONSE_CANCEL: /* does nothing */
+	} case GTK_RESPONSE_CANCEL: /* does nothing */
 	default:
 		break;
 	}

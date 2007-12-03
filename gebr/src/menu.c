@@ -118,29 +118,27 @@ menu_list_populate(void)
 	line = g_string_new(NULL);
 
 	g_string_printf(index_path, "%s/.gebr/menus.idx", getenv("HOME"));
-	if (g_access(index_path->str, F_OK) && menu_list_create_index() == FALSE)
+	if (g_access(index_path->str, F_OK | R_OK) && menu_list_create_index() == FALSE)
 		goto out;
 
 	/* Remove any previous menus from the list */
 	gtk_tree_store_clear(gebr.ui_flow_edition->menu_store);
-	parent_iter = NULL;
 
 	index_io_channel = g_io_channel_new_file(index_path->str, "r", &error);
-
+	parent_iter = NULL;
 	while (g_io_channel_read_line_string(index_io_channel, line, NULL, &error) == G_IO_STATUS_NORMAL) {
 		gchar **	parts;
 		GString *	path;
 		GtkTreeIter	iter;
 
-		parts = g_strsplit(line->str, "|", 4);
+		parts = g_strsplit_set(line->str, "|\n", 5);
 		path = menu_get_path(parts[3]);
 		if (path == NULL)
 			goto cont;
 
-		if (!strlen(parts[0])) {
-			gtk_tree_store_append(gebr.ui_flow_edition->menu_store, &iter, parent_iter);
+		if (!strlen(parts[0]))
 			parent_iter = NULL;
-		} else {
+		else {
 			GString *	titlebf;
 
 			titlebf = g_string_new(NULL);
@@ -175,6 +173,7 @@ menu_list_populate(void)
 			g_string_free(titlebf, TRUE);
 		}
 
+		gtk_tree_store_append(gebr.ui_flow_edition->menu_store, &iter, parent_iter);
 		gtk_tree_store_set(gebr.ui_flow_edition->menu_store, &iter,
 				MENU_TITLE_COLUMN, parts[1],
 				MENU_DESC_COLUMN, parts[2],
@@ -215,10 +214,8 @@ menu_scan_directory(const gchar * directory, FILE * index_fp)
 		g_string_printf(path, "%s/%s", directory, file->d_name);
 
 		document = document_load_path(path->str);
-		if (document == NULL) {
-			g_string_free(path, TRUE);
+		if (document == NULL)
 			continue;
-		}
 
 		geoxml_flow_get_category(GEOXML_FLOW(document), &category, 0);
 		while (category != NULL) {

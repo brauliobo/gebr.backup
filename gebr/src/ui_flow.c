@@ -66,9 +66,8 @@ flow_io_setup_ui(void)
 	ui_flow_io->dialog = dialog;
 	gtk_widget_set_size_request(dialog, 390, 160);
 
-	g_signal_connect_swapped(dialog, "response",
-				G_CALLBACK(flow_io_actions),
-				dialog);
+	g_signal_connect(dialog, "response",
+			G_CALLBACK(flow_io_actions), ui_flow_io);
 	g_signal_connect(GTK_OBJECT(dialog), "delete_event",
 			GTK_SIGNAL_FUNC(gtk_widget_destroy), NULL);
 

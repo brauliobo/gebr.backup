@@ -23,15 +23,15 @@
 #include <geoxml.h>
 
 struct ui_document_properties {
-	GtkWidget *	dialog;
+	GtkWidget *		dialog;
 
 	GeoXmlDocument *	document;
 
-	GtkWidget *	title;
-	GtkWidget *	description;
-	GtkWidget *	help;
-	GtkWidget *	author;
-	GtkWidget *	email;
+	GtkWidget *		title;
+	GtkWidget *		description;
+	GtkWidget *		help;
+	GtkWidget *		author;
+	GtkWidget *		email;
 };
 
 struct ui_document_properties *

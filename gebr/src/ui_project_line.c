@@ -125,7 +125,9 @@ project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new
 	geoxml_document_free(document);
 
 	/* store's change */
-	gtk_tree_store_set(ui_project_line->store, &iter, PL_TITLE, new_text, -1);
+	gtk_tree_store_set(ui_project_line->store, &iter,
+			PL_TITLE, new_text,
+			-1);
 
 out:	g_free(filename);
 }

@@ -78,7 +78,7 @@ server_list_setup_ui(void)
 	ui_server_list->dialog = dialog;
 
 	/* Take the apropriate action when a button is pressed */
-	g_signal_connect_swapped(dialog, "response",
+	g_signal_connect(dialog, "response",
 				G_CALLBACK(server_list_actions), ui_server_list);
 
 	gtk_widget_set_size_request(dialog, 380, 300);
