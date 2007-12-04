@@ -120,9 +120,10 @@ flow_new(void)
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
 
-	gchar *			title;
-	gchar *			line_filename;
+	gchar *			flow_title;
 	GString *		flow_filename;
+	gchar *			line_title;
+	gchar *			line_filename;
 
 	GeoXmlLine *		line;
 	GeoXmlFlow *		flow;
@@ -134,10 +135,10 @@ flow_new(void)
 	}
 
 	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->store), &iter,
-		PL_TITLE, &title,
+		PL_TITLE, &line_title,
 		PL_FILENAME, &line_filename,
 		-1);
-	title = _("New Flow");
+	flow_title = _("New Flow");
 	flow_filename = document_assembly_filename(".flw");
 
 	if (gtk_tree_store_iter_depth(gebr.ui_project_line->store, &iter) < 1) {
@@ -146,7 +147,7 @@ flow_new(void)
 	}
 
 	/* feedback */
-	gebr_message(ERROR, TRUE, FALSE, _("Adding flow to line %s"), title);
+	gebr_message(ERROR, TRUE, FALSE, _("Adding flow to line %s"), line_title);
 
 	/* Add flow to the line */
 	line = GEOXML_LINE(document_load(line_filename));
@@ -161,20 +162,20 @@ flow_new(void)
 	/* Create a new flow */
 	flow = geoxml_flow_new();
 	geoxml_document_set_filename(GEOXML_DOC(flow), flow_filename->str);
-	geoxml_document_set_title(GEOXML_DOC(flow), title);
+	geoxml_document_set_title(GEOXML_DOC(flow), flow_title);
 	geoxml_document_set_author(GEOXML_DOC(flow), gebr.config.username->str);
 	geoxml_document_set_email(GEOXML_DOC(flow), gebr.config.email->str);
 	document_save(GEOXML_DOC(flow));
 	geoxml_document_free(GEOXML_DOC(flow));
 
 	/* Add to the GUI */
-	gtk_list_store_append (gebr.ui_flow_browse->store, &iter);
-	gtk_list_store_set (gebr.ui_flow_browse->store, &iter,
-			FB_TITLE, title,
+	gtk_list_store_append(gebr.ui_flow_browse->store, &iter);
+	gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
+			FB_TITLE, flow_title,
 			FB_FILENAME, flow_filename,
 			-1);
 
-out:	g_free(title);
+out:	g_free(line_title);
 	g_free(line_filename);
 	g_string_free(flow_filename, TRUE);
 }
@@ -251,19 +252,21 @@ out:	g_free(title);
 void
 flow_run(void)
 {
-	GtkWidget *		dialog;
-	GtkWidget *		view;
-	GtkTreeViewColumn *	col;
-	GtkCellRenderer *	renderer;
 	GtkTreeSelection *	selection;
 	GtkTreeModel     *	model;
 	GtkTreeIter		iter;
 	GtkTreeIter		first_iter;
+	GtkTreeViewColumn *	col;
+	GtkCellRenderer *	renderer;
+
+	GtkWidget *		dialog;
+	GtkWidget *		view;
+
 	gboolean		has_first;
 	struct server *		server;
 
 	/* check for a flow selected */
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
 		return;
