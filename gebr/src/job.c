@@ -193,7 +193,8 @@ job_cancel(void)
 		return;
 	}
 
-	gebr_message(INFO, TRUE, FALSE, _("Telling server to terminate job..."));
+	gebr_message(INFO, TRUE, FALSE, _("Asking server to terminate job..."));
+	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to terminate job '%s'"), job->server->address, job->title->str);
 
 	protocol_send_data(job->server->protocol, job->server->tcp_socket,
 		protocol_defs.end_def, 1, job->jid->str);
@@ -263,7 +264,8 @@ job_stop(void)
 		return;
 	}
 
-	gebr_message(INFO, TRUE, TRUE, _("Telling server to kill job..."));
+	gebr_message(INFO, TRUE, FALSE, _("Asking server to kill job..."));
+	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to kill job '%s'"), job->server->address, job->title->str);
 
 	protocol_send_data(job->server->protocol, job->server->tcp_socket,
 		protocol_defs.kil_def, 0);
