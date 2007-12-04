@@ -25,6 +25,6 @@ noinst_HEADERS =
 EXTRA_DIST = ${noinst_HEADERS}
 
 INCLUDES =
-AM_CFLAGS = -Wall $(GLIB_CFLAGS)
+AM_CFLAGS = -Wall -DLOGDEBUG $(GLIB_CFLAGS)
 libgebr_misc_la_LIBADD = $(GLIB_LIBS)
 libgebr_misc_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@
