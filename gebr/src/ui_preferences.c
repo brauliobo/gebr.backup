@@ -165,7 +165,7 @@ preferences_setup_ui(void)
 			}
 		}
 		if (gebr.config.browser->len > 0 && new_browser) {
-			gtk_combo_box_append_text(GTK_COMBO_BOX(gebr.config.browser), gebr.config.browser->str);
+			gtk_combo_box_append_text(GTK_COMBO_BOX(ui_preferences->browser), gebr.config.browser->str);
 			gtk_combo_box_set_active(GTK_COMBO_BOX(ui_preferences->browser), NBROWSER );
 		}
 	}
