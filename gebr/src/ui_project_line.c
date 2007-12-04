@@ -74,8 +74,8 @@ project_line_setup_ui(void)
 	renderer = gtk_cell_renderer_text_new();
 
 	g_object_set(renderer, "editable", TRUE, NULL);
-	g_signal_connect(GTK_OBJECT(renderer), "edited",
-			GTK_SIGNAL_FUNC(project_line_rename), ui_project_line);
+// 	g_signal_connect(GTK_OBJECT(renderer), "edited",
+// 			GTK_SIGNAL_FUNC(project_line_rename), ui_project_line);
 
 	col = gtk_tree_view_column_new_with_attributes(_("Projects/lines index"), renderer, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, PL_TITLE);
@@ -87,8 +87,8 @@ project_line_setup_ui(void)
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_project_line->view));
 	gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
 
-	g_signal_connect(GTK_OBJECT(ui_project_line->view), "cursor-changed",
-			GTK_SIGNAL_FUNC(line_load_flows), NULL);
+// 	g_signal_connect(GTK_OBJECT(ui_project_line->view), "cursor-changed",
+// 			GTK_SIGNAL_FUNC(line_load_flows), NULL);
 
 	ui_project_line->selection_path = NULL;
 

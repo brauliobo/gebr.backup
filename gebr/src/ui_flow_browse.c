@@ -93,10 +93,10 @@ flow_browse_setup_ui(void)
 
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, NULL);
-	g_signal_connect(GTK_OBJECT(renderer), "edited",
-			GTK_SIGNAL_FUNC(flow_rename), NULL);
-	g_signal_connect(GTK_OBJECT(renderer), "edited",
-			GTK_SIGNAL_FUNC(flow_browse_info_update), NULL);
+// 	g_signal_connect(GTK_OBJECT(renderer), "edited",
+// 			GTK_SIGNAL_FUNC(flow_rename), NULL);
+// 	g_signal_connect(GTK_OBJECT(renderer), "edited",
+// 			GTK_SIGNAL_FUNC(flow_browse_info_update), NULL);
 
 	col = gtk_tree_view_column_new_with_attributes(label, renderer, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, FB_TITLE);
@@ -164,8 +164,8 @@ flow_browse_setup_ui(void)
 	/* Help */
 	ui_flow_browse->info.help = gtk_button_new_from_stock(GTK_STOCK_INFO);
 	gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse->info.help, FALSE, TRUE, 0);
-	g_signal_connect(GTK_OBJECT(ui_flow_browse->info.help), "clicked",
-			GTK_SIGNAL_FUNC(flow_browse_show_help), NULL);
+// 	g_signal_connect(GTK_OBJECT(ui_flow_browse->info.help), "clicked",
+// 			GTK_SIGNAL_FUNC(flow_browse_show_help), NULL);
 
 	/* Author */
 	ui_flow_browse->info.author = gtk_label_new("");

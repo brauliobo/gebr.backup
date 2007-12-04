@@ -117,6 +117,7 @@ server_list_actions(GtkDialog * dialog, gint arg1, struct ui_server_list * ui_se
 {
 	switch (arg1) {
 	case GEBR_SERVER_CLOSE:
+		gtk_widget_hide(ui_server_list->dialog);
 		break;
 	case GEBR_SERVER_REMOVE: {
 		GtkTreeSelection *	selection;

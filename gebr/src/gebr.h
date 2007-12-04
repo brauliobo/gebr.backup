@@ -45,10 +45,11 @@ struct gebr {
 
 	GeoXmlFlow *			flow;
 
-	/* status menu items */
-	GtkWidget *			configured_menuitem;
-	GtkWidget *			disabled_menuitem;
-	GtkWidget *			unconfigured_menuitem;
+	/* log file */
+	struct log *			log;
+
+	/* List of temporary file to be deleted */
+	GSList *			tmpfiles;
 
 	/* Persistant GUI */
 	struct ui_project_line *	ui_project_line;
@@ -71,11 +72,10 @@ struct gebr {
 		GString *		browser;
 	} config;
 
-	/* log file */
-	struct log *			log;
-
-	/* List of temporary file to be deleted */
-	GSList *			tmpfiles;
+	/* status menu items */
+	GtkWidget *			configured_menuitem;
+	GtkWidget *			disabled_menuitem;
+	GtkWidget *			unconfigured_menuitem;
 
 	/* Pixmaps */
 	struct pixmaps {
@@ -87,7 +87,7 @@ struct gebr {
 };
 
 void
-gebr_init(void);
+gebr_init(int argc, char ** argv);
 
 gboolean
 gebr_quit(void);

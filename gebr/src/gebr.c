@@ -45,14 +45,19 @@ struct gebr gebr;
 /*
  * Function: gebr_init
  * Take initial measures
+ * This function is the callback of when the gebr.window is shown
  */
 void
-gebr_init(void)
+gebr_init(int argc, char ** argv)
 {
 	GString *	log_filename;
+	GError *	error;
+
+	/* initialization */
+	log_filename = g_string_new(NULL);
+	error = NULL;
 
 	/* assembly user's gebr directory */
-	log_filename = g_string_new(NULL);
 	g_string_printf(log_filename, "%s/.gebr/gebr.log", getenv("HOME"));
 
 	/* log file */
@@ -65,18 +70,20 @@ gebr_init(void)
 	protocol_init();
 
 	/* icons */
-	{
-		GError *	error;
+	gebr.pixmaps.unconfigured_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_unconfigured.png", &error);
+	gebr.pixmaps.configured_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_configured.png", &error);
+	gebr.pixmaps.disabled_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_disabled.png", &error);
+	gebr.pixmaps.running_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_running.png", &error);
 
-		error = NULL;
-		gebr.pixmaps.unconfigured_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_unconfigured.png", &error);
-		gebr.pixmaps.configured_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_configured.png", &error);
-		gebr.pixmaps.disabled_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_disabled.png", &error);
-		gebr.pixmaps.running_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_running.png", &error);
-	}
-
+	/* message */
 	gebr_message(START, TRUE, TRUE, _("GêBR Initiating..."));
 
+	/* finally the config. file */
+	gebr_config_load(argc, argv);
+
+	gtk_widget_show_all(gebr.window);
+
+	/* frees */
 	g_string_free(log_filename, TRUE);
 }
 
@@ -131,14 +138,12 @@ gebr_quit(void)
 		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
 	}
 
-	gtk_main_quit();
-
 	/*
 	 * Interface frees
 	 */
 
 	g_free(gebr.ui_project_line);
-	g_free(gebr.ui_flow_browse);
+// 	g_free(gebr.ui_flow_browse); /* why crashing? */
 	g_free(gebr.ui_flow_edition);
 	g_free(gebr.ui_job_control);
 	g_free(gebr.ui_server_list);
@@ -146,6 +151,8 @@ gebr_quit(void)
 	g_object_unref(gebr.pixmaps.unconfigured_icon);
 	g_object_unref(gebr.pixmaps.configured_icon);
 	g_object_unref(gebr.pixmaps.disabled_icon);
+
+	gtk_main_quit();
 
 	return FALSE;
 }
@@ -158,7 +165,6 @@ void
 gebr_config_load(int argc, char ** argv)
 {
 	GString	*	config;
-	int		i;
 
 	/* initialization */
 	config = g_string_new(NULL);
@@ -211,6 +217,8 @@ gebr_config_load(int argc, char ** argv)
 				SERVER_POINTER, server_new(hostname),
 				-1);
 	} else {
+		int		i;
+
 		for (i = 0; i < gebr.config.ggopt.server_given; ++i) {
 			GtkTreeIter	iter;
 
