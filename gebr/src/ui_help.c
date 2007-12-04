@@ -100,6 +100,7 @@ out:	g_string_free(html_path, FALSE);
 
 /* Function: ui_help_edit
  * Edit help in editor.
+ *
  * Edit help in editor as reponse to button clicks.
  */
 void

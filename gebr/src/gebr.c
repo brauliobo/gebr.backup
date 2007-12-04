@@ -53,7 +53,9 @@ gebr_init(int argc, char ** argv)
 	GString *	log_filename;
 	GError *	error;
 
+
 	/* initialization */
+	gebr.flow = NULL;
 	log_filename = g_string_new(NULL);
 	error = NULL;
 
@@ -81,10 +83,9 @@ gebr_init(int argc, char ** argv)
 	/* finally the config. file */
 	gebr_config_load(argc, argv);
 
-	gtk_widget_show_all(gebr.window);
-
 	/* frees */
 	g_string_free(log_filename, TRUE);
+
 }
 
 /*
@@ -143,7 +144,7 @@ gebr_quit(void)
 	 */
 
 	g_free(gebr.ui_project_line);
-// 	g_free(gebr.ui_flow_browse); /* why crashing? */
+ 	g_free(gebr.ui_flow_browse); /* why crashing? */
 	g_free(gebr.ui_flow_edition);
 	g_free(gebr.ui_job_control);
 	g_free(gebr.ui_server_list);

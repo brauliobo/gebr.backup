@@ -73,7 +73,8 @@ assembly_interface(void)
 	/* Create the main window */
 	gebr.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(gebr.window), "GêBR");
-	gtk_widget_set_size_request(GTK_WIDGET(gebr.window), 700, 400);
+	gtk_widget_set_size_request(gebr.window, 700, 400);
+	gtk_widget_show(gebr.window);
 
 	/* Signals */
 	g_signal_connect(GTK_OBJECT(gebr.window), "delete_event",
@@ -82,6 +83,7 @@ assembly_interface(void)
 	/* Create the main vbox to hold menu, notebook and status bar */
 	vboxmain = gtk_vbox_new(FALSE, 1);
 	gtk_container_add(GTK_CONTAINER(gebr.window), vboxmain);
+	gtk_widget_show(vboxmain);
 
 	/*
 	 * Create the main menu
@@ -104,33 +106,43 @@ assembly_interface(void)
 	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), assembly_config_menu());
 	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), assembly_help_menu());
 
+	gtk_widget_show_all(mainmenu);
+
 	/*
 	 * Create a notebook to hold several pages
 	 */
 	gebr.notebook = gtk_notebook_new();
 	gtk_box_pack_start(GTK_BOX(vboxmain), gebr.notebook, TRUE, TRUE, 0);
-	g_signal_connect(GTK_OBJECT(gebr.notebook), "switch-page",
-			GTK_SIGNAL_FUNC(switch_page), NULL);
+	gtk_widget_show(gebr.notebook);
 
 	gebr.ui_project_line = project_line_setup_ui();
+	gtk_widget_show_all(gebr.ui_project_line->widget);
 	pagetitle = gtk_label_new(_("Projects and Lines"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_project_line->widget, pagetitle);
 
 	gebr.ui_flow_browse = flow_browse_setup_ui();
+	gtk_widget_show_all(gebr.ui_flow_browse->widget);
 	pagetitle = gtk_label_new(_("Flows"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_flow_browse->widget, pagetitle);
 
 	gebr.ui_flow_edition = flow_edition_setup_ui();
+	gtk_widget_show_all(gebr.ui_flow_edition->widget);
 	pagetitle = gtk_label_new(_("Flow edition"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_flow_edition->widget, pagetitle);
 
 	gebr.ui_job_control = job_control_setup_ui();
+	gtk_widget_show_all(gebr.ui_job_control->widget);
 	pagetitle = gtk_label_new(_("Job control"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(gebr.notebook), gebr.ui_job_control->widget, pagetitle);
 
+	g_signal_connect(GTK_OBJECT(gebr.notebook), "switch-page",
+		GTK_SIGNAL_FUNC(switch_page), NULL);
+
 	/* Create a status bar */
 	gebr.statusbar = gtk_statusbar_new();
+	gtk_widget_show_all(gebr.statusbar);
 	gtk_box_pack_end(GTK_BOX(vboxmain), gebr.statusbar, FALSE, FALSE, 0);
+
 }
 
 /*

@@ -48,8 +48,6 @@ project_line_setup_ui(void)
 {
 	struct ui_project_line *	ui_project_line;
 
-	GtkWidget *			scrolledwin;
-
 	GtkTreeSelection *		selection;
 	GtkTreeViewColumn *		col;
 	GtkCellRenderer *		renderer;
@@ -58,17 +56,13 @@ project_line_setup_ui(void)
 	ui_project_line = g_malloc(sizeof(struct ui_project_line));
 
 	/* Create projects/lines ui_project_line->widget */
-	ui_project_line->widget = gtk_vbox_new(FALSE, 0);
-
-	/* Project and line tree */
-	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
-	gtk_container_add(GTK_CONTAINER(ui_project_line->widget), scrolledwin);
+	ui_project_line->widget = gtk_scrolled_window_new(NULL, NULL);
 
 	ui_project_line->store = gtk_tree_store_new(PL_N_COLUMN,
 						G_TYPE_STRING,  /* Name (title for libgeoxml) */
 						G_TYPE_STRING); /* Filename */
 	ui_project_line->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_project_line->store));
-	gtk_container_add(GTK_CONTAINER(scrolledwin), ui_project_line->view);
+	gtk_container_add(GTK_CONTAINER(ui_project_line->widget), ui_project_line->view);
 
 	/* Projects/lines column */
 	renderer = gtk_cell_renderer_text_new();
