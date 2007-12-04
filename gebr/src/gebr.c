@@ -307,19 +307,17 @@ gebr_config_save(void)
 void
 gebr_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message, ...)
 {
-	GString *	string;
+	gchar *		string;
 	va_list		argp;
 
-	string = g_string_new(NULL);
-
 	va_start(argp, message);
-	g_string_vprintf(string, message, argp);
+	string = g_strdup_vprintf(message, argp);
 	va_end(argp);
 
 	if (in_log_file)
-		log_add_message(gebr.log, type, string->str);
+		log_add_message(gebr.log, type, string);
 	if (in_statusbar)
-		gtk_statusbar_push(GTK_STATUSBAR (gebr.statusbar), 0, string->str);
+		gtk_statusbar_push(GTK_STATUSBAR (gebr.statusbar), 0, string);
 
-	g_string_free(string, TRUE);
+	g_free(string);
 }
