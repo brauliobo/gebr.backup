@@ -379,7 +379,12 @@ parameters_create_label(GeoXmlProgramParameter * parameter)
 static GtkWidget *
 parameters_add_input_float(GeoXmlProgramParameter * parameter, GtkWidget ** widget)
 {
-	return parameters_add_input_string(parameter, widget);
+	GtkWidget *	hbox;
+
+	hbox = parameters_add_input_string(parameter, widget);
+	gtk_widget_set_size_request(*widget, 90, 30);
+
+	return hbox;
 }
 
 /*
@@ -389,7 +394,12 @@ parameters_add_input_float(GeoXmlProgramParameter * parameter, GtkWidget ** widg
 static GtkWidget *
 parameters_add_input_int(GeoXmlProgramParameter * parameter, GtkWidget ** widget)
 {
-	return parameters_add_input_string(parameter, widget);
+	GtkWidget *	hbox;
+
+	hbox = parameters_add_input_string(parameter, widget);
+	gtk_widget_set_size_request(*widget, 90, 30);
+
+	return hbox;
 }
 
 /*
