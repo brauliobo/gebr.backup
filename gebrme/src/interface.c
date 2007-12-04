@@ -15,9 +15,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "interface.h"
 #include "gebrme.h"
 #include "callbacks.h"
-#include "interface.h"
 #include "support.h"
 #include "menu.h"
 #include "info.h"
@@ -153,25 +153,25 @@ create_gebrme_window (void)
 	edit_menuitem_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (edit_menuitem), edit_menuitem_menu);
 
-	cut_menuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_QUIT, accel_group);
-	gtk_widget_show (cut_menuitem);
-	gtk_container_add (GTK_CONTAINER (edit_menuitem_menu), cut_menuitem);
-
-	copy_menuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_COPY, accel_group);
-	gtk_widget_show (copy_menuitem);
-	gtk_container_add (GTK_CONTAINER (edit_menuitem_menu), copy_menuitem);
-
-	paste_menuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_PASTE, accel_group);
-	gtk_widget_show (paste_menuitem);
-	gtk_container_add (GTK_CONTAINER (edit_menuitem_menu), paste_menuitem);
+// 	cut_menuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_QUIT, accel_group);
+// 	gtk_widget_show (cut_menuitem);
+// 	gtk_container_add (GTK_CONTAINER (edit_menuitem_menu), cut_menuitem);
+//
+// 	copy_menuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_COPY, accel_group);
+// 	gtk_widget_show (copy_menuitem);
+// 	gtk_container_add (GTK_CONTAINER (edit_menuitem_menu), copy_menuitem);
+//
+// 	paste_menuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_PASTE, accel_group);
+// 	gtk_widget_show (paste_menuitem);
+// 	gtk_container_add (GTK_CONTAINER (edit_menuitem_menu), paste_menuitem);
 
 	preferences_menuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_PREFERENCES, accel_group);
 	gtk_widget_show (preferences_menuitem);
 	gtk_container_add (GTK_CONTAINER (edit_menuitem_menu), preferences_menuitem);
 
-	view_menuitem = gtk_menu_item_new_with_mnemonic (_("_View"));
-	gtk_widget_show (view_menuitem);
-	gtk_container_add (GTK_CONTAINER (menubar), view_menuitem);
+// 	view_menuitem = gtk_menu_item_new_with_mnemonic (_("_View"));
+// 	gtk_widget_show (view_menuitem);
+// 	gtk_container_add (GTK_CONTAINER (menubar), view_menuitem);
 
 	help_menuitem = gtk_menu_item_new_with_mnemonic (_("_Help"));
 	gtk_widget_show (help_menuitem);
@@ -180,9 +180,11 @@ create_gebrme_window (void)
 	help_menuitem_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (help_menuitem), help_menuitem_menu);
 
+	/* About */
 	about_menuitem = gtk_image_menu_item_new_from_stock ("gtk-about", accel_group);
 	gtk_widget_show (about_menuitem);
 	gtk_container_add (GTK_CONTAINER (help_menuitem_menu), about_menuitem);
+	gebrme.about = about_setup_ui("GÃªBRME", _("Flow describer for GêBR"));
 
 	toolbar = gtk_toolbar_new ();
 	gtk_widget_show (toolbar);
@@ -516,7 +518,7 @@ create_gebrme_window (void)
 	g_signal_connect ((gpointer) quit_menuitem, "activate",
 			G_CALLBACK (gebrme_quit),
 			NULL);
-	g_signal_connect ((gpointer) cut_menuitem, "activate",
+/*	g_signal_connect ((gpointer) cut_menuitem, "activate",
 			G_CALLBACK (on_cut_activate),
 			NULL);
 	g_signal_connect ((gpointer) copy_menuitem, "activate",
@@ -524,7 +526,7 @@ create_gebrme_window (void)
 			NULL);
 	g_signal_connect ((gpointer) paste_menuitem, "activate",
 			G_CALLBACK (on_paste_activate),
-			NULL);
+			NULL);*/
 	g_signal_connect ((gpointer) preferences_menuitem, "activate",
 			G_CALLBACK (on_preferences_activate),
 			NULL);
@@ -538,53 +540,4 @@ create_gebrme_window (void)
 			NULL);
 
 	return gebrme_window;
-}
-
-void
-gtk_expander_hacked_visible(GtkWidget * expander, GtkWidget * label_widget)
-{
-	g_signal_handlers_unblock_matched(G_OBJECT(label_widget),
-					G_SIGNAL_MATCH_FUNC,
-					0, 0, NULL,
-					G_CALLBACK (gtk_expander_hacked_idle),
-					NULL);
-}
-
-gboolean
-gtk_expander_hacked_idle(GtkWidget * label_widget, GdkEventExpose *event, GtkWidget * expander)
-{
-	g_signal_handlers_block_matched(G_OBJECT(label_widget),
-					G_SIGNAL_MATCH_FUNC,
-					0, 0, NULL,
-					G_CALLBACK (gtk_expander_hacked_idle),
-					NULL);
-	g_object_ref (G_OBJECT (label_widget));
-	gtk_expander_set_label_widget (GTK_EXPANDER (expander), NULL);
-	gtk_expander_set_label_widget (GTK_EXPANDER (expander), label_widget);
-	g_object_unref (G_OBJECT (label_widget));
-
-	return TRUE;
-}
-
-gebr_file_selector_t
-create_file_selector_widget(void)
-{
-	gebr_file_selector_t file_selector;
-
-	file_selector.hbox = gtk_hbox_new(FALSE, 10);
-
-	/* entry */
-	file_selector.entry = gtk_entry_new();
-// 	gtk_entry_set_editable(GTK_ENTRY(file_selector.entry), FALSE);
-	gtk_widget_show(file_selector.entry);
-	gtk_box_pack_start(GTK_BOX (file_selector.hbox), file_selector.entry, TRUE, TRUE, 0);
-
-	/* browse button */
-	file_selector.browse_button = gtk_button_new_from_stock(GTK_STOCK_OPEN);
-	gtk_widget_show(file_selector.browse_button);
-	gtk_box_pack_start(GTK_BOX (file_selector.hbox), file_selector.browse_button, FALSE, TRUE, 0);
-
-	file_selector.user_data = NULL;
-
-	return file_selector;
 }

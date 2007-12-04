@@ -21,7 +21,7 @@
 #include "gebrme.h"
 #include "support.h"
 #include "parameter.h"
-#include "interface.h"
+#include "menu.h"
 #include "help.h"
 
 void

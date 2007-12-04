@@ -19,7 +19,9 @@
 #define __PARAMETER_H
 
 #include <gtk/gtk.h>
+
 #include <geoxml.h>
+#include <gui/gtkfileentry.h>
 
 struct parameter_data;
 struct parameter_ui_data;
@@ -67,10 +69,7 @@ void
 parameter_file_type_changed(GtkComboBox * combo, struct parameter_data * data);
 
 void
-parameter_file_default_changed(GtkEntry * entry, struct parameter_data * data);
-
-void
-parameter_file_default_button_clicked(GtkWidget * button, struct parameter_data * data);
+parameter_file_default_changed(GtkFileEntry * file_entry, struct parameter_data * data);
 
 gboolean
 parameter_range_default_changed(GtkSpinButton * spinbutton, struct parameter_data * data);

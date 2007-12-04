@@ -67,15 +67,17 @@ server_init(void)
 	/* write on user's home directory a file with a port */
 	g_string_printf(run_filename, "%s/.gebr/run/gebrd.run", getenv("HOME"));
 	if (g_file_test(run_filename->str, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR) == TRUE) {
-		g_print("Run file (~/.gebr/run/gebrd.run) already exists or is not a regular file\n");
+		g_print("Run file (~/.gebr/run/gebrd.run) already exists or is not a regular file.\n");
 		ret = FALSE;
 		goto out;
 	}
 	if ((run_fp = fopen(run_filename->str, "w")) == NULL) {
-		g_print("Could not write run file\n");
+		g_print("Could not write run file.\n");
 		ret = FALSE;
 		goto out;
 	}
+	fprintf(run_fp, "%d\n", g_tcp_server_server_port(gebrd.tcp_server));
+	fclose(run_fp);
 
 	/* connecting signal TERM */
 	act.sa_sigaction = (typeof(act.sa_sigaction))&gebrd_quit;
@@ -107,8 +109,8 @@ server_quit(void)
 	GString *	run_filename;
 
 	/* delete lock */
-	run_filename = g_string_new(getenv("HOME"));
-	g_string_append(run_filename, "/.gebr/run/gebrd.run");
+	run_filename = g_string_new(NULL);
+	g_string_printf(run_filename, "%s/.gebr/run/gebrd.run", getenv("HOME"));
 	unlink(run_filename->str);
 	g_string_free(run_filename, TRUE);
 

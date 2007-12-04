@@ -45,7 +45,4 @@ server_free(struct server * server);
 void
 server_run_flow(struct server * server);
 
-void
-server_list_flows(struct server * server);
-
 #endif //__SERVER_H

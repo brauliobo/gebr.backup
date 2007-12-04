@@ -44,9 +44,10 @@ category_add(void)
 void
 category_remove(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
-	GtkTreeModel     *	model;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
 	GeoXmlCategory *	category;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebrme.categories_treeview));
@@ -70,9 +71,10 @@ category_renamed(	GtkCellRendererText *	cell,
 			gchar *			new_text,
 			gpointer		user_data)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
-	GtkTreeModel     *	model;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
 	GeoXmlCategory *	category;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebrme.categories_treeview));

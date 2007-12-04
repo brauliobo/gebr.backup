@@ -21,6 +21,8 @@
 #include <gtk/gtk.h>
 #include <geoxml.h>
 
+#include <gui/about.h>
+
 extern struct gebrme gebrme;
 
 typedef enum {
@@ -44,36 +46,37 @@ enum {
 
 struct gebrme {
 	/* menu being edited */
-	GeoXmlFlow *	current;
+	GeoXmlFlow *		current;
 
 	/* diverse widgets */
-	GtkWidget *	window;
-	GtkWidget *	statusbar;
+	GtkWidget *		window;
+	struct about		about;
+	GtkWidget *		statusbar;
 
 	/* menus list */
-	GtkListStore *	menus_liststore;
-	GtkWidget *	menus_treeview;
+	GtkListStore *		menus_liststore;
+	GtkWidget *		menus_treeview;
 
 	/* title, description, author and email */
-	GtkWidget *	title_entry;
-	GtkWidget *	description_entry;
-	GtkWidget *	author_entry;
-	GtkWidget *	email_entry;
+	GtkWidget *		title_entry;
+	GtkWidget *		description_entry;
+	GtkWidget *		author_entry;
+	GtkWidget *		email_entry;
 
 	/* menu info: categories */
-	GtkWidget *	categories_combo;
-	GtkListStore *	categories_liststore;
-	GtkWidget *	categories_treeview;
-	GtkWidget *	categories_toolbar;
+	GtkWidget *		categories_combo;
+	GtkListStore *		categories_liststore;
+	GtkWidget *		categories_treeview;
+	GtkWidget *		categories_toolbar;
 
-	/* menus' programs */
-	GtkWidget *	programs_vbox;
+	/* menu's programs */
+	GtkWidget *		programs_vbox;
 
         /* icons */
-        GdkPixbuf *     unsaved_icon;
+        GdkPixbuf *   		  unsaved_icon;
 
 	/* temporary files removed when GêBRME quits */
-	GSList *	tmpfiles;
+	GSList *		tmpfiles;
 
 	/* config file */
 	struct {

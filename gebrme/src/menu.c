@@ -112,7 +112,7 @@ menu_open(const gchar * path)
 		}
 		return;
 	}
-			    
+
 	/* add to the view */
 	filename = g_path_get_basename(path);
 	gebrme.current = GEOXML_FLOW(menu);
@@ -183,10 +183,11 @@ menu_save(const gchar * path)
 void
 menu_selected(void)
 {
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
 	GtkTreeIter		itermenu;
 	GtkTreeIter		itercat;
-	GtkTreeSelection *	selection;
-	GtkTreeModel     *	model;
+
 	GeoXmlCategory *	category;
 	GeoXmlProgram *		program;
 	GdkPixbuf *             icon;
@@ -315,9 +316,9 @@ out:	g_slist_free(unsaved);
 void
 menu_saved_status_set(MenuStatus status)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebrme.menus_treeview));
 	gtk_tree_selection_get_selected (selection, &model, &iter);

@@ -47,4 +47,18 @@
 GtkWidget *
 create_depth(GtkWidget * expander);
 
+#define gtk_expander_hacked_define(expander, label_widget)			\
+	g_signal_connect_after ((gpointer) label_widget, "expose-event",	\
+			G_CALLBACK (gtk_expander_hacked_idle),			\
+			expander);						\
+	g_signal_connect((gpointer) expander, "unmap",				\
+			G_CALLBACK (gtk_expander_hacked_visible),		\
+			label_widget)
+
+void
+gtk_expander_hacked_visible(GtkWidget * parent_expander, GtkWidget * hbox);
+
+gboolean
+gtk_expander_hacked_idle(GtkWidget * hbox, GdkEventExpose *event, GtkWidget * expander);
+
 #endif //__SUPPORT_H
