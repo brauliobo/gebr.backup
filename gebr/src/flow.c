@@ -172,7 +172,7 @@ flow_new(void)
 	gtk_list_store_append(gebr.ui_flow_browse->store, &iter);
 	gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
 			FB_TITLE, flow_title,
-			FB_FILENAME, flow_filename,
+			FB_FILENAME, flow_filename->str,
 			-1);
 
 out:	g_free(line_title);

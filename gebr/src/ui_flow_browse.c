@@ -69,7 +69,7 @@ flow_browse_setup_ui(void)
 	gchar *				label;
 
 	/* alloc */
-	ui_flow_browse = g_malloc(sizeof(ui_flow_browse));
+	ui_flow_browse = g_malloc(sizeof(struct ui_flow_browse));
 
 	/* Create flow browse page */
 	page = gtk_vbox_new(FALSE, 0);
