@@ -35,7 +35,7 @@ make_temp_filename(void)
 {
 	static gchar	template[7];
 
-	strcmp(template, "XXXXXX");
+	strcpy(template, "XXXXXX");
 	mkstemp(template);
 
 	return template;
