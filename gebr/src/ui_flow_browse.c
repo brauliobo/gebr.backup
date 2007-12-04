@@ -93,10 +93,8 @@ flow_browse_setup_ui(void)
 
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, NULL);
-// 	g_signal_connect(GTK_OBJECT(renderer), "edited",
-// 			GTK_SIGNAL_FUNC(flow_rename), NULL);
-// 	g_signal_connect(GTK_OBJECT(renderer), "edited",
-// 			GTK_SIGNAL_FUNC(flow_browse_info_update), NULL);
+	g_signal_connect(GTK_OBJECT(renderer), "edited",
+			GTK_SIGNAL_FUNC(flow_rename), ui_flow_browse);
 
 	col = gtk_tree_view_column_new_with_attributes(label, renderer, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, FB_TITLE);
@@ -109,9 +107,9 @@ flow_browse_setup_ui(void)
 	gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_browse->view);
 
 	g_signal_connect(GTK_OBJECT(ui_flow_browse->view), "cursor-changed",
-			GTK_SIGNAL_FUNC(flow_browse_load), NULL);
+			GTK_SIGNAL_FUNC(flow_browse_load), ui_flow_browse);
 	g_signal_connect(GTK_OBJECT(ui_flow_browse->view), "cursor-changed",
-			GTK_SIGNAL_FUNC(flow_browse_info_update), NULL);
+			GTK_SIGNAL_FUNC(flow_browse_info_update), ui_flow_browse);
 
 	/*
 	 * Right side: flow info
@@ -164,8 +162,8 @@ flow_browse_setup_ui(void)
 	/* Help */
 	ui_flow_browse->info.help = gtk_button_new_from_stock(GTK_STOCK_INFO);
 	gtk_box_pack_end(GTK_BOX(infopage), ui_flow_browse->info.help, FALSE, TRUE, 0);
-// 	g_signal_connect(GTK_OBJECT(ui_flow_browse->info.help), "clicked",
-// 			GTK_SIGNAL_FUNC(flow_browse_show_help), NULL);
+	g_signal_connect(GTK_OBJECT(ui_flow_browse->info.help), "clicked",
+			GTK_SIGNAL_FUNC(flow_browse_show_help), ui_flow_browse);
 
 	/* Author */
 	ui_flow_browse->info.author = gtk_label_new("");
@@ -184,19 +182,18 @@ flow_browse_setup_ui(void)
 static void
 flow_browse_load(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter;
 
 	gchar *			filename;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		if (gebr.flow != NULL)
 			flow_free();
 		return;
 	}
-
 	gtk_tree_model_get(GTK_TREE_MODEL (gebr.ui_flow_browse->store), &iter,
 			FB_FILENAME, &filename,
 			-1);
@@ -205,10 +202,14 @@ flow_browse_load(void)
 	if (gebr.flow != NULL)
 		flow_free();
 
+	/* load it */
 	gebr.flow = GEOXML_FLOW(document_load(filename));
 	if (gebr.flow == NULL)
 		goto out;
+
+	/* now into GUI */
 	flow_add_programs_to_view(gebr.flow);
+	flow_browse_info_update();
 
 out:	g_free(filename);
 }
@@ -222,10 +223,10 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, s
 {
 	GtkTreeIter	iter;
 
-	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL (ui_flow_browse->store),
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(ui_flow_browse->store),
 					&iter,
 					path_string);
-	gtk_list_store_set (ui_flow_browse->store, &iter,
+	gtk_list_store_set(ui_flow_browse->store, &iter,
 			FB_TITLE, new_text,
 			-1);
 

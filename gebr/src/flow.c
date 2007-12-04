@@ -127,8 +127,8 @@ flow_new(void)
 	GeoXmlLine *		line;
 	GeoXmlFlow *		flow;
 
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_project_line->view));
-	if (gtk_tree_selection_get_selected (selection, &model, &iter) == FALSE) {
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_project_line->view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, _("Select a line to which a flow will be added to"));
 		return;
 	}

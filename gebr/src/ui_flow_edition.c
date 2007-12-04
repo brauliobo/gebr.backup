@@ -104,10 +104,10 @@ flow_edition_setup_ui(void)
 		gtk_tree_view_column_add_attribute(col, renderer, "text", FSEQ_TITLE_COLUMN);
 
 		/* Double click on flow component open its parameter window */
-// 		g_signal_connect(ui_flow_edition->fseq_view, "row-activated",
-// 				GTK_SIGNAL_FUNC(flow_edition_component_change_parameters), NULL);
-// 		g_signal_connect(GTK_OBJECT(ui_flow_edition->fseq_view), "cursor-changed",
-// 				GTK_SIGNAL_FUNC(flow_edition_component_selected), NULL);
+		g_signal_connect(ui_flow_edition->fseq_view, "row-activated",
+				GTK_SIGNAL_FUNC(flow_edition_component_change_parameters), ui_flow_edition);
+		g_signal_connect(GTK_OBJECT(ui_flow_edition->fseq_view), "cursor-changed",
+				GTK_SIGNAL_FUNC(flow_edition_component_selected), ui_flow_edition);
 
 		gtk_container_add(GTK_CONTAINER(scrolledwin), ui_flow_edition->fseq_view);
 		gtk_widget_set_size_request(GTK_WIDGET(scrolledwin), 180, 30);
@@ -174,7 +174,7 @@ flow_edition_setup_ui(void)
 		ui_flow_edition->menu_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_flow_edition->menu_store));
 
 		g_signal_connect(GTK_OBJECT(ui_flow_edition->menu_view), "row-activated",
-				GTK_SIGNAL_FUNC(flow_edition_menu_add), NULL);
+				GTK_SIGNAL_FUNC(flow_edition_menu_add), ui_flow_edition);
 
 		renderer = gtk_cell_renderer_text_new();
 		col = gtk_tree_view_column_new_with_attributes("Flow", renderer, NULL);

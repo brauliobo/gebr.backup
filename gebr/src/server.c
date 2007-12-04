@@ -126,7 +126,7 @@ ssh_read_finished(GProcess * process, struct server * server)
 		if (!g_ascii_strcasecmp(hostname, server->address->str))
 			g_string_printf(cmd_line, "bash -l -c gebrd&");
 		else
-			g_string_printf(cmd_line, "ssh -x -f %s \"bash -l -c gebrd\"", server->address->str);
+			g_string_printf(cmd_line, "ssh -x -f %s 'bash -l -c gebrd'", server->address->str);
 
 		system(cmd_line->str);
 		ssh_ask_server_port(server);
@@ -148,7 +148,7 @@ ssh_ask_server_port(struct server * server)
 	GString * cmd_line;
 	process = g_process_new();
 	cmd_line = g_string_new(NULL);
-	g_string_printf(cmd_line, "ssh %s \"test -e .gebr/run/gebrd.run && cat .gebr/run/gebrd.run\"",
+	g_string_printf(cmd_line, "ssh %s 'test -e ~/.gebr/run/gebrd.run && cat ~/.gebr/run/gebrd.run'",
 		server->address->str);
 g_print("ssh_ask_server_port\n");
 	g_signal_connect(process, "ready-read-stdout",
