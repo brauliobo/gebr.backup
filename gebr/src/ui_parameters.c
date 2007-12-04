@@ -46,22 +46,22 @@ static GtkWidget *
 parameters_create_label(GeoXmlProgramParameter * parameter);
 
 static GtkWidget *
-parameters_add_input_float(GeoXmlProgramParameter * parameter);
+parameters_add_input_float(GeoXmlProgramParameter * parameter, GtkWidget ** widget);
 
 static GtkWidget *
-parameters_add_input_int(GeoXmlProgramParameter * parameter);
+parameters_add_input_int(GeoXmlProgramParameter * parameter, GtkWidget ** widget);
 
 static GtkWidget *
-parameters_add_input_string(GeoXmlProgramParameter * parameter);
+parameters_add_input_string(GeoXmlProgramParameter * parameter, GtkWidget ** widget);
 
 static GtkWidget *
-parameters_add_input_range(GeoXmlProgramParameter * parameter);
+parameters_add_input_range(GeoXmlProgramParameter * parameter, GtkWidget ** widget);
 
 static GtkWidget *
-parameters_add_input_flag(GeoXmlProgramParameter * parameter);
+parameters_add_input_flag(GeoXmlProgramParameter * parameter, GtkWidget ** widget);
 
 static GtkWidget *
-parameters_add_input_file(GeoXmlProgramParameter * parameter);
+parameters_add_input_file(GeoXmlProgramParameter * parameter, GtkWidget ** widget);
 
 /*
  * Function: parameters_configure_setup_ui
@@ -120,16 +120,16 @@ parameters_configure_setup_ui(void)
 
 	/* flow title */
 	label = gtk_label_new(NULL);
-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (ui_parameters->dialog)->vbox), label, FALSE, TRUE, 5);
-	gtk_misc_set_alignment( GTK_MISC(label), 0.5, 0);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(ui_parameters->dialog)->vbox), label, FALSE, TRUE, 5);
+	gtk_misc_set_alignment(GTK_MISC(label), 0.5, 0);
 
 	/* scrolled window for parameters */
 	scrolledwin = gtk_scrolled_window_new (NULL, NULL);
 	viewport = gtk_viewport_new(NULL, NULL);
 	vbox = gtk_vbox_new(FALSE, 3);
-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (ui_parameters->dialog)->vbox), scrolledwin, TRUE, TRUE, 0);
-	gtk_container_add (GTK_CONTAINER (scrolledwin), viewport);
-	gtk_container_add (GTK_CONTAINER (viewport), vbox);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG (ui_parameters->dialog)->vbox), scrolledwin, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER (scrolledwin), viewport);
+	gtk_container_add(GTK_CONTAINER (viewport), vbox);
 
 	/* starts reading program and its parameters */
 	geoxml_flow_get_program(gebr.flow, &program, ui_parameters->program_index);
@@ -149,33 +149,34 @@ parameters_configure_setup_ui(void)
 	program_parameter = geoxml_program_get_first_parameter(program);
 	for (i = 0; i < ui_parameters->widgets_number; ++i) {
 		GtkWidget *	widget;
+		GtkWidget *	parameter_widget;
 
 		switch (geoxml_program_parameter_get_type(program_parameter)) {
 		case GEOXML_PARAMETERTYPE_FLOAT:
-			widget = parameters_add_input_float(program_parameter);
+			widget = parameters_add_input_float(program_parameter, &parameter_widget);
 			break;
 		case GEOXML_PARAMETERTYPE_INT:
-			widget = parameters_add_input_int(program_parameter);
+			widget = parameters_add_input_int(program_parameter, &parameter_widget);
 			break;
 		case GEOXML_PARAMETERTYPE_STRING:
-			widget = parameters_add_input_string(program_parameter);
+			widget = parameters_add_input_string(program_parameter, &parameter_widget);
 			break;
 		case GEOXML_PARAMETERTYPE_RANGE:
-			widget = parameters_add_input_range(program_parameter);
+			widget = parameters_add_input_range(program_parameter, &parameter_widget);
 			break;
 		case GEOXML_PARAMETERTYPE_FLAG:
-			widget = parameters_add_input_flag(program_parameter);
+			widget = parameters_add_input_flag(program_parameter, &parameter_widget);
 			break;
 		case GEOXML_PARAMETERTYPE_FILE:
-			widget = parameters_add_input_file(program_parameter);
+			widget = parameters_add_input_file(program_parameter, &parameter_widget);
 			break;
 		default:
-			widget = NULL;
+			continue;
 			break;
 		}
 
 		/* set and add */
-		ui_parameters->widgets[i] = widget;
+		ui_parameters->widgets[i] = parameter_widget;
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 
 		geoxml_program_parameter_next(&program_parameter);
@@ -376,9 +377,9 @@ parameters_create_label(GeoXmlProgramParameter * parameter)
  * Add an input entry to a float parameter
  */
 static GtkWidget *
-parameters_add_input_float(GeoXmlProgramParameter * parameter)
+parameters_add_input_float(GeoXmlProgramParameter * parameter, GtkWidget ** widget)
 {
-	return parameters_add_input_string(parameter);
+	return parameters_add_input_string(parameter, widget);
 }
 
 /*
@@ -386,9 +387,9 @@ parameters_add_input_float(GeoXmlProgramParameter * parameter)
  * Add an input entry to an integer parameter
  */
 static GtkWidget *
-parameters_add_input_int(GeoXmlProgramParameter * parameter)
+parameters_add_input_int(GeoXmlProgramParameter * parameter, GtkWidget ** widget)
 {
-	return parameters_add_input_string(parameter);
+	return parameters_add_input_string(parameter, widget);
 }
 
 /*
@@ -396,7 +397,7 @@ parameters_add_input_int(GeoXmlProgramParameter * parameter)
  * Add an input entry to a string parameter
  */
 static GtkWidget *
-parameters_add_input_string(GeoXmlProgramParameter * parameter)
+parameters_add_input_string(GeoXmlProgramParameter * parameter, GtkWidget ** widget)
 {
 	GtkWidget *	hbox;
 	GtkWidget *	label;
@@ -413,7 +414,8 @@ parameters_add_input_string(GeoXmlProgramParameter * parameter)
 	gtk_entry_set_text(GTK_ENTRY(entry),
 		geoxml_program_parameter_get_value(parameter));
 
-	return entry;
+	*widget = entry;
+	return hbox;
 }
 
 /*
@@ -421,7 +423,7 @@ parameters_add_input_string(GeoXmlProgramParameter * parameter)
  * Add an input entry to a range parameter
  */
 static GtkWidget *
-parameters_add_input_range(GeoXmlProgramParameter * parameter)
+parameters_add_input_range(GeoXmlProgramParameter * parameter, GtkWidget ** widget)
 {
 	GtkWidget *	hbox;
 	GtkWidget *	label;
@@ -445,7 +447,8 @@ parameters_add_input_range(GeoXmlProgramParameter * parameter)
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin),
 		atof(geoxml_program_parameter_get_value(parameter)));
 
-	return spin;
+	*widget = spin;
+	return hbox;
 }
 
 /*
@@ -453,7 +456,7 @@ parameters_add_input_range(GeoXmlProgramParameter * parameter)
  * Add an input entry to a flag parameter
  */
 static GtkWidget *
-parameters_add_input_flag(GeoXmlProgramParameter * parameter)
+parameters_add_input_flag(GeoXmlProgramParameter * parameter, GtkWidget ** widget)
 {
 	GtkWidget *	hbox;
 	GtkWidget *	check_button;
@@ -465,7 +468,8 @@ parameters_add_input_flag(GeoXmlProgramParameter * parameter)
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button),
 		geoxml_program_parameter_get_flag_status(parameter));
 
-	return check_button;
+	*widget = check_button;
+	return hbox;
 }
 
 /*
@@ -473,7 +477,7 @@ parameters_add_input_flag(GeoXmlProgramParameter * parameter)
  * Add an input entry and button to browse for a file or directory
  */
 static GtkWidget *
-parameters_add_input_file(GeoXmlProgramParameter * parameter)
+parameters_add_input_file(GeoXmlProgramParameter * parameter, GtkWidget ** widget)
 {
 	GtkWidget *	hbox;
 	GtkWidget *	label;
@@ -494,5 +498,6 @@ parameters_add_input_file(GeoXmlProgramParameter * parameter)
 	gtk_file_entry_set_choose_directory(GTK_FILE_ENTRY(file_entry),
 		geoxml_program_parameter_get_file_be_directory(parameter));
 
-	return file_entry;
+	*widget = file_entry;
+	return hbox;
 }
