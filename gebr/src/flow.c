@@ -75,8 +75,8 @@ flow_export(void)
 							GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 							NULL);
 	filefilter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filefilter, _("Flow files (*.flow)"));
-	gtk_file_filter_add_pattern(filefilter, "*.flow");
+	gtk_file_filter_set_name(filefilter, _("Flow files (*.flw)"));
+	gtk_file_filter_add_pattern(filefilter, "*.flw");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser_dialog), filefilter);
 
 	/* show file chooser */
@@ -91,6 +91,9 @@ flow_export(void)
 	geoxml_document_set_filename(GEOXML_DOC(gebr.flow), filename);
 	geoxml_document_save(GEOXML_DOC(gebr.flow), path);
 	geoxml_document_set_filename(GEOXML_DOC(gebr.flow), oldfilename);
+	
+	gebr_message(INFO, TRUE, TRUE, _("Flow '%s' exported to %s"),
+		     (gchar*)geoxml_document_get_title(GEOXML_DOC(gebr.flow)), path);
 
 	g_free(path);
 	g_free(filename);
@@ -147,7 +150,7 @@ flow_new(void)
 	}
 
 	/* feedback */
-	gebr_message(ERROR, TRUE, FALSE, _("Adding flow to line %s"), line_title);
+	gebr_message(INFO, TRUE, TRUE, _("Adding flow to line '%s'"), line_title);
 
 	/* Add flow to the line */
 	line = GEOXML_LINE(document_load(line_filename));

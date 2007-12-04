@@ -187,6 +187,7 @@ flow_browse_load(void)
 	GtkTreeIter		iter;
 
 	gchar *			filename;
+	gchar *                 title;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
@@ -195,7 +196,8 @@ flow_browse_load(void)
 		return;
 	}
 	gtk_tree_model_get(GTK_TREE_MODEL (gebr.ui_flow_browse->store), &iter,
-			FB_FILENAME, &filename,
+			   FB_FILENAME, &filename,
+			   FB_TITLE, &title,
 			-1);
 
 	/* free previous flow */
@@ -204,14 +206,18 @@ flow_browse_load(void)
 
 	/* load it */
 	gebr.flow = GEOXML_FLOW(document_load(filename));
-	if (gebr.flow == NULL)
+	if (gebr.flow == NULL){
+		gebr_message(ERROR, TRUE, FALSE, _("Unable to load flow '%s'"), title);
+		gebr_message(ERROR, FALSE, TRUE, _("Unable to load flow '%s' from file '%s'"), title, filename);
 		goto out;
+	}
 
 	/* now into GUI */
 	flow_add_programs_to_view(gebr.flow);
 	flow_browse_info_update();
 
 out:	g_free(filename);
+	g_free(title);
 }
 
 /*
@@ -229,6 +235,9 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, s
 	gtk_list_store_set(ui_flow_browse->store, &iter,
 			FB_TITLE, new_text,
 			-1);
+
+	gebr_message(INFO, FALSE, TRUE, _("Flow '%s' renamed to '%s'"),
+		     geoxml_document_get_title(GEOXML_DOC(gebr.flow)), new_text);
 
 	/* Update XML */
 	geoxml_document_set_title(GEOXML_DOC(gebr.flow), new_text);

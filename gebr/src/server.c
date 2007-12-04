@@ -61,7 +61,7 @@ ssh_run_server_finished(GProcess * process, struct server * server)
 {
 	/* now ask via ssh its port */
 	ssh_ask_server_port(server);
-	g_print("ssh_run_server_finished\n");
+	gebr_message(DEBUG, TRUE, TRUE, _("ssh_run_server_finished"));
 // 	g_process_free(process);
 }
 
@@ -76,7 +76,7 @@ ssh_read_server_port_read_stdout(GProcess * process, struct server * server)
 	port = strtol(output->str, &strtol_endptr, 10);
 	if (errno != ERANGE)
 		server->port = port;
-	g_print("ssh_read_server_port_read_stdout %d %d\n", port, server->port);
+	gebr_message(DEBUG, TRUE, TRUE, _("ssh_read_server_port_read_stdout: port read = %d, server port = %d"), port, server->port);
 	g_string_free(output, TRUE);
 }
 
@@ -94,8 +94,10 @@ ssh_read_server_port_read_stderr(GProcess * process, struct server * server)
 		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_MESSAGE_ERROR,
 		GTK_BUTTONS_CLOSE,
-		"Error contacting server host %s via ssh:\n%s",
+		_("Error contacting server host %s via ssh:\n%s"),
 		server->address->str, error->str);
+	
+	gebr_message(ERROR, FALSE, TRUE, _("Error contacting server %s via ssh: %s"), server->address->str, error->str);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 
 	g_string_free(error, TRUE);
@@ -103,7 +105,6 @@ ssh_read_server_port_read_stderr(GProcess * process, struct server * server)
 }
 
 static void
-//ssh_read_server_port_finished(GProcess * process, gint exit_code, enum GProcessExitStatus exit_status, struct server * server)
 ssh_read_server_port_finished(GProcess * process, struct server * server)
 {
 	if (server->port) {
@@ -120,15 +121,7 @@ ssh_read_server_port_finished(GProcess * process, struct server * server)
 		gchar		hostname[100];
 
 		cmd_line = g_string_new(NULL);
-// 		server_process = g_process_new();
-// 		g_signal_connect(process, "ready-read-stdout",
-// 			G_CALLBACK(ssh_read_server_port_read_stdout), server);
-// 		g_signal_connect(process, "ready-read-stderr",
-// 			G_CALLBACK(ssh_read_server_port_read_stderr), server);
-// 		g_signal_connect(server_process, "finished",
-// 			G_CALLBACK(ssh_run_server_finished), server);
-
-		gebr_message(INFO, TRUE, TRUE, _("Running server at %s..."), server->address->str);
+		gebr_message(INFO, TRUE, TRUE, _("Launching server at %s"), server->address->str);
 
 		/* run gebrd via ssh for remote hosts */
 		gethostname(hostname, 100);
@@ -137,7 +130,6 @@ ssh_read_server_port_finished(GProcess * process, struct server * server)
 		else
 			g_string_printf(cmd_line, "ssh -f -x %s 'bash -l -c gebrd'", server->address->str);
 
-// 		g_process_start(server_process, cmd_line);
 		system(cmd_line->str);
 		ssh_ask_server_port(server);
 
@@ -160,7 +152,8 @@ ssh_ask_server_port(struct server * server)
 	cmd_line = g_string_new(NULL);
 	g_string_printf(cmd_line, "ssh %s 'test -e ~/.gebr/run/gebrd.run && cat ~/.gebr/run/gebrd.run'",
 		server->address->str);
-g_print("ssh_ask_server_port\n");
+	gebr_message(DEBUG, FALSE, TRUE, "ssh_ask_server_port: %s", server->address->str);
+	g_print("ssh_ask_server_port\n");
 	g_signal_connect(process, "ready-read-stdout",
 			G_CALLBACK(ssh_read_server_port_read_stdout), server);
 	g_signal_connect(process, "ready-read-stderr",
@@ -189,7 +182,7 @@ server_new(const gchar * address)
 		.port = 0,
 		.retries = 0,
 	};
-g_print("server_new\n");
+	gebr_message(DEBUG, TRUE, TRUE, "server_new: %s", address);
 
 	g_signal_connect(server->tcp_socket, "connected",
 			G_CALLBACK(server_connected), server);
@@ -273,7 +266,7 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 static void
 server_disconnected(GTcpSocket * tcp_socket, struct server * server)
 {
-	g_print("server_disconnected\n");
+	gebr_message(DEBUG, FALSE, TRUE, "server_disconnected: %s", server->address->str);
 	server->port = 0;
 }
 
@@ -282,7 +275,9 @@ server_read(GTcpSocket * tcp_socket, struct server * server)
 {
 	GString *	data;
 
-	data = g_socket_read_string_all(G_SOCKET(tcp_socket));g_print("server_read %s\n", data->str);
+	data = g_socket_read_string_all(G_SOCKET(tcp_socket));
+	gebr_message(DEBUG, FALSE, TRUE, "server_read: %s", server->address->str);
+	g_print("server_read %s\n", data->str);
 	protocol_receive_data(server->protocol, data);
 	client_parse_server_messages(server);
 
@@ -292,7 +287,7 @@ server_read(GTcpSocket * tcp_socket, struct server * server)
 static void
 server_error(GTcpSocket * tcp_socket, enum GSocketError error, struct server * server)
 {
-	g_print("server_error = %d\n", error);
+	gebr_message(ERROR, FALSE, TRUE, _("server %s reported error %d"), server->address->str, error);
 	server_free(server);
 }
 

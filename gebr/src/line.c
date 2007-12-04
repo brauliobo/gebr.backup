@@ -103,6 +103,8 @@ line_new(void)
 	document_save(GEOXML_DOC(line));
 	geoxml_document_free(GEOXML_DOC(line));
 
+	gebr_message(INFO, FALSE, TRUE, _("New line created"));
+
 out:	g_string_free(line_filename, TRUE);
 	gtk_tree_path_free(path);
 	g_free(project_filename);
@@ -263,7 +265,8 @@ line_load_flows(void)
 	/* TODO: ask for user's confirmation */
 	line = GEOXML_LINE(document_load(line_filename));
 	if (line == NULL) {
-		gebr_message(ERROR, TRUE, TRUE, _("Unable to load line"));
+		gebr_message(ERROR, TRUE, FALSE, _("Unable to load line '%s'"), line_title);
+		gebr_message(ERROR, FALSE, TRUE, _("Unable to load line '%s' from file %s"), line_title, line_filename);
 		goto out;
 	}
 	geoxml_line_get_flow(line, &line_flow, 0);
@@ -290,7 +293,7 @@ line_load_flows(void)
 		geoxml_line_next_flow(&line_flow);
 	}
 
-	gebr_message(ERROR, TRUE, FALSE, _("Flows loaded"));
+	gebr_message(INFO, TRUE, FALSE, _("Flows loaded"));
 
 out:	gtk_tree_path_free(path);
 	g_free(line_title);

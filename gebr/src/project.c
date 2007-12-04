@@ -67,6 +67,8 @@ project_new(void)
 			PL_FILENAME, filename,
 			-1);
 
+	gebr_message(INFO, FALSE, TRUE, _("New projected created"));
+
 	geoxml_document_free(GEOXML_DOC(project));
 	g_string_free(filename, TRUE);
 }
@@ -121,7 +123,7 @@ project_delete(void)
 	}
 
 	/* message user */
-	gebr_message(ERROR, TRUE, TRUE, _("Erasing project '%s'"), title);
+	gebr_message(INFO, TRUE, TRUE, _("Erasing project '%s'"), title);
 
 	/* Remove the project from the store (and its children) */
 	gtk_tree_store_remove(GTK_TREE_STORE (gebr.ui_project_line->store), &iter);

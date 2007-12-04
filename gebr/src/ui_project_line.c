@@ -94,6 +94,7 @@ static void
 project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_project_line * ui_project_line)
 {
 	GtkTreeIter		iter;
+	GtkTreePath *		path;
 	gchar *			filename;
 	GeoXmlDocument *	document;
 
@@ -110,6 +111,17 @@ project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new
 	if (document == NULL)
 		goto out;
 
+
+	path = gtk_tree_model_get_path(GTK_TREE_MODEL(ui_project_line->store), &iter);
+	if (gtk_tree_path_get_depth(path) == 1) {
+		gebr_message(INFO, FALSE, TRUE, _("Project '%s' renamed to '%s'"),
+			     geoxml_document_get_title(document), new_text);
+	}
+	else{
+		gebr_message(INFO, FALSE, TRUE, _("Line '%s' renamed to '%s'"),
+			     geoxml_document_get_title(document), new_text);
+	}
+
 	/* change it on the xml. */
 	geoxml_document_set_title(document, new_text);
 	document_save(document);
@@ -119,6 +131,7 @@ project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new
 	gtk_tree_store_set(ui_project_line->store, &iter,
 			PL_TITLE, new_text,
 			-1);
+
 
 out:	g_free(filename);
 }
