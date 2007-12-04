@@ -15,6 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <gui/pixmaps.h>
+
 #include "interface.h"
 #include "gebrme.h"
 #include "callbacks.h"
@@ -93,6 +95,7 @@ create_gebrme_window (void)
 
 	accel_group = gtk_accel_group_new ();
 
+	gtk_window_set_default_icon (pixmaps_gebr_icon_16x16());
 	gebrme_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gebrme.window = gebrme_window;
 	gtk_window_set_title (GTK_WINDOW (gebrme_window), _("GêBR ME"));

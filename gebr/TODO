@@ -1,3 +1,5 @@
+Conferir/Corrigir o servidor
+
 *feito escrita do arq.*
 Criar uma widget na janela principal para exibir o log, substituindo a
 atual statusbar. Esta widget seria uma janela com barra de scroll e
@@ -15,18 +17,15 @@ tela. Sugestão:
 
 Import/Export de fluxo.
 
+Adicionar linha mesmo que a seleção esteja numa linha.
+
+
+
 Import/Export de linha.
 
 Import/Export de projeto.
 
-Limpar o código das strings com tamanho estático STRMAX, em
-prol da GString.
-
-Adicionar linha mesmo que a seleção esteja numa linha.
-
-Opção nas preferências para shell e terminal.
-
-Janela de parâmetros contruída como tabela.
+Opção nas preferências para shell.
 
 Validar parametros dos tipos numéricos.
 

@@ -24,6 +24,8 @@
 
 #include <string.h>
 
+#include <gui/pixmaps.h>
+
 #include "interface.h"
 #include "gebr.h"
 #include "support.h"
@@ -71,6 +73,7 @@ assembly_interface(void)
 	gebr.ui_server_list = server_list_setup_ui();
 
 	/* Create the main window */
+	gtk_window_set_default_icon (pixmaps_gebr_icon_16x16());
 	gebr.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(gebr.window), "GêBR");
 	gtk_widget_set_size_request(gebr.window, 700, 400);
