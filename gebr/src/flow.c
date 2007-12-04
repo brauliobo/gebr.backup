@@ -377,7 +377,7 @@ flow_program_move_up(void)
 	gchar *			node;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
-	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
+	if (gtk_tree_selection_get_selected (selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_program_selected_error);
 		return;
 	}
