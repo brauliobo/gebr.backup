@@ -215,7 +215,6 @@ assembly_line_menu(void)
 	/* Delete entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
 			GTK_SIGNAL_FUNC(on_line_delete_activate), NULL);
 

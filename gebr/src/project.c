@@ -45,13 +45,14 @@ gchar * no_project_selected_error = _("No project selected");
 void
 project_new(void)
 {
-	GeoXmlProject *	project;
-	GtkTreeIter	iter;
-	gchar *		title;
-	GString *	filename;
+	GtkTreeIter		iter;
+
+	GeoXmlProject *		project;
+	gchar *			title;
+	GString *		filename;
 
 	title = _("New project");
-	filename = document_assembly_filename(".prj");
+	filename = document_assembly_filename("prj");
 
 	project = geoxml_project_new();
 	geoxml_document_set_filename(GEOXML_DOC(project), filename->str);

@@ -139,7 +139,7 @@ flow_new(void)
 		PL_FILENAME, &line_filename,
 		-1);
 	flow_title = _("New Flow");
-	flow_filename = document_assembly_filename(".flw");
+	flow_filename = document_assembly_filename("flw");
 
 	if (gtk_tree_store_iter_depth(gebr.ui_project_line->store, &iter) < 1) {
 		gebr_message(ERROR, TRUE, FALSE, no_line_selected_error);
@@ -199,7 +199,7 @@ flow_delete(void)
 	GeoXmlLine *		line;
 	GeoXmlLineFlow *	line_flow;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &flow_iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
 		return;
@@ -236,7 +236,7 @@ flow_delete(void)
 	}
 	geoxml_document_free(GEOXML_DOC(line));
 
-	/* Frees and delete flow from the disk */
+	/* Free and delete flow from the disk */
 	flow_free();
 	document_delete(flow_filename);
 
