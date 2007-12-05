@@ -1,4 +1,4 @@
-<!ELEMENT flow (filename, title, description, help, author, email, category*, io, program*)>
+<!ELEMENT flow (filename, title, description, help, author, email, date, category*, io, program*)>
 <!ATTLIST flow version CDATA #FIXED "0.2.0">
 
 <!-- Name of the XML flow file -->
@@ -12,6 +12,12 @@
 <!-- Author of the flow and his/her email -->
 <!ELEMENT author           (#PCDATA)>
 <!ELEMENT email            (#PCDATA)>
+<!-- Dates associated to the line -->
+<!ELEMENT date (created, modified, lastrun)>
+<!ELEMENT created          (#PCDATA)>
+<!ELEMENT modified         (#PCDATA)>
+<!ELEMENT lastrun          (#PCDATA)>
+
 <!-- Categories to which the flow belongs to -->
 <!ELEMENT category         (#PCDATA)>
 <!-- Input/Output/Erro log files -->
@@ -21,7 +27,6 @@
 
 <!-- Input/Output to run the flow -->
 <!ELEMENT io (input, output, error)>
-
 
 <!ELEMENT program (menu, title, binary, description, help, parameters?)>
 <!ATTLIST program
@@ -36,7 +41,6 @@
 <!-- Binary to program (without path) -->
 <!ELEMENT binary           (#PCDATA)>
 
-
 <!ELEMENT parameters (int | float | string | flag | file | range | enum | group)*>
 
 <!ELEMENT group (label, (int | float | string | flag | file | range | enum)*)>
@@ -46,7 +50,6 @@
     expand    (yes | no) #REQUIRED>
 
 <!-- Types of parameters -->
-<!-- Integer -->
 <!-- Integer -->
 <!ELEMENT int (keyword, label, value)>
 <!ATTLIST int
