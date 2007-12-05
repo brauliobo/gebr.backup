@@ -201,6 +201,10 @@ flow_import(void)
 			   FB_FILENAME, flow_filename->str,
 			   -1);
 
+	gtk_tree_selection_unselect_all (selection);
+	gtk_tree_selection_select_iter (selection, &iter);
+	
+
 	/* feedback */
 	gebr_message(INFO, TRUE, TRUE, _("Flow '%s' imported to line '%s' from file '%s'"),
 		     flow_title, line_title, filename);
@@ -333,7 +337,7 @@ flow_delete(void)
 			-1);
 
 	/* Some feedback */
-	gebr_message(ERROR, TRUE, TRUE, _("Erasing flow '%s'"), title);
+	gebr_message(INFO, TRUE, TRUE, _("Erasing flow '%s'"), title);
 
 	/* Remove flow from its line */
 	line = GEOXML_LINE(document_load(line_filename));

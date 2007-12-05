@@ -145,7 +145,8 @@ assembly_interface(void)
 	gebr.statusbar = gtk_statusbar_new();
 	gtk_widget_show_all(gebr.statusbar);
 	gtk_box_pack_end(GTK_BOX(vboxmain), gebr.statusbar, FALSE, FALSE, 0);
-
+	
+	switch_page(NULL, NULL, 0);
 }
 
 /*

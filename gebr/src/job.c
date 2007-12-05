@@ -29,7 +29,7 @@ void
 __job_close(struct job * job)
 {
 	if (job->status == JOB_STATUS_RUNNING) {
-		gebr_message(ERROR, TRUE, FALSE, _("Can't close running job..."));
+		gebr_message(ERROR, TRUE, FALSE, _("Can't close running job"));
 		return;
 	}
 	if (g_ascii_strcasecmp(job->jid->str, "0"))
@@ -189,11 +189,11 @@ job_cancel(void)
 			-1);
 
 	if (job->status != JOB_STATUS_RUNNING) {
-		gebr_message(ERROR, TRUE, FALSE, _("Job is not running"));
+		gebr_message(WARNING, TRUE, FALSE, _("Job is not running"));
 		return;
 	}
 
-	gebr_message(INFO, TRUE, FALSE, _("Asking server to terminate job..."));
+	gebr_message(INFO, TRUE, FALSE, _("Asking server to terminate job"));
 	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to terminate job '%s'"), job->server->address, job->title->str);
 
 	protocol_send_data(job->server->protocol, job->server->tcp_socket,
@@ -260,11 +260,11 @@ job_stop(void)
 			-1);
 
 	if (job->status != JOB_STATUS_RUNNING) {
-		gebr_message(ERROR, TRUE, FALSE, _("Job is not running"));
+		gebr_message(WARNING, TRUE, FALSE, _("Job is not running"));
 		return;
 	}
 
-	gebr_message(INFO, TRUE, FALSE, _("Asking server to kill job..."));
+	gebr_message(INFO, TRUE, FALSE, _("Asking server to kill job"));
 	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to kill job '%s'"), job->server->address, job->title->str);
 
 	protocol_send_data(job->server->protocol, job->server->tcp_socket,
