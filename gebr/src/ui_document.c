@@ -158,6 +158,7 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 					FB_TITLE, geoxml_document_get_title(ui_document_properties->document),
 					-1);
 		}
+		/* FIXME: saving everything. It should save just the modified document */
 		document_save(GEOXML_DOC(gebr.project));
 		document_save(GEOXML_DOC(gebr.line));
 		flow_save();

@@ -105,7 +105,7 @@ line_new(void)
 	geoxml_document_free(GEOXML_DOC(line));
 
 	project_line_info_update();
-	gebr_message(INFO, FALSE, TRUE, _("New line created"));
+	gebr_message(INFO, FALSE, TRUE, _("New line created in project '%s'"), geoxml_document_get_title(GEOXML_DOC(gebr.project)));
 
 out:	g_string_free(line_filename, TRUE);
 	gtk_tree_path_free(path);
@@ -143,7 +143,10 @@ line_delete(void)
 	gtk_tree_selection_get_selected(selection, &model, &line_iter);
 
 	/* make the user happy */
-	gebr_message(INFO, TRUE, TRUE, _("Erasing line '%s'"), geoxml_document_get_title(GEOXML_DOC(gebr.line)));
+	gebr_message(INFO, TRUE, FALSE, _("Erasing line '%s'"), geoxml_document_get_title(GEOXML_DOC(gebr.line)));
+	gebr_message(INFO, FALSE, TRUE, _("Erasing line '%s' from project '%s'"),
+		     geoxml_document_get_title(GEOXML_DOC(gebr.line)),
+		     geoxml_document_get_title(GEOXML_DOC(gebr.project)));
 
 	/* Removes its flows */
 	geoxml_line_get_flow(gebr.line, &line_flow, 0);
