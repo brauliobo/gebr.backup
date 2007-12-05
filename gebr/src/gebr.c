@@ -39,6 +39,8 @@
 #include "job.h"
 #include "menu.h"
 #include "callbacks.h"
+#include "document.h"
+#include "flow.h"
 
 struct gebr gebr;
 
@@ -55,6 +57,9 @@ gebr_init(int argc, char ** argv)
 
 
 	/* initialization */
+	gebr.doc = NULL;
+	gebr.project = NULL;
+	gebr.line = NULL;
 	gebr.flow = NULL;
 	log_filename = g_string_new(NULL);
 	error = NULL;
@@ -101,6 +106,9 @@ gebr_quit(void)
 	/*
 	 * Data frees and cleanups
 	 */
+
+	flow_free();
+	document_free();
 
 	g_slist_foreach(gebr.tmpfiles, (GFunc) unlink, NULL);
 	g_slist_foreach(gebr.tmpfiles, (GFunc) free, NULL);

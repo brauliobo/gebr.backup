@@ -43,6 +43,10 @@ struct gebr {
 	GtkWidget *			statusbar;
 	struct about			about;
 
+	gboolean                        doc_is_project;
+	GeoXmlDocument *                doc;
+	GeoXmlProject *                 project;
+	GeoXmlLine *                    line;
 	GeoXmlFlow *			flow;
 
 	/* log file */

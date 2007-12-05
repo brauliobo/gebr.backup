@@ -1,18 +1,19 @@
 /*   GêBR - An environment for seismic processing.
  *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *   This program is free software: you can redistribute it and/or
+ *   modify it under the terms of the GNU General Public License as
+ *   published by the Free Software Foundation, either version 3 of
+ *   the License, or (at your option) any later version.
  *
  *   This program is distributed in the hope that it will be useful,
- *   but gebr.THOUT ANY gebr.RRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   but gebr.THOUT ANY gebr.RRANTY; without even the implied warranty
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   along with this program. If not, see
+ *   <http://www.gnu.org/licenses/>.
  */
 
 /* File: line.c
@@ -122,49 +123,29 @@ line_delete(void)
 	GtkTreeSelection  *	selection;
 	GtkTreeModel *		model;
 	GtkTreeIter		line_iter, project_iter;
-	GtkTreePath *		path;
 
-	gchar *			line_title;
-	gchar *			line_filename;
-	gchar *			project_filename;
-
-	GeoXmlProject *		project;
 	GeoXmlProjectLine *	project_line;
-	GeoXmlLine *		line;
 	GeoXmlLineFlow *	line_flow;
+	gchar *                 line_filename;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &line_iter) == FALSE) {
+	if (gebr.line == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, no_selection_error);
 		return;
 	}
 
-	gtk_tree_model_get(model, &line_iter,
-			PL_TITLE, &line_title,
-			PL_FILENAME, &line_filename,
-			-1);
-	path = gtk_tree_model_get_path(model, &line_iter);
-
-	if (gtk_tree_path_get_depth(path) == 1) {
+	if (gebr.doc_is_project) {
 		gebr_message(ERROR, TRUE, FALSE, _("Select a line instead of a project"));
 		goto out;
 	}
-
-	/* get parent project filename */
-	gtk_tree_model_iter_parent(model, &project_iter, &line_iter);
-	gtk_tree_model_get(model, &project_iter,
-			PL_FILENAME, &project_filename,
-			-1);
+	
+	gtk_tree_selection_get_selected(selection, &model, &line_iter);
 
 	/* make the user happy */
-	gebr_message(INFO, TRUE, TRUE, _("Erasing line '%s'"), line_title);
+	gebr_message(INFO, TRUE, TRUE, _("Erasing line '%s'"), geoxml_document_get_title(GEOXML_DOC(gebr.line)));
 
 	/* Removes its flows */
-	/* TODO: ask for user's confirmation */
-	line = GEOXML_LINE(document_load(line_filename));
-	if (line == NULL)
-		goto out;
-	geoxml_line_get_flow(line, &line_flow, 0);
+	geoxml_line_get_flow(gebr.line, &line_flow, 0);
 	while (line_flow != NULL) {
 		GString *	path;
 
@@ -180,33 +161,30 @@ line_delete(void)
 
 	/* finally, remove it from the disk and from the tree*/
 	gtk_tree_store_remove(GTK_TREE_STORE(gebr.ui_project_line->store), &line_iter);
+	line_filename = geoxml_document_get_filename(GEOXML_DOC(gebr.line));
+	
 	document_delete(line_filename);
-	geoxml_document_free(GEOXML_DOC(line));
 
 	/* Remove the line from its project */
-	project = GEOXML_PROJECT(document_load(project_filename));
-	if (project == NULL)
-		goto out;
-	geoxml_project_get_line(project, &project_line, 0);
+	geoxml_project_get_line(gebr.project, &project_line, 0);
 	while (project_line != NULL) {
 		if (g_ascii_strcasecmp(line_filename, geoxml_project_get_line_source(project_line)) == 0) {
-			geoxml_project_remove_line(project, project_line);
-			document_save(GEOXML_DOC(project));
+			geoxml_project_remove_line(gebr.project, project_line);
+			document_save(GEOXML_DOC(gebr.project));
 			break;
 		}
 
 		geoxml_project_next_line(&project_line);
 	}
-	geoxml_document_free(GEOXML_DOC(project));
+
 
 	/* Clear the flow list */
 	gtk_list_store_clear(gebr.ui_flow_browse->store);
 	flow_free();
+	document_free();
+	project_line_info_update();
 
-out:	g_free(line_title);
-	g_free(line_filename);
-	gtk_tree_path_free(path);
-//	g_free(project_filename);
+out:	g_free(line_filename);
 }
 
 /*
@@ -226,7 +204,6 @@ line_load_flows(void)
 	gchar *			line_title;
 	gchar *			line_filename;
 
-	GeoXmlLine *		line;
 	GeoXmlLineFlow *	line_flow;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(gebr.ui_project_line->view));
@@ -262,14 +239,7 @@ line_load_flows(void)
 	}
 
 	/* iterate over its flows */
-	/* TODO: ask for user's confirmation */
-	line = GEOXML_LINE(document_load(line_filename));
-	if (line == NULL) {
-		gebr_message(ERROR, TRUE, FALSE, _("Unable to load line '%s'"), line_title);
-		gebr_message(ERROR, FALSE, TRUE, _("Unable to load line '%s' from file %s"), line_title, line_filename);
-		goto out;
-	}
-	geoxml_line_get_flow(line, &line_flow, 0);
+	geoxml_line_get_flow(gebr.line, &line_flow, 0);
 	while (line_flow != NULL) {
 		GtkTreeIter	flow_iter;
 		GeoXmlFlow *	flow;
