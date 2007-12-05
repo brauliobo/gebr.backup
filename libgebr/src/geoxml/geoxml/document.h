@@ -160,7 +160,7 @@ void
 geoxml_document_set_filename(GeoXmlDocument * document, const gchar * filename);
 
 /**
- * Change the flow's title to \p title
+ * Change the \p document 's title to \p title
  *
  * If \p document is NULL nothing is done.
  *
@@ -170,7 +170,7 @@ void
 geoxml_document_set_title(GeoXmlDocument * document, const gchar * title);
 
 /**
- * Change the flow's author to \p author
+ * Change the \p document 's author to \p author
  *
  * If \p document is NULL nothing is done.
  *
@@ -180,7 +180,7 @@ void
 geoxml_document_set_author(GeoXmlDocument * document, const gchar * author);
 
 /**
- * Change the flow's author email to \p email
+ * Change the \p document 's author email to \p email
  *
  * If \p document is NULL nothing is done.
  *
@@ -188,6 +188,26 @@ geoxml_document_set_author(GeoXmlDocument * document, const gchar * author);
  */
 void
 geoxml_document_set_email(GeoXmlDocument * document, const gchar * email);
+
+/**
+ * Change the \p document 's creation date to \p created
+ *
+ * If \p document is NULL nothing is done.
+ *
+ * \see geoxml_document_get_email
+ */
+void
+geoxml_document_set_date_created(GeoXmlDocument * document, const gchar * created);
+
+/**
+ * Change the \p document 's modified date to \p created
+ *
+ * If \p document is NULL nothing is done.
+ *
+ * \see geoxml_document_get_email
+ */
+void
+geoxml_document_set_date_created(GeoXmlDocument * document, const gchar * created);
 
 /**
  * Set a brief description of the document, usually an one line text.
@@ -258,6 +278,26 @@ geoxml_document_get_author(GeoXmlDocument * document);
  */
 const gchar *
 geoxml_document_get_email(GeoXmlDocument * document);
+
+/**
+ * Get the \p document 'c creation date
+ *
+ * If \p document is NULL returns NULL.
+ *
+ * \see geoxml_document_set_date_created
+ */
+const gchar *
+geoxml_document_get_date_created(GeoXmlDocument * document);
+
+/**
+ * Get the \p document 's last modification date
+ *
+ * If \p document is NULL returns NULL.
+ *
+ * \see geoxml_document_set_date_modified
+ */
+const gchar *
+geoxml_document_get_date_modified(GeoXmlDocument * document);
 
 /**
  * Get a brief description of the document, usually an one line text.

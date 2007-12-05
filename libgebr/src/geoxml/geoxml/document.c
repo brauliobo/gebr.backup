@@ -398,6 +398,24 @@ geoxml_document_set_email(GeoXmlDocument * document, const gchar * email)
 }
 
 void
+geoxml_document_set_date_created(GeoXmlDocument * document, const gchar * created)
+{
+	if (documment == NULL || created == NULL)
+		return;
+	__geoxml_set_tag_value(__geoxml_get_first_element(geoxml_document_root_element(document), "date"),
+		"created", created, __geoxml_create_TextNode);
+}
+
+void
+geoxml_document_set_date_modified(GeoXmlDocument * document, const gchar * modified)
+{
+	if (documment == NULL || modified == NULL)
+		return;
+	__geoxml_set_tag_value(__geoxml_get_first_element(geoxml_document_root_element(document), "date"),
+		"modified", modified, __geoxml_create_TextNode);
+}
+
+void
 geoxml_document_set_description(GeoXmlDocument * document, const gchar * description)
 {
 	if (document == NULL || description == NULL)
@@ -445,6 +463,22 @@ geoxml_document_get_email(GeoXmlDocument * document)
 	if (document == NULL)
 		return NULL;
 	return __geoxml_get_tag_value(geoxml_document_root_element(document), "email");
+}
+
+const gchar *
+geoxml_document_get_date_created(GeoXmlDocument * document)
+{
+	if (document == NULL)
+		return NULL;
+	return __geoxml_get_tag_value(__geoxml_get_first_element(geoxml_document_root_element(document), "date"), "created");
+}
+
+const gchar *
+geoxml_document_get_date_modified(GeoXmlDocument * document)
+{
+	if (document == NULL)
+		return NULL;
+	return __geoxml_get_tag_value(__geoxml_get_first_element(geoxml_document_root_element(document), "date"), "modified");
 }
 
 const gchar *
