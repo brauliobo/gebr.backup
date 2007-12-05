@@ -104,6 +104,7 @@ line_new(void)
 	document_save(GEOXML_DOC(line));
 	geoxml_document_free(GEOXML_DOC(line));
 
+	project_line_info_update();
 	gebr_message(INFO, FALSE, TRUE, _("New line created"));
 
 out:	g_string_free(line_filename, TRUE);

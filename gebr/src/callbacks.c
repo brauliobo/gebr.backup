@@ -98,7 +98,7 @@ on_project_delete_activate(void)
 void
 on_project_properties_activate(void)
 {
-	/* TODO: */
+	document_properties_setup_ui(GEOXML_DOC(gebr.project));
 }
 
 /*
@@ -142,7 +142,7 @@ on_line_delete_activate(void)
 void
 on_line_properties_activate(void)
 {
-	/* TODO: */
+	document_properties_setup_ui(GEOXML_DOC(gebr.line));
 }
 
 /*

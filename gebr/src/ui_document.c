@@ -47,6 +47,11 @@ document_properties_setup_ui(GeoXmlDocument * document)
 	GtkWidget *			table;
 	GtkWidget *			label;
 
+	if (document == NULL){
+		gebr_message(ERROR, TRUE, FALSE, _("Nothing selected"));
+		return NULL;
+	}
+
 	/* alloc */
 	ui_document_properties = g_malloc(sizeof(struct ui_document_properties));
 	ui_document_properties->document = document;
@@ -90,8 +95,8 @@ document_properties_setup_ui(GeoXmlDocument * document)
 	/* read */
 	gtk_entry_set_text(GTK_ENTRY(ui_document_properties->description), geoxml_document_get_description(document));
 
-	/* Help */
-	label = gtk_label_new(_("Help"));
+	/* Report */
+	label = gtk_label_new(_("Report"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 	ui_document_properties->help = gtk_button_new_from_stock(GTK_STOCK_EDIT);
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
@@ -153,7 +158,10 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 					FB_TITLE, geoxml_document_get_title(ui_document_properties->document),
 					-1);
 		}
+		document_save(GEOXML_DOC(gebr.project));
+		document_save(GEOXML_DOC(gebr.line));
 		flow_save();
+		project_line_info_update();
 
 		break;
 	} default:                  /* does nothing */

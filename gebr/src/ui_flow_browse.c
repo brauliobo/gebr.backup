@@ -84,7 +84,7 @@ flow_browse_setup_ui(void)
 	 */
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_paned_pack1(GTK_PANED(hpanel), scrolledwin, FALSE, FALSE);
-	gtk_widget_set_size_request(scrolledwin, 180, -1);
+	gtk_widget_set_size_request(scrolledwin, 300, -1);
 
 	ui_flow_browse->store = gtk_list_store_new(FB_N_COLUMN,
 					G_TYPE_STRING,  /* Name(title for libgeoxml) */
@@ -97,7 +97,7 @@ flow_browse_setup_ui(void)
 	g_signal_connect(GTK_OBJECT(renderer), "edited",
 			GTK_SIGNAL_FUNC(flow_rename), ui_flow_browse);
 
-	col = gtk_tree_view_column_new_with_attributes(label, renderer, NULL);
+	col = gtk_tree_view_column_new_with_attributes(_("Index"), renderer, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, FB_TITLE);
 	gtk_tree_view_column_set_sort_indicator(col, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_flow_browse->view), col);

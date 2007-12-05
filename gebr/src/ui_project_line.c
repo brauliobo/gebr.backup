@@ -79,7 +79,7 @@ project_line_setup_ui(void)
 	/* Left side */
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_paned_pack1(GTK_PANED(hpanel), scrolledwin, FALSE, FALSE);
-	gtk_widget_set_size_request(scrolledwin, 350, -1);
+	gtk_widget_set_size_request(scrolledwin, 300, -1);
 	
 	ui_project_line->store = gtk_tree_store_new(PL_N_COLUMN,
 						G_TYPE_STRING,  /* Name (title for libgeoxml) */
@@ -90,7 +90,7 @@ project_line_setup_ui(void)
 	/* Projects/lines column */
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, NULL);
-	col = gtk_tree_view_column_new_with_attributes(_("Projects/lines index"), renderer, NULL);
+	col = gtk_tree_view_column_new_with_attributes(_("Index"), renderer, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, PL_TITLE);
 	gtk_tree_view_column_set_sort_indicator(col, TRUE);
 
@@ -125,6 +125,11 @@ project_line_setup_ui(void)
 	gtk_misc_set_alignment(GTK_MISC(ui_project_line->info.description), 0, 0);
 	gtk_box_pack_start(GTK_BOX(infopage), ui_project_line->info.description, FALSE, TRUE, 10);
 
+	/* Number of lines */
+	ui_project_line->info.numberoflines = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_project_line->info.numberoflines), 0, 0);
+	gtk_box_pack_start(GTK_BOX(infopage), ui_project_line->info.numberoflines, FALSE, TRUE, 10);
+
 	/* Dates */
 	GtkWidget *table;
 	table = gtk_table_new(2, 2, FALSE);
@@ -145,11 +150,6 @@ project_line_setup_ui(void)
 	ui_project_line->info.modified = gtk_label_new("");
 	gtk_misc_set_alignment(GTK_MISC(ui_project_line->info.modified), 0, 0);
 	gtk_table_attach(GTK_TABLE(table), ui_project_line->info.modified, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
-
-	/* Number of lines */
-	ui_project_line->info.numberoflines = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(ui_project_line->info.numberoflines), 0, 0);
-	gtk_box_pack_start(GTK_BOX(infopage), ui_project_line->info.numberoflines, FALSE, TRUE, 0);
 
 	/* Help */
 	ui_project_line->info.help = gtk_button_new_from_stock(GTK_STOCK_INFO);
@@ -312,6 +312,7 @@ project_line_info_update(void)
 		gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.created), "");
 		gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.modified_label), "");
 		gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.modified), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.numberoflines), "");
 		gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.author), "");
 
 		g_object_set(gebr.ui_project_line->info.help, "sensitive", FALSE, NULL);
@@ -338,6 +339,24 @@ project_line_info_update(void)
 	markup = g_markup_printf_escaped("<i>%s</i>", geoxml_document_get_description(GEOXML_DOC(gebr.doc)));
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_project_line->info.description), markup);
 	g_free(markup);
+
+	if (gebr.doc_is_project){
+		if (gtk_tree_model_iter_has_child (model, &iter)){
+			gint nlines = gtk_tree_model_iter_n_children(model, &iter);
+			if (nlines == 1)
+				markup = g_markup_printf_escaped("This project has 1 line");
+			else
+				markup = g_markup_printf_escaped("This project has %d lines", nlines);
+		}
+		else{
+			markup = g_markup_printf_escaped("This project has no line");
+		}
+			gtk_label_set_markup(GTK_LABEL(gebr.ui_project_line->info.numberoflines), markup);
+			g_free(markup);
+	}
+	else{
+		gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.numberoflines), "");
+	}
 
 	/* Date labels */
 	markup = g_markup_printf_escaped("<b>%s</b>", _("Created:"));
@@ -366,7 +385,12 @@ project_line_info_update(void)
 static void
 project_line_show_help(void)
 {
-	//help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(??)),
-	//	_("Project/line report"), (gchar*)geoxml_document_get_filename(GEOXML_DOC(??)));
+	if (gebr.doc_is_project)
+		help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(gebr.project)),
+			  _("Project report"), (gchar*)geoxml_document_get_filename(GEOXML_DOC(gebr.project)));
+	else
+		help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(gebr.line)),
+			  _("Line report"), (gchar*)geoxml_document_get_filename(GEOXML_DOC(gebr.line)));
+		
 	return;
 }
