@@ -270,6 +270,11 @@ assembly_flow_menu(void)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
 	g_signal_connect(GTK_OBJECT(submenu), "activate",
 			GTK_SIGNAL_FUNC(on_flow_new_activate), NULL);
+	/* Import entry */
+	submenu = gtk_image_menu_item_new_with_label(_("Import"));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+	g_signal_connect(GTK_OBJECT(submenu), "activate",
+			GTK_SIGNAL_FUNC(on_flow_import_activate), NULL);
 	/* Export entry */
 	submenu = gtk_image_menu_item_new_with_label(_("Export"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);

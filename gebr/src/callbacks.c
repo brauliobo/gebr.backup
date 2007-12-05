@@ -157,6 +157,17 @@ on_flow_new_activate(void)
 }
 
 /*
+ * Function: on_flow_import_activate
+ * Call <flow_import> from <flow.c>
+ *
+ */
+void
+on_flow_import_activate(void)
+{
+	flow_import();
+}
+
+/*
  * Function: on_flow_export_activate
  * Call <flow_export> from <flow.c>
  *

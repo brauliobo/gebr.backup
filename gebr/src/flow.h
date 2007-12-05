@@ -25,6 +25,9 @@ void
 flow_save(void);
 
 void
+flow_import(void);
+
+void
 flow_export(void);
 
 void

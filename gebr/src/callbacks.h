@@ -48,6 +48,9 @@ void
 on_flow_new_activate(void);
 
 void
+on_flow_import_activate(void);
+
+void
 on_flow_export_activate(void);
 
 void
