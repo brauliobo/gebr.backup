@@ -92,7 +92,7 @@ on_project_delete_activate(void)
 
 /*
  * Function: on_project_properties_activate
- *
+ * *Fill me in!*
  *
  */
 void
@@ -136,7 +136,7 @@ on_line_delete_activate(void)
 
 /*
  * Function: on_line_properties_activate
- *
+ * *Fill me in!*
  *
  */
 void
@@ -202,7 +202,7 @@ on_flow_properties_activate(void)
 
 /*
  * Function: on_flow_io_activate
- *
+ * *Fill me in!*
  *
  */
 void
@@ -224,7 +224,7 @@ on_flow_execute_activate(void)
 
 /*
  * Function: on_flow_component_properties_activate
- *
+ * *Fill me in!*
  *
  */
 void
@@ -235,7 +235,7 @@ on_flow_component_properties_activate(void)
 
 /*
  * Function: on_flow_component_refresh_activate
- *
+ * *Fill me in!*
  *
  */
 void
@@ -247,7 +247,7 @@ on_flow_component_refresh_activate(void)
 
 /*
  * Function: on_flow_component_status_activate
- *
+ * *Fill me in!*
  *
  */
 void
@@ -258,7 +258,7 @@ on_flow_component_status_activate(GtkMenuItem * menuitem)
 
 /*
  * Function: on_configure_preferences_activate
- *
+ * *Fill me in!*
  *
  */
 void
@@ -269,7 +269,7 @@ on_configure_preferences_activate(void)
 
 /*
  * Function: on_configure_servers_activate
- *
+ * *Fill me in!*
  *
  */
 void
@@ -280,7 +280,7 @@ on_configure_servers_activate(void)
 
 /*
  * Function: on_help_about_activate
- *
+ * *Fill me in!*
  *
  */
 void

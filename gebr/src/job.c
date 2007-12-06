@@ -157,7 +157,7 @@ job_delete(struct job * job)
 /*
  * Function; job_find
  * *Fill me in!*
- *
+ */
 struct job *
 job_find(GString * address, GString * jid)
 {
