@@ -38,6 +38,11 @@ gchar * no_selection_error =			_("Nothing selected");
 static gchar * no_project_selected_error =	_("Select a project to which a line will be added to");
 
 /*
+ * Section: Public
+ * Public functions.
+ */
+
+/*
  * Function: line_new
  * Create a new line
  *

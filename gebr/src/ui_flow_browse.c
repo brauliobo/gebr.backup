@@ -46,6 +46,11 @@ static void
 flow_browse_show_help(void);
 
 /*
+ * Section: Public
+ * Public functions.
+ */
+
+/*
  * Function: add_flow_browse
  * Assembly the flow browse page.
  *
@@ -175,6 +180,11 @@ flow_browse_setup_ui(void)
 }
 
 /*
+ * Section: Private
+ * Private functions.
+ */
+
+/*
  * Function: flow_browse_load
  * Load a selected flow from file
  *
@@ -229,20 +239,28 @@ static void
 flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_flow_browse * ui_flow_browse)
 {
 	GtkTreeIter	iter;
+	gchar *         old_title;
 
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(ui_flow_browse->store),
 					&iter,
 					path_string);
+
+	old_title = geoxml_document_get_title(GEOXML_DOC(gebr.flow));
+
+	if (strcmp(old_title, new_text) == 0)
+		goto out;
+
 	gtk_list_store_set(ui_flow_browse->store, &iter,
 			FB_TITLE, new_text,
 			-1);
 
-	gebr_message(INFO, FALSE, TRUE, _("Flow '%s' renamed to '%s'"),
-		     geoxml_document_get_title(GEOXML_DOC(gebr.flow)), new_text);
+	gebr_message(INFO, FALSE, TRUE, _("Flow '%s' renamed to '%s'"), old_title, new_text);
 
 	/* Update XML */
 	geoxml_document_set_title(GEOXML_DOC(gebr.flow), new_text);
 	flow_save();
+	
+out:    g_free(old_title);
 }
 
 /*

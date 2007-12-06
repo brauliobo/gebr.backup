@@ -15,9 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* File: ui_flow_edition->c
+/* File: ui_flow_edition.c
  * Interface functions and callbacks for the "Flow Edition" page.
- *
  */
 
 #include "ui_flow_edition.h"
@@ -47,6 +46,11 @@ flow_edition_menu_show_help(void);
 
 static void
 flow_edition_component_selected(void);
+
+/*
+ * Section: Public
+ * Public functions
+ */
 
 /* Function: flow_edition_setup_ui
  * Assembly the flow edit ui_flow_edition->widget.
@@ -193,6 +197,11 @@ flow_edition_setup_ui(void)
 
 	return ui_flow_edition;
 }
+
+/*
+ * Section: Private
+ * Private functions
+ */
 
 /* Function: flow_edition_component_selected
  * When a flow component (a program in the flow) is selected

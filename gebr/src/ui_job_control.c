@@ -21,6 +21,16 @@
 #include "job.h"
 
 /*
+ * File: ui_job_control.c
+ * Responsible for UI for job management.
+ */
+
+/*
+ * Section: Public
+ * Public functions.
+ */
+
+/*
  * Function: job_control_setup_ui
  * Assembly the job control page.
  *

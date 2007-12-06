@@ -44,6 +44,11 @@ static void
 server_list_add(GtkEntry * entry, struct ui_server_list * ui_server_list);
 
 /*
+ * Section: Public
+ * Public functions.
+ */
+
+/*
  * Function: server_list_setup_ui
  * Assembly the servers configurations dialog.
  *
@@ -106,6 +111,11 @@ server_list_setup_ui(void)
 
 	return ui_server_list;
 }
+
+/*
+ * Section: Private
+ * Private functions.
+ */
 
 /*
  * Function: server_dialog_actions

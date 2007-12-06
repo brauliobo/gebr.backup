@@ -43,6 +43,11 @@ static void
 preferences_actions(GtkDialog * dialog, gint arg1, struct ui_preferences * ui_preferences);
 
 /*
+ * Section: Public
+ * Public functions.
+ */
+
+/*
  * Function: assembly_preference_win
  * Assembly preference window.
  *
@@ -180,6 +185,11 @@ preferences_setup_ui(void)
 
 	return ui_preferences;
 }
+
+/*
+ * Section: Private
+ * Private functions.
+ */
 
 /*
  * Function: preferences_actions

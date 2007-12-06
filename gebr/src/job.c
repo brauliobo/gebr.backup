@@ -15,6 +15,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * File: job.c
+ * Job callbacks
+ */
+
 #include <unistd.h>
 
 #include "job.h"
@@ -57,9 +62,14 @@ __job_clear_or_select_first(void)
 }
 
 /*
+ * Section: Public
  * Public functions
  */
 
+/*
+ * Function: job_add
+ * *Fill me in!*
+ */
 struct job *
 job_add(struct server * server, GString * jid,
 	GString * _status, GString * title,
@@ -144,6 +154,10 @@ job_delete(struct job * job)
 	__job_clear_or_select_first();
 }
 
+/*
+ * Function; job_find
+ * *Fill me in!*
+ *
 struct job *
 job_find(GString * address, GString * jid)
 {
@@ -172,6 +186,10 @@ job_find(GString * address, GString * jid)
 	return job;
 }
 
+/*
+ * Function: job_cancel
+ * *Fill me in!*
+ */
 void
 job_cancel(void)
 {
@@ -200,6 +218,10 @@ job_cancel(void)
 		protocol_defs.end_def, 1, job->jid->str);
 }
 
+/*
+ * Function: job_close
+ * *Fill me in!*
+ */
 void
 job_close(void)
 {
@@ -220,6 +242,10 @@ job_close(void)
 	__job_clear_or_select_first();
 }
 
+/* 
+ * Function: job_clear
+ * *Fill me in!*
+ */
 void
 job_clear(void)
 {
@@ -243,6 +269,10 @@ job_clear(void)
 	__job_clear_or_select_first();
 }
 
+/*
+ * Function: job_stop
+ * *Fill me in!*
+ */
 void
 job_stop(void)
 {
@@ -271,6 +301,10 @@ job_stop(void)
 		protocol_defs.kil_def, 0);
 }
 
+/*
+ * Function: job_clicked
+ * *Fill me in!*
+ */
 void
 job_clicked(void)
 {
@@ -319,6 +353,10 @@ job_clicked(void)
 	g_string_free(info, TRUE);
 }
 
+/*
+ * Function: job_is_active
+ * *Fill me in!*
+ */
 gboolean
 job_is_active(struct job * job)
 {
@@ -329,6 +367,10 @@ job_is_active(struct job * job)
 	return gtk_tree_selection_iter_is_selected(selection, &job->iter);
 }
 
+/*
+ * Function: job_append_output
+ * *Fill me in!*
+ */
 void
 job_append_output(struct job * job, GString * output)
 {
@@ -346,6 +388,10 @@ job_append_output(struct job * job, GString * output)
 	gtk_text_buffer_insert(gebr.ui_job_control->text_buffer, &iter, output->str, output->len);
 }
 
+/*
+ * Function: job_update
+ * *Fill me in!*
+ */
 void
 job_update(struct job * job)
 {
@@ -355,6 +401,10 @@ job_update(struct job * job)
 	job_clicked();
 }
 
+/*
+ * Function: job_update_label
+ * *Fill me in!*
+ */
 void
 job_update_label(struct job * job)
 {
@@ -374,6 +424,10 @@ job_update_label(struct job * job)
 	g_string_free(label, TRUE);
 }
 
+/*
+ * Function: job_translate_status
+ * *Fill me in!*
+ */
 enum JobStatus
 job_translate_status(GString * status)
 {
@@ -391,6 +445,10 @@ job_translate_status(GString * status)
 	return translated_status;
 }
 
+/*
+ * Function: job_update_status
+ * *Fill me in!*
+ */
 void
 job_update_status(struct job * job)
 {

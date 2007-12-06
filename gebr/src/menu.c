@@ -37,6 +37,17 @@
 #include "document.h"
 
 /*
+ * Prototypes
+ */
+static void
+menu_scan_directory(const gchar * directory, FILE * index_fp);
+
+/*
+ * Section: Public
+ * Public functions.
+ */
+
+/*
  * Function: menu_load
  * Look for a given menu _filename_ and load it if found
  */
@@ -190,6 +201,52 @@ out:	g_string_free(index_path, TRUE);
 }
 
 /*
+ * Function: menu_list_create_index
+ * Create menus from found using menu_scan_directory
+ *
+ * Returns TRUE if successful
+ */
+gboolean
+menu_list_create_index(void)
+{
+	GString *	path;
+	FILE *		index_fp;
+	GString	*	sort_cmd_line;
+	gboolean	ret;
+
+	/* initialization */
+	ret = TRUE;
+	path = g_string_new(NULL);
+	sort_cmd_line = g_string_new(NULL);
+
+	g_string_printf(path, "%s/.gebr/menus.idx", getenv("HOME"));
+	if ((index_fp = fopen(path->str, "w")) == NULL) {
+		gebr_message(ERROR, TRUE, FALSE, _("Unable to write menus' index"));
+		ret = FALSE;
+		goto out;
+	}
+	menu_scan_directory(SYS_MENUS_DIR, index_fp);
+	menu_scan_directory(gebr.config.usermenus->str, index_fp);
+	fclose(index_fp);
+
+	/* Sort index */
+	g_string_printf(sort_cmd_line, "sort %s >/tmp/gebrmenus.tmp; mv /tmp/gebrmenus.tmp %s",
+		path->str, path->str);
+	system(sort_cmd_line->str);
+
+	/* frees */
+out:	g_string_free(path, TRUE);
+	g_string_free(sort_cmd_line, TRUE);
+
+	return ret;
+}
+
+/*
+ * Section: Private
+ * Private functions.
+ */
+
+/*
  * Function: menu_scan_directory
  * Scans _directory_ for menus
  */
@@ -238,43 +295,3 @@ menu_scan_directory(const gchar * directory, FILE * index_fp)
 	g_string_free(path, TRUE);
 }
 
-/*
- * Function: menu_list_create_index
- * Create menus from found using menu_scan_directory
- *
- * Returns TRUE if successful
- */
-gboolean
-menu_list_create_index(void)
-{
-	GString *	path;
-	FILE *		index_fp;
-	GString	*	sort_cmd_line;
-	gboolean	ret;
-
-	/* initialization */
-	ret = TRUE;
-	path = g_string_new(NULL);
-	sort_cmd_line = g_string_new(NULL);
-
-	g_string_printf(path, "%s/.gebr/menus.idx", getenv("HOME"));
-	if ((index_fp = fopen(path->str, "w")) == NULL) {
-		gebr_message(ERROR, TRUE, FALSE, _("Unable to write menus' index"));
-		ret = FALSE;
-		goto out;
-	}
-	menu_scan_directory(SYS_MENUS_DIR, index_fp);
-	menu_scan_directory(gebr.config.usermenus->str, index_fp);
-	fclose(index_fp);
-
-	/* Sort index */
-	g_string_printf(sort_cmd_line, "sort %s >/tmp/gebrmenus.tmp; mv /tmp/gebrmenus.tmp %s",
-		path->str, path->str);
-	system(sort_cmd_line->str);
-
-	/* frees */
-out:	g_string_free(path, TRUE);
-	g_string_free(sort_cmd_line, TRUE);
-
-	return ret;
-}

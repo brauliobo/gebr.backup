@@ -64,6 +64,11 @@ static GtkWidget *
 parameters_add_input_file(GeoXmlProgramParameter * parameter, GtkWidget ** widget);
 
 /*
+ * Section: Public
+ * Public functions.
+ */
+
+/*
  * Function: parameters_configure_setup_ui
  * Assembly a dialog to configure the current selected program's parameters
  *
@@ -186,6 +191,12 @@ parameters_configure_setup_ui(void)
 
 	return ui_parameters;
 }
+
+
+/*
+ * Section: Private
+ * Private functions.
+ */
 
 /*
  * Function: parameters_actions

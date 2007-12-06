@@ -15,8 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_SERVERS_H
-#define __UI_SERVERS_H
+/*
+ * File: ui_server.h
+ */
+
+#ifndef __UI_SERVER_H
+#define __UI_SERVER_H
 
 #include <gtk/gtk.h>
 
@@ -27,6 +31,19 @@ enum {
 	SERVER_N_COLUMN
 };
 
+
+/* 
+ * Struct: ui_server_list
+ * 
+ * (start code)
+ *   struct ui_server_list {
+ *                    GtkWidget *		dialog;
+ *   
+ *                    GtkListStore *	store;
+ *                    GtkWidget *		view;
+ *   };
+ * (end code)
+*/
 struct ui_server_list {
 	GtkWidget *		dialog;
 
@@ -37,4 +54,4 @@ struct ui_server_list {
 struct ui_server_list *
 server_list_setup_ui(void);
 
-#endif //__UI_SERVERS_H
+#endif //__UI_SERVER_H

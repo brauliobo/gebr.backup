@@ -129,6 +129,7 @@ document_delete(const gchar * filename)
 /*
  * Function: document_assembly_filename
  * Creates a filename for a document
+ *
  * Creates a filename for a document using the current date and a random
  * generated string and _extension_.
  *

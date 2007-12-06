@@ -1,18 +1,24 @@
 /*   GÍBR - An environment for seismic processing.
  *   Copyright (C) 2007 GÍBR core team (http://gebr.sourceforge.net)
  *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *   This program is free software: you can redistribute it and/or
+ *   modify it under the terms of the GNU General Public License as
+ *   published by the Free Software Foundation, either version 3 of
+ *   the License, or (at your option) any later version.
  *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   along with this program. If not, see
+ *   <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * File: ui_help.c
+ * Responsible for help/report exibition and edition
  */
 
 #include <unistd.h>
@@ -30,6 +36,11 @@
 #define BUFFER_SIZE 1024
 
 gchar * unable_to_write_help_error = _("Unable to write help in temporary file");
+
+/*
+ * Section: Public
+ * Public functions.
+ */
 
 /*
  * Function: help_show
@@ -98,7 +109,7 @@ out:	g_string_free(html_path, FALSE);
 	g_string_free(cmd_line, TRUE);
 }
 
-/* Function: ui_help_edit
+/* Function: help_edit
  * Edit help in editor.
  *
  * Edit help in editor as reponse to button clicks.

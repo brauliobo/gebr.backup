@@ -45,6 +45,11 @@ project_line_show_help(void);
 
 
 /*
+ * Section: Public
+ * Public functions.
+ */
+
+/*
  * Function: project_line_setup_ui
  * Assembly the project/lines widget.
  *
@@ -167,6 +172,11 @@ project_line_setup_ui(void)
 }
 
 /*
+ * Section: Private
+ * Private functions.
+ */
+
+/*
  * Function: project_line_rename
  * Rename a projet or a line upon double click
  */
@@ -174,6 +184,7 @@ static void
 project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_project_line * ui_project_line)
 {
 	GtkTreeIter		iter;
+	gchar *                 old_title;
 
 
 	if (gtk_tree_model_get_iter_from_string(
@@ -181,18 +192,19 @@ project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new
 		return;
 
 	/* TODO: remove line or project if it doesn't exist? */
-	if (gebr.doc == NULL)
+	if (gebr.doc == NULL)		
 		return;
 
-	if (gebr.doc_is_project) {
-		gebr_message(INFO, FALSE, TRUE, _("Project '%s' renamed to '%s'"),
-			     geoxml_document_get_title(gebr.doc), new_text);
-	}
-	else{
-		gebr_message(INFO, FALSE, TRUE, _("Line '%s' renamed to '%s'"),
-			     geoxml_document_get_title(gebr.doc), new_text);
-	}
+	old_title = geoxml_document_get_title(gebr.doc);
 
+	if (strcmp(old_title, new_text) == 0)
+		goto out;
+
+	if (gebr.doc_is_project) 
+		gebr_message(INFO, FALSE, TRUE, _("Project '%s' renamed to '%s'"), old_title, new_text);
+	else
+		gebr_message(INFO, FALSE, TRUE, _("Line '%s' renamed to '%s'"), old_title, new_text);
+	
 	/* change it on the xml. */
 	geoxml_document_set_title(gebr.doc, new_text);
 	document_save(gebr.doc);
@@ -204,6 +216,7 @@ project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new
 
 	project_line_info_update();
 
+out:	g_free(old_title);
 }
 
 /*

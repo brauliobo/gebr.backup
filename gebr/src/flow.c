@@ -1,23 +1,24 @@
 /*   GÍBR - An environment for seismic processing.
  *   Copyright (C) 2007 GÍBR core team (http://gebr.sourceforge.net)
  *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *   This program is free software: you can redistribute it and/or
+ *   modify it under the terms of the GNU General Public License as
+ *   published by the Free Software Foundation, either version 3 of
+ *   the License, or (at your option) any later version.
  *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   along with this program. If not, see
+ *   <http://www.gnu.org/licenses/>.
  */
 
 /*
- * File: cb_flow.c
- * Callbacks for the flows manipulation
+ * File: flow.c
+ * Flow manipulation
  */
 
 #include <stdlib.h>
@@ -38,6 +39,11 @@ extern gchar * no_line_selected_error;
 gchar * no_flow_selected_error =	_("No flow selected");
 gchar * no_program_selected_error =	_("No program selected");
 
+/* 
+ * Section: Public
+ * Public functions.
+ */
+
 /*
  * Function: flow_save
  * Save the current flow
@@ -51,7 +57,7 @@ flow_save(void)
 }
 
 /*
- * Fucntion: flow_export
+ * Function: flow_export
  * Export current flow to a file
  */
 void
@@ -102,7 +108,7 @@ out:	gtk_widget_destroy(chooser_dialog);
 }
 
 /*
- * Fucntion: flow_import
+ * Function: flow_import
  * Import flow from file to the current line
  */
 void
@@ -217,6 +223,11 @@ out:    g_free(line_title);
 	gtk_widget_destroy(chooser_dialog);
 }
 
+/* Function: flow_free
+ * Frees the memory allocated to a flow
+ *
+ * Besides, update the detailed view of a flow in the interface.
+ */
 void
 flow_free(void)
 {
@@ -368,6 +379,10 @@ out:	g_free(title);
 	g_free(line_filename);
 }
 
+/*
+ * Function: flow_run
+ * Runs a flow
+ */
 void
 flow_run(void)
 {

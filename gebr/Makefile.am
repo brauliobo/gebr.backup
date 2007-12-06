@@ -21,6 +21,9 @@ EXTRA_DIST=
 	rpm/gebr.opensuse.spec \
 	rpm/gebr.mandriva.spec
 
+doc:
+	NaturalDocs -i src/ -p ndproj/ -o FramedHtml doc/
+
 deb-package:
 	dpkg-buildpackage -rfakeroot
 
@@ -35,3 +38,5 @@ opensuse-package: rpm-structure
 
 mandriva-package: rpm-structure
 	rpmbuild -ba rpm/gebr.mandriva.spec
+
+.PHONY: doc deb-package rpm-structure fedora-package opensuse-package mandriva-package
