@@ -124,7 +124,7 @@ gebr_quit(void)
 	g_string_free(gebr.config.data, TRUE);
 	g_string_free(gebr.config.browser, TRUE);
 
-	gebr_message(START, TRUE, TRUE, _("GêBR Finalizing..."));
+	gebr_message(END, TRUE, TRUE, _("GêBR Finalizing..."));
 	log_close(gebr.log);
 
 	/* Free servers structs */

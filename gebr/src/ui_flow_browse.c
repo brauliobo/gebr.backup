@@ -242,8 +242,8 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, s
 	gchar *         old_title;
 
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(ui_flow_browse->store),
-					&iter,
-					path_string);
+					    &iter,
+					    path_string);
 
 	old_title = geoxml_document_get_title(GEOXML_DOC(gebr.flow));
 
@@ -251,8 +251,8 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, s
 		goto out;
 
 	gtk_list_store_set(ui_flow_browse->store, &iter,
-			FB_TITLE, new_text,
-			-1);
+			   FB_TITLE, new_text,
+			   -1);
 
 	gebr_message(INFO, FALSE, TRUE, _("Flow '%s' renamed to '%s'"), old_title, new_text);
 
@@ -260,7 +260,9 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, s
 	geoxml_document_set_title(GEOXML_DOC(gebr.flow), new_text);
 	flow_save();
 	
-out:    g_free(old_title);
+out:    /* Not sure if this should be done or not*/
+	if ((void *) old_title != NULL)
+		g_free(old_title);
 }
 
 /*

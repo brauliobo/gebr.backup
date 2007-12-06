@@ -75,11 +75,11 @@ flow_export(void)
 	}
 
 	/* run file chooser */
-	chooser_dialog = gtk_file_chooser_dialog_new(	_("Choose filename to save"), NULL,
-							GTK_FILE_CHOOSER_ACTION_SAVE,
-							GTK_STOCK_SAVE, GTK_RESPONSE_YES,
-							GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-							NULL);
+	chooser_dialog = gtk_file_chooser_dialog_new(_("Choose filename to save"), NULL,
+						     GTK_FILE_CHOOSER_ACTION_SAVE,
+						     GTK_STOCK_SAVE, GTK_RESPONSE_YES,
+						     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+						     NULL);
 	filefilter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filefilter, _("Flow files (*.flw)"));
 	gtk_file_filter_add_pattern(filefilter, "*.flw");
@@ -117,38 +117,28 @@ flow_import(void)
 
 	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
 
 	GtkWidget *		chooser_dialog;
 	GtkFileFilter *		filefilter;
-	gchar *			path;
 	gchar *			filename;
 
 	gchar *			flow_title;
 	GString *		flow_filename;
-	gchar *			line_title;
-	gchar *			line_filename;
 
-	GeoXmlLine *		line;
-	GeoXmlFlow *		flow;
+	GeoXmlDocument *        doc;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_project_line->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+	
+	if (gebr.line == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, _("Select a line to which a flow will be added to"));
 		return;
 	}
 	
-	if (gtk_tree_store_iter_depth(gebr.ui_project_line->store, &iter) < 1) {
-		gebr_message(ERROR, TRUE, FALSE, no_line_selected_error);
-		return;
-	}
-
 	/* assembly a file chooser dialog */
-	chooser_dialog = gtk_file_chooser_dialog_new(	_("Choose filename to save"), NULL,
-							GTK_FILE_CHOOSER_ACTION_OPEN,
-							GTK_STOCK_OPEN, GTK_RESPONSE_YES,
-							GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-							NULL);
+	chooser_dialog = gtk_file_chooser_dialog_new( _("Choose filename to save"), NULL,
+						      GTK_FILE_CHOOSER_ACTION_OPEN,
+						      GTK_STOCK_OPEN, GTK_RESPONSE_YES,
+						      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+						      NULL);
 	filefilter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filefilter, _("Flow files (*.flw)"));
 	gtk_file_filter_add_pattern(filefilter, "*.flw");
@@ -163,63 +153,46 @@ flow_import(void)
 
 	/* load flow */
 	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (chooser_dialog));
-	geoxml_document_load(&flow, filename);
+	geoxml_document_load(&doc, filename);
 
-	if (flow == NULL){
+	if (doc == NULL){
 		gebr_message(ERROR, TRUE, FALSE, _("Unable to import flow from '%s'"), filename);
 		gtk_widget_destroy(chooser_dialog);
 		return;
 	}
 	
-	/* load line */
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->store), &iter,
-		PL_TITLE, &line_title,
-		PL_FILENAME, &line_filename,
-		-1);
-
-	line = GEOXML_LINE(document_load(line_filename));
-	if (line == NULL) {
-	        gebr_message(ERROR, TRUE, TRUE, _("Could not load associated line"));
-	        geoxml_document_free(GEOXML_DOC(flow));
-		goto out;
-	}
-
 	if (gebr.flow != NULL)
 		flow_free();
 
-	gebr.flow = flow;
+	gebr.flow = GEOXML_FLOW(doc);
 	
 	flow_filename = document_assembly_filename("flw");
 	geoxml_document_set_filename(GEOXML_DOC(gebr.flow), flow_filename->str);
-
 	flow_title = geoxml_document_get_title(GEOXML_DOC(gebr.flow));
 
 	/* Add flow to the line */
-	geoxml_line_add_flow(line, flow_filename->str);
-	document_save(GEOXML_DOC(line));
-	geoxml_document_free(GEOXML_DOC(line));
-	document_save(GEOXML_DOC(flow));
+	geoxml_line_add_flow(gebr.line, flow_filename->str);
+	document_save(GEOXML_DOC(gebr.line));
+	document_save(doc);
 
-	/* Add to the GUI */
+	/* Add to the GUI */	
 	gtk_list_store_append(gebr.ui_flow_browse->store, &iter);
 	gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
 			   FB_TITLE, flow_title, 
 			   FB_FILENAME, flow_filename->str,
 			   -1);
-
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_flow_browse->view));
 	gtk_tree_selection_unselect_all (selection);
 	gtk_tree_selection_select_iter (selection, &iter);
 	
 
 	/* feedback */
 	gebr_message(INFO, TRUE, TRUE, _("Flow '%s' imported to line '%s' from file '%s'"),
-		     flow_title, line_title, filename);
+		     flow_title, geoxml_document_get_title(GEOXML_DOC(gebr.line)), filename);
 	
 	g_free(filename);
-	g_free(flow_title);
+	//g_free(flow_title);
 	g_string_free(flow_filename, TRUE);
-out:    g_free(line_title);
-	g_free(line_filename);
 	gtk_widget_destroy(chooser_dialog);
 }
 
@@ -235,8 +208,9 @@ flow_free(void)
 		gtk_list_store_clear(gebr.ui_flow_edition->fseq_store);
 		geoxml_document_free(GEOXML_DOC(gebr.flow));
 		gebr.flow = NULL;
+		
+		flow_browse_info_update();
 	}
-	flow_browse_info_update();
 }
 
 /*
@@ -247,47 +221,30 @@ void
 flow_new(void)
 {
 	GtkTreeIter		iter;
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
 
 	gchar *			flow_title;
 	GString *		flow_filename;
 	gchar *			line_title;
 	gchar *			line_filename;
 
-	GeoXmlLine *		line;
 	GeoXmlFlow *		flow;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_project_line->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+	if (gebr.line == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, _("Select a line to which a flow will be added to"));
 		return;
 	}
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->store), &iter,
-		PL_TITLE, &line_title,
-		PL_FILENAME, &line_filename,
-		-1);
+	line_title = geoxml_document_get_title(gebr.doc);
+	line_filename = geoxml_document_get_filename(gebr.doc);
+
 	flow_title = _("New Flow");
 	flow_filename = document_assembly_filename("flw");
-
-	if (gtk_tree_store_iter_depth(gebr.ui_project_line->store, &iter) < 1) {
-		gebr_message(ERROR, TRUE, FALSE, no_line_selected_error);
-		goto out;
-	}
 
 	/* feedback */
 	gebr_message(INFO, TRUE, TRUE, _("Adding flow to line '%s'"), line_title);
 
-	/* Add flow to the line */
-	line = GEOXML_LINE(document_load(line_filename));
-	if (line == NULL) {
-		gebr_message(ERROR, TRUE, TRUE, _("Could not load associated line"));
-		goto out;
-	}
-	geoxml_line_add_flow(line, flow_filename->str);
-	document_save(GEOXML_DOC(line));
-	geoxml_document_free(GEOXML_DOC(line));
+	geoxml_line_add_flow(gebr.line, flow_filename->str);
+	document_save(GEOXML_DOC(gebr.line));
 
 	/* Create a new flow */
 	flow = geoxml_flow_new();
@@ -301,12 +258,12 @@ flow_new(void)
 	/* Add to the GUI */
 	gtk_list_store_append(gebr.ui_flow_browse->store, &iter);
 	gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
-			FB_TITLE, flow_title,
-			FB_FILENAME, flow_filename->str,
-			-1);
+			   FB_TITLE, flow_title,
+			   FB_FILENAME, flow_filename->str,
+			   -1);
 
-out:	g_free(line_title);
-	g_free(line_filename);
+	//g_free(line_title);
+	//g_free(line_filename);
 	g_string_free(flow_filename, TRUE);
 }
 
@@ -320,13 +277,11 @@ flow_delete(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
-	GtkTreeIter		flow_iter, line_iter;
+	GtkTreeIter		flow_iter;
 
 	gchar *			title;
 	gchar *			flow_filename;
-	gchar *			line_filename;
 
-	GeoXmlLine *		line;
 	GeoXmlLineFlow *	line_flow;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
@@ -340,31 +295,21 @@ flow_delete(void)
 			FB_FILENAME, &flow_filename,
 			-1);
 
-	/* get the line filename */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
-	gtk_tree_selection_get_selected(selection, &model, &line_iter);
-	gtk_tree_model_get(model, &line_iter,
-			PL_FILENAME, &line_filename,
-			-1);
-
 	/* Some feedback */
-	gebr_message(INFO, TRUE, TRUE, _("Erasing flow '%s'"), title);
+	gebr_message(INFO, TRUE, FALSE, _("Erasing flow '%s'"), title);
+	gebr_message(INFO, FALSE, TRUE, _("Erasing flow '%s' from line '%s'"),
+		     title, geoxml_document_get_title(gebr.doc));
 
-	/* Remove flow from its line */
-	line = GEOXML_LINE(document_load(line_filename));
-	if (line == NULL)
-		goto out;
 	/* Seek and destroy */
-	geoxml_line_get_flow(line, &line_flow, 0);
+	geoxml_line_get_flow(gebr.line, &line_flow, 0);
 	while (line_flow != NULL) {
 		if (g_ascii_strcasecmp(flow_filename, geoxml_line_get_flow_source(line_flow)) == 0) {
-			geoxml_line_remove_flow(line, line_flow);
-			document_save(GEOXML_DOC(line));
+			geoxml_line_remove_flow(gebr.line, line_flow);
+			document_save(GEOXML_DOC(gebr.line));
 			break;
 		}
 		geoxml_line_next_flow(&line_flow);
 	}
-	geoxml_document_free(GEOXML_DOC(line));
 
 	/* Free and delete flow from the disk */
 	flow_free();
@@ -374,9 +319,8 @@ flow_delete(void)
 	gtk_list_store_remove(GTK_LIST_STORE (gebr.ui_flow_browse->store), &flow_iter);
 	gtk_list_store_clear(gebr.ui_flow_edition->fseq_store);
 
-out:	g_free(title);
+	g_free(title);
 	g_free(flow_filename);
-	g_free(line_filename);
 }
 
 /*
@@ -388,7 +332,6 @@ flow_run(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel     *	model;
-	GtkTreeIter		iter;
 	GtkTreeIter		first_iter;
 	GtkTreeViewColumn *	col;
 	GtkCellRenderer *	renderer;
@@ -400,8 +343,7 @@ flow_run(void)
 	struct server *		server;
 
 	/* check for a flow selected */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+	if (gebr.flow == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
 		return;
 	}
