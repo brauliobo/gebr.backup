@@ -96,7 +96,7 @@ gebr_init(int argc, char ** argv)
 }
 
 /*
- * Function: gebr_init
+ * Function: gebr_quit
  * Free memory, remove temporaries files and quit.
  */
 gboolean
