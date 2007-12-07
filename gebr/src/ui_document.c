@@ -25,6 +25,8 @@
 #include "support.h"
 #include "flow.h"
 #include "ui_help.h"
+#include "document.h"
+#include "ui_project_line.h"
 
 /*
  * Prototypes
@@ -165,20 +167,33 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 		geoxml_document_set_email(ui_document_properties->document,
 			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->email)));
 
-		/* FIXME: make it work not only for flows!!!!*/
-		/* Update flow title in ui_flow_browse->store */
-		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
-		if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+		/* Update title in apropriated store */
+		printf("%d\n",geoxml_document_get_type(ui_document_properties->document));
+		switch (geoxml_document_get_type(ui_document_properties->document)){
+		case GEOXML_DOCUMENT_TYPE_PROJECT:
+		case GEOXML_DOCUMENT_TYPE_LINE:
+			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
+			gtk_tree_selection_get_selected(selection, &model, &iter);
+			gtk_tree_store_set(gebr.ui_project_line->store, &iter,
+					   PL_TITLE, geoxml_document_get_title(ui_document_properties->document),
+					   -1);
+			if (gebr.doc_is_project)
+				document_save(GEOXML_DOC(gebr.project));
+			else
+				document_save(GEOXML_DOC(gebr.line));
+			project_line_info_update();
+			break;
+		case GEOXML_DOCUMENT_TYPE_FLOW:
+			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
+			gtk_tree_selection_get_selected(selection, &model, &iter);
 			gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
-					FB_TITLE, geoxml_document_get_title(ui_document_properties->document),
-					-1);
+					   FB_TITLE, geoxml_document_get_title(ui_document_properties->document),
+					   -1);
+			flow_save();
+			break;
+		default:
+			break;
 		}
-		/* FIXME: saving everything. It should save just the modified document */
-		document_save(GEOXML_DOC(gebr.project));
-		document_save(GEOXML_DOC(gebr.line));
-		flow_save();
-		project_line_info_update();
-
 		break;
 	} default:                  /* does nothing */
 		break;

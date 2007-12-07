@@ -168,7 +168,7 @@ flow_import(void)
 	
 	flow_filename = document_assembly_filename("flw");
 	geoxml_document_set_filename(GEOXML_DOC(gebr.flow), flow_filename->str);
-	flow_title = geoxml_document_get_title(GEOXML_DOC(gebr.flow));
+	flow_title = (gchar *) geoxml_document_get_title(GEOXML_DOC(gebr.flow));
 
 	/* Add flow to the line */
 	geoxml_line_add_flow(gebr.line, flow_filename->str);
@@ -182,16 +182,14 @@ flow_import(void)
 			   FB_FILENAME, flow_filename->str,
 			   -1);
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_flow_browse->view));
-	gtk_tree_selection_unselect_all (selection);
 	gtk_tree_selection_select_iter (selection, &iter);
+	g_signal_emit_by_name(gebr.ui_flow_browse->view, "cursor-changed");
 	
 
 	/* feedback */
 	gebr_message(INFO, TRUE, TRUE, _("Flow '%s' imported to line '%s' from file '%s'"),
 		     flow_title, geoxml_document_get_title(GEOXML_DOC(gebr.line)), filename);
 	
-	g_free(filename);
-	//g_free(flow_title);
 	g_string_free(flow_filename, TRUE);
 	gtk_widget_destroy(chooser_dialog);
 }
@@ -234,8 +232,8 @@ flow_new(void)
 		return;
 	}
 
-	line_title = geoxml_document_get_title(gebr.doc);
-	line_filename = geoxml_document_get_filename(gebr.doc);
+	line_title = (gchar *) geoxml_document_get_title(gebr.doc);
+	line_filename = (gchar *) geoxml_document_get_filename(gebr.doc);
 
 	flow_title = _("New Flow");
 	flow_filename = document_assembly_filename("flw");
@@ -262,8 +260,6 @@ flow_new(void)
 			   FB_FILENAME, flow_filename->str,
 			   -1);
 
-	//g_free(line_title);
-	//g_free(line_filename);
 	g_string_free(flow_filename, TRUE);
 }
 
@@ -291,9 +287,9 @@ flow_delete(void)
 	}
 
 	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_browse->store), &flow_iter,
-			FB_TITLE, &title,
-			FB_FILENAME, &flow_filename,
-			-1);
+			   FB_TITLE, &title,
+			   FB_FILENAME, &flow_filename,
+			   -1);
 
 	/* Some feedback */
 	gebr_message(INFO, TRUE, FALSE, _("Erasing flow '%s'"), title);

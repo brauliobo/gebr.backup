@@ -245,10 +245,10 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, s
 					    &iter,
 					    path_string);
 
-	old_title = geoxml_document_get_title(GEOXML_DOC(gebr.flow));
+	old_title = (gchar *) geoxml_document_get_title(GEOXML_DOC(gebr.flow));
 
 	if (strcmp(old_title, new_text) == 0)
-		goto out;
+		return;
 
 	gtk_list_store_set(ui_flow_browse->store, &iter,
 			   FB_TITLE, new_text,
@@ -258,11 +258,7 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, s
 
 	/* Update XML */
 	geoxml_document_set_title(GEOXML_DOC(gebr.flow), new_text);
-	flow_save();
-	
-out:    /* Not sure if this should be done or not*/
-	if ((void *) old_title != NULL)
-		g_free(old_title);
+	flow_save();	
 }
 
 /*

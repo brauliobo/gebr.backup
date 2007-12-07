@@ -21,6 +21,8 @@
  * Builds the "Project and Lines" UI and distribute callbacks
  */
 
+#include <string.h>
+
 #include "ui_project_line.h"
 #include "gebr.h"
 #include "support.h"
@@ -28,6 +30,7 @@
 #include "document.h"
 #include "project.h"
 #include "line.h"
+#include "ui_help.h"
 
 /*
  * Prototypes
@@ -110,6 +113,8 @@ project_line_setup_ui(void)
 			GTK_SIGNAL_FUNC(project_line_load), ui_project_line);
 	g_signal_connect(GTK_OBJECT(ui_project_line->view), "cursor-changed",
 			GTK_SIGNAL_FUNC(line_load_flows), ui_project_line);
+	g_signal_connect(GTK_OBJECT(ui_project_line->view), "cursor-changed",
+			GTK_SIGNAL_FUNC(project_line_info_update), NULL);
 
 	ui_project_line->selection_path = NULL;
 
@@ -195,7 +200,7 @@ project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new
 	if (gebr.doc == NULL)		
 		return;
 
-	old_title = geoxml_document_get_title(gebr.doc);
+	old_title = (gchar *) geoxml_document_get_title(gebr.doc);
 
 	if (strcmp(old_title, new_text) == 0)
 		goto out;
@@ -296,8 +301,6 @@ project_line_load(void)
 		gebr.doc = GEOXML_DOC(gebr.line);
 		gebr.doc_is_project = FALSE;
 	}
-	
-	project_line_info_update();
 
 out:	g_free(filename);
 	g_free(title);
@@ -340,10 +343,10 @@ project_line_info_update(void)
 
 	/* Title in bold */
 	if (gebr.doc_is_project){
-		markup = g_markup_printf_escaped("<b>Project %s</b>", geoxml_document_get_title(GEOXML_DOC(gebr.doc)));
+		markup = g_markup_printf_escaped("<b>Project %s</b>", geoxml_document_get_title(gebr.doc));
 	}
 	else{
-		markup = g_markup_printf_escaped("<b>Line %s</b>", geoxml_document_get_title(GEOXML_DOC(gebr.doc)));
+		markup = g_markup_printf_escaped("<b>Line %s</b>", geoxml_document_get_title(gebr.doc));
 	}
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_project_line->info.title), markup);
 	g_free(markup);

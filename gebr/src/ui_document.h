@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DOCUMENT_H
-#define __DOCUMENT_H
+#ifndef __UI_DOCUMENT_H
+#define __UI_DOCUMENT_H
 
 #include <gtk/gtk.h>
 
@@ -37,4 +37,4 @@ struct ui_document_properties {
 struct ui_document_properties *
 document_properties_setup_ui(GeoXmlDocument * document);
 
-#endif //__DOCUMENT_H
+#endif //__UI_DOCUMENT_H
