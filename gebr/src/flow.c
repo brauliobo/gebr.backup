@@ -151,14 +151,18 @@ flow_import(void)
 		goto out;
 
 	/* load flow */
+	path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser_dialog));
 	imported_flow = GEOXML_FLOW(document_load_path(path));
 	if (imported_flow == NULL)
-		goto out;
+		goto out2;
 
 	/* initialization */
-	path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser_dialog));
-	flow_title = (gchar *)geoxml_document_get_title(GEOXML_DOC(gebr.flow));
+	flow_title = (gchar *)geoxml_document_get_title(GEOXML_DOC(imported_flow));
 	flow_filename = document_assembly_filename("flw");
+
+	/* feedback */
+	gebr_message(INFO, TRUE, TRUE, _("Flow '%s' imported to line '%s' from file '%s'"),
+		     flow_title, geoxml_document_get_title(GEOXML_DOC(gebr.line)), path);
 
 	/* change filename */
 	geoxml_document_set_filename(GEOXML_DOC(imported_flow), flow_filename->str);
@@ -179,13 +183,9 @@ flow_import(void)
 	gtk_tree_selection_select_iter (selection, &iter);
 	g_signal_emit_by_name(gebr.ui_flow_browse->view, "cursor-changed");
 
-	/* feedback */
-	gebr_message(INFO, TRUE, TRUE, _("Flow '%s' imported to line '%s' from file '%s'"),
-		     flow_title, geoxml_document_get_title(GEOXML_DOC(gebr.line)), path);
-
 	/* frees */
-	g_free(path);
 	g_string_free(flow_filename, TRUE);
+out2:	g_free(path);
 out:	gtk_widget_destroy(chooser_dialog);
 }
 
@@ -214,9 +214,6 @@ flow_new(void)
 	line_title = (gchar *)geoxml_document_get_title(gebr.doc);
 	line_filename = (gchar *)geoxml_document_get_filename(gebr.doc);
 
-	geoxml_line_add_flow(gebr.line, geoxml_document_get_filename(GEOXML_DOC(flow)));
-	document_save(GEOXML_DOC(gebr.line));
-
 	/* Create a new flow */
 	flow = GEOXML_FLOW(document_new(GEOXML_DOCUMENT_TYPE_FLOW));
 	geoxml_document_set_title(GEOXML_DOC(flow), flow_title);
@@ -224,8 +221,10 @@ flow_new(void)
 	geoxml_document_set_email(GEOXML_DOC(flow), gebr.config.email->str);
 	document_save(GEOXML_DOC(flow));
 	geoxml_document_free(GEOXML_DOC(flow));
-
-	/* Add to the GUI */
+	/* and add to current line */
+	geoxml_line_add_flow(gebr.line, geoxml_document_get_filename(GEOXML_DOC(flow)));
+	document_save(GEOXML_DOC(gebr.line));
+	/* and add to the GUI */
 	gtk_list_store_append(gebr.ui_flow_browse->store, &iter);
 	gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
 			   FB_TITLE, flow_title,
