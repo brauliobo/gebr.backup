@@ -219,11 +219,11 @@ flow_new(void)
 	geoxml_document_set_title(GEOXML_DOC(flow), flow_title);
 	geoxml_document_set_author(GEOXML_DOC(flow), gebr.config.username->str);
 	geoxml_document_set_email(GEOXML_DOC(flow), gebr.config.email->str);
-	document_save(GEOXML_DOC(flow));
-	geoxml_document_free(GEOXML_DOC(flow));
 	/* and add to current line */
 	geoxml_line_add_flow(gebr.line, geoxml_document_get_filename(GEOXML_DOC(flow)));
 	document_save(GEOXML_DOC(gebr.line));
+	document_save(GEOXML_DOC(flow));
+	geoxml_document_free(GEOXML_DOC(flow));
 	/* and add to the GUI */
 	gtk_list_store_append(gebr.ui_flow_browse->store, &iter);
 	gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
