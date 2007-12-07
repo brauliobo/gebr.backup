@@ -18,8 +18,6 @@
 #ifndef __SUPPORT_H
 #define __SUPPORT_H
 
-#include <glib.h>
-
 /*
  * Standard gettext macros.
  */
@@ -43,5 +41,8 @@
 #  define Q_(String) g_strip_context ((String), (String))
 #  define N_(String) (String)
 #endif
+
+gboolean
+confirm_action_dialog(const gchar * message, ...);
 
 #endif //__SUPPORT_H

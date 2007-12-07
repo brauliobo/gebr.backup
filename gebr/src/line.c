@@ -133,13 +133,16 @@ line_delete(void)
 	GeoXmlLineFlow *	line_flow;
 	gchar *                 line_filename;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
 	if (gebr.line == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, no_selection_error);
 		return;
 	}
-
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
 	gtk_tree_selection_get_selected(selection, &model, &line_iter);
+
+	if (confirm_action_dialog(_("Are you want to delete line '%s' and all its flows?"),
+		geoxml_document_get_title(GEOXML_DOC(gebr.line))) == FALSE)
+		return;
 
 	/* make the user happy */
 	gebr_message(INFO, TRUE, FALSE, _("Erasing line '%s'"), geoxml_document_get_title(GEOXML_DOC(gebr.line)));
@@ -179,7 +182,6 @@ line_delete(void)
 
 		geoxml_project_next_line(&project_line);
 	}
-
 
 	/* Clear the flow list */
 	gtk_list_store_clear(gebr.ui_flow_browse->store);

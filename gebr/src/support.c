@@ -15,7 +15,40 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdarg.h>
+
+#include <gtk/gtk.h>
+#include <glib.h>
 
 #include "support.h"
+#include "gebr.h"
+
+/*
+ * Function: confirm_action_dialog
+ * Show an action confirmation dialog with formated _message_
+ */
+gboolean
+confirm_action_dialog(const gchar * message, ...)
+{
+	GtkWidget *	dialog;
+
+	gchar *		string;
+	va_list		argp;
+	gboolean	confirmed;
+
+	va_start(argp, message);
+	string = g_strdup_vprintf(message, argp);
+	va_end(argp);
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(gebr.window),
+					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_MESSAGE_QUESTION,
+					GTK_BUTTONS_YES_NO,
+					string);
+	confirmed = gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES ? TRUE : FALSE;
+
+	gtk_widget_destroy(dialog);
+	g_free(string);
+
+	return confirmed;
+}

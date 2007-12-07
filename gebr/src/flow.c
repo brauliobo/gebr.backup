@@ -270,7 +270,7 @@ flow_delete(void)
 	GtkTreeIter		flow_iter;
 
 	gchar *			title;
-	gchar *			flow_filename;
+	gchar *			filename;
 
 	GeoXmlLineFlow *	line_flow;
 
@@ -282,8 +282,11 @@ flow_delete(void)
 
 	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_browse->store), &flow_iter,
 			   FB_TITLE, &title,
-			   FB_FILENAME, &flow_filename,
+			   FB_FILENAME, &filename,
 			   -1);
+
+	if (confirm_action_dialog(_("Are you want to delete flow '%s'?"), title) == FALSE)
+		goto out;
 
 	/* Some feedback */
 	gebr_message(INFO, TRUE, FALSE, _("Erasing flow '%s'"), title);
@@ -293,7 +296,7 @@ flow_delete(void)
 	/* Seek and destroy */
 	geoxml_line_get_flow(gebr.line, &line_flow, 0);
 	while (line_flow != NULL) {
-		if (g_ascii_strcasecmp(flow_filename, geoxml_line_get_flow_source(line_flow)) == 0) {
+		if (g_ascii_strcasecmp(filename, geoxml_line_get_flow_source(line_flow)) == 0) {
 			geoxml_line_remove_flow(gebr.line, line_flow);
 			document_save(GEOXML_DOC(gebr.line));
 			break;
@@ -303,14 +306,14 @@ flow_delete(void)
 
 	/* Free and delete flow from the disk */
 	flow_free();
-	document_delete(flow_filename);
+	document_delete(filename);
 
 	/* Finally, from the GUI */
 	gtk_list_store_remove(GTK_LIST_STORE (gebr.ui_flow_browse->store), &flow_iter);
 	gtk_list_store_clear(gebr.ui_flow_edition->fseq_store);
 
-	g_free(title);
-	g_free(flow_filename);
+out:	g_free(title);
+	g_free(filename);
 }
 
 /*
