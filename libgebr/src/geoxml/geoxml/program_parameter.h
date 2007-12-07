@@ -20,6 +20,8 @@
 
 #include <glib.h>
 
+#include "macros.h"
+
 /**
  * \struct GeoXmlProgramParameter program_parameter.h libgeoxml/program_parameter.h
  * \brief
@@ -66,6 +68,16 @@
  */
 
 /**
+ * Promote a sequence to a program parameter.
+ */
+#define GEOXML_PROGRAM_PARAMETER(seq) ((GeoXmlProgramParameter*)(seq))
+
+/**
+ * The GeoXmlProgramParameter struct contains private data only, and should be accessed using the functions below.
+ */
+typedef struct geoxml_program_parameter GeoXmlProgramParameter;
+
+/**
  * \p GEOXML_PARAMETERTYPE lists the program's parameters types
  * supported by libgeoxml. They were made to create a properly
  * link between the seismic processing softwares and this library.
@@ -97,18 +109,8 @@ enum GEOXML_PARAMETERTYPE {
 	GEOXML_PARAMETERTYPE_RANGE,
 };
 
-/**
- * Promote a sequence to a program parameter.
- */
-#define GEOXML_PROGRAM_PARAMETER(seq) ((GeoXmlProgramParameter*)(seq))
-
-/**
- * The GeoXmlProgramParameter struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct geoxml_program_parameter GeoXmlProgramParameter;
-
+/* must be included after enum GEOXML_PARAMETERTYPE */
 #include "program.h"
-#include "macros.h"
 
 /**
  * Get the program to which \p parameter belongs to.

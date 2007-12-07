@@ -212,6 +212,9 @@ __geoxml_document_clone_doc(GdomeDocument * source, GdomeDocumentType * document
 enum GEOXML_DOCUMENT_TYPE
 geoxml_document_get_type(GeoXmlDocument * document)
 {
+	if (document == NULL)
+		return GEOXML_DOCUMENT_TYPE_FLOW;
+
 	GdomeElement *	root_element;
 
 	root_element = gdome_doc_documentElement((GdomeDocument*)document, &exception);
@@ -223,7 +226,7 @@ geoxml_document_get_type(GeoXmlDocument * document)
 	else if (g_ascii_strcasecmp("project", gdome_el_nodeName(root_element, &exception)->str) == 0)
 		return GEOXML_DOCUMENT_TYPE_PROJECT;
 
-	return GEOXML_DOCUMENT_TYPE_UNKNOWN;
+	return GEOXML_DOCUMENT_TYPE_FLOW;
 }
 
 const gchar *
@@ -266,9 +269,6 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 	GdomeDocument *		tmp_doc;
 	GdomeDocumentType *	tmp_document_type;
 	int			ret;
-
-	if (geoxml_document_get_type((GeoXmlDocument*)document) == GEOXML_DOCUMENT_TYPE_UNKNOWN)
-		return GEOXML_RETV_INVALID_DOCUMENT;
 
 	ctxt = xmlNewParserCtxt();
 	if (ctxt == NULL)

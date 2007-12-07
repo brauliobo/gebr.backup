@@ -75,10 +75,18 @@ typedef struct geoxml_document GeoXmlDocument;
  *
  */
 enum GEOXML_DOCUMENT_TYPE {
-	GEOXML_DOCUMENT_TYPE_FLOW, 
-	GEOXML_DOCUMENT_TYPE_LINE, 
-	GEOXML_DOCUMENT_TYPE_PROJECT, 
-	GEOXML_DOCUMENT_TYPE_UNKNOWN
+	/**
+	 * The document is a GeoXmlFlow
+	 */
+	GEOXML_DOCUMENT_TYPE_FLOW,
+	/**
+	 * The document is a GeoXmlLine
+	 */
+	GEOXML_DOCUMENT_TYPE_LINE,
+	/**
+	 * The document is a GeoXmlProject
+	 */
+	GEOXML_DOCUMENT_TYPE_PROJECT,
 };
 
 /**
@@ -118,7 +126,11 @@ GeoXmlDocument *
 geoxml_document_clone(GeoXmlDocument * source);
 
 /**
+ * Return the type of \p document
  *
+ * If \p document is NULL, GEOXML_DOCUMENT_TYPE_FLOW is returned
+ *
+ * \see GEOXML_DOCUMENT_TYPE
  */
 enum GEOXML_DOCUMENT_TYPE
 geoxml_document_get_type(GeoXmlDocument * document);
