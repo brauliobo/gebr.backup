@@ -40,7 +40,7 @@ static void
 flow_browse_load(void);
 
 static void
-flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_flow_browse * ui_flow_browse);
+flow_browse_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_flow_browse * ui_flow_browse);
 
 static void
 flow_browse_show_help(void);
@@ -100,7 +100,7 @@ flow_browse_setup_ui(void)
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, NULL);
 	g_signal_connect(GTK_OBJECT(renderer), "edited",
-			GTK_SIGNAL_FUNC(flow_rename), ui_flow_browse);
+			GTK_SIGNAL_FUNC(flow_browse_rename), ui_flow_browse);
 
 	col = gtk_tree_view_column_new_with_attributes(_("Index"), renderer, NULL);
 	gtk_tree_view_column_set_sort_column_id(col, FB_TITLE);
@@ -232,11 +232,11 @@ out:	g_free(filename);
 }
 
 /*
- * Function: flow_rename
+ * Function: flow_browse_rename
  * Rename a flow upon double click.
  */
 static void
-flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_flow_browse * ui_flow_browse)
+flow_browse_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_flow_browse * ui_flow_browse)
 {
 	GtkTreeIter	iter;
 	gchar *         old_title;
@@ -244,21 +244,22 @@ flow_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, s
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(ui_flow_browse->store),
 					    &iter,
 					    path_string);
+	old_title = (gchar *)geoxml_document_get_title(GEOXML_DOC(gebr.flow));
 
-	old_title = (gchar *) geoxml_document_get_title(GEOXML_DOC(gebr.flow));
-
-	if (strcmp(old_title, new_text) == 0)
+	/* was it really renamed? */
+	if (g_ascii_strcasecmp(old_title, new_text) == 0)
 		return;
 
+	/* update store */
 	gtk_list_store_set(ui_flow_browse->store, &iter,
 			   FB_TITLE, new_text,
 			   -1);
-
-	gebr_message(INFO, FALSE, TRUE, _("Flow '%s' renamed to '%s'"), old_title, new_text);
-
-	/* Update XML */
+	/* update XML */
 	geoxml_document_set_title(GEOXML_DOC(gebr.flow), new_text);
-	flow_save();	
+	flow_save();
+
+	/* send feedback */
+	gebr_message(INFO, FALSE, TRUE, _("Flow '%s' renamed to '%s'"), old_title, new_text);
 }
 
 /*
@@ -332,7 +333,8 @@ flow_browse_info_update(void)
 	g_string_free(text, TRUE);
 
 	/* Info button */
-	g_object_set(gebr.ui_flow_browse->info.help, "sensitive", TRUE, NULL);
+	g_object_set(gebr.ui_flow_browse->info.help,
+		"sensitive", strlen(geoxml_document_get_help(gebr.flow)) ? TRUE : FALSE, NULL);
 }
 
 static void

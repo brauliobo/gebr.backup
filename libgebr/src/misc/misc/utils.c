@@ -26,19 +26,49 @@
 #include "utils.h"
 
 /**
- * mkstemp has the exigency that the XXXXXX comes in the end of the template.
- * This function returns an static allocated string which will be used to create
- * temporary filename, possibly with an extension, which is not easily possible with mkstemp
+ * Create a file based on \p template.
+ *
+ * \p template must have a XXXXXX that will be replaced to random
+ * generated and unique string that results on a filename that doens't exists.
+ * \p template should be the absolute path of the file.
  */
-gchar *
-make_temp_filename(void)
+GString *
+make_unique_filename(const gchar * template)
 {
-	static gchar	template[7];
+	GString *	path;
 
-	strcpy(template, "XXXXXX");
-	mkstemp(template);
+	/* assembly file path */
+	path = g_string_new(NULL);
+	g_string_printf(path, "%s", template);
 
-	return template;
+	/* create a temporary file. */
+	close(g_mkstemp(path->str));
+
+	return path;
+}
+
+/**
+ * Create a file based on \p template.
+ *
+ * \p template must have a XXXXXX that will be replaced to random
+ * generated and unique string that results on a filename that doens't exists.
+ * \p template is just a filename, not an absolute path.
+ * The returned string then is an absolute path of
+ * The string returned is a path to the file on the temporary directory.
+ */
+GString *
+make_temp_filename(const gchar * template)
+{
+	GString *	path;
+
+	/* assembly file path */
+	path = g_string_new(NULL);
+	g_string_printf(path, "%s/%s", g_get_tmp_dir(), template);
+
+	/* create a temporary file. */
+	close(g_mkstemp(path->str));
+
+	return path;
 }
 
 /**

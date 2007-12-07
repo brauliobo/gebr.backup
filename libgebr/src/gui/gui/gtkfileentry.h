@@ -38,6 +38,7 @@ typedef struct _GtkFileEntryClass	GtkFileEntryClass;
 struct _GtkFileEntry {
 	GtkBin		parent;
 
+	GdkWindow *	event_window;
 	GtkWidget *	entry;
 
 	gboolean	choose_directory;

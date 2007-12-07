@@ -88,7 +88,7 @@ project_line_setup_ui(void)
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_paned_pack1(GTK_PANED(hpanel), scrolledwin, FALSE, FALSE);
 	gtk_widget_set_size_request(scrolledwin, 300, -1);
-	
+
 	ui_project_line->store = gtk_tree_store_new(PL_N_COLUMN,
 						G_TYPE_STRING,  /* Name (title for libgeoxml) */
 						G_TYPE_STRING); /* Filename */
@@ -121,7 +121,7 @@ project_line_setup_ui(void)
 	/* Right side */
 	frame = gtk_frame_new(_("Details"));
 	gtk_paned_pack2(GTK_PANED(hpanel), frame, TRUE, FALSE);
-	
+
 	infopage = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), infopage);
 
@@ -189,27 +189,15 @@ static void
 project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new_text, struct ui_project_line * ui_project_line)
 {
 	GtkTreeIter		iter;
-	gchar *                 old_title;
+	gchar *			old_title;
 
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(ui_project_line->store), &iter, path_string);
+	old_title = (gchar *)geoxml_document_get_title(gebr.doc);
 
-	if (gtk_tree_model_get_iter_from_string(
-		GTK_TREE_MODEL(ui_project_line->store), &iter, path_string) == FALSE)
+	/* was it really renamed? */
+	if (g_ascii_strcasecmp(old_title, new_text) == 0)
 		return;
 
-	/* TODO: remove line or project if it doesn't exist? */
-	if (gebr.doc == NULL)		
-		return;
-
-	old_title = (gchar *) geoxml_document_get_title(gebr.doc);
-
-	if (strcmp(old_title, new_text) == 0)
-		goto out;
-
-	if (gebr.doc_is_project) 
-		gebr_message(INFO, FALSE, TRUE, _("Project '%s' renamed to '%s'"), old_title, new_text);
-	else
-		gebr_message(INFO, FALSE, TRUE, _("Line '%s' renamed to '%s'"), old_title, new_text);
-	
 	/* change it on the xml. */
 	geoxml_document_set_title(gebr.doc, new_text);
 	document_save(gebr.doc);
@@ -219,9 +207,12 @@ project_line_rename(GtkCellRendererText * cell, gchar * path_string, gchar * new
 			PL_TITLE, new_text,
 			-1);
 
+	/* feedback */
+	if (geoxml_document_get_type(gebr.doc) == GEOXML_DOCUMENT_TYPE_PROJECT)
+		gebr_message(INFO, FALSE, TRUE, _("Project '%s' renamed to '%s'"), old_title, new_text);
+	else
+		gebr_message(INFO, FALSE, TRUE, _("Line '%s' renamed to '%s'"), old_title, new_text);
 	project_line_info_update();
-
-out:	g_free(old_title);
 }
 
 /*
@@ -257,50 +248,41 @@ project_line_load(void)
 			  PL_TITLE, &title,
 			  -1);
 
-	/* Line selected */
-	if (gtk_tree_path_get_depth(path) == 2){
-
+	/* Was a line selected? */
+	if (gtk_tree_path_get_depth(path) == 2) {
 		/* Line load */
 		gtk_tree_model_iter_parent(model, &project_iter, &iter);
-		
+
 		gebr.line = GEOXML_LINE(document_load(filename));
-		
-		if (gebr.line == NULL){
+		if (gebr.line == NULL) {
 			gebr_message(ERROR, TRUE, FALSE, _("Unable to load line '%s'"), title);
 			gebr_message(ERROR, FALSE, TRUE, _("Unable to load line '%s' from file '%s'"), title, filename);
 			goto out;
 		}
-		
+		gebr.doc = GEOXML_DOC(gebr.line);
+
+		/* free before reuse */
 		g_free(filename);
 		g_free(title);
 
+		/* new get from the parent */
 		gtk_tree_model_iter_parent(model, &project_iter, &iter);
 		gtk_tree_model_get(GTK_TREE_MODEL (gebr.ui_project_line->store), &project_iter,
 			  PL_FILENAME, &filename,
 			  PL_TITLE, &title,
 			  -1);
-	}
-	else{
+	} else
 		gebr.line = NULL;
-	}
 
 	/* Project load */
 	gebr.project = GEOXML_PROJECT(document_load(filename));
-	
-	if (gebr.project == NULL){
+	if (gebr.project == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, _("Unable to load project '%s'"), title);
 		gebr_message(ERROR, FALSE, TRUE, _("Unable to load project '%s' from file '%s'"), title, filename);
 		goto out;
 	}
-
-	if (gtk_tree_path_get_depth(path) == 1){
+	if (gtk_tree_path_get_depth(path) == 1)
 		gebr.doc = GEOXML_DOC(gebr.project);
-		gebr.doc_is_project = TRUE;
-	}
-	else{
-		gebr.doc = GEOXML_DOC(gebr.line);
-		gebr.doc_is_project = FALSE;
-	}
 
 out:	g_free(filename);
 	g_free(title);
@@ -313,13 +295,14 @@ out:	g_free(filename);
 void
 project_line_info_update(void)
 {
-
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
 	gchar *		        markup;
 	GString *	        text;
+
+	gboolean		is_project;
 
 	if (gebr.doc == NULL) {
 		gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.title), "");
@@ -335,19 +318,15 @@ project_line_info_update(void)
 		return;
 	}
 
+	/* initialization */
+	is_project = (geoxml_document_get_type(gebr.doc) == GEOXML_DOCUMENT_TYPE_PROJECT) ? TRUE : FALSE;
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE){
-		gebr_message(ERROR, TRUE, FALSE, _("Neither project nor line selected"));
-		return;
-	}
+	gtk_tree_selection_get_selected(selection, &model, &iter);
 
 	/* Title in bold */
-	if (gebr.doc_is_project){
-		markup = g_markup_printf_escaped("<b>Project %s</b>", geoxml_document_get_title(gebr.doc));
-	}
-	else{
-		markup = g_markup_printf_escaped("<b>Line %s</b>", geoxml_document_get_title(gebr.doc));
-	}
+	markup = is_project
+		? g_markup_printf_escaped("<b>%s %s</b>", _("Project"), geoxml_document_get_title(gebr.doc))
+		: g_markup_printf_escaped("<b>%s %s</b>", _("Line"), geoxml_document_get_title(gebr.doc));
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_project_line->info.title), markup);
 	g_free(markup);
 
@@ -356,23 +335,20 @@ project_line_info_update(void)
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_project_line->info.description), markup);
 	g_free(markup);
 
-	if (gebr.doc_is_project){
-		if (gtk_tree_model_iter_has_child (model, &iter)){
-			gint nlines = gtk_tree_model_iter_n_children(model, &iter);
-			if (nlines == 1)
-				markup = g_markup_printf_escaped("This project has 1 line");
-			else
-				markup = g_markup_printf_escaped("This project has %d lines", nlines);
-		}
-		else{
-			markup = g_markup_printf_escaped("This project has no line");
-		}
-			gtk_label_set_markup(GTK_LABEL(gebr.ui_project_line->info.numberoflines), markup);
-			g_free(markup);
-	}
-	else{
+	if (is_project) {
+		gint	nlines;
+
+		nlines = gtk_tree_model_iter_n_children(model, &iter);
+		markup = nlines != 0
+			? nlines == 1
+				? g_markup_printf_escaped(_("This project has 1 line"))
+				: g_markup_printf_escaped(_("This project has %d lines"), nlines)
+			: g_markup_printf_escaped(_("This project has no line"));
+
+		gtk_label_set_markup(GTK_LABEL(gebr.ui_project_line->info.numberoflines), markup);
+		g_free(markup);
+	} else
 		gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.numberoflines), "");
-	}
 
 	/* Date labels */
 	markup = g_markup_printf_escaped("<b>%s</b>", _("Created:"));
@@ -395,18 +371,19 @@ project_line_info_update(void)
 	g_string_free(text, TRUE);
 
 	/* Info button */
-	g_object_set(gebr.ui_project_line->info.help, "sensitive", TRUE, NULL);
+	g_object_set(gebr.ui_project_line->info.help,
+		"sensitive", strlen(geoxml_document_get_help(gebr.doc)) ? TRUE : FALSE, NULL);
 }
 
 static void
 project_line_show_help(void)
 {
-	if (gebr.doc_is_project)
+	if (geoxml_document_get_type(gebr.doc) == GEOXML_DOCUMENT_TYPE_PROJECT)
 		help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(gebr.project)),
 			  _("Project report"), (gchar*)geoxml_document_get_filename(GEOXML_DOC(gebr.project)));
 	else
 		help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(gebr.line)),
 			  _("Line report"), (gchar*)geoxml_document_get_filename(GEOXML_DOC(gebr.line)));
-		
+
 	return;
 }

@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include <glib.h>
+#include <glib/gstdio.h>
 
 #include <misc/utils.h>
 
@@ -56,21 +57,16 @@ help_show(gchar * help, gchar * title, gchar * fname)
 	GString *	url;
 	GString *	cmd_line;
 
-	if (!strlen(help))
-		return;
 	if (!gebr.config.browser->len) {
 		gebr_message(ERROR, TRUE, FALSE, _("No editor defined. Choose one at Configure/Preferences"));
 		return;
 	}
 
 	/* initialization */
-	html_path = g_string_new(NULL);
+	html_path = make_temp_filename("gebr_XXXXXX.html");
 	ghelp = g_string_new(NULL);
 	url = g_string_new(NULL);
 	cmd_line = g_string_new(NULL);
-
-	/* Temporary file */
-	g_string_printf(html_path, "/tmp/gebr_%s.html", make_temp_filename());
 
 	/* Gambiarra */
 	{
@@ -131,12 +127,10 @@ help_edit(GtkButton * button, GeoXmlDocument * document)
 	}
 
 	/* initialization */
-	html_path = g_string_new(NULL);
+	html_path = make_temp_filename("gebr_XXXXXX.html");
 	cmd_line = g_string_new(NULL);
 	help = g_string_new(NULL);
 
-	/* Temporary file */
-	g_string_printf(html_path, "/tmp/gebr_%s.html", make_temp_filename());
 
 	/* Write current help to temporary file */
 	html_fp = fopen(html_path->str, "w");
@@ -156,7 +150,7 @@ help_edit(GtkButton * button, GeoXmlDocument * document)
 	while (fgets(buffer, BUFFER_SIZE, html_fp) != NULL)
 		g_string_append(help, buffer);
 	fclose(html_fp);
-	unlink(html_path->str);
+	g_unlink(html_path->str);
 
 	/* Finally, the edited help back to the document */
 	geoxml_document_set_help(document, help->str);

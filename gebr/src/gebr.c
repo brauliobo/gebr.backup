@@ -112,8 +112,8 @@ gebr_quit(void)
 	flow_free();
 	document_free();
 
-	g_slist_foreach(gebr.tmpfiles, (GFunc) unlink, NULL);
-	g_slist_foreach(gebr.tmpfiles, (GFunc) free, NULL);
+	g_slist_foreach(gebr.tmpfiles, (GFunc)g_unlink, NULL);
+	g_slist_foreach(gebr.tmpfiles, (GFunc)g_free, NULL);
 
 	g_slist_free(gebr.tmpfiles);
 

@@ -18,9 +18,6 @@
 #ifndef __FLOW_H
 #define __FLOW_H
 
-#include <gtk/gtk.h>
-#include <geoxml.h>
-
 void
 flow_save(void);
 
@@ -31,10 +28,10 @@ void
 flow_export(void);
 
 void
-flow_free(void);
+flow_new(void);
 
 void
-flow_new(void);
+flow_free(void);
 
 void
 flow_delete(void);

@@ -154,9 +154,11 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 {
 	switch (arg1) {
 	case GTK_RESPONSE_OK: {
-		GtkTreeIter		iter;
-		GtkTreeSelection *	selection;
-		GtkTreeModel *		model;
+		GtkTreeSelection *		selection;
+		GtkTreeModel *			model;
+		GtkTreeIter			iter;
+
+		enum GEOXML_DOCUMENT_TYPE	type;
 
 		geoxml_document_set_title(ui_document_properties->document,
 			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->title)));
@@ -168,8 +170,7 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->email)));
 
 		/* Update title in apropriated store */
-		printf("%d\n",geoxml_document_get_type(ui_document_properties->document));
-		switch (geoxml_document_get_type(ui_document_properties->document)){
+		switch ((type = geoxml_document_get_type(ui_document_properties->document))) {
 		case GEOXML_DOCUMENT_TYPE_PROJECT:
 		case GEOXML_DOCUMENT_TYPE_LINE:
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
@@ -177,11 +178,14 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 			gtk_tree_store_set(gebr.ui_project_line->store, &iter,
 					   PL_TITLE, geoxml_document_get_title(ui_document_properties->document),
 					   -1);
-			if (gebr.doc_is_project)
+			project_line_info_update();
+
+			/* SAVE IT! */
+			if (type == GEOXML_DOCUMENT_TYPE_PROJECT)
 				document_save(GEOXML_DOC(gebr.project));
 			else
 				document_save(GEOXML_DOC(gebr.line));
-			project_line_info_update();
+
 			break;
 		case GEOXML_DOCUMENT_TYPE_FLOW:
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
@@ -190,12 +194,11 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 					   FB_TITLE, geoxml_document_get_title(ui_document_properties->document),
 					   -1);
 			flow_save();
-			break;
-		default:
+
 			break;
 		}
 		break;
-	} default:                  /* does nothing */
+	} default:
 		break;
 	}
 

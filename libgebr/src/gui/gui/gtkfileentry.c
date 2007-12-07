@@ -26,6 +26,12 @@ static gboolean
 __gtk_file_entry_expose(GtkWidget * widget, GdkEventExpose * event);
 
 static void
+gtk_file_entry_realize(GtkWidget *widget);
+
+static void
+gtk_file_entry_map(GtkWidget *widget);
+
+static void
 __gtk_file_entry_entry_changed(GtkEntry * entry, GtkFileEntry * file_entry);
 
 static void
@@ -47,6 +53,9 @@ gtk_file_entry_class_init(GtkFileEntryClass * class)
 	GtkWidgetClass *	widget_class;
 
 	widget_class = (GtkWidgetClass*)class;
+	widget_class->expose_event = __gtk_file_entry_expose;
+	widget_class->realize = gtk_file_entry_realize;
+	widget_class->map = gtk_file_entry_map;
 
 	/* signals */
 	object_signals[PATH_CHANGED] = g_signal_new("path-changed",
@@ -56,8 +65,6 @@ gtk_file_entry_class_init(GtkFileEntryClass * class)
 		NULL, NULL, /* acumulators */
 		g_cclosure_marshal_VOID__VOID,
 		G_TYPE_NONE, 0);
-
-	widget_class->expose_event = __gtk_file_entry_expose;
 }
 
 static void
@@ -103,6 +110,55 @@ static gboolean
 __gtk_file_entry_expose(GtkWidget * widget, GdkEventExpose * event)
 {
 	return TRUE;
+}
+
+static void
+gtk_file_entry_realize(GtkWidget *widget)
+{
+	GtkFileEntry *	file_entry;
+	GdkWindowAttr	attributes;
+	gint		attributes_mask;
+	gint		border_width;
+
+	file_entry = GTK_FILE_ENTRY(widget);
+	GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+
+	border_width = GTK_CONTAINER(widget)->border_width;
+
+	attributes.window_type = GDK_WINDOW_CHILD;
+	attributes.x = widget->allocation.x + border_width;
+	attributes.y = widget->allocation.y + border_width;
+	attributes.width = widget->allocation.width - border_width * 2;
+	attributes.height = widget->allocation.height - border_width * 2;
+	attributes.wclass = GDK_INPUT_ONLY;
+	attributes.event_mask = gtk_widget_get_events (widget);
+	attributes.event_mask |= (GDK_BUTTON_PRESS_MASK |
+				GDK_BUTTON_RELEASE_MASK |
+				GDK_ENTER_NOTIFY_MASK |
+				GDK_LEAVE_NOTIFY_MASK);
+	puts("gtk_file_entry_realize");
+	attributes_mask = GDK_WA_X | GDK_WA_Y;
+
+	widget->window = gtk_widget_get_parent_window (widget);
+	g_object_ref (widget->window);
+
+	file_entry->event_window = gdk_window_new (gtk_widget_get_parent_window (widget),
+						&attributes, attributes_mask);
+	gdk_window_set_user_data (file_entry->event_window, file_entry);
+
+	widget->style = gtk_style_attach (widget->style, widget->window);
+}
+
+static void
+gtk_file_entry_map(GtkWidget *widget)
+{
+	GtkFileEntry *	file_entry;
+puts("gtk_file_entry_map");
+	file_entry = GTK_FILE_ENTRY(widget);
+	GTK_WIDGET_CLASS(gtk_file_entry_parent_class)->map(widget);
+
+	if (file_entry->event_window)
+		gdk_window_show(file_entry->event_window);
 }
 
 static void

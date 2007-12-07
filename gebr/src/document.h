@@ -23,24 +23,27 @@
 #include <geoxml.h>
 
 GeoXmlDocument *
+document_new(enum GEOXML_DOCUMENT_TYPE type);
+
+GeoXmlDocument *
 document_load(const gchar * filename);
 
 GeoXmlDocument *
 document_load_path(const gchar * path);
 
 void
+document_free(void);
+
+void
 document_save(GeoXmlDocument * document);
+
+GString *
+document_assembly_filename(const gchar * extension);
 
 GString *
 document_get_path(const gchar * filename);
 
 void
 document_delete(const gchar * filename);
-
-GString *
-document_assembly_filename(const gchar * extension);
-
-void
-document_free(void);
 
 #endif //__DOCUMENT_H

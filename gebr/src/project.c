@@ -48,35 +48,30 @@ project_new(void)
 	GtkTreeSelection *	selection;
 	GtkTreeIter		iter;
 
-	GeoXmlProject *		project;
+	GeoXmlDocument *	project;
 	gchar *			title;
-	GString *		filename;
 
 	title = _("New project");
-	filename = document_assembly_filename("prj");
-
-	project = geoxml_project_new();
-	geoxml_document_set_filename(GEOXML_DOC(project), filename->str);
-	geoxml_document_set_title(GEOXML_DOC(project), title);
-	geoxml_document_set_author(GEOXML_DOC(project), gebr.config.username->str);
-	geoxml_document_set_email(GEOXML_DOC(project), gebr.config.email->str);
-	document_save(GEOXML_DOC(project));
-	geoxml_document_free(GEOXML_DOC(project));
+	project = document_new(GEOXML_DOCUMENT_TYPE_PROJECT);
+	geoxml_document_set_title(project, title);
+	geoxml_document_set_author(project, gebr.config.username->str);
+	geoxml_document_set_email(project, gebr.config.email->str);
+	document_save(project);
+	geoxml_document_free(project);
 
 	gtk_tree_store_append(gebr.ui_project_line->store, &iter, NULL);
 	gtk_tree_store_set(gebr.ui_project_line->store, &iter,
 			PL_TITLE, title,
-			PL_FILENAME, filename->str,
+			PL_FILENAME, geoxml_document_get_filename(project),
 			-1);
 
-	
-	gebr_message(INFO, FALSE, TRUE, _("New projected created"));
+	/* feedback */
+	gebr_message(INFO, FALSE, TRUE, _("New project created"));
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebr.ui_project_line->view));
-	gtk_tree_selection_select_iter (selection, &iter);
+	/* select it */
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
+	gtk_tree_selection_select_iter(selection, &iter);
 	g_signal_emit_by_name(gebr.ui_project_line->view, "cursor-changed");
-
-	g_string_free(filename, TRUE);
 }
 
 /*

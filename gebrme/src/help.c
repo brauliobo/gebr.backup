@@ -102,13 +102,15 @@ help_subst_fields(GString * help)
 	}
 }
 
-
-
+/*
+ * Function: help_show
+ * Show _help_ using user's browser
+ */
 void
 help_show(const gchar * help)
 {
-	FILE *		htmlfp;
-	GString *	htmlpath;
+	FILE *		html_fp;
+	GString *	html_path;
 	GString *	cmdline;
 	GString *	prepared_html;
 
@@ -116,31 +118,30 @@ help_show(const gchar * help)
 	help_fix_css(prepared_html);
 
 	/* create temporary filename */
-	htmlpath = g_string_new(NULL);
-	g_string_printf(htmlpath, "/tmp/gebrme_%s.html", make_temp_filename());
+	html_path = make_temp_filename("gebrme_XXXXXX.html");
 
 	/* open temporary file with help from XML */
-	htmlfp = fopen(htmlpath->str, "w");
-	if (htmlfp == NULL) {
+	html_fp = fopen(html_path->str, "w");
+	if (html_fp == NULL) {
 		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
 			_("Could not create an temporary file."));
 		goto out;
 	}
-	fputs(prepared_html->str, htmlfp);
-	fclose(htmlfp);
+	fputs(prepared_html->str, html_fp);
+	fclose(html_fp);
 
 	/* Add file to list of files to be removed */
-	gebrme.tmpfiles = g_slist_append(gebrme.tmpfiles, htmlpath->str);
+	gebrme.tmpfiles = g_slist_append(gebrme.tmpfiles, html_path->str);
 
 	/* Launch an external browser */
 	cmdline = g_string_new (gebrme.config.browser->str);
 	g_string_append(cmdline, " file://");
-	g_string_append(cmdline, htmlpath->str);
+	g_string_append(cmdline, html_path->str);
 	g_string_append(cmdline, " &");
 	system(cmdline->str);
 
 	g_string_free(cmdline, TRUE);
-out:	g_string_free(htmlpath, FALSE);
+out:	g_string_free(html_path, FALSE);
 	g_string_free(prepared_html, TRUE);
 }
 
@@ -148,7 +149,7 @@ GString *
 help_edit(const gchar * help)
 {
 	FILE *		fp;
-	GString *	htmlpath;
+	GString *	html_path;
 	GString *	prepared_html;
 	GString *	cmdline;
 	gchar		buffer[100];
@@ -178,11 +179,10 @@ help_edit(const gchar * help)
 	help_fix_css(prepared_html);
 
 	/* create temporary filename */
-	htmlpath = g_string_new(NULL);
-	g_string_printf(htmlpath, "/tmp/gebrme_%s.html", make_temp_filename());
+	html_path = make_temp_filename("gebrme_XXXXXX.html");
 
 	/* load html into a temporary file */
-	fp = fopen(htmlpath->str, "w");
+	fp = fopen(html_path->str, "w");
 	if (fp == NULL) {
 		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
 				_("Could not create a temporary file."));
@@ -192,11 +192,11 @@ help_edit(const gchar * help)
 	fclose(fp);
 
 	/* Add file to list of files to be removed */
-	gebrme.tmpfiles = g_slist_append(gebrme.tmpfiles, htmlpath->str);
+	gebrme.tmpfiles = g_slist_append(gebrme.tmpfiles, html_path->str);
 
 	/* run editor */
 	cmdline = g_string_new("");
-	g_string_printf(cmdline, "%s %s", gebrme.config.htmleditor->str, htmlpath->str);
+	g_string_printf(cmdline, "%s %s", gebrme.config.htmleditor->str, html_path->str);
 	if (system(cmdline->str)) {
 		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
 			_("Could not launch editor"));
@@ -205,7 +205,7 @@ help_edit(const gchar * help)
 	g_string_free(cmdline, TRUE);
 
 	/* read back the help from file */
-	fp = fopen(htmlpath->str, "r");
+	fp = fopen(html_path->str, "r");
 	if (fp == NULL) {
 		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
 			_("Could not read created temporary file."));
@@ -235,7 +235,7 @@ help_edit(const gchar * help)
 		}
 	}
 
-	unlink(htmlpath->str);
-out:	g_string_free(htmlpath, FALSE);
+	unlink(html_path->str);
+out:	g_string_free(html_path, FALSE);
 	return prepared_html;
 }

@@ -20,8 +20,11 @@
 
 #include <glib.h>
 
-gchar *
-make_temp_filename(void);
+GString *
+make_unique_filename(const gchar * template);
+
+GString *
+make_temp_filename(const gchar * template);
 
 int
 home_mode(void);
