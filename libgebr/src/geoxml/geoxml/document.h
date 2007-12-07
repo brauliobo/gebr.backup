@@ -71,6 +71,17 @@
 typedef struct geoxml_document GeoXmlDocument;
 
 /**
+ * Document type: flow, line or project
+ *
+ */
+enum GEOXML_DOCUMENT_TYPE {
+	GEOXML_DOCUMENT_TYPE_FLOW, 
+	GEOXML_DOCUMENT_TYPE_LINE, 
+	GEOXML_DOCUMENT_TYPE_PROJECT, 
+	GEOXML_DOCUMENT_TYPE_UNKNOWN
+};
+
+/**
  * Load a document XML file at \p path into \p document.
  * The document is validated using the proper DTD. Invalid documents are not loaded.
  *
@@ -105,6 +116,12 @@ geoxml_document_free(GeoXmlDocument * document);
  */
 GeoXmlDocument *
 geoxml_document_clone(GeoXmlDocument * source);
+
+/**
+ *
+ */
+enum GEOXML_DOCUMENT_TYPE
+geoxml_document_get_type(GeoXmlDocument * document);
 
 /**
  * Returns the version string of \p document.

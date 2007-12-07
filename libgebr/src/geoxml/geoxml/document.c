@@ -73,23 +73,6 @@ geoxml_document_get_version_doc(GdomeDocument * document)
 	return __geoxml_get_attr_value(gdome_doc_documentElement(document, &exception), "version");
 }
 
-enum document_type
-geoxml_document_get_type(GeoXmlDocument * document)
-{
-	GdomeElement *	root_element;
-
-	root_element = gdome_doc_documentElement((GdomeDocument*)document, &exception);
-
-	if (g_ascii_strcasecmp("flow", gdome_el_nodeName(root_element, &exception)->str))
-		return FLOW;
-	else if (g_ascii_strcasecmp("line", gdome_el_nodeName(root_element, &exception)->str))
-		return LINE;
-	else if (g_ascii_strcasecmp("project", gdome_el_nodeName(root_element, &exception)->str))
-		return PROJECT;
-
-	return UNKNOWN;
-}
-
 /*
  * internal structures and functions
  */
@@ -226,6 +209,23 @@ __geoxml_document_clone_doc(GdomeDocument * source, GdomeDocumentType * document
 	return document;
 }
 
+enum GEOXML_DOCUMENT_TYPE
+geoxml_document_get_type(GeoXmlDocument * document)
+{
+	GdomeElement *	root_element;
+
+	root_element = gdome_doc_documentElement((GdomeDocument*)document, &exception);
+
+	if (g_ascii_strcasecmp("flow", gdome_el_nodeName(root_element, &exception)->str) == 0)
+		return GEOXML_DOCUMENT_TYPE_FLOW;
+	else if (g_ascii_strcasecmp("line", gdome_el_nodeName(root_element, &exception)->str) == 0)
+		return GEOXML_DOCUMENT_TYPE_LINE;
+	else if (g_ascii_strcasecmp("project", gdome_el_nodeName(root_element, &exception)->str) == 0)
+		return GEOXML_DOCUMENT_TYPE_PROJECT;
+
+	return GEOXML_DOCUMENT_TYPE_UNKNOWN;
+}
+
 const gchar *
 geoxml_document_get_version(GeoXmlDocument * document)
 {
@@ -267,7 +267,7 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 	GdomeDocumentType *	tmp_document_type;
 	int			ret;
 
-	if (geoxml_document_get_type((GeoXmlDocument*)document) == UNKNOWN)
+	if (geoxml_document_get_type((GeoXmlDocument*)document) == GEOXML_DOCUMENT_TYPE_UNKNOWN)
 		return GEOXML_RETV_INVALID_DOCUMENT;
 
 	ctxt = xmlNewParserCtxt();

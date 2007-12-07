@@ -28,15 +28,6 @@ extern gint			dom_implementation_ref_count;
 
 /**
  * \internal
- * Document type: flow, line or project
- *
- */
-enum document_type {
-	FLOW, LINE, PROJECT, UNKNOWN
-};
-
-/**
- * \internal
  * Private constructor. Used by super classes to create a new document
  * @param name refer to the root element (flow, line or project) @param version
  * to its corresponding last version (support by this version of libgeoxml)
@@ -57,12 +48,5 @@ geoxml_document_get_version_doc(GdomeDocument * document);
  */
 #define geoxml_document_root_element(document)	\
 	gdome_doc_documentElement((GdomeDocument*)document, &exception)
-
-/**
- * \internal
- *
- */
-enum document_type
-geoxml_document_get_type(GeoXmlDocument * document);
 
 #endif //__GEOXML_DOCUMENT_P_H
