@@ -1,5 +1,5 @@
-/*   libgeoxml - An interface to describe seismic software in XML
- *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
+/*   libgebr - GÍBR Library
+ *   Copyright (C) 2007  Br·ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,12 +35,12 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
- * 
+ *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
  * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
  * 	"GeoXmlLine" [ URL = "\ref line.h" ];
  * 	"GeoXmlProject" [ URL = "\ref project.h" ];
- * 
+ *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
@@ -70,6 +70,25 @@
  * The GeoXmlDocument struct contains private data only, and should be accessed using the functions below.
  */
 typedef struct geoxml_document GeoXmlDocument;
+
+/**
+ * Document type: flow, line or project
+ *
+ */
+enum GEOXML_DOCUMENT_TYPE {
+	/**
+	 * The document is a GeoXmlFlow
+	 */
+	GEOXML_DOCUMENT_TYPE_FLOW,
+	/**
+	 * The document is a GeoXmlLine
+	 */
+	GEOXML_DOCUMENT_TYPE_LINE,
+	/**
+	 * The document is a GeoXmlProject
+	 */
+	GEOXML_DOCUMENT_TYPE_PROJECT,
+};
 
 /**
  * Load a document XML file at \p path into \p document.
@@ -106,6 +125,16 @@ geoxml_document_free(GeoXmlDocument * document);
  */
 GeoXmlDocument *
 geoxml_document_clone(GeoXmlDocument * source);
+
+/**
+ * Return the type of \p document
+ *
+ * If \p document is NULL, GEOXML_DOCUMENT_TYPE_FLOW is returned
+ *
+ * \see GEOXML_DOCUMENT_TYPE
+ */
+enum GEOXML_DOCUMENT_TYPE
+geoxml_document_get_type(GeoXmlDocument * document);
 
 /**
  * Returns the version string of \p document.

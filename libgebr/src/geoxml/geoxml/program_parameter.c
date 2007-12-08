@@ -1,5 +1,5 @@
-/*   libgeoxml - An interface to describe seismic software in XML
- *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
+/*   libgebr - GÍBR Library
+ *   Copyright (C) 2007  Br·ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -285,12 +285,13 @@ geoxml_program_parameter_get_default(GeoXmlProgramParameter * parameter)
 	tag_name = (geoxml_program_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_FLAG) ? "state" : "value";
 	element = __geoxml_get_first_element((GdomeElement*)parameter, tag_name);
 
-	string = gdome_str_mkref("default");
-	ret = (gboolean)gdome_el_hasAttribute(element, string, &exception);
-	gdome_str_unref(string);
-
-	if (ret == FALSE)
-		return "";
+	/* TODO: add support for removing or adding a default value */
+// 	string = gdome_str_mkref("default");
+// 	ret = (gboolean)gdome_el_hasAttribute(element, string, &exception);
+// 	gdome_str_unref(string);
+//
+// 	if (ret == FALSE)
+// 		return "";
 
 	return __geoxml_get_attr_value(element, "default");
 }

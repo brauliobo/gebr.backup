@@ -1,5 +1,5 @@
-/*   libgeoxml - An interface to describe seismic software in XML
- *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
+/*   libgebr - GÍBR Library
+ *   Copyright (C) 2007  Br·ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #define __LIBGEOXML_PROGRAM_PARAMETER_H
 
 #include <glib.h>
+
+#include "macros.h"
 
 /**
  * \struct GeoXmlProgramParameter program_parameter.h libgeoxml/program_parameter.h

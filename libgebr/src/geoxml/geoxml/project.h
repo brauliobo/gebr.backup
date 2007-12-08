@@ -1,5 +1,5 @@
-/*   libgeoxml - An interface to describe seismic software in XML
- *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
+/*   libgebr - GÍBR Library
+ *   Copyright (C) 2007  Br·ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -33,10 +33,10 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
- * 
+ *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
  * 	"GeoXmlProject" [ URL = "\ref project.h" ];
- * 
+ *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8

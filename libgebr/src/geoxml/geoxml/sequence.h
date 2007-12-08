@@ -1,5 +1,5 @@
-/*   libgeoxml - An interface to describe seismic software in XML
- *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
+/*   libgebr - GÍBR Library
+ *   Copyright (C) 2007  Br·ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -33,14 +33,14 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
- * 
+ *
  * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
  * 	"GeoXmlProjectLine" [ URL = "\ref project.h" ];
  * 	"GeoXmlLineFlow" [ URL = "\ref line.h" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
  * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
- * 
+ *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
@@ -121,7 +121,7 @@ geoxml_sequence_remove(GeoXmlSequence * sequence);
 
 /**
  *
- * In case that \p sequence is a parameter, \p before should be 
+ * In case that \p sequence is a parameter, \p before should be
  *
  * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_NULL_PTR, GEOXML_RETV_NOT_A_SEQUENCE, GEOXML_RETV_DIFFERENT_SEQUENCES
  */
