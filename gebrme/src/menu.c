@@ -42,8 +42,8 @@ menu_new(void)
 	geoxml_document_set_author(GEOXML_DOC(gebrme.current), gebrme.config.name->str);
 	geoxml_document_set_email(GEOXML_DOC(gebrme.current), gebrme.config.email->str);
 
-	gtk_list_store_append (gebrme.menus_liststore, &iter);
-	gtk_list_store_set (gebrme.menus_liststore, &iter,
+	gtk_list_store_append(gebrme.menus_liststore, &iter);
+	gtk_list_store_set(gebrme.menus_liststore, &iter,
 			MENU_FILENAME, new_menu_str->str,
 			MENU_XMLPOINTER, (gpointer)gebrme.current,
 			MENU_PATH, "",
@@ -273,7 +273,7 @@ menu_cleanup(void)
 
 	/* TODO: add cancel button */
 	dialog = gtk_message_dialog_new(GTK_WINDOW(gebrme.window),
-					GTK_DIALOG_MODAL,
+					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_MESSAGE_QUESTION,
 					GTK_BUTTONS_YES_NO,
 					_("There are flows unsaved. Do you want to save them?"));

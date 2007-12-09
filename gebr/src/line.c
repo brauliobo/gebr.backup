@@ -92,7 +92,7 @@ line_new(void)
 			   -1);
 
 	/* add to project */
-	geoxml_project_add_line(gebr.project, geoxml_document_get_filename(GEOXML_DOC(line)));
+	geoxml_project_append_line(gebr.project, geoxml_document_get_filename(GEOXML_DOC(line)));
 	document_save(GEOXML_DOC(gebr.project));
 
 	/* set line stuff, save and free */

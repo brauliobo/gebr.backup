@@ -169,7 +169,7 @@ flow_import(void)
 	document_save(GEOXML_DOC(imported_flow));
 	geoxml_document_free(GEOXML_DOC(imported_flow));
 	/* and add it to the line */
-	geoxml_line_add_flow(gebr.line, flow_filename->str);
+	geoxml_line_append_flow(gebr.line, flow_filename->str);
 	document_save(GEOXML_DOC(gebr.line));
 	/* and to the GUI */
 	gtk_list_store_append(gebr.ui_flow_browse->store, &iter);

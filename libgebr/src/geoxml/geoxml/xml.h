@@ -1,5 +1,5 @@
 /*   libgebr - GÍBR Library
- *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
+ *   Copyright (C) 2007  Br·ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_XML_H
-#define __LIBGEOXML_XML_H
+#ifndef __LIBGEBR_GEOXML_XML_H
+#define __LIBGEBR_GEOXML_XML_H
 
 /**
  * \internal
@@ -38,10 +38,20 @@ void __geoxml_create_TextNode(GdomeElement * parent_element, const gchar * value
 
 /**
  * \internal
- * Create a new element and insert it.
+ * Create a new element.
+ * \p parent_element is only used to know the associated document.
  */
 GdomeElement *
-__geoxml_new_element(GdomeElement * parent_element, GdomeElement * before_element, const gchar * tag_name);
+__geoxml_new_element(GdomeElement * parent_element, const gchar * tag_name);
+
+/**
+ * \internal
+ * Create a new element and insert it before \p before_element.
+ * If \p before_element the element is appended.
+ * \see __geoxml_insert_new_element
+ */
+GdomeElement *
+__geoxml_insert_new_element(GdomeElement * parent_element, const gchar * tag_name, GdomeElement * before_element);
 
 /**
  * \internal
@@ -97,14 +107,16 @@ __geoxml_set_tag_value(GdomeElement * parent_element, const gchar * tag_name, co
 
 /**
  * \internal
- *
+ * Get attribute with name \p attr_name of \p element value.
+ * If it doesn't exist it an empty string is returned.
  */
 const gchar *
 __geoxml_get_attr_value(GdomeElement * element, const gchar * attr_name);
 
 /**
  * \internal
- *
+ * Set attribute with name \p attr_name of \p element to \p attr_value.
+ * If it doesn't exist it created.
  */
 void
 __geoxml_set_attr_value(GdomeElement * element, const gchar * attr_name, const gchar * attr_value);
@@ -137,4 +149,4 @@ __geoxml_previous_same_element(GdomeElement * element);
 GdomeElement *
 __geoxml_next_same_element(GdomeElement * element);
 
-#endif //__LIBGEOXML_XML_H
+#endif //__LIBGEBR_GEOXML_XML_H

@@ -1,5 +1,5 @@
 /*   libgebr - GÍBR Library
- *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
+ *   Copyright (C) 2007  Br·ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,27 +20,12 @@
 
 /**
  * \internal
- * GdomeDOMImplementation used by the entire library.
- * Declared in document.c.
- */
-extern GdomeDOMImplementation*	dom_implementation;
-extern gint			dom_implementation_ref_count;
-
-/**
- * \internal
  * Private constructor. Used by super classes to create a new document
  * @param name refer to the root element (flow, line or project) @param version
  * to its corresponding last version (support by this version of libgeoxml)
  */
 GeoXmlDocument *
 geoxml_document_new(const gchar * name, const gchar * version);
-
-/**
- * \internal
- *
- */
-const gchar *
-geoxml_document_get_version_doc(GdomeDocument * document);
 
 /**
  * \internal

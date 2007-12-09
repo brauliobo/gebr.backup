@@ -15,14 +15,14 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GEOXML_MACROS_H
-#define __GEOXML_MACROS_H
+#ifndef __LIBGEBR_GEOXML_PARAMETER_P_H
+#define __LIBGEBR_GEOXML_PARAMETER_P_H
 
 /**
  * \internal
+ * Reset recursively \p parameter's value.
  */
-#if  __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
-#  define GEOXML_DEPRECATED __attribute__((__deprecated__))
-#endif
+void
+geoxml_parameter_reset(GeoXmlParameter * parameter);
 
-#endif //__GEOXML_MACROS_H
+#endif //__LIBGEBR_GEOXML_PARAMETER_P_H

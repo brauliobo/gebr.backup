@@ -1,5 +1,5 @@
 /*   libgebr - GÍBR Library
- *   Copyright (C) 2007  Br√°ulio Barros de Oliveira (brauliobo@gmail.com)
+ *   Copyright (C) 2007  Br·ulio Barros de Oliveira (brauliobo@gmail.com)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,25 +15,14 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_SEQUENCE_P_H
-#define __LIBGEOXML_SEQUENCE_P_H
+#ifndef __LIBGEBR_GEOXML_PARAMETERS_P_H
+#define __LIBGEBR_GEOXML_PARAMETERS_P_H
 
 /**
  * \internal
+ * Create a new parameter with type \p type.
  */
-gboolean
-__geoxml_sequence_is_parameter(GeoXmlSequence * sequence);
+GeoXmlParameter *
+__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
 
-/**
- * \internal
- */
-gboolean
-__geoxml_sequence_check(GeoXmlSequence * sequence);
-
-/**
- * \internal
- */
-gboolean
-__geoxml_sequence_is_same_sequence(GeoXmlSequence * sequence, GeoXmlSequence * other);
-
-#endif //__LIBGEOXML_SEQUENCE_P_H
+#endif //__LIBGEBR_GEOXML_PARAMETERS_P_H

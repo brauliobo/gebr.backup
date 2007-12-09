@@ -263,7 +263,7 @@ program_add(void)
 {
 	GeoXmlProgram *	program;
 
-	program = geoxml_flow_new_program(gebrme.current);
+	program = geoxml_flow_append_program(gebrme.current);
 	/* default settings */
 	geoxml_program_set_stdin(program, TRUE);
 	geoxml_program_set_stdout(program, TRUE);
