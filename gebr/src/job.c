@@ -78,8 +78,8 @@ job_add(struct server * server, GString * jid,
 	GString * cmd_line, GString * output,
 	gboolean go_to)
 {
-	GtkTreeSelection *	selection;
 	GtkTreeIter		iter;
+
 	struct job *		job;
 	enum JobStatus		status;
 	gchar			local_hostname[100];
@@ -97,7 +97,7 @@ job_add(struct server * server, GString * jid,
 		.hostname = g_string_new(hostname == NULL ? local_hostname : hostname->str),
 		.issues = g_string_new(issues->str),
 		.cmd_line = g_string_new(cmd_line->str),
-		.output = g_string_new(output->str)
+		.output = g_string_new(NULL)
 	};
 
 	/* append to the store and select it */
@@ -108,8 +108,9 @@ job_add(struct server * server, GString * jid,
 			-1);
 	job->iter = iter;
 	job_update_status(job);
-
 	if (go_to) {
+		GtkTreeSelection *	selection;
+
 		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
 		gtk_tree_selection_select_iter(selection, &iter);
 		job_clicked();
@@ -117,6 +118,7 @@ job_add(struct server * server, GString * jid,
 		/* go to jobs pages */
 		gtk_notebook_set_current_page(GTK_NOTEBOOK(gebr.notebook), 3);
 	}
+	job_append_output(job, output);
 
 	return job;
 }
@@ -242,7 +244,7 @@ job_close(void)
 	__job_clear_or_select_first();
 }
 
-/* 
+/*
  * Function: job_clear
  * *Fill me in!*
  */
@@ -343,7 +345,7 @@ job_clicked(void)
 		g_string_append_printf(info, "Command line:\n%s\n\n", job->cmd_line->str);
 	/* output */
 	if (job->output->len)
-		g_string_append_printf(info, "Output:\n%s\n", job->output->str);
+		g_string_append_printf(info, "%s\n", job->output->str);
 	/* finish date*/
 	if (job->finish_date->len)
 		g_string_append_printf(info, "Finish date: %s", job->finish_date->str);
@@ -374,18 +376,20 @@ job_is_active(struct job * job)
 void
 job_append_output(struct job * job, GString * output)
 {
-	if (job_is_active(job) == FALSE)
-		return;
-
 	GtkTextIter	iter;
+	GString *	text;
 
-	if (!job->output->len)
+	if (!job->output->len) {
 		g_string_printf(job->output, "Output:\n%s", output->str);
-	else
+		text = job->output;
+	} else {
 		g_string_append(job->output, output->str);
-
-	gtk_text_buffer_get_end_iter(gebr.ui_job_control->text_buffer, &iter);
-	gtk_text_buffer_insert(gebr.ui_job_control->text_buffer, &iter, output->str, output->len);
+		text = output;
+	}
+	if (job_is_active(job) == TRUE) {
+		gtk_text_buffer_get_end_iter(gebr.ui_job_control->text_buffer, &iter);
+		gtk_text_buffer_insert(gebr.ui_job_control->text_buffer, &iter, text->str, text->len);
+	}
 }
 
 /*
