@@ -19,6 +19,7 @@
 
 #include "parameter.h"
 #include "types.h"
+#include "parameters.h"
 #include "parameters_p.h"
 #include "program_parameter.h"
 
@@ -57,8 +58,12 @@ geoxml_parameter_set_type(GeoXmlParameter ** parameter, enum GEOXML_PARAMETERTYP
 	*parameter = __geoxml_parameters_new_parameter((GeoXmlParameters*)parent_element, (GdomeElement*)old_parameter, type);
 	gdome_el_insertBefore(parent_element, (GdomeNode*)*parameter, (GdomeNode*)old_parameter, &exception);
 
-	geoxml_program_parameter_set_keyword(*program_parameter, geoxml_program_parameter_get_keyword(old_program_parameter));
-	geoxml_program_parameter_set_label(*program_parameter, geoxml_program_parameter_get_label(old_program_parameter));
+	if (geoxml_parameter_get_is_program_parameter(*parameter)) {
+		geoxml_program_parameter_set_keyword(GEOXML_PROGRAM_PARAMETER(*parameter),
+			geoxml_program_parameter_get_keyword(GEOXML_PROGRAM_PARAMETER(old_parameter)));
+		geoxml_program_parameter_set_label(GEOXML_PROGRAM_PARAMETER(*parameter),
+			geoxml_program_parameter_get_label(GEOXML_PROGRAM_PARAMETER(old_parameter)));
+	}
 
 	gdome_el_removeChild(parent_element, (GdomeNode*)old_parameter, &exception);
 }
@@ -86,7 +91,7 @@ gboolean
 geoxml_parameter_get_is_program_parameter(GeoXmlParameter * parameter)
 {
 	if (parameter == NULL)
-		return GEOXML_PARAMETERTYPE_STRING;
-	return (geoxml_parameter_get_type != GEOXML_PARAMETERTYPE_GROUP)
+		return FALSE;
+	return (geoxml_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_GROUP)
 		? TRUE : FALSE;
 }

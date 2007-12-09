@@ -51,7 +51,7 @@ geoxml_program_get_parameters(GeoXmlProgram * program)
 {
 	if (program == NULL)
 		return NULL;
-	return __geoxml_get_first_element((GdomeElement*)program, "parameters");
+	return (GeoXmlParameters*)__geoxml_get_first_element((GdomeElement*)program, "parameters");
 }
 
 void

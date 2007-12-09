@@ -132,5 +132,5 @@ geoxml_project_add_line(GeoXmlProject * project, const gchar * source)
 void
 geoxml_project_remove_line(GeoXmlProject * project, GeoXmlProjectLine * project_line)
 {
-	geoxml_sequence_remove((GeoXmlSequence*)line_flow);
+	geoxml_sequence_remove(GEOXML_SEQUENCE(project_line));
 }

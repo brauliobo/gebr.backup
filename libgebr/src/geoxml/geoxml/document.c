@@ -402,7 +402,7 @@ geoxml_document_set_email(GeoXmlDocument * document, const gchar * email)
 void
 geoxml_document_set_date_created(GeoXmlDocument * document, const gchar * created)
 {
-	if (documment == NULL || created == NULL)
+	if (document == NULL || created == NULL)
 		return;
 	__geoxml_set_tag_value(__geoxml_get_first_element(geoxml_document_root_element(document), "date"),
 		"created", created, __geoxml_create_TextNode);
@@ -411,7 +411,7 @@ geoxml_document_set_date_created(GeoXmlDocument * document, const gchar * create
 void
 geoxml_document_set_date_modified(GeoXmlDocument * document, const gchar * modified)
 {
-	if (documment == NULL || modified == NULL)
+	if (document == NULL || modified == NULL)
 		return;
 	__geoxml_set_tag_value(__geoxml_get_first_element(geoxml_document_root_element(document), "date"),
 		"modified", modified, __geoxml_create_TextNode);

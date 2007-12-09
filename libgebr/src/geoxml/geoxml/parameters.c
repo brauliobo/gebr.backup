@@ -20,6 +20,7 @@
 #include "parameters.h"
 #include "xml.h"
 #include "types.h"
+#include "parameter_group.h"
 #include "program_parameter.h"
 
 /*
@@ -39,22 +40,39 @@ __geoxml_parameters_new_parameter(GeoXmlParameters * parameters, GdomeElement * 
 
 	parameters_element = (GdomeElement*)parameters;
 	parameter_element = __geoxml_new_element(__geoxml_get_first_element((GdomeElement*)parameters, "parameters"),
-		before, type_to_str[type]);
+		before, parameter_type_to_str[type]);
 	tag_name = (type != GEOXML_PARAMETERTYPE_FLAG)
 		? "value" : "state";
 
 	/* elements/attibutes */
+	if (type != GEOXML_PARAMETERTYPE_GROUP) {
+		__geoxml_new_element(parameter_element, NULL, "keyword");
+		__geoxml_new_element(parameter_element, NULL, "label");
+		__geoxml_new_element(parameter_element, NULL, tag_name);
+	} else {
+		__geoxml_new_element(parameter_element, NULL, "label");
+		/* attributes */
+		__geoxml_set_attr_value(parameter_element, "instances", "1");
+		geoxml_parameter_group_set_exclusive((GeoXmlParameterGroup*)parameter_element, FALSE);
+		geoxml_parameter_group_set_expand((GeoXmlParameterGroup*)parameter_element, TRUE);
+	}
+
 	if (type != GEOXML_PARAMETERTYPE_FLAG)
 		geoxml_program_parameter_set_required((GeoXmlProgramParameter*)parameter_element, FALSE);
-	__geoxml_new_element(parameter_element, NULL, "keyword");
-	__geoxml_new_element(parameter_element, NULL, "label");
-	__geoxml_new_element(parameter_element, NULL, tag_name);
-	if (type == GEOXML_PARAMETERTYPE_FILE)
+
+	switch (type) {
+	case GEOXML_PARAMETERTYPE_FILE:
 		geoxml_program_parameter_set_file_be_directory((GeoXmlProgramParameter*)parameter_element, FALSE);
-	else if (type == GEOXML_PARAMETERTYPE_FLAG)
+		break;
+	case GEOXML_PARAMETERTYPE_FLAG:
 		geoxml_program_parameter_set_flag_default((GeoXmlProgramParameter*)parameter_element, FALSE);
-	else if (type == GEOXML_PARAMETERTYPE_RANGE)
+		break;
+	case GEOXML_PARAMETERTYPE_RANGE:
 		geoxml_program_parameter_set_range_properties((GeoXmlProgramParameter*)parameter_element, "", "", "");
+		break;
+	default:
+		break;
+	}
 
 	return (GeoXmlParameter*)parameter_element;
 }
@@ -76,7 +94,7 @@ geoxml_parameters_get_first_parameter(GeoXmlParameters * parameters)
 {
 	if (parameters == NULL)
 		return NULL;
-	return (GeoXmlParameter*)__geoxml_get_first_element((GeoXmlParameters*)parameters, "*");
+	return (GeoXmlParameter*)__geoxml_get_first_element((GdomeElement*)parameters, "*");
 }
 
 glong

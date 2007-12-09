@@ -157,7 +157,9 @@ enum GEOXML_PARAMETERTYPE
 geoxml_parameter_get_type(GeoXmlParameter * parameter);
 
 /**
- * Return TRUE if \p parameter is a GeoXmlProgramParameter
+ * Return TRUE if \p parameter is a GeoXmlProgramParameter.
+ *
+ * If \p parameter is NULL returns FALSE.
  */
 gboolean
 geoxml_parameter_get_is_program_parameter(GeoXmlParameter * parameter);

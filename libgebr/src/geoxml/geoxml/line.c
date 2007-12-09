@@ -131,5 +131,5 @@ geoxml_line_add_flow(GeoXmlLine * line, const gchar * source)
 void
 geoxml_line_remove_flow(GeoXmlLine * line, GeoXmlLineFlow * line_flow)
 {
-	geoxml_sequence_remove((GeoXmlSequence*)line_flow);
+	geoxml_sequence_remove(GEOXML_SEQUENCE(line_flow));
 }

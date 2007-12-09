@@ -82,7 +82,7 @@
    max           CDATA #REQUIRED
    inc           CDATA #REQUIRED>
 <!-- Enum -->
-<!ELEMENT enum (keyword, label, option+, value)>
+<!ELEMENT enum (keyword, label, option*, value)>
 <!ATTLIST enum
    required (yes | no) #REQUIRED
    separator     CDATA #IMPLIED>

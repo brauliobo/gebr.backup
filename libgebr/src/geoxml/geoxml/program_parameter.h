@@ -85,7 +85,7 @@
  */
 
 /**
- * Promote the instance \p program_parameter of GeoXmlParameter to a program program_parameter.
+ * Promote the instance \p program_parameter of GeoXmlParameter to a GeoXmlProgramParameter.
  */
 #define GEOXML_PROGRAM_PARAMETER(program_parameter) ((GeoXmlProgramParameter*)(program_parameter))
 

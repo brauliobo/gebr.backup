@@ -20,14 +20,6 @@
 
 /**
  * \internal
- * GdomeDOMImplementation used by the entire library.
- * Declared in document.c.
- */
-extern GdomeDOMImplementation*	dom_implementation;
-extern gint			dom_implementation_ref_count;
-
-/**
- * \internal
  * Private constructor. Used by super classes to create a new document
  * @param name refer to the root element (flow, line or project) @param version
  * to its corresponding last version (support by this version of libgeoxml)

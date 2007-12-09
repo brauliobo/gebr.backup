@@ -41,6 +41,7 @@
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
  * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
  * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
  * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
@@ -50,6 +51,7 @@
  * 		arrowhead = "normal"
  * 	]
  * 	"GeoXmlDocument" -> "GeoXmlFlow";
+ * 	"GeoXmlSequence" -> "GeoXmlParameter";
  * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
  * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
@@ -86,6 +88,7 @@ void
 geoxml_parameter_group_set_exclusive(GeoXmlParameterGroup * parameter_group, const gboolean enable);
 
 /**
+ * Set it \p parameter_group should be expanded by default, according to \p enable.
  *
  * If \p parameter_group nothing is done.
  */
@@ -100,6 +103,7 @@ gboolean
 geoxml_parameter_group_get_exclusive(GeoXmlParameterGroup * parameter_group);
 
 /**
+ * Return TRUE if \p parameter_group should be expanded by default, otherwise returns FALSE.
  *
  * If \p parameter_group returns FALSE.
  */

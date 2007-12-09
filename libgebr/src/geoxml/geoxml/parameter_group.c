@@ -18,6 +18,7 @@
 #include <gdome.h>
 
 #include "parameter_group.h"
+#include "xml.h"
 #include "parameters.h"
 
 /*
