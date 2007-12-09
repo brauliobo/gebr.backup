@@ -101,6 +101,8 @@
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
  * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
+ * 	"GeoXmlValueSequence" [ URL = "\ref value_sequence.h" ];
+ * 	"GeoXmlEnumOption" [ URL = "\ref GeoXmlEnumOption" ];
  *
  * 	edge [
  * 		arrowhead = "normal"
@@ -110,7 +112,8 @@
  * 	"GeoXmlSequence" -> { "GeoXmlCategory" };
  * 	"GeoXmlSequence" -> { "GeoXmlProgram" };
  * 	"GeoXmlSequence" -> { "GeoXmlParameter" };
-
+ * 	"GeoXmlSequence" -> { "GeoXmlValueSequence" };
+ * 	"GeoXmlValueSequence" -> { "GeoXmlEnumOption" };
  * }
  * \enddot
  * Discussions group: http://groups.google.com/group/gebr and http://groups.google.com/group/gebr-devel
@@ -125,11 +128,12 @@
 /* include all geoxml library's headers. */
 #include <geoxml/error.h>
 #include <geoxml/macros.h>
-#include <geoxml/sequence.h>
 #include <geoxml/document.h>
 #include <geoxml/project.h>
 #include <geoxml/line.h>
 #include <geoxml/flow.h>
+#include <geoxml/sequence.h>
+#include <geoxml/value_sequence.h>
 #include <geoxml/category.h>
 #include <geoxml/program.h>
 #include <geoxml/parameters.h>

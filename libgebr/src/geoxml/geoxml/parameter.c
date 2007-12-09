@@ -41,6 +41,27 @@ const char * parameter_type_to_str[] = {
 const int parameter_type_to_str_len = 8;
 
 /*
+ * private functions
+ */
+void
+geoxml_parameter_reset(GeoXmlParameter * parameter)
+{
+	if (geoxml_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_GROUP) {
+		GeoXmlSequence *	i;
+
+		/* call geoxml_parameter_reset on each child */
+		i = geoxml_parameters_get_first_parameter(GEOXML_PARAMETERS(parameter));
+		while (i != NULL) {
+			geoxml_parameter_reset(GEOXML_PARAMETER(i));
+			geoxml_sequence_next(&i);
+		}
+	} else
+		__geoxml_set_tag_value((GdomeElement*)parameter,
+			geoxml_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FLAG ? "value" : "state",
+			"", __geoxml_create_TextNode);
+}
+
+/*
  * library functions.
  */
 

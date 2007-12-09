@@ -15,25 +15,14 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEBR_GEOXML_SEQUENCE_P_H
-#define __LIBGEBR_GEOXML_SEQUENCE_P_H
+#ifndef __LIBGEBR_GEOXML_PARAMETER_P_H
+#define __LIBGEBR_GEOXML_PARAMETER_P_H
 
 /**
  * \internal
+ * Reset recursively \p parameter's value.
  */
-gboolean
-__geoxml_sequence_is_parameter(GeoXmlSequence * sequence);
+void
+geoxml_parameter_reset(GeoXmlParameter * parameter);
 
-/**
- * \internal
- */
-gboolean
-__geoxml_sequence_check(GeoXmlSequence * sequence);
-
-/**
- * \internal
- */
-gboolean
-__geoxml_sequence_is_same_sequence(GeoXmlSequence * sequence, GeoXmlSequence * other);
-
-#endif //__LIBGEBR_GEOXML_SEQUENCE_P_H
+#endif //__LIBGEBR_GEOXML_PARAMETER_P_H

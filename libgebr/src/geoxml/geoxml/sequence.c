@@ -30,7 +30,7 @@ struct geoxml_sequence {
 	GdomeElement * element;
 };
 
-gboolean
+static gboolean
 __geoxml_sequence_is_parameter(GeoXmlSequence * sequence)
 {
 	GdomeElement *	parent;
@@ -42,7 +42,7 @@ __geoxml_sequence_is_parameter(GeoXmlSequence * sequence)
 			gdome_el_nodeName(parent, &exception)->str, "group");
 }
 
-gboolean
+static gboolean
 __geoxml_sequence_check(GeoXmlSequence * sequence)
 {
 	return __geoxml_sequence_is_parameter(sequence) ||
@@ -52,7 +52,7 @@ __geoxml_sequence_check(GeoXmlSequence * sequence)
 		(gboolean)!g_ascii_strcasecmp(gdome_el_nodeName((GdomeElement*)sequence, &exception)->str, "line");
 }
 
-gboolean
+static gboolean
 __geoxml_sequence_is_same_sequence(GeoXmlSequence * sequence, GeoXmlSequence * other)
 {
 	return __geoxml_sequence_is_parameter(sequence)

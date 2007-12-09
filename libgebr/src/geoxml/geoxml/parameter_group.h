@@ -21,7 +21,7 @@
 /**
  * \struct GeoXmlParameterGroup parameter_group.h geoxml/parameter_group.h
  * \brief
- * A list of parameters.
+ * A group of parameters.
  * \dot
  * digraph parameter_group {
  * 	fontname = "Bitstream Vera Sans"
@@ -79,6 +79,19 @@
 typedef struct geoxml_parameter_group GeoXmlParameterGroup;
 
 #include <glib.h>
+
+/**
+ * Instanciate \p parameter_group.
+ * Duplicates the parameters of one instance of parameter_group
+ */
+void
+geoxml_parameter_group_instantiate(GeoXmlParameterGroup * parameter_group);
+
+/**
+ *
+ */
+void
+geoxml_parameter_group_deinstantiate(GeoXmlParameterGroup * parameter_group);
 
 /**
  *

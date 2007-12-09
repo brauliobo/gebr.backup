@@ -250,10 +250,8 @@ GeoXmlCategory *
 geoxml_flow_append_category(GeoXmlFlow * flow, const gchar * name);
 
 /**
- * Writes to \p category the \p index ieth category that \p flow belong.
+ * Writes to \p category the \p index ieth category that belongs to \p flow.
  * If an error ocurred, the content of \p category is assigned to NULL.
- *
- * If \p flow is NULL nothing is done.
  *
  * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_INVALID_INDEX, GEOXML_RETV_NULL_PTR
  *

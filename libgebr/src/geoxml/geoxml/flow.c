@@ -217,7 +217,7 @@ geoxml_flow_get_programs_number(GeoXmlFlow * flow)
 GeoXmlCategory *
 geoxml_flow_new_category(GeoXmlFlow * flow, const gchar * name)
 {
-	if (flow == NULL)
+	if (flow == NULL || name == NULL)
 		return NULL;
 
 	GeoXmlCategory *	category;
@@ -232,7 +232,7 @@ geoxml_flow_new_category(GeoXmlFlow * flow, const gchar * name)
 GeoXmlCategory *
 geoxml_flow_append_category(GeoXmlFlow * flow, const gchar * name)
 {
-	if (flow == NULL)
+	if (flow == NULL || name == NULL)
 		return NULL;
 
 	GeoXmlCategory *	category;

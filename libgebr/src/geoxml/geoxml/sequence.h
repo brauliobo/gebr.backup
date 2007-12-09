@@ -44,15 +44,19 @@
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
  * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
+ * 	"GeoXmlValueSequence" [ URL = "\ref value_sequence.h" ];
+ * 	"GeoXmlEnumOption" [ URL = "\ref GeoXmlEnumOption" ];
  *
  * 	edge [
  * 		arrowhead = "normal"
  * 	]
  * 	"GeoXmlSequence" -> { "GeoXmlProjectLine" };
  * 	"GeoXmlSequence" -> { "GeoXmlLineFlow" };
+ * 	"GeoXmlSequence" -> { "GeoXmlCategory" };
  * 	"GeoXmlSequence" -> { "GeoXmlProgram" };
  * 	"GeoXmlSequence" -> { "GeoXmlParameter" };
- * 	"GeoXmlSequence" -> { "GeoXmlCategory" };
+ * 	"GeoXmlSequence" -> { "GeoXmlValueSequence" };
+ * 	"GeoXmlValueSequence" -> { "GeoXmlEnumOption" };
  * }
  * \enddot
  * \see sequence.h
@@ -68,8 +72,6 @@
 
 /**
  * Cast to super types of GeoXmlSequence to it.
- * No type checking is done here. Instead sequence functions check if it really
- * a sequence.
  */
 #define GEOXML_SEQUENCE(seq) ((GeoXmlSequence*)(seq))
 

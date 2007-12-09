@@ -21,6 +21,7 @@
 #include "program_parameter.h"
 #include "types.h"
 #include "xml.h"
+#include "error.h"
 #include "parameter.h"
 #include "program_p.h"
 #include "types.h"
@@ -31,6 +32,10 @@
  */
 
 struct geoxml_program_parameter {
+	GdomeElement * element;
+};
+
+struct geoxml_enum_option {
 	GdomeElement * element;
 };
 
@@ -139,11 +144,9 @@ geoxml_program_parameter_set_value(GeoXmlProgramParameter * program_parameter, c
 {
 	if (program_parameter == NULL || value == NULL)
 		return;
-
-	gchar * tag_name = (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_FLAG)
-		? "value" : "state";
-
-	__geoxml_set_tag_value((GdomeElement*)program_parameter, tag_name, value, __geoxml_create_TextNode);
+	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) == GEOXML_PARAMETERTYPE_FLAG)
+		return;
+	__geoxml_set_tag_value((GdomeElement*)program_parameter, "value", value, __geoxml_create_TextNode);
 }
 
 void
@@ -178,6 +181,65 @@ geoxml_program_parameter_set_range_properties(GeoXmlProgramParameter * program_p
 	__geoxml_set_attr_value((GdomeElement*)program_parameter, "min", min);
 	__geoxml_set_attr_value((GdomeElement*)program_parameter, "max", max);
 	__geoxml_set_attr_value((GdomeElement*)program_parameter, "inc", inc);
+}
+
+GeoXmlEnumOption *
+geoxml_program_parameter_new_enum_option(GeoXmlProgramParameter * program_parameter, const gchar * value)
+{
+	if (program_parameter == NULL || value == NULL)
+		return NULL;
+	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_ENUM)
+		return NULL;
+
+	GeoXmlEnumOption *	enum_option;
+
+	enum_option = (GeoXmlEnumOption*)__geoxml_new_element((GdomeElement*)program_parameter, "option");
+	geoxml_value_sequence_set(GEOXML_VALUE_SEQUENCE(enum_option), value);
+
+	return enum_option;
+}
+
+GeoXmlEnumOption *
+geoxml_program_parameter_append_enum_option(GeoXmlProgramParameter * program_parameter, const gchar * value)
+{
+	if (program_parameter == NULL || value == NULL)
+		return NULL;
+	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_ENUM)
+		return NULL;
+
+	GeoXmlEnumOption *	enum_option;
+
+	enum_option = (GeoXmlEnumOption*)__geoxml_insert_new_element((GdomeElement*)program_parameter, "option", NULL);
+	geoxml_value_sequence_set(GEOXML_VALUE_SEQUENCE(enum_option), value);
+
+	return enum_option;
+}
+
+int
+geoxml_program_parameter_get_enum_option(GeoXmlProgramParameter * program_parameter, GeoXmlValueSequence ** enum_option, gulong index)
+{
+	if (program_parameter == NULL) {
+		*enum_option = NULL;
+		return GEOXML_RETV_NULL_PTR;
+	}
+	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_ENUM)
+		return GEOXML_RETV_PARAMETER_NOT_ENUM;
+
+	*enum_option = (GeoXmlValueSequence*)__geoxml_get_element_at((GdomeElement*)program_parameter, "option", index);
+
+	return (*enum_option == NULL)
+		? GEOXML_RETV_INVALID_INDEX
+		: GEOXML_RETV_SUCCESS;
+}
+
+glong
+geoxml_program_parameter_get_enum_options_number(GeoXmlProgramParameter * program_parameter)
+{
+	if (program_parameter == NULL)
+		return -1;
+	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_ENUM)
+		return -1;
+	return __geoxml_get_elements_number((GdomeElement*)program_parameter, "options");
 }
 
 gboolean
@@ -278,6 +340,8 @@ const gchar *
 geoxml_program_parameter_get_value(GeoXmlProgramParameter * program_parameter)
 {
 	if (program_parameter == NULL)
+		return NULL;
+	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) == GEOXML_PARAMETERTYPE_FLAG)
 		return NULL;
 	return __geoxml_get_tag_value((GdomeElement*)program_parameter, "value");
 }

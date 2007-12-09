@@ -16,20 +16,21 @@
 
 lib_LTLIBRARIES = libgebr_geoxml.la
 libgebr_geoxml_la_SOURCES = \
-	xml.c sequence.c \
+	xml.c sequence.c value_sequence.c \
  	category.c program.c \
  	parameters.c parameter.c program_parameter.c parameter_group.c \
  	document.c flow.c line.c project.c
 
 libgebr_geoxmlsubincludedir=$(includedir)/libgebr/geoxml
 libgebr_geoxmlsubinclude_HEADERS = \
-	error.h macros.h sequence.h \
+	error.h macros.h sequence.h value_sequence.h \
 	category.h program.h \
 	parameters.h parameter.h program_parameter.h parameter_group.h \
 	document.h flow.h line.h project.h
 noinst_HEADERS = \
 	xml.h document_p.h program_p.h \
-	types.h sequence_p.h
+	parameter_p.h parameters_p.h \
+	types.h
 EXTRA_DIST = ${noinst_HEADERS}
 
 INCLUDES = -DGEOXML_DTDDIR=\"$(datadir)/libgebr/geoxml\"

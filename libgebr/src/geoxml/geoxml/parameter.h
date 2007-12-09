@@ -97,6 +97,8 @@ typedef struct geoxml_parameter GeoXmlParameter;
  * \p GEOXML_PARAMETERTYPE lists the program's parameters types
  * supported by libgeoxml. They were made to create a properly
  * link between the seismic processing softwares and this library.
+ *
+ * \see geoxml_parameter_get_is_program_parameter
  */
 enum GEOXML_PARAMETERTYPE {
 	/**
@@ -158,6 +160,8 @@ geoxml_parameter_get_type(GeoXmlParameter * parameter);
 
 /**
  * Return TRUE if \p parameter is a GeoXmlProgramParameter.
+ * All parameters of any GEOXML_PARAMETERTYPE's types except GEOXML_PARAMETERTYPE_GROUP
+ * are GeoXmlProgramParameter.
  *
  * If \p parameter is NULL returns FALSE.
  */

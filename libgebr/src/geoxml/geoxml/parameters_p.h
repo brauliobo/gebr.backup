@@ -18,6 +18,10 @@
 #ifndef __LIBGEBR_GEOXML_PARAMETERS_P_H
 #define __LIBGEBR_GEOXML_PARAMETERS_P_H
 
+/**
+ * \internal
+ * Create a new parameter with type \p type.
+ */
 GeoXmlParameter *
 __geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
 

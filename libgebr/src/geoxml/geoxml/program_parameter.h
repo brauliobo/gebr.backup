@@ -46,6 +46,8 @@
  * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlValueSequence" [ URL = "\ref value_sequence.h" ];
+ * 	"GeoXmlEnumOption" [ URL = "\ref GeoXmlEnumOption" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
  * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
  * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
@@ -56,6 +58,8 @@
  * 	]
  * 	"GeoXmlDocument" -> "GeoXmlFlow";
  * 	"GeoXmlSequence" -> "GeoXmlParameter";
+ * 	"GeoXmlSequence" -> "GeoXmlSequence";
+ * 	"GeoXmlValueSequence" -> "GeoXmlEnumOption";
  * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
  * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
@@ -66,6 +70,7 @@
  * 	]
  * 	"GeoXmlFlow" -> "GeoXmlProgram";
  * 	"GeoXmlParameters" -> "GeoXmlParameter";
+ * 	"GeoXmlProgramParameter" -> "GeoXmlEnumOption"
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -94,8 +99,14 @@
  */
 typedef struct geoxml_program_parameter GeoXmlProgramParameter;
 
+/**
+ * The GeoXmlEnumOption struct contains private data only, and should be accessed using the functions below.
+ */
+typedef struct geoxml_enum_option GeoXmlEnumOption;
+
 #include "program_parameter.h"
 #include "program.h"
+#include "value_sequence.h"
 #include "macros.h"
 
 /**
@@ -198,6 +209,39 @@ geoxml_program_parameter_set_file_be_directory(GeoXmlProgramParameter * program_
 void
 geoxml_program_parameter_set_range_properties(GeoXmlProgramParameter * program_parameter,
 		const gchar * min, const gchar * max, const gchar * inc);
+
+/**
+ *
+ * If \p program_parameter or \p value is NULL nothing is done.
+ */
+GeoXmlEnumOption *
+geoxml_program_parameter_new_enum_option(GeoXmlProgramParameter * program_parameter, const gchar * value);
+
+/**
+ *
+ * If \p program_parameter or \p value is NULL nothing is done.
+ */
+GeoXmlEnumOption *
+geoxml_program_parameter_append_enum_option(GeoXmlProgramParameter * program_parameter, const gchar * value);
+
+/**
+ * Writes to \p enum_option the \p index ieth enum option that \p program_parameter has.
+ * If an error ocurred, the content of \p enum_option is assigned to NULL.
+ *
+ * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_INVALID_INDEX, GEOXML_RETV_PARAMETER_NOT_ENUM, GEOXML_RETV_NULL_PTR
+ *
+ * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
+ */
+int
+geoxml_program_parameter_get_enum_option(GeoXmlProgramParameter * program_parameter, GeoXmlValueSequence ** enum_option, gulong index);
+
+/**
+ * Get the number of enum options in \p program_parameter
+ *
+ * If \p program_parameter is NULL returns 0.
+ */
+glong
+geoxml_program_parameter_get_enum_options_number(GeoXmlProgramParameter * program_parameter);
 
 /**
  *
