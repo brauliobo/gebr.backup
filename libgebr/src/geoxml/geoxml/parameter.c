@@ -18,6 +18,7 @@
 #include <gdome.h>
 
 #include "parameter.h"
+#include "xml.h"
 #include "types.h"
 #include "parameters.h"
 #include "parameters_p.h"
@@ -55,15 +56,15 @@ geoxml_parameter_set_type(GeoXmlParameter ** parameter, enum GEOXML_PARAMETERTYP
 	old_parameter = *parameter;
 	parent_element = (GdomeElement*)gdome_el_parentNode((GdomeElement*)old_parameter, &exception);
 
-	*parameter = __geoxml_parameters_new_parameter((GeoXmlParameters*)parent_element, (GdomeElement*)old_parameter, type);
+	*parameter = __geoxml_parameters_new_parameter((GeoXmlParameters*)parent_element, type);
 	gdome_el_insertBefore(parent_element, (GdomeNode*)*parameter, (GdomeNode*)old_parameter, &exception);
 
-	if (geoxml_parameter_get_is_program_parameter(*parameter)) {
+	/* restore label and keyword */
+	geoxml_parameter_set_label(GEOXML_PARAMETER(*parameter),
+		geoxml_parameter_get_label(GEOXML_PARAMETER(old_parameter)));
+	if (geoxml_parameter_get_is_program_parameter(*parameter))
 		geoxml_program_parameter_set_keyword(GEOXML_PROGRAM_PARAMETER(*parameter),
 			geoxml_program_parameter_get_keyword(GEOXML_PROGRAM_PARAMETER(old_parameter)));
-		geoxml_program_parameter_set_label(GEOXML_PROGRAM_PARAMETER(*parameter),
-			geoxml_program_parameter_get_label(GEOXML_PROGRAM_PARAMETER(old_parameter)));
-	}
 
 	gdome_el_removeChild(parent_element, (GdomeNode*)old_parameter, &exception);
 }
@@ -83,7 +84,7 @@ geoxml_parameter_get_type(GeoXmlParameter * parameter)
 		if (!g_ascii_strcasecmp(parameter_type_to_str[i], tag_name->str))
 			return (enum GEOXML_PARAMETERTYPE)i;
 
-	/* here we must have a "parameters" element */
+	/* just to suppress warning */
 	return GEOXML_PARAMETERTYPE_GROUP;
 }
 
@@ -94,4 +95,20 @@ geoxml_parameter_get_is_program_parameter(GeoXmlParameter * parameter)
 		return FALSE;
 	return (geoxml_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_GROUP)
 		? TRUE : FALSE;
+}
+
+void
+geoxml_parameter_set_label(GeoXmlParameter * parameter, const gchar * label)
+{
+	if (parameter == NULL || label == NULL)
+		return;
+	__geoxml_set_tag_value((GdomeElement*)parameter, "label", label, __geoxml_create_TextNode);
+}
+
+const gchar *
+geoxml_parameter_get_label(GeoXmlParameter * parameter)
+{
+	if (parameter == NULL)
+		return NULL;
+	return __geoxml_get_tag_value((GdomeElement*)parameter, "label");
 }

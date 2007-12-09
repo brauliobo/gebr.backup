@@ -77,14 +77,6 @@ geoxml_program_parameter_set_keyword(GeoXmlProgramParameter * program_parameter,
 }
 
 void
-geoxml_program_parameter_set_label(GeoXmlProgramParameter * program_parameter, const gchar * label)
-{
-	if (program_parameter == NULL || label == NULL)
-		return;
-	__geoxml_set_tag_value((GdomeElement*)program_parameter, "label", label, __geoxml_create_TextNode);
-}
-
-void
 geoxml_program_parameter_set_be_list(GeoXmlProgramParameter * program_parameter, gboolean is_list)
 {
 	if (program_parameter == NULL)
@@ -205,14 +197,6 @@ geoxml_program_parameter_get_keyword(GeoXmlProgramParameter * program_parameter)
 	if (program_parameter == NULL)
 		return NULL;
 	return __geoxml_get_tag_value((GdomeElement*)program_parameter, "keyword");
-}
-
-const gchar *
-geoxml_program_parameter_get_label(GeoXmlProgramParameter * program_parameter)
-{
-	if (program_parameter == NULL)
-		return NULL;
-	return __geoxml_get_tag_value((GdomeElement*)program_parameter, "label");
 }
 
 gboolean
@@ -344,10 +328,22 @@ geoxml_program_parameter_set_type(GeoXmlProgramParameter ** program_parameter, e
 	*program_parameter = GEOXML_PROGRAM_PARAMETER(parameter);
 }
 
+void
+geoxml_program_parameter_set_label(GeoXmlProgramParameter * program_parameter, const gchar * label)
+{
+	geoxml_parameter_set_label(GEOXML_PARAMETER(program_parameter), label);
+}
+
 enum GEOXML_PARAMETERTYPE
 geoxml_program_parameter_get_type(GeoXmlProgramParameter * program_parameter)
 {
 	return geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter));
+}
+
+const gchar *
+geoxml_program_parameter_get_label(GeoXmlProgramParameter * program_parameter)
+{
+	return geoxml_parameter_get_label(GEOXML_PARAMETER(program_parameter));
 }
 
 void

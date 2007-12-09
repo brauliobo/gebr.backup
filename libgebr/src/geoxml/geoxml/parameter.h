@@ -164,4 +164,22 @@ geoxml_parameter_get_type(GeoXmlParameter * parameter);
 gboolean
 geoxml_parameter_get_is_program_parameter(GeoXmlParameter * parameter);
 
+/**
+ * Set \p parameter 's one line description to \p label.
+ *
+ * If \p parameter or \p label is NULL nothing is done.
+ *
+ * \see geoxml_parameter_get_label
+ */
+void
+geoxml_parameter_set_label(GeoXmlParameter * parameter, const gchar * label);
+
+/**
+ * Get \p parameter 's one line description.
+ *
+ * If \p parameter is NULL returns NULL.
+ */
+const gchar *
+geoxml_parameter_get_label(GeoXmlParameter * parameter);
+
 #endif //__LIBGEBR_GEOXML_PARAMETER_H

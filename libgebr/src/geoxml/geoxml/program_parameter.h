@@ -130,16 +130,6 @@ void
 geoxml_program_parameter_set_keyword(GeoXmlProgramParameter * program_parameter, const gchar * keyword);
 
 /**
- * Set \p program_parameter 's one line description to \p label.
- *
- * If \p program_parameter is NULL nothing is done.
- *
- * \see geoxml_program_parameter_get_label
- */
-void
-geoxml_program_parameter_set_label(GeoXmlProgramParameter * program_parameter, const gchar * label);
-
-/**
  * Say that \p program_parameter 'sthat this program_parameter's value is in fact a list of values
  * each one delimited by a separator, if \p is_list is TRUE
  *
@@ -224,15 +214,6 @@ geoxml_program_parameter_get_required(GeoXmlProgramParameter * program_parameter
  */
 const gchar *
 geoxml_program_parameter_get_keyword(GeoXmlProgramParameter * program_parameter);
-
-/**
- *
- *
- * If \p program_parameter is NULL returns NULL.
- */
-const gchar *
-geoxml_program_parameter_get_label(GeoXmlProgramParameter * program_parameter);
-
 
 /**
  * Return TRUE if \p program_parameter that this program_parameter's value is in fact a list of values
@@ -328,10 +309,24 @@ geoxml_program_parameter_set_type(GeoXmlProgramParameter ** program_parameter, e
 
 /**
  * \deprecated
+ * Use \ref geoxml_parameter_set_label instead. Kept only for backwards compatible and should not be used in newly written code
+ */
+void GEOXML_DEPRECATED
+geoxml_program_parameter_set_label(GeoXmlProgramParameter * program_parameter, const gchar * label);
+
+/**
+ * \deprecated
  * Use \ref geoxml_program_parameter_get_type instead. Kept only for backwards compatible and should not be used in newly written code
  */
 enum GEOXML_PARAMETERTYPE GEOXML_DEPRECATED
 geoxml_program_parameter_get_type(GeoXmlProgramParameter * program_parameter);
+
+/**
+ * \deprecated
+ * Use \ref geoxml_parameter_get_label instead. Kept only for backwards compatible and should not be used in newly written code
+ */
+const gchar * GEOXML_DEPRECATED
+geoxml_program_parameter_get_label(GeoXmlProgramParameter * program_parameter);
 
 /**
  * \deprecated

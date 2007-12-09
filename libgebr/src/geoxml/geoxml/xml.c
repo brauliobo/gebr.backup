@@ -70,13 +70,22 @@ __geoxml_create_TextNode(GdomeElement * parent_element, const gchar * value)
 }
 
 GdomeElement *
-__geoxml_new_element(GdomeElement * parent_element, GdomeElement * before_element, const gchar * tag_name)
+__geoxml_new_element(GdomeElement * parent_element, const gchar * tag_name)
 {
 	GdomeElement *	element;
 
 	element = gdome_doc_createElement(gdome_el_ownerDocument(parent_element, &exception),
 		gdome_str_mkref(tag_name), &exception);
 
+	return element;
+}
+
+GdomeElement *
+__geoxml_insert_new_element(GdomeElement * parent_element, const gchar * tag_name, GdomeElement * before_element)
+{
+	GdomeElement *	element;
+
+	element = __geoxml_new_element(parent_element, tag_name);
 	gdome_el_insertBefore(parent_element, (GdomeNode*)element, (GdomeNode*)before_element, &exception);
 
 	return element;

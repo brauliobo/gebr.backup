@@ -1,4 +1,4 @@
-<!ELEMENT line (filename, title, description, help, author, email, date, pathlist, flow*)>
+<!ELEMENT line (filename, title, description, help, author, email, date, path*, flow*)>
 <!ATTLIST line version CDATA #FIXED "0.2.0">
 
 <!-- Name of the XML file -->
@@ -23,9 +23,8 @@
 <!ELEMENT created          (#PCDATA)>
 <!ELEMENT modified         (#PCDATA)>
 
-<!-- List of default pathes for input/output/error of flows -->
-<!ELEMENT pathlist (path*)>
-<!ELEMENT path            (#PCDATA)>
+<!-- Path for input/output/error of flows -->
+<!ELEMENT path             (#PCDATA)>
 
 <!-- Flow reference -->
 <!ELEMENT flow EMPTY>

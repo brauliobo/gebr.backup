@@ -49,9 +49,9 @@
  * 	edge [
  * 		arrowhead = "normal"
  * 	]
- * 	"GeoXmlDocument" -> { "GeoXmlFlow" };
- * 	"GeoXmlSequence" -> "GeoXmlProgram";
+ * 	"GeoXmlDocument" -> "GeoXmlFlow";
  * 	"GeoXmlSequence" -> "GeoXmlCategory";
+ * 	"GeoXmlSequence" -> "GeoXmlProgram";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -86,6 +86,7 @@ typedef struct geoxml_flow GeoXmlFlow;
 #include "program.h"
 #include "category.h"
 #include "macros.h"
+#include "sequence.h"
 
 /**
  * Create a new empty flow and return a pointer to it.
@@ -199,6 +200,15 @@ GeoXmlProgram *
 geoxml_flow_new_program(GeoXmlFlow * flow);
 
 /**
+ * Creates a new program associated and append to the list of programs
+ * Provided for convenience
+ *
+ * \see geoxml_flow_new_program
+ */
+GeoXmlProgram *
+geoxml_flow_append_program(GeoXmlFlow * flow);
+
+/**
  * Writes to \p program the \p index ieth category that \p flow belong.
  * If an error ocurred, the content of \p program is assigned to NULL.
  *
@@ -209,7 +219,7 @@ geoxml_flow_new_program(GeoXmlFlow * flow);
  * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
  */
 int
-geoxml_flow_get_program(GeoXmlFlow * flow, GeoXmlProgram ** program, gulong index);
+geoxml_flow_get_program(GeoXmlFlow * flow, GeoXmlSequence ** program, gulong index);
 
 /**
  * Get the number of programs \p flow has.
@@ -231,6 +241,15 @@ GeoXmlCategory *
 geoxml_flow_new_category(GeoXmlFlow * flow, const gchar * name);
 
 /**
+ * Creates a new category and append it to the list of categories.
+ * Provided for convenience.
+ *
+ * \see geoxml_flow_new_category
+ */
+GeoXmlCategory *
+geoxml_flow_append_category(GeoXmlFlow * flow, const gchar * name);
+
+/**
  * Writes to \p category the \p index ieth category that \p flow belong.
  * If an error ocurred, the content of \p category is assigned to NULL.
  *
@@ -241,7 +260,7 @@ geoxml_flow_new_category(GeoXmlFlow * flow, const gchar * name);
  * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
  */
 int
-geoxml_flow_get_category(GeoXmlFlow * flow, GeoXmlCategory ** category, gulong index);
+geoxml_flow_get_category(GeoXmlFlow * flow, GeoXmlSequence ** category, gulong index);
 
 /**
  * Get the number of categories that \p flow has.
@@ -278,13 +297,6 @@ geoxml_flow_move_program_up(GeoXmlFlow * flow, GeoXmlProgram * program);
  */
 int GEOXML_DEPRECATED
 geoxml_flow_move_program_down(GeoXmlFlow * flow, GeoXmlProgram * program);
-
-/**
- * \deprecated
- * Renamed to \ref geoxml_flow_new_category . Kept only for backwards compatible and should not be used in newly written code
- */
-GeoXmlCategory * GEOXML_DEPRECATED
-geoxml_flow_append_category(GeoXmlFlow * flow, const gchar * name);
 
 /**
  * \deprecated

@@ -103,6 +103,7 @@ typedef struct geoxml_line GeoXmlLine;
  */
 typedef struct geoxml_line_flow GeoXmlLineFlow;
 
+#include "sequence.h"
 #include "macros.h"
 
 /**
@@ -125,6 +126,15 @@ GeoXmlLineFlow *
 geoxml_line_new_flow(GeoXmlLine * line, const gchar * source);
 
 /**
+ * Create a new flow and append to list of flows references.
+ * Provided for convenience.
+ *
+ * \see geoxml_line_new_flow
+ */
+GeoXmlLineFlow *
+geoxml_line_append_flow(GeoXmlLine * line, const gchar * source);
+
+/**
  * Writes to \p line_flow the \p index ieth flow reference that \p line belong.
  * If an error ocurred, the content of \p line_flow is assigned to NULL.
  *
@@ -135,7 +145,7 @@ geoxml_line_new_flow(GeoXmlLine * line, const gchar * source);
  * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
  */
 int
-geoxml_line_get_flow(GeoXmlLine * line, GeoXmlLineFlow ** line_flow, gulong index);
+geoxml_line_get_flow(GeoXmlLine * line, GeoXmlSequence ** line_flow, gulong index);
 
 /**
  * Get the number of flows that \p line has.

@@ -19,6 +19,6 @@
 #define __LIBGEBR_GEOXML_PARAMETERS_P_H
 
 GeoXmlParameter *
-__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, GdomeElement * before, enum GEOXML_PARAMETERTYPE type);
+__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
 
 #endif //__LIBGEBR_GEOXML_PARAMETERS_P_H

@@ -82,7 +82,7 @@ typedef struct geoxml_parameter_group GeoXmlParameterGroup;
 
 /**
  *
- * If \p parameter_group nothing is done.
+ * If \p parameter_group is NULL nothing is done.
  */
 void
 geoxml_parameter_group_set_exclusive(GeoXmlParameterGroup * parameter_group, const gboolean enable);
@@ -90,14 +90,30 @@ geoxml_parameter_group_set_exclusive(GeoXmlParameterGroup * parameter_group, con
 /**
  * Set it \p parameter_group should be expanded by default, according to \p enable.
  *
- * If \p parameter_group nothing is done.
+ * If \p parameter_group is NULL nothing is done.
  */
 void
 geoxml_parameter_group_set_expand(GeoXmlParameterGroup * parameter_group, const gboolean enable);
 
 /**
+ * Get the number of instances of \p parameter_group
  *
- * If \p parameter_group returns FALSE.
+ * If \p parameter_group is NULL returns 0.
+ */
+gulong
+geoxml_parameter_group_get_instances(GeoXmlParameterGroup * parameter_group);
+
+/**
+ * Get the number of parameters that one instance of \p parameter_group has.
+ *
+ * If \p parameter_group is NULL returns 0.
+ */
+gulong
+geoxml_parameter_group_get_parameters_by_instance(GeoXmlParameterGroup * parameter_group);
+
+/**
+ *
+ * If \p parameter_group is NULL returns FALSE.
  */
 gboolean
 geoxml_parameter_group_get_exclusive(GeoXmlParameterGroup * parameter_group);
@@ -105,7 +121,7 @@ geoxml_parameter_group_get_exclusive(GeoXmlParameterGroup * parameter_group);
 /**
  * Return TRUE if \p parameter_group should be expanded by default, otherwise returns FALSE.
  *
- * If \p parameter_group returns FALSE.
+ * If \p parameter_group is NULL returns FALSE.
  */
 gboolean
 geoxml_parameter_group_get_expand(GeoXmlParameterGroup * parameter_group);

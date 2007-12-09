@@ -101,6 +101,7 @@ typedef struct geoxml_project GeoXmlProject;
  */
 typedef struct geoxml_project_line GeoXmlProjectLine;
 
+#include "sequence.h"
 #include "macros.h"
 
 /**
@@ -121,6 +122,15 @@ GeoXmlProjectLine *
 geoxml_project_new_line(GeoXmlProject * project, const gchar * source);
 
 /**
+ * Create a new flow and append to list of flows references.
+ * Provided for convenience.
+ *
+ * \see geoxml_project_new_line
+ */
+GeoXmlProjectLine *
+geoxml_project_append_line(GeoXmlProject * project, const gchar * source);
+
+/**
  * Writes to \p project_line the \p index ieth line reference that \p project belong.
  * If an error ocurred, the content of \p project_line is assigned to NULL.
  *
@@ -129,7 +139,7 @@ geoxml_project_new_line(GeoXmlProject * project, const gchar * source);
  * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_INVALID_INDEX, GEOXML_RETV_NULL_PTR
  */
 int
-geoxml_project_get_line(GeoXmlProject * project, GeoXmlProjectLine ** project_line, gulong index);
+geoxml_project_get_line(GeoXmlProject * project, GeoXmlSequence ** project_line, gulong index);
 
 /**
  * Get the number of lines that \p project has.

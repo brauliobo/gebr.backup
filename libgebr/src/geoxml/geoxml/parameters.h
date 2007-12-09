@@ -77,7 +77,7 @@
  * Get the base parameters class of \p group, which is
  * a GeoXmlParameterGroup instance.
  */
-#define GEOXML_PARAMETERS(group) ((GeoXmlParameter*)(group))
+#define GEOXML_PARAMETERS(group) ((GeoXmlParameters*)(group))
 
 /**
  * The GeoXmlParameters struct contains private data only, and should be accessed using the functions below.
@@ -87,6 +87,7 @@ typedef struct geoxml_parameters GeoXmlParameters;
 #include <glib.h>
 
 #include "parameter.h"
+#include "sequence.h"
 
 /**
  * Create a new parameter.
@@ -94,7 +95,16 @@ typedef struct geoxml_parameters GeoXmlParameters;
  * list of parameters.
  */
 GeoXmlParameter *
-geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE parameter_type);
+geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
+
+/**
+ * Create a new parameter and append it to \p parameters.
+ * Provided for convenience.
+ *
+ * \see geoxml_parameters_new_parameter
+ */
+GeoXmlParameter *
+geoxml_parameters_append_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
 
 /**
  * Get the first paramater of \p program.
@@ -102,7 +112,7 @@ geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAM
  * \note Due to internal implementation, it is very slow to get the nieth paramater.
  * If you want so, you'll need to call geoxml_sequence_next multiple times
  */
-GeoXmlParameter *
+GeoXmlSequence *
 geoxml_parameters_get_first_parameter(GeoXmlParameters * parameters);
 
 /**
@@ -112,5 +122,13 @@ geoxml_parameters_get_first_parameter(GeoXmlParameters * parameters);
  */
 glong
 geoxml_parameters_get_number(GeoXmlParameters * parameters);
+
+/**
+ * Return TRUE if \p parameters is a instance of GeoXmlParameterGroup
+ *
+ * If \p parameters is NULL returns FALSE.
+ */
+gboolean
+geoxml_parameters_get_is_group(GeoXmlParameters * parameters);
 
 #endif //__LIBGEBR_GEOXML_PARAMETERS_H

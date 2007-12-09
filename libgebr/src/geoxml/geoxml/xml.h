@@ -38,10 +38,20 @@ void __geoxml_create_TextNode(GdomeElement * parent_element, const gchar * value
 
 /**
  * \internal
- * Create a new element and insert it.
+ * Create a new element.
+ * \p parent_element is only used to know the associated document.
  */
 GdomeElement *
-__geoxml_new_element(GdomeElement * parent_element, GdomeElement * before_element, const gchar * tag_name);
+__geoxml_new_element(GdomeElement * parent_element, const gchar * tag_name);
+
+/**
+ * \internal
+ * Create a new element and insert it before \p before_element.
+ * If \p before_element the element is appended.
+ * \see __geoxml_insert_new_element
+ */
+GdomeElement *
+__geoxml_insert_new_element(GdomeElement * parent_element, const gchar * tag_name, GdomeElement * before_element);
 
 /**
  * \internal

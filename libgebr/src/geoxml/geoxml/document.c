@@ -31,57 +31,15 @@
 GdomeException			exception;
 
 /*
- * private functions and variables
- */
-
-static GdomeDOMImplementation*	dom_implementation;
-static gint			dom_implementation_ref_count = 0;
-
-GeoXmlDocument *
-geoxml_document_new(const gchar * name, const gchar * version)
-{
-	GdomeDocument *	document;
-	GdomeElement *	root_element;
-
-	/* create the implementation. */
-	if (!dom_implementation_ref_count)
-		dom_implementation = gdome_di_mkref();
-	else
-		gdome_di_ref(dom_implementation, &exception);
-	++dom_implementation_ref_count;
-
-	/* doc */
-	document = gdome_di_createDocument(dom_implementation,
-		NULL, gdome_str_mkref(name), NULL, &exception);
-
-	/* document (root) element */
-	root_element = gdome_doc_documentElement(document, &exception);
-	__geoxml_set_attr_value(root_element, "version", version);
-
-	/* elements (as specified in DTD) */
-	__geoxml_new_element(root_element, NULL, "filename");
-	__geoxml_new_element(root_element, NULL, "title");
-	__geoxml_new_element(root_element, NULL, "description");
-	__geoxml_new_element(root_element, NULL, "help");
-	__geoxml_new_element(root_element, NULL, "author");
-	__geoxml_new_element(root_element, NULL, "email");
-
-	return (GeoXmlDocument*)document;
-}
-
-const gchar *
-geoxml_document_get_version_doc(GdomeDocument * document)
-{
-	return __geoxml_get_attr_value(gdome_doc_documentElement(document, &exception), "version");
-}
-
-/*
- * internal structures and functions
+ * internal stuff
  */
 
 struct geoxml_document {
 	GdomeDocument*	document;
 };
+
+static GdomeDOMImplementation*	dom_implementation;
+static gint			dom_implementation_ref_count = 0;
 
 static GdomeDocument *
 __geoxml_document_clone_doc(GdomeDocument * source, GdomeDocumentType * document_type);
@@ -124,6 +82,48 @@ err:	gdome_di_unref(dom_implementation, &exception);
 	--dom_implementation_ref_count;
 	*document = NULL;
 	return ret;
+}
+
+/*
+ * private functions and variables
+ */
+
+GeoXmlDocument *
+geoxml_document_new(const gchar * name, const gchar * version)
+{
+	GdomeDocument *	document;
+	GdomeElement *	root_element;
+
+	/* create the implementation. */
+	if (!dom_implementation_ref_count)
+		dom_implementation = gdome_di_mkref();
+	else
+		gdome_di_ref(dom_implementation, &exception);
+	++dom_implementation_ref_count;
+
+	/* doc */
+	document = gdome_di_createDocument(dom_implementation,
+		NULL, gdome_str_mkref(name), NULL, &exception);
+
+	/* document (root) element */
+	root_element = gdome_doc_documentElement(document, &exception);
+	__geoxml_set_attr_value(root_element, "version", version);
+
+	/* elements (as specified in DTD) */
+	__geoxml_insert_new_element(root_element, "filename", NULL);
+	__geoxml_insert_new_element(root_element, "title", NULL);
+	__geoxml_insert_new_element(root_element, "description", NULL);
+	__geoxml_insert_new_element(root_element, "help", NULL);
+	__geoxml_insert_new_element(root_element, "author", NULL);
+	__geoxml_insert_new_element(root_element, "email", NULL);
+
+	return (GeoXmlDocument*)document;
+}
+
+const gchar *
+geoxml_document_get_version_doc(GdomeDocument * document)
+{
+	return __geoxml_get_attr_value(gdome_doc_documentElement(document, &exception), "version");
 }
 
 /*
@@ -236,7 +236,7 @@ geoxml_document_get_version(GeoXmlDocument * document)
 {
 	if (document == NULL)
 		return NULL;
-	return __geoxml_get_attr_value(geoxml_document_root_element(document), "version");
+	return geoxml_document_get_version_doc((GdomeDocument*)document);
 }
 
 int
@@ -267,9 +267,13 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 	xmlParserCtxtPtr	ctxt;
 	xmlDocPtr		doc;
 	gchar *			xml;
+
 	GString *		dtd_filename;
+
 	GdomeDocument *		tmp_doc;
 	GdomeDocumentType *	tmp_document_type;
+
+	gchar *			version;
 	int			ret;
 
 	ctxt = xmlNewParserCtxt();
@@ -280,7 +284,10 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 		goto out2;
 	}
 
+	/* initialization */
 	dtd_filename = g_string_new(NULL);
+
+	/* find DTD */
 	g_string_printf(dtd_filename, "%s/%s-%s.dtd", GEOXML_DTDDIR,
 		gdome_el_nodeName(geoxml_document_root_element(document), &exception)->str,
 		geoxml_document_get_version((GeoXmlDocument*)document));
@@ -290,6 +297,7 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 		goto out;
 	}
 
+	/* include DTD with full path */
 	tmp_document_type = gdome_di_createDocumentType(dom_implementation,
 		gdome_el_nodeName(geoxml_document_root_element(document), &exception), NULL,
 		gdome_str_mkref_own(dtd_filename->str), &exception);
@@ -323,6 +331,12 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 			goto out;
 		}
 	}
+
+	/* success, now change to last version */
+	version = (gchar*)geoxml_document_get_version_doc(document);
+	/* nothing to do for version 0.1.0 */
+	__geoxml_set_attr_value(geoxml_document_root_element(document), "version", "0.1.1");
+	/* TODO: port to 0.2.0 from 0.1.x */
 
 	ret = GEOXML_RETV_SUCCESS;
 out:	g_string_free(dtd_filename, TRUE);

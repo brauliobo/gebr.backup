@@ -24,7 +24,6 @@
 #include "xml.h"
 #include "error.h"
 #include "types.h"
-#include "sequence.h"
 
 /*
  * internal structures and funcionts
@@ -46,10 +45,10 @@ geoxml_flow_new()
 
 	document = geoxml_document_new("flow", "0.2.0");
 
-	element = __geoxml_new_element(geoxml_document_root_element(document), NULL, "io");
-	__geoxml_new_element(element, NULL, "input");
-	__geoxml_new_element(element, NULL, "output");
-	__geoxml_new_element(element, NULL, "error");
+	element = __geoxml_insert_new_element(geoxml_document_root_element(document), "io", NULL);
+	__geoxml_insert_new_element(element, "input", NULL);
+	__geoxml_insert_new_element(element, "output", NULL);
+	__geoxml_insert_new_element(element, "error", NULL);
 
 	return GEOXML_FLOW(document);
 }
@@ -159,33 +158,48 @@ geoxml_flow_new_program(GeoXmlFlow * flow)
 
 	GdomeElement *	program_element;
 
-	program_element = __geoxml_new_element(geoxml_document_root_element(GEOXML_DOC(flow)), NULL, "program");
+	program_element = __geoxml_new_element(NULL, "program");
 
 	/* elements/attibutes */
 	geoxml_program_set_stdin((GeoXmlProgram*)program_element, FALSE);
 	geoxml_program_set_stdout((GeoXmlProgram*)program_element, FALSE);
 	geoxml_program_set_stderr((GeoXmlProgram*)program_element, FALSE);
 	geoxml_program_set_status((GeoXmlProgram*)program_element, "unconfigured");
-	__geoxml_new_element(program_element, NULL, "menu");
+	__geoxml_insert_new_element(program_element, "menu", NULL);
 	geoxml_program_set_menu((GeoXmlProgram*)program_element, geoxml_document_get_filename(GEOXML_DOC(flow)), -1);
-	__geoxml_new_element(program_element, NULL, "title");
-	__geoxml_new_element(program_element, NULL, "binary");
-	__geoxml_new_element(program_element, NULL, "description");
-	__geoxml_new_element(program_element, NULL, "help");
-	__geoxml_new_element(program_element, NULL, "parameters");
+	__geoxml_insert_new_element(program_element, "title", NULL);
+	__geoxml_insert_new_element(program_element, "binary", NULL);
+	__geoxml_insert_new_element(program_element, "description", NULL);
+	__geoxml_insert_new_element(program_element, "help", NULL);
+	__geoxml_insert_new_element(program_element, "parameters", NULL);
 
 	return (GeoXmlProgram*)program_element;
 }
 
+GeoXmlProgram *
+geoxml_flow_append_program(GeoXmlFlow * flow)
+{
+	if (flow == NULL)
+		return NULL;
+
+	GdomeElement *	element;
+
+	element = (GdomeElement*)geoxml_flow_new_program(flow);
+	gdome_el_insertBefore(geoxml_document_root_element(GEOXML_DOC(flow)),
+		(GdomeNode*)element, NULL, &exception);
+
+	return (GeoXmlProgram*)element;
+}
+
 int
-geoxml_flow_get_program(GeoXmlFlow * flow, GeoXmlProgram ** program, gulong index)
+geoxml_flow_get_program(GeoXmlFlow * flow, GeoXmlSequence ** program, gulong index)
 {
 	if (flow == NULL) {
 		*program = NULL;
 		return GEOXML_RETV_NULL_PTR;
 	}
 
-	*program = (GeoXmlProgram*)__geoxml_get_element_at(geoxml_document_root_element(GEOXML_DOC(flow)), "program", index);
+	*program = (GeoXmlSequence*)__geoxml_get_element_at(geoxml_document_root_element(GEOXML_DOC(flow)), "program", index);
 
 	return (*program == NULL)
 		? GEOXML_RETV_INVALID_INDEX
@@ -208,22 +222,38 @@ geoxml_flow_new_category(GeoXmlFlow * flow, const gchar * name)
 
 	GeoXmlCategory *	category;
 
-	category = (GeoXmlCategory*)__geoxml_new_element(geoxml_document_root_element(GEOXML_DOC(flow)),
-		__geoxml_get_first_element(geoxml_document_root_element(GEOXML_DOC(flow)), "io"), "category");
+	category = (GeoXmlCategory*)__geoxml_new_element(
+		geoxml_document_root_element(GEOXML_DOC(flow)), "category");
+	geoxml_category_set_name(category, name);
+
+	return category;
+}
+
+GeoXmlCategory *
+geoxml_flow_append_category(GeoXmlFlow * flow, const gchar * name)
+{
+	if (flow == NULL)
+		return NULL;
+
+	GeoXmlCategory *	category;
+
+	category = (GeoXmlCategory*)__geoxml_insert_new_element(
+		geoxml_document_root_element(GEOXML_DOC(flow)), "category",
+		__geoxml_get_first_element(geoxml_document_root_element(GEOXML_DOC(flow)), "io"));
 	geoxml_category_set_name(category, name);
 
 	return category;
 }
 
 int
-geoxml_flow_get_category(GeoXmlFlow * flow, GeoXmlCategory ** category, gulong index)
+geoxml_flow_get_category(GeoXmlFlow * flow, GeoXmlSequence ** category, gulong index)
 {
 	if (flow == NULL) {
 		*category = NULL;
 		return GEOXML_RETV_NULL_PTR;
 	}
 
-	*category = (GeoXmlCategory*)__geoxml_get_element_at(geoxml_document_root_element(GEOXML_DOC(flow)), "category", index);
+	*category = (GeoXmlSequence*)__geoxml_get_element_at(geoxml_document_root_element(GEOXML_DOC(flow)), "category", index);
 
 	return (*category == NULL)
 		? GEOXML_RETV_INVALID_INDEX
@@ -260,12 +290,6 @@ int
 geoxml_flow_move_program_down(GeoXmlFlow * flow, GeoXmlProgram * program)
 {
 	return geoxml_sequence_move_down((GeoXmlSequence*)program);
-}
-
-GeoXmlCategory *
-geoxml_flow_append_category(GeoXmlFlow * flow, const gchar * name)
-{
-	return geoxml_flow_new_category(flow, name);
 }
 
 void
