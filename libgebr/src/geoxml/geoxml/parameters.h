@@ -22,6 +22,7 @@
  * \struct GeoXmlParameters parameters.h libgeoxml/parameters.h
  * \brief
  * Represents a list of parameters.
+ * \inherit GeoXmlParameter
  * \dot
  * digraph program {
  * 	fontname = "Bitstream Vera Sans"
@@ -68,27 +69,43 @@
  */
 
 /**
+ * Get the base parameters class of \p group, which is
+ * a GeoXmlParameterGroup instance.
+ */
+#define GEOXML_PARAMETERS(group) ((GeoXmlParameter*)(group))
+
+/**
+ * The GeoXmlParameters struct contains private data only, and should be accessed using the functions below.
+ */
+typedef struct geoxml_parameters GeoXmlParameters;
+
+#include <glib.h>
+
+#include "parameter.h"
+
+/**
  * Create a new parameter.
  * Use geoxml_sequence_prepend or geoxml_sequence_append to add it to the
  * list of parameters.
  */
 GeoXmlParameter *
-geoxml_program_new_parameter(GeoXmlProgram * program, enum GEOXML_PARAMETERTYPE parameter_type);
+geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE parameter_type);
 
 /**
  * Get the first paramater of \p program.
  *
- * \note Due to internal implementation, it is very slow to get the nieth paramater. If you want so, you'll need to call geoxml_sequence_next
+ * \note Due to internal implementation, it is very slow to get the nieth paramater.
+ * If you want so, you'll need to call geoxml_sequence_next multiple times
  */
 GeoXmlParameter *
-geoxml_program_get_first_parameter(GeoXmlProgram * program);
+geoxml_parameters_get_first_parameter(GeoXmlParameters * parameters);
 
 /**
- * Get the number of parameters that \p program has.
+ * Get the number of parameters that \p parameters has.
  *
- * If \p program is NULL returns -1.
+ * If \p parameters is NULL returns -1.
  */
 glong
-geoxml_program_get_parameters_number(GeoXmlProgram * program);
+geoxml_parameters_get_number(GeoXmlParameters * parameters);
 
 #endif //__LIBGEOXML_PARAMETERS_H

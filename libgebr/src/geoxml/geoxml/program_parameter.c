@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include "program_parameter.h"
+#include "program_parameter.h"
 #include "types.h"
 #include "xml.h"
 #include "program_p.h"
@@ -38,92 +39,61 @@ struct geoxml_program_parameter {
  */
 
 GeoXmlProgram *
-geoxml_program_parameter_program(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_program(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return NULL;
-	return (GeoXmlProgram*)gdome_n_parentNode(
-		gdome_n_parentNode((GdomeNode*)parameter, &exception), &exception);
+
+	GdomeElement *		program_element;
+
+	while (1) {
+		GdomeDOMString *	name;
+
+		program_element = (GdomeElement*)gdome_n_parentNode((GdomeNode*)program_parameter, &exception);
+		name = gdome_el_nodeName(program_element, &exception);
+		if (!g_ascii_strcasecmp(name->str, "program"))
+			break;
+	}
+
+	return program_element;
 }
 
 void
-geoxml_program_parameter_set_type(GeoXmlProgramParameter ** parameter, enum GEOXML_PARAMETERTYPE type)
+geoxml_program_parameter_set_required(GeoXmlProgramParameter * program_parameter, gboolean required)
 {
-	if (*parameter == NULL)
+	if (program_parameter == NULL)
 		return;
-
-	GdomeElement *			program_element;
-	GdomeElement *			parameters_element;
-	GeoXmlProgramParameter *	old_parameter;
-
-	old_parameter = *parameter;
-	parameters_element = (GdomeElement*)gdome_el_parentNode((GdomeElement*)old_parameter, &exception);
-	program_element = (GdomeElement*)gdome_el_parentNode((GdomeElement*)parameters_element, &exception);
-
-	*parameter = __geoxml_program_new_parameter((GeoXmlProgram *)program_element, (GdomeElement*)old_parameter, type);
-	gdome_el_insertBefore(parameters_element, (GdomeNode*)*parameter, (GdomeNode*)old_parameter, &exception);
-
-	geoxml_program_parameter_set_keyword(*parameter, geoxml_program_parameter_get_keyword(old_parameter));
-	geoxml_program_parameter_set_label(*parameter, geoxml_program_parameter_get_label(old_parameter));
-
-	gdome_el_removeChild(parameters_element, (GdomeNode*)old_parameter, &exception);
-}
-
-enum GEOXML_PARAMETERTYPE
-geoxml_program_parameter_get_type(GeoXmlProgramParameter * parameter)
-{
-	if (parameter == NULL)
-		return GEOXML_PARAMETERTYPE_STRING;
-
-	GdomeDOMString*		tag_name;
-	int			i;
-	GdomeException		exception;
-
-	tag_name = gdome_el_tagName((GdomeElement*)parameter, &exception);
-
-	for (i = 0; i < parameter_type_to_str_len; ++i)
-		if (!g_ascii_strcasecmp(parameter_type_to_str[i], tag_name->str))
-			return (enum GEOXML_PARAMETERTYPE)i;
-
-	return GEOXML_PARAMETERTYPE_STRING;
+	if (geoxml_program_parameter_get_type(program_parameter) == GEOXML_PARAMETERTYPE_FLAG)
+		return;
+	__geoxml_set_attr_value((GdomeElement*)program_parameter, "required", (required == TRUE ? "yes" : "no"));
 }
 
 void
-geoxml_program_parameter_set_required(GeoXmlProgramParameter * parameter, gboolean required)
+geoxml_program_parameter_set_keyword(GeoXmlProgramParameter * program_parameter, const gchar * keyword)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL || keyword == NULL)
 		return;
-	if (geoxml_program_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_FLAG)
-		return;
-	__geoxml_set_attr_value((GdomeElement*)parameter, "required", (required == TRUE ? "yes" : "no"));
+	__geoxml_set_tag_value((GdomeElement*)program_parameter, "keyword", keyword, __geoxml_create_TextNode);
 }
 
 void
-geoxml_program_parameter_set_keyword(GeoXmlProgramParameter * parameter, const gchar * keyword)
+geoxml_program_parameter_set_label(GeoXmlProgramParameter * program_parameter, const gchar * label)
 {
-	if (parameter == NULL || keyword == NULL)
+	if (program_parameter == NULL || label == NULL)
 		return;
-	__geoxml_set_tag_value((GdomeElement*)parameter, "keyword", keyword, __geoxml_create_TextNode);
+	__geoxml_set_tag_value((GdomeElement*)program_parameter, "label", label, __geoxml_create_TextNode);
 }
 
 void
-geoxml_program_parameter_set_label(GeoXmlProgramParameter * parameter, const gchar * label)
+geoxml_program_parameter_set_be_list(GeoXmlProgramParameter * program_parameter, gboolean is_list)
 {
-	if (parameter == NULL || label == NULL)
-		return;
-	__geoxml_set_tag_value((GdomeElement*)parameter, "label", label, __geoxml_create_TextNode);
-}
-
-void
-geoxml_program_parameter_set_be_list(GeoXmlProgramParameter * parameter, gboolean is_list)
-{
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return;
 
 	GdomeElement *		element;
 	GdomeDOMString *	string;
 
-	element = (GdomeElement*)parameter;
+	element = (GdomeElement*)program_parameter;
 	string = gdome_str_mkref("separator");
 	if (is_list == TRUE) {
 		if (gdome_el_hasAttribute(element, string, &exception) == FALSE)
@@ -137,153 +107,152 @@ geoxml_program_parameter_set_be_list(GeoXmlProgramParameter * parameter, gboolea
 }
 
 void
-geoxml_program_parameter_set_list_separator(GeoXmlProgramParameter * parameter, const gchar * separator)
+geoxml_program_parameter_set_list_separator(GeoXmlProgramParameter * program_parameter, const gchar * separator)
 {
-	if (geoxml_program_parameter_get_is_list(parameter) == FALSE)
+	if (geoxml_program_parameter_get_is_list(program_parameter) == FALSE)
 		return;
 	if (separator == NULL)
 		return;
-	return __geoxml_set_attr_value((GdomeElement*)parameter, "separator", separator);
+	return __geoxml_set_attr_value((GdomeElement*)program_parameter, "separator", separator);
 }
 
 void
-geoxml_program_parameter_set_default(GeoXmlProgramParameter * parameter, const gchar * value)
+geoxml_program_parameter_set_default(GeoXmlProgramParameter * program_parameter, const gchar * value)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return;
 
-	gchar * tag_name = (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FLAG)
+	gchar * tag_name = (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_FLAG)
 		? "value" : "state";
 
 	__geoxml_set_attr_value(
-		__geoxml_get_first_element((GdomeElement*)parameter, tag_name), "default", value);
+		__geoxml_get_first_element((GdomeElement*)program_parameter, tag_name), "default", value);
 }
 
 void
-geoxml_program_parameter_set_flag_default(GeoXmlProgramParameter * parameter, gboolean state)
+geoxml_program_parameter_set_flag_default(GeoXmlProgramParameter * program_parameter, gboolean state)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return;
-	if (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FLAG)
+	if (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_FLAG)
 		return;
 
 	__geoxml_set_attr_value(
-		__geoxml_get_first_element((GdomeElement*)parameter, "state"), "default",
+		__geoxml_get_first_element((GdomeElement*)program_parameter, "state"), "default",
 		(state == TRUE ? "on" : "off"));
 }
 
 void
-geoxml_program_parameter_set_value(GeoXmlProgramParameter * parameter, const gchar * value)
+geoxml_program_parameter_set_value(GeoXmlProgramParameter * program_parameter, const gchar * value)
 {
-	if (parameter == NULL || value == NULL)
+	if (program_parameter == NULL || value == NULL)
 		return;
 
-	gchar * tag_name = (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FLAG)
+	gchar * tag_name = (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_FLAG)
 		? "value" : "state";
 
-	__geoxml_set_tag_value((GdomeElement*)parameter, tag_name, value, __geoxml_create_TextNode);
+	__geoxml_set_tag_value((GdomeElement*)program_parameter, tag_name, value, __geoxml_create_TextNode);
 }
 
 void
-geoxml_program_parameter_set_flag_state(GeoXmlProgramParameter * parameter, gboolean enabled)
+geoxml_program_parameter_set_flag_state(GeoXmlProgramParameter * program_parameter, gboolean enabled)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return;
-	if (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FLAG)
+	if (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_FLAG)
 		return;
-	__geoxml_set_tag_value((GdomeElement*)parameter, "state", (enabled == TRUE ? "on" : "off"),
+	__geoxml_set_tag_value((GdomeElement*)program_parameter, "state", (enabled == TRUE ? "on" : "off"),
 		__geoxml_create_TextNode);
 }
 
 void
-geoxml_program_parameter_set_file_be_directory(GeoXmlProgramParameter * parameter, gboolean is_directory)
+geoxml_program_parameter_set_file_be_directory(GeoXmlProgramParameter * program_parameter, gboolean is_directory)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return;
-	if (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FILE)
+	if (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_FILE)
 		return;
-	__geoxml_set_attr_value((GdomeElement*)parameter, "directory", (is_directory == TRUE ? "yes" : "no"));
+	__geoxml_set_attr_value((GdomeElement*)program_parameter, "directory", (is_directory == TRUE ? "yes" : "no"));
 }
 
 void
-geoxml_program_parameter_set_range_properties(GeoXmlProgramParameter * parameter,
+geoxml_program_parameter_set_range_properties(GeoXmlProgramParameter * program_parameter,
 		const gchar * min, const gchar * max, const gchar * inc)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return;
-	if (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_RANGE)
+	if (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_RANGE)
 		return;
-	__geoxml_set_attr_value((GdomeElement*)parameter, "min", min);
-	__geoxml_set_attr_value((GdomeElement*)parameter, "max", max);
-	__geoxml_set_attr_value((GdomeElement*)parameter, "inc", inc);
+	__geoxml_set_attr_value((GdomeElement*)program_parameter, "min", min);
+	__geoxml_set_attr_value((GdomeElement*)program_parameter, "max", max);
+	__geoxml_set_attr_value((GdomeElement*)program_parameter, "inc", inc);
 }
 
 gboolean
-geoxml_program_parameter_get_required(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_required(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return FALSE;
-	if (geoxml_program_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_FLAG)
+	if (geoxml_program_parameter_get_type(program_parameter) == GEOXML_PARAMETERTYPE_FLAG)
 		return FALSE;
-	return (!g_ascii_strcasecmp(__geoxml_get_attr_value((GdomeElement*)parameter, "required"), "yes"))
+	return (!g_ascii_strcasecmp(__geoxml_get_attr_value((GdomeElement*)program_parameter, "required"), "yes"))
 		? TRUE : FALSE;
 }
 
 const gchar *
-geoxml_program_parameter_get_keyword(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_keyword(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return NULL;
-	return __geoxml_get_tag_value((GdomeElement*)parameter, "keyword");
+	return __geoxml_get_tag_value((GdomeElement*)program_parameter, "keyword");
 }
 
 const gchar *
-geoxml_program_parameter_get_label(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_label(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return NULL;
-	return __geoxml_get_tag_value((GdomeElement*)parameter, "label");
+	return __geoxml_get_tag_value((GdomeElement*)program_parameter, "label");
 }
 
 gboolean
-geoxml_program_parameter_get_is_list(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_is_list(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return FALSE;
 
 	GdomeDOMString *	string;
 	gboolean		is_list;
 
 	string = gdome_str_mkref("separator");
-	is_list = gdome_el_hasAttribute((GdomeElement*)parameter, string, &exception);
+	is_list = gdome_el_hasAttribute((GdomeElement*)program_parameter, string, &exception);
 	gdome_str_unref(string);
 
 	return is_list;
 }
 
 const gchar *
-geoxml_program_parameter_get_list_separator(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_list_separator(GeoXmlProgramParameter * program_parameter)
 {
-	if (geoxml_program_parameter_get_is_list(parameter) == FALSE)
+	if (geoxml_program_parameter_get_is_list(program_parameter) == FALSE)
 		return NULL;
 
-	return __geoxml_get_attr_value((GdomeElement*)parameter, "separator");
+	return __geoxml_get_attr_value((GdomeElement*)program_parameter, "separator");
 }
 
 const gchar *
-geoxml_program_parameter_get_default(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_default(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return NULL;
 
 	GdomeElement *		element;
 	GdomeDOMString *	string;
-	GdomeException		exception;
 	gboolean		ret;
 	gchar *			tag_name;
 
-	tag_name = (geoxml_program_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_FLAG) ? "state" : "value";
-	element = __geoxml_get_first_element((GdomeElement*)parameter, tag_name);
+	tag_name = (geoxml_program_parameter_get_type(program_parameter) == GEOXML_PARAMETERTYPE_FLAG) ? "state" : "value";
+	element = __geoxml_get_first_element((GdomeElement*)program_parameter, tag_name);
 
 	/* TODO: add support for removing or adding a default value */
 // 	string = gdome_str_mkref("default");
@@ -297,19 +266,18 @@ geoxml_program_parameter_get_default(GeoXmlProgramParameter * parameter)
 }
 
 gboolean
-geoxml_program_parameter_get_flag_default(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_flag_default(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return FALSE;
-	if (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FLAG)
+	if (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_FLAG)
 		return FALSE;
 
 	GdomeElement *		element;
 	GdomeDOMString *	string;
-	GdomeException		exception;
 	gboolean		ret;
 
-	element = __geoxml_get_first_element((GdomeElement*)parameter, "state");
+	element = __geoxml_get_first_element((GdomeElement*)program_parameter, "state");
 
 	string = gdome_str_mkref("default");
 	ret = (gboolean)gdome_el_hasAttribute(element, string, &exception);
@@ -323,62 +291,74 @@ geoxml_program_parameter_get_flag_default(GeoXmlProgramParameter * parameter)
 }
 
 const gchar *
-geoxml_program_parameter_get_value(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_value(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return NULL;
-	return __geoxml_get_tag_value((GdomeElement*)parameter, "value");
+	return __geoxml_get_tag_value((GdomeElement*)program_parameter, "value");
 }
 
 gboolean
-geoxml_program_parameter_get_flag_status(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_flag_status(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return FALSE;
-	if (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FLAG)
+	if (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_FLAG)
 		return FALSE;
-	return (!g_ascii_strcasecmp(__geoxml_get_tag_value((GdomeElement*)parameter, "state"), "on"))
+	return (!g_ascii_strcasecmp(__geoxml_get_tag_value((GdomeElement*)program_parameter, "state"), "on"))
 		? TRUE : FALSE;
 }
 
 gboolean
-geoxml_program_parameter_get_file_be_directory(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_get_file_be_directory(GeoXmlProgramParameter * program_parameter)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return FALSE;
-	if (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FILE)
+	if (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_FILE)
 		return FALSE;
-	return (!g_ascii_strcasecmp(__geoxml_get_attr_value((GdomeElement*)parameter, "directory"), "yes"))
+	return (!g_ascii_strcasecmp(__geoxml_get_attr_value((GdomeElement*)program_parameter, "directory"), "yes"))
 		? TRUE : FALSE;
 }
 
 void
-geoxml_program_parameter_get_range_properties(GeoXmlProgramParameter * parameter,
+geoxml_program_parameter_get_range_properties(GeoXmlProgramParameter * program_parameter,
 		gchar ** min, gchar ** max, gchar ** inc)
 {
-	if (parameter == NULL)
+	if (program_parameter == NULL)
 		return;
-	if (geoxml_program_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_RANGE)
+	if (geoxml_program_parameter_get_type(program_parameter) != GEOXML_PARAMETERTYPE_RANGE)
 		return;
-	*min = g_strdup(__geoxml_get_attr_value((GdomeElement*)parameter, "min"));
-	*max = g_strdup(__geoxml_get_attr_value((GdomeElement*)parameter, "max"));
-	*inc = g_strdup(__geoxml_get_attr_value((GdomeElement*)parameter, "inc"));
+	*min = g_strdup(__geoxml_get_attr_value((GdomeElement*)program_parameter, "min"));
+	*max = g_strdup(__geoxml_get_attr_value((GdomeElement*)program_parameter, "max"));
+	*inc = g_strdup(__geoxml_get_attr_value((GdomeElement*)program_parameter, "inc"));
 }
 
 void
-geoxml_program_parameter_previous(GeoXmlProgramParameter ** parameter)
+geoxml_program_parameter_set_type(GeoXmlProgramParameter ** program_parameter, enum GEOXML_PARAMETERTYPE type)
 {
-	geoxml_sequence_previous((GeoXmlSequence**)parameter);
+	geoxml_program_parameter_set_type(GEOXML_PARAMETER(program_parameter), type);
+}
+
+enum GEOXML_PARAMETERTYPE
+geoxml_program_parameter_get_type(GeoXmlProgramParameter * program_parameter)
+{
+	return geoxml_program_parameter_get_type(GEOXML_PARAMETER(program_parameter));
 }
 
 void
-geoxml_program_parameter_next(GeoXmlProgramParameter ** parameter)
+geoxml_program_parameter_previous(GeoXmlProgramParameter ** program_parameter)
 {
-	geoxml_sequence_next((GeoXmlSequence**)parameter);
+	geoxml_sequence_previous((GeoXmlSequence**)program_parameter);
 }
 
 void
-geoxml_program_parameter_remove(GeoXmlProgramParameter * parameter)
+geoxml_program_parameter_next(GeoXmlProgramParameter ** program_parameter)
 {
-	geoxml_sequence_remove((GeoXmlSequence*)parameter);
+	geoxml_sequence_next((GeoXmlSequence**)program_parameter);
+}
+
+void
+geoxml_program_parameter_remove(GeoXmlProgramParameter * program_parameter)
+{
+	geoxml_sequence_remove((GeoXmlSequence*)program_parameter);
 }

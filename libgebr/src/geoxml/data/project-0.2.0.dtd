@@ -23,5 +23,6 @@
 <!ELEMENT created          (#PCDATA)>
 <!ELEMENT modified         (#PCDATA)>
 
+<!-- Line reference -->
 <!ELEMENT line EMPTY>
 <!ATTLIST line source CDATA #REQUIRED>

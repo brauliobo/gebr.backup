@@ -27,5 +27,6 @@
 <!ELEMENT pathlist (path*)>
 <!ELEMENT path            (#PCDATA)>
 
+<!-- Flow reference -->
 <!ELEMENT flow EMPTY>
 <!ATTLIST flow source CDATA #REQUIRED>

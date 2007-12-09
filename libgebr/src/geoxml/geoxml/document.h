@@ -223,7 +223,7 @@ geoxml_document_set_email(GeoXmlDocument * document, const gchar * email);
  *
  * If \p document is NULL nothing is done.
  *
- * \see geoxml_document_get_email
+ * \see geoxml_document_get_date_created
  */
 void
 geoxml_document_set_date_created(GeoXmlDocument * document, const gchar * created);
@@ -233,10 +233,10 @@ geoxml_document_set_date_created(GeoXmlDocument * document, const gchar * create
  *
  * If \p document is NULL nothing is done.
  *
- * \see geoxml_document_get_email
+ * \see geoxml_document_get_date_modified
  */
 void
-geoxml_document_set_date_created(GeoXmlDocument * document, const gchar * created);
+geoxml_document_set_date_modified(GeoXmlDocument * document, const gchar * created);
 
 /**
  * Set a brief description of the document, usually an one line text.

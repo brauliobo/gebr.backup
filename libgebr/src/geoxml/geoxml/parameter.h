@@ -38,8 +38,8 @@
  * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
- * 	"GeoXmlParameter" [ URL = "\ref program_parameter.h" ];
- * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
+ * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
+ * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
  * 	"GeoXmlParameterGroup" [ URL = "\ref parameter_group.h" ];
  *
  * 	edge [
@@ -48,7 +48,7 @@
  * 	]
  * 	"GeoXmlDocument" -> "GeoXmlFlow";
  * 	"GeoXmlSequence" -> "GeoXmlParameter";
- * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
+ * 	"GeoXmlParameter" -> "GeoXmlParameter";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
  * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
  *
@@ -58,7 +58,7 @@
  * 	]
  * 	"GeoXmlFlow" -> "GeoXmlProgram";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
- * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
+ * 	"GeoXmlParameter" -> "GeoXmlParameter";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -72,14 +72,14 @@
 
 /**
  * \file parameter.h
- * Represents a parameter, that is, a GeoXmlParameterGroup or a GeoXmlProgramParameter.
+ * Represents a parameter, that is, a GeoXmlParameterGroup or a GeoXmlParameter.
  *
  *
  */
 
 /**
  * Get the base parameter class of \p super , which can
- * be a GeoXmlParameterGroup or GeoXmlProgramParameter instance
+ * be a GeoXmlParameterGroup or GeoXmlParameter instance
  */
 #define GEOXML_PARAMETER(super) ((GeoXmlParameter*)(super))
 
@@ -121,15 +121,36 @@ enum GEOXML_PARAMETERTYPE {
 	 */
 	GEOXML_PARAMETERTYPE_RANGE,
 	/**
-	 * A parameter able to store a .
+	 * A parameter able to store a value in a list options.
 	 */
 	GEOXML_PARAMETERTYPE_ENUM,
 	/**
-	 * A parameter able to store a number with maximum and minimum values on it.
+	 * A sequence of parameters.
 	 */
 	GEOXML_PARAMETERTYPE_GROUP,
 };
 
+/**
+ * Change \p parameter type to \p type.
+ * This funcion will create a new parameter and delete the old, as
+ * needed to change its type. Because of this, \p parameter pointer
+ * will be changed.
+ * Keyword and label of \p parameter will have the same value after the change;
+ * all other properties will lost their value.
+ *
+ * If \p parameter is NULL nothing is done.
+ */
+void
+geoxml_parameter_set_type(GeoXmlParameter ** parameter, enum GEOXML_PARAMETERTYPE type);
 
+/**
+ * Returns \p parameter 's type.
+ *
+ * If \p parameter is NULL returns \ref GEOXML_PARAMETERTYPE_STRING.
+ *
+ * @see GEOXML_PARAMETERTYPE
+ */
+enum GEOXML_PARAMETERTYPE
+geoxml_parameter_get_type(GeoXmlParameter * parameter);
 
 #endif //__LIBGEOXML_PARAMETER_H

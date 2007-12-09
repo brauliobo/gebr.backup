@@ -132,10 +132,5 @@ geoxml_project_add_line(GeoXmlProject * project, const gchar * source)
 void
 geoxml_project_remove_line(GeoXmlProject * project, GeoXmlProjectLine * project_line)
 {
-	if (project == NULL || project_line == NULL)
-		return;
-
-	GdomeException exception;
-
-	gdome_el_removeChild(geoxml_document_root_element(GEOXML_DOC(project)), (GdomeNode*)project_line, &exception);
+	geoxml_sequence_remove((GeoXmlSequence*)line_flow);
 }

@@ -19,17 +19,65 @@
 
 #include "parameter.h"
 #include "types.h"
+#include "parameters_p.h"
+#include "program_parameter.h"
 
 /*
- * internal structures and funcionts
+ * internal stuff
  */
 
 struct geoxml_parameter {
 	GdomeElement * element;
 };
 
+const char * parameter_type_to_str[] = {
+	"string", "int", "file",
+	"flag", "float", "range",
+	"enum", "group"
+};
+
+const int parameter_type_to_str_len = 6;
+
 /*
  * library functions.
  */
 
+void
+geoxml_parameter_set_type(GeoXmlParameter ** parameter, enum GEOXML_PARAMETERTYPE type)
+{
+	if (*parameter == NULL)
+		return;
 
+	GdomeElement *		parameters_element;
+	GeoXmlParameter *	old_parameter;
+
+	old_parameter = *parameter;
+	parameters_element = (GdomeElement*)gdome_el_parentNode((GdomeElement*)old_parameter, &exception);
+
+	*parameter = __geoxml_parameters_new_parameter((GeoXmlParameters*)parameters_element, (GdomeElement*)old_parameter, type);
+	gdome_el_insertBefore(parameters_element, (GdomeNode*)*parameter, (GdomeNode*)old_parameter, &exception);
+
+	geoxml_program_parameter_set_keyword(*program_parameter, geoxml_program_parameter_get_keyword(old_program_parameter));
+	geoxml_program_parameter_set_label(*program_parameter, geoxml_program_parameter_get_label(old_program_parameter));
+
+	gdome_el_removeChild(parameters_element, (GdomeNode*)old_parameter, &exception);
+}
+
+enum GEOXML_PARAMETERTYPE
+geoxml_parameter_get_type(GeoXmlParameter * parameter)
+{
+	if (parameter == NULL)
+		return GEOXML_PARAMETERTYPE_STRING;
+
+	GdomeDOMString*		tag_name;
+	int			i;
+
+	tag_name = gdome_el_tagName((GdomeElement*)parameter, &exception);
+
+	for (i = 0; i < parameter_type_to_str_len; ++i)
+		if (!g_ascii_strcasecmp(parameter_type_to_str[i], tag_name->str))
+			return (enum GEOXML_PARAMETERTYPE)i;
+
+	/* here we must have a "parameters" element */
+	return GEOXML_PARAMETERTYPE_GROUP;
+}

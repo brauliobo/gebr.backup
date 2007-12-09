@@ -27,13 +27,15 @@
 #include "types.h"
 #include "error.h"
 
+/* global variables */
+GdomeException			exception;
+
 /*
- * private functions
+ * private functions and variables
  */
 
-GdomeDOMImplementation*	dom_implementation;
-gint			dom_implementation_ref_count = 0;
-GdomeException		exception;
+static GdomeDOMImplementation*	dom_implementation;
+static gint			dom_implementation_ref_count = 0;
 
 GeoXmlDocument *
 geoxml_document_new(const gchar * name, const gchar * version)

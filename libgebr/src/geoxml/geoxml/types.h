@@ -20,7 +20,7 @@
 
 /**
  * \internal
- * defined in program.c
+ * defined in parameter.c
  */
 extern const char*	parameter_type_to_str[];
 extern const int 	parameter_type_to_str_len;

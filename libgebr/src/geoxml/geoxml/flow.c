@@ -84,6 +84,15 @@ geoxml_flow_add_flow(GeoXmlFlow * flow, GeoXmlFlow * flow2)
 }
 
 void
+geoxml_flow_set_date_last_run(GeoXmlFlow * flow, const gchar * last_run)
+{
+	if (documment == NULL || last_run == NULL)
+		return;
+	__geoxml_set_tag_value(__geoxml_get_first_element(geoxml_flow_root_element(flow), "date"),
+		"lastrun", last_run, __geoxml_create_TextNode);
+}
+
+void
 geoxml_flow_io_set_input(GeoXmlFlow * flow, const gchar * input)
 {
 	if (flow == NULL || input == NULL)
@@ -108,6 +117,14 @@ geoxml_flow_io_set_error(GeoXmlFlow * flow, const gchar * error)
 		return;
 	__geoxml_set_tag_value(__geoxml_get_first_element(geoxml_document_root_element(GEOXML_DOC(flow)), "io"),
 		"error", error, __geoxml_create_TextNode);
+}
+
+const gchar *
+geoxml_flow_get_date_last_run(GeoXmlFlow * flow)
+{
+	if (flow == NULL)
+		return NULL;
+	return __geoxml_get_tag_value(__geoxml_get_first_element(geoxml_flow_root_element(flow), "date"), "lastrun");
 }
 
 const gchar *

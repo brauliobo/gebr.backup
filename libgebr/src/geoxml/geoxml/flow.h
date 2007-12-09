@@ -99,10 +99,20 @@ void
 geoxml_flow_add_flow(GeoXmlFlow * flow, GeoXmlFlow * flow2);
 
 /**
+ * Change the \p flow 's modified date to \p last_run
+ *
+ * If \p flow or \p last_run is NULL nothing is done.
+ *
+ * \see geoxml_document_get_date_modified
+ */
+void
+geoxml_flow_set_date_last_run(GeoXmlFlow * flow, const gchar * last_run);
+
+/**
  * Set the \p flow input file path to \p input. The input file
  * is used to start the flow, by loading it on the first program of \p flow.
  *
- * If \p flow is NULL nothing is done.
+ * If \p flow or \p input is NULL nothing is done.
  *
  * \see geoxml_flow_io_get_input
  */
@@ -113,7 +123,7 @@ geoxml_flow_io_set_input(GeoXmlFlow * flow, const gchar * input);
  * Set the \p flow output file path to \p output. The output file is
  * the one used to gather the output sent by the last program of \p flow.
  *
- * If \p flow is NULL nothing is done.
+ * If \p flow or \p output is NULL nothing is done.
  *
  * \see geoxml_flow_io_get_output
  */
@@ -124,12 +134,22 @@ geoxml_flow_io_set_output(GeoXmlFlow * flow, const gchar * output);
  * Set the \p flow error file path to \p error. This should be the file
  * containing the error log, which might include program's stderr
  *
- * If \p flow is NULL nothing is done.
+ * If \p flow or \p error is NULL nothing is done.
  *
  * \see geoxml_flow_io_get_error geoxml_program_set_stderr
  */
 void
 geoxml_flow_io_set_error(GeoXmlFlow * flow, const gchar * error);
+
+/**
+ * Get the \p flow 's last modification date
+ *
+ * If \p flow is NULL returns NULL.
+ *
+ * \see geoxml_flow_set_date_modified
+ */
+const gchar *
+geoxml_flow_get_date_last_run(GeoXmlFlow * flow);
 
 /**
  * Retrieves the input file path of \p flow.
