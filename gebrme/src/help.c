@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <regex.h>
 
+#include <glib/gstdio.h>
+
 #include <misc/utils.h>
 
 #include "help.h"
@@ -37,7 +39,7 @@ help_fix_css(GString * help)
 
 		pos = (gebrcsspos - help->str)/sizeof(char);
 		g_string_erase(help, pos, 9);
-		g_string_insert(help, pos, "\"file://" GEBRME_DATA_DIR "gebr.css");
+		g_string_insert(help, pos, "\"file://" DATA_DIR "gebr.css");
 	}
 }
 
@@ -50,7 +52,7 @@ help_subst_fields(GString * help)
 
 	/* Title replacement */
 	content = (gchar*)geoxml_document_get_title(GEOXML_DOC(gebrme.current));
-	if (strlen(content) > 0) {
+	if (strlen(content)) {
 		ptr = strstr(help->str, "Flow/Program Title");
 
 		while (ptr != NULL){
@@ -63,7 +65,7 @@ help_subst_fields(GString * help)
 
 	/* Description replacement */
 	content = (gchar*)geoxml_document_get_description(GEOXML_DOC(gebrme.current));
-	if (strlen(content) > 0) {
+	if (strlen(content)) {
 		ptr = strstr(help->str, "Put here an one-line description");
 
 		while (ptr != NULL){
@@ -75,9 +77,9 @@ help_subst_fields(GString * help)
 	}
 
 	/* Categories replacement */
-	if (geoxml_flow_get_categories_number(gebrme.current) > 0) {
-		GeoXmlCategory *category;
-		GString * catstr;
+	if (geoxml_flow_get_categories_number(gebrme.current)) {
+		GeoXmlCategory *	category;
+		GString *		catstr;
 
 		geoxml_flow_get_category(gebrme.current, &category, 0);
 		catstr = g_string_new(geoxml_category_get_name(category));
@@ -88,14 +90,10 @@ help_subst_fields(GString * help)
 			g_string_append(catstr, geoxml_category_get_name(category));
 			geoxml_category_next(&category);
 		}
-
-		ptr = strstr(help->str, "First category | Second category | ...");
-
-		while (ptr != NULL){
+		while ((ptr = strstr(help->str, "First category | Second category | ...")) != NULL) {
 			pos = (ptr - help->str)/sizeof(char);
 			g_string_erase(help, pos, 38);
 			g_string_insert(help, pos, catstr->str);
-			ptr = strstr(help->str, "First category | Second category | ...");
 		}
 
 		g_string_free(catstr, TRUE);
@@ -159,7 +157,7 @@ help_edit(const gchar * help)
 	/* help empty; create from template. */
 	if (strlen(prepared_html->str) == 0) {
 		/* Read back the help from file */
-		fp = fopen(GEBRME_DATA_DIR "help-template.html", "r");
+		fp = fopen(DATA_DIR "help-template.html", "r");
 		if (fp == NULL) {
 			gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
 				_("Could not open template. Check your installation."));
@@ -235,7 +233,7 @@ help_edit(const gchar * help)
 		}
 	}
 
-	unlink(html_path->str);
+	g_unlink(html_path->str);
 out:	g_string_free(html_path, FALSE);
 	return prepared_html;
 }

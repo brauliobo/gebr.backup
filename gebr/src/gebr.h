@@ -64,7 +64,7 @@ struct gebr {
 	struct ui_job_control *		ui_job_control;
 	struct ui_server_list *		ui_server_list;
 
-	struct config {
+	struct gebr_config {
 		/* config options from gengetopt
 		 * loaded in gebr_config_load at gebr.c
 		 */
@@ -84,7 +84,7 @@ struct gebr {
 	GtkWidget *			unconfigured_menuitem;
 
 	/* Pixmaps */
-	struct pixmaps {
+	struct gebr_pixmaps {
 		GdkPixbuf *		stock_apply;
 		GdkPixbuf *		stock_warning;
 		GdkPixbuf *		stock_cancel;

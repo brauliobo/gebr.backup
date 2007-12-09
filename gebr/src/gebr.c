@@ -55,7 +55,6 @@ void
 gebr_init(int argc, char ** argv)
 {
 	GString *	log_filename;
-	GError *	error;
 
 	/* initialization */
 	gebr.doc = NULL;
@@ -63,7 +62,6 @@ gebr_init(int argc, char ** argv)
 	gebr.line = NULL;
 	gebr.flow = NULL;
 	log_filename = g_string_new(NULL);
-	error = NULL;
 
 	/* assembly user's gebr directory */
 	g_string_printf(log_filename, "%s/.gebr/gebr.log", getenv("HOME"));

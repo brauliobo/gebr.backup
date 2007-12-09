@@ -19,6 +19,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <glib/gstdio.h>
+
 #include <misc/utils.h>
 
 #include "gebrme.h"
@@ -52,10 +54,8 @@ gebrme_init(void)
 	gebrme.tmpfiles = g_slist_alloc();
 
 	/* load status icons */
-	{
-	   GError * error = NULL;
-	   gebrme.unsaved_icon = gdk_pixbuf_new_from_file(GEBRME_PIXMAPS_DIR "gebrme_unsaved.png", &error);
-	}
+	gebrme.invisible = gtk_invisible_new();
+	gebrme.pixmaps.stock_no = gtk_widget_render_icon(gebrme.invisible, GTK_STOCK_NO, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
 
 	if (!strcmp(gebrme.config.menu_dir->str, ""))
 		create_preferences_window();
@@ -81,9 +81,12 @@ gebrme_quit(void)
 	g_string_free(gebrme.config.htmleditor, TRUE);
 
 	/* remove temporaries files */
-	g_slist_foreach(gebrme.tmpfiles, (GFunc)unlink, NULL);
-	g_slist_foreach(gebrme.tmpfiles, (GFunc)free, NULL);
+	g_slist_foreach(gebrme.tmpfiles, (GFunc)g_unlink, NULL);
+	g_slist_foreach(gebrme.tmpfiles, (GFunc)g_free, NULL);
 	g_slist_free(gebrme.tmpfiles);
+
+	g_object_unref(gebrme.pixmaps.stock_no);
+	gtk_widget_destroy(gebrme.invisible);
 
 	gtk_main_quit();
 }

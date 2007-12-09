@@ -52,6 +52,7 @@ struct gebrme {
 	GtkWidget *		window;
 	struct about		about;
 	GtkWidget *		statusbar;
+	GtkWidget *		invisible;
 
 	/* menus list */
 	GtkListStore *		menus_liststore;
@@ -73,13 +74,15 @@ struct gebrme {
 	GtkWidget *		programs_vbox;
 
         /* icons */
-        GdkPixbuf *   		  unsaved_icon;
+	struct gebrme_pixmaps {
+        	GdkPixbuf *	stock_no;
+	} pixmaps;
 
 	/* temporary files removed when GêBRME quits */
 	GSList *		tmpfiles;
 
 	/* config file */
-	struct {
+	struct gebrme_config {
 		GKeyFile *	keyfile;
 		GString *	path;
 

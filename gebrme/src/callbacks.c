@@ -184,7 +184,7 @@ on_close_activate(void)
 				MENU_STATUS, &pixbuf,
 				-1);
 
-	if (pixbuf == gebrme.unsaved_icon) {
+	if (pixbuf == gebrme.pixmaps.stock_no) {
 		GtkWidget *	dialog;
 		gboolean	cancel;
 

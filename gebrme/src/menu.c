@@ -255,7 +255,7 @@ menu_cleanup(void)
 		gtk_tree_model_get(GTK_TREE_MODEL(gebrme.menus_liststore), &iter,
 				MENU_STATUS, &pixbuf,
 				-1);
-		if (pixbuf == gebrme.unsaved_icon) {
+		if (pixbuf == gebrme.pixmaps.stock_no) {
 			GtkTreeIter *	iter_pointer;
 
 			iter_pointer = g_malloc(sizeof(GtkTreeIter));
@@ -331,7 +331,7 @@ menu_saved_status_set(MenuStatus status)
 		break;
 	case MENU_STATUS_UNSAVED:
 		gtk_list_store_set (GTK_LIST_STORE(gebrme.menus_liststore), &iter,
-				MENU_STATUS, gebrme.unsaved_icon,
+				MENU_STATUS, gebrme.pixmaps.stock_no,
 				-1);
 		break;
 	}

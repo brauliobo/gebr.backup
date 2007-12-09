@@ -65,5 +65,5 @@ AC_OUTPUT([
 debian/changelog
 rpm/gebrme.fedora.spec rpm/gebrme.opensuse.spec rpm/gebrme.mandriva.spec
 data/help-template.html
-Makefile data/Makefile pixmaps/Makefile src/Makefile
+Makefile data/Makefile src/Makefile
 ])

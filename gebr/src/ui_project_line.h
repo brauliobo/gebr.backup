@@ -36,7 +36,7 @@ struct ui_project_line {
 	/* used to determine wether the selection changed */
 	GtkTreePath  *		selection_path;
 
-	struct project_line_info {
+	struct ui_project_line_info {
 		GtkWidget *	title;
 		GtkWidget *	description;
 

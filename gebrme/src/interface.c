@@ -507,7 +507,7 @@ create_gebrme_window (void)
 	programs_vbox = gtk_vbox_new(FALSE, 0);
 	gebrme.programs_vbox = programs_vbox;
 	gtk_widget_show (programs_vbox);
-	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW(programs_scrolledwindow), programs_vbox);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(programs_scrolledwindow), programs_vbox);
 
 	statusbar = gtk_statusbar_new ();
 	gebrme.statusbar = statusbar;

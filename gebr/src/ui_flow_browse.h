@@ -34,7 +34,7 @@ struct ui_flow_browse {
 	GtkListStore *		store;
 	GtkWidget *		view;
 
-	struct info {
+	struct ui_flow_browse_info {
 		GtkWidget *	title;
 		GtkWidget *	description;
 
