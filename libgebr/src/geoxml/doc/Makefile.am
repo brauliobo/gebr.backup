@@ -17,5 +17,6 @@
 all:
 	doxygen libgeoxml.cfg
 
-libgebr_geoxmlhtmldir = $(htmldir)
-libgebr_geoxmlhtml_DATA = html
+# FIXME: how to install a directory?
+# libgebr_geoxmlhtmldir = $(htmldir)
+# libgebr_geoxmlhtml_DATA = html

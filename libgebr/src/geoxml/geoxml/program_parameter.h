@@ -58,7 +58,7 @@
  * 	]
  * 	"GeoXmlDocument" -> "GeoXmlFlow";
  * 	"GeoXmlSequence" -> "GeoXmlParameter";
- * 	"GeoXmlSequence" -> "GeoXmlSequence";
+ * 	"GeoXmlSequence" -> "GeoXmlValueSequence";
  * 	"GeoXmlValueSequence" -> "GeoXmlEnumOption";
  * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
