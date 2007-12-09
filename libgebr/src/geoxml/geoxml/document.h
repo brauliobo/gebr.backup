@@ -15,13 +15,13 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_DOCUMENT_H
-#define __LIBGEOXML_DOCUMENT_H
+#ifndef __LIBGEBR_GEOXML_DOCUMENT_H
+#define __LIBGEBR_GEOXML_DOCUMENT_H
 
 #include <glib.h>
 
 /**
- * \struct GeoXmlDocument document.h libgeoxml/document.h
+ * \struct GeoXmlDocument document.h geoxml/document.h
  * \brief
  * An abstraction to common data and functions found in flows, lines and projects.
  * \dot
@@ -35,6 +35,10 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
+ * 	edge [
+ * 		fontname = "Bitstream Vera Sans"
+ * 		fontsize = 8
+ * 	]
  *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
  * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
@@ -42,8 +46,7 @@
  * 	"GeoXmlProject" [ URL = "\ref project.h" ];
  *
  * 	edge [
- * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ * 		arrowhead = "normal"
  * 	]
  * 	"GeoXmlDocument" -> { "GeoXmlFlow" "GeoXmlLine" "GeoXmlProject" };
  * }
@@ -353,4 +356,4 @@ geoxml_document_get_description(GeoXmlDocument * document);
 const gchar *
 geoxml_document_get_help(GeoXmlDocument * document);
 
-#endif //__LIBGEOXML_DOCUMENT_H
+#endif //__LIBGEBR_GEOXML_DOCUMENT_H

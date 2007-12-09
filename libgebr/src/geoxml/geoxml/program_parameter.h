@@ -15,15 +15,15 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_PROGRAM_PARAMETER_H
-#define __LIBGEOXML_PROGRAM_PARAMETER_H
+#ifndef __LIBGEBR_GEOXML_PROGRAM_PARAMETER_H
+#define __LIBGEBR_GEOXML_PROGRAM_PARAMETER_H
 
 #include <glib.h>
 
 #include "macros.h"
 
 /**
- * \struct GeoXmlProgramParameter program_parameter.h libgeoxml/program_parameter.h
+ * \struct GeoXmlProgramParameter program_parameter.h geoxml/program_parameter.h
  * \brief
  * Represents one of the program_parameters that describes a program.
  * \dot
@@ -32,29 +32,46 @@
  * 	fontsize = 8
  * 	size = "6"
  * 	node [
- *		color = palegreen2, style = filled
+ * 		color = palegreen2, style = filled
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 		shape = record
+ * 	]
+ * 	edge [
+ * 		fontname = "Bitstream Vera Sans"
+ * 		fontsize = 8
  * 	]
  *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
  * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
+ * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
  * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
+ * 	"GeoXmlParameterGroup" [ URL = "\ref parameter_group.h" ];
  *
  * 	edge [
- * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ * 		arrowhead = "normal"
  * 	]
- * 	"GeoXmlDocument" -> { "GeoXmlFlow" };
+ * 	"GeoXmlDocument" -> "GeoXmlFlow";
+ * 	"GeoXmlSequence" -> "GeoXmlParameter";
+ * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
+ * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
+ * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
  *
  * 	edge [
  * 		arrowhead = "none"
  * 		taillabel = "0..*"
  * 	]
- * 	"GeoXmlFlow" -> { "GeoXmlProgram" };
- * 	"GeoXmlProgram" -> "GeoXmlProgramParameter";
+ * 	"GeoXmlFlow" -> "GeoXmlProgram";
+ * 	"GeoXmlParameters" -> "GeoXmlParameter";
+ *
+ * 	edge [
+ * 		arrowhead = "none"
+ * 		taillabel = "1"
+ * 	]
+ * 	"GeoXmlProgram" -> "GeoXmlParameters";
  * }
  * \enddot
  * \see program_parameter.h
@@ -337,4 +354,4 @@ geoxml_program_parameter_next(GeoXmlProgramParameter ** program_parameter);
 void GEOXML_DEPRECATED
 geoxml_program_parameter_remove(GeoXmlProgramParameter * program_parameter);
 
-#endif //__LIBGEOXML_PROGRAM_PARAMETER_H
+#endif //__LIBGEBR_GEOXML_PROGRAM_PARAMETER_H

@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_SEQUENCE_P_H
-#define __LIBGEOXML_SEQUENCE_P_H
+#ifndef __LIBGEBR_GEOXML_SEQUENCE_P_H
+#define __LIBGEBR_GEOXML_SEQUENCE_P_H
 
 /**
  * \internal
@@ -36,4 +36,4 @@ __geoxml_sequence_check(GeoXmlSequence * sequence);
 gboolean
 __geoxml_sequence_is_same_sequence(GeoXmlSequence * sequence, GeoXmlSequence * other);
 
-#endif //__LIBGEOXML_SEQUENCE_P_H
+#endif //__LIBGEBR_GEOXML_SEQUENCE_P_H

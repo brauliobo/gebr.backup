@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_ERROR_H
-#define __LIBGEOXML_ERROR_H
+#ifndef __LIBGEBR_GEOXML_ERROR_H
+#define __LIBGEBR_GEOXML_ERROR_H
 
 /**
  * \file error.h
@@ -91,4 +91,4 @@ enum GEOXML_RETV {
 	GEOXML_RETV_DIFFERENT_SEQUENCES	= -9,
 };
 
-#endif //__LIBGEOXML_ERROR_H
+#endif //__LIBGEBR_GEOXML_ERROR_H

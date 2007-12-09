@@ -15,13 +15,13 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_CATEGORY_H
-#define __LIBGEOXML_CATEGORY_H
+#ifndef __LIBGEBR_GEOXML_CATEGORY_H
+#define __LIBGEBR_GEOXML_CATEGORY_H
 
 #include <glib.h>
 
 /**
- * \struct GeoXmlCategory category.h libgeoxml/category.h
+ * \struct GeoXmlCategory category.h geoxml/category.h
  * \brief
  * A flow category.
  * \dot
@@ -35,16 +35,21 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
- *
- * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
- * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
- * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
- *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 	]
- * 	"GeoXmlDocument" -> { "GeoXmlFlow" };
+ *
+ * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
+ * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
+ *
+ * 	edge [
+ * 		arrowhead = "normal"
+ * 	]
+ * 	"GeoXmlDocument" -> "GeoXmlFlow";
+ * 	"GeoXmlSequence" -> "GeoXmlCategory";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -119,4 +124,4 @@ geoxml_category_next(GeoXmlCategory ** category);
 void GEOXML_DEPRECATED
 geoxml_category_remove(GeoXmlCategory * category);
 
-#endif //__LIBGEOXML_CATEGORY_H
+#endif //__LIBGEBR_GEOXML_CATEGORY_H

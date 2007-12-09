@@ -15,21 +15,21 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_H
-#define __LIBGEOXML_H
+#ifndef __LIBGEBR_GEOXML_H
+#define __LIBGEBR_GEOXML_H
 
 /**
  * \mainpage
- * \copydoc libgeoxml.h
+ * \copydoc geoxml.h
  */
 
 /**
- * \file libgeoxml.h
+ * \file geoxml.h
  * libgeoxml intends to be an abstraction way to specify the
  * the way programs understand seismic processing programs
  * as SU (Seismic Unix) and Madagascar
  * \dot
- * digraph libgeoxml {
+ * digraph geoxml {
  * 	fontname = "Bitstream Vera Sans"
  * 	fontsize = 8
  * 	size = "6"
@@ -37,7 +37,11 @@
  * 	color = palegreen2, style = filled
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
- * 		shape = recor
+ * 		shape = record
+ * 	]
+ * 	edge [
+ * 		fontname = "Bitstream Vera Sans"
+ * 		fontsize = 8
  * 	]
  *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
@@ -45,27 +49,38 @@
  * 	"GeoXmlLine" [ URL = "\ref line.h" ];
  * 	"GeoXmlProject" [ URL = "\ref project.h" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
+ * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
  * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
+ * 	"GeoXmlParameterGroup" [ URL = "\ref parameter_group.h" ];
  * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
  *
  * 	edge [
- * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ * 		arrowhead = "normal"
  * 	]
  * 	"GeoXmlDocument" -> { "GeoXmlFlow" "GeoXmlLine" "GeoXmlProject" };
+ * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
+ * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
+ * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
  *
  * 	edge [
  * 		arrowhead = "none"
  * 		taillabel = "0..*"
  * 	]
  * 	"GeoXmlFlow" -> { "GeoXmlCategory" "GeoXmlProgram" };
- * 	"GeoXmlProgram" -> "GeoXmlProgramParameter";
  * 	"GeoXmlLine" -> "GeoXmlLineFlow";
  * 	"GeoXmlProject" -> "GeoXmlProjectLine";
+ * 	"GeoXmlParameters" -> "GeoXmlParameter";
+ *
+ * 	edge [
+ * 		arrowhead = "none"
+ * 		taillabel = "1"
+ * 	]
+ * 	"GeoXmlProgram" -> "GeoXmlParameters";
  * }
  * \enddot
  * \dot
- * digraph program {
+ * digraph sequence {
  * 	fontname = "Bitstream Vera Sans"
  * 	fontsize = 8
  * 	size = "6"
@@ -75,22 +90,25 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
- *
- * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
- * 	"GeoXmlProjectLine" [ URL = "\ref project.h" ];
- * 	"GeoXmlLineFlow" [ URL = "\ref line.h" ];
- * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
- * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
- * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
- *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 	]
+ *
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlProjectLine" [ URL = "\ref GeoXmlProjectLine" ];
+ * 	"GeoXmlLineFlow" [ URL = "\ref GeoXmlLineFlow" ];
+ * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
+ * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
+ *
+ * 	edge [
+ * 		arrowhead = "normal"
+ * 	]
  * 	"GeoXmlSequence" -> { "GeoXmlProjectLine" };
  * 	"GeoXmlSequence" -> { "GeoXmlLineFlow" };
  * 	"GeoXmlSequence" -> { "GeoXmlProgram" };
- * 	"GeoXmlSequence" -> { "GeoXmlProgramParameter" };
+ * 	"GeoXmlSequence" -> { "GeoXmlParameter" };
  * 	"GeoXmlSequence" -> { "GeoXmlCategory" };
  * }
  * \enddot
@@ -99,8 +117,8 @@
  * Bráulio Barros de Oliveira (brauliobo@gmail.com)
  */
 
-/* For more information, go to libgeoxml's documentation at
- * http://gebr.sf.net/libgeoxml/doc
+/* For more information, go to libgebr-geoxml's documentation at
+ * http://gebr.sf.net/doc/libgebr/geoxml
  */
 
 /* include all geoxml library's headers. */
@@ -118,4 +136,4 @@
 #include <geoxml/program_parameter.h>
 #include <geoxml/parameter_group.h>
 
-#endif //__LIBGEOXML_H
+#endif //__LIBGEBR_GEOXML_H

@@ -15,13 +15,13 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_FLOW_H
-#define __LIBGEOXML_FLOW_H
+#ifndef __LIBGEBR_GEOXML_FLOW_H
+#define __LIBGEBR_GEOXML_FLOW_H
 
 #include <glib.h>
 
 /**
- * \struct GeoXmlFlow flow.h libgeoxml/flow.h
+ * \struct GeoXmlFlow flow.h geoxml/flow.h
  * \brief
  * A sequence of programs.
  * \dot
@@ -30,22 +30,28 @@
  * 	fontsize = 8
  * 	size = "6"
  * 	node [
- *		color = palegreen2, style = filled
+ * 		color = palegreen2, style = filled
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 		shape = record
  * 	]
- *
- * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
- * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
- * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
- * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
- *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 	]
+ *
+ * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
+ * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
+ *
+ * 	edge [
+ * 		arrowhead = "normal"
+ * 	]
  * 	"GeoXmlDocument" -> { "GeoXmlFlow" };
+ * 	"GeoXmlSequence" -> "GeoXmlProgram";
+ * 	"GeoXmlSequence" -> "GeoXmlCategory";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -289,4 +295,4 @@ geoxml_flow_remove_category(GeoXmlFlow * flow, GeoXmlCategory * category);
 
 
 
-#endif //__LIBGEOXML_FLOW_H
+#endif //__LIBGEBR_GEOXML_FLOW_H

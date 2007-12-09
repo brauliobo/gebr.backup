@@ -15,15 +15,15 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_SEQUENCE_H
-#define __LIBGEOXML_SEQUENCE_H
+#ifndef __LIBGEBR_GEOXML_SEQUENCE_H
+#define __LIBGEBR_GEOXML_SEQUENCE_H
 
 /**
- * \struct GeoXmlSequence sequence.h libgeoxml/sequence.h
+ * \struct GeoXmlSequence sequence.h geoxml/sequence.h
  * \brief
  * Abstract class for elements of a sequence in libgeoxml
  * \dot
- * digraph program {
+ * digraph sequence {
  * 	fontname = "Bitstream Vera Sans"
  * 	fontsize = 8
  * 	size = "6"
@@ -33,22 +33,25 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
- *
- * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
- * 	"GeoXmlProjectLine" [ URL = "\ref project.h" ];
- * 	"GeoXmlLineFlow" [ URL = "\ref line.h" ];
- * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
- * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
- * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
- *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 	]
+ *
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlProjectLine" [ URL = "\ref GeoXmlProjectLine" ];
+ * 	"GeoXmlLineFlow" [ URL = "\ref GeoXmlLineFlow" ];
+ * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
+ * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
+ *
+ * 	edge [
+ * 		arrowhead = "normal"
+ * 	]
  * 	"GeoXmlSequence" -> { "GeoXmlProjectLine" };
  * 	"GeoXmlSequence" -> { "GeoXmlLineFlow" };
  * 	"GeoXmlSequence" -> { "GeoXmlProgram" };
- * 	"GeoXmlSequence" -> { "GeoXmlProgramParameter" };
+ * 	"GeoXmlSequence" -> { "GeoXmlParameter" };
  * 	"GeoXmlSequence" -> { "GeoXmlCategory" };
  * }
  * \enddot
@@ -78,7 +81,7 @@ typedef struct geoxml_sequence GeoXmlSequence;
 #include <glib.h>
 
 /**
- * Use as an auxiliary function to \ref geoxml_sequence_next.
+ * Use as an auxiliary function to geoxml_sequence_next.
  * Assign \p sequence to the previous sequence sequenced
  * or NULL if there isn't.
  *
@@ -146,4 +149,4 @@ geoxml_sequence_move_up(GeoXmlSequence * sequence);
 int
 geoxml_sequence_move_down(GeoXmlSequence * sequence);
 
-#endif //__LIBGEOXML_SEQUENCE_H
+#endif //__LIBGEBR_GEOXML_SEQUENCE_H

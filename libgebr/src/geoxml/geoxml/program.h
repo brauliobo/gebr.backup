@@ -15,11 +15,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_PROGRAM_H
-#define __LIBGEOXML_PROGRAM_H
+#ifndef __LIBGEBR_GEOXML_PROGRAM_H
+#define __LIBGEBR_GEOXML_PROGRAM_H
 
 /**
- * \struct GeoXmlProgram program.h libgeoxml/program.h
+ * \struct GeoXmlProgram program.h geoxml/program.h
  * \brief
  * Represents a program and its parameters.
  * \dot
@@ -28,22 +28,27 @@
  * 	fontsize = 8
  * 	size = "6"
  * 	node [
- *		color = palegreen2, style = filled
+ * 		color = palegreen2, style = filled
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 		shape = record
  * 	]
- *
- * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
- * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
- * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
- * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
- *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 	]
- * 	"GeoXmlDocument" -> { "GeoXmlFlow" };
+ *
+ * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
+ * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
+ *
+ * 	edge [
+ * 		arrowhead = "normal"
+ * 	]
+ * 	"GeoXmlDocument" -> "GeoXmlFlow";
+ * 	"GeoXmlSequence" -> "GeoXmlProgram";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -278,4 +283,4 @@ geoxml_program_remove(GeoXmlProgram * program);
 void GEOXML_DEPRECATED
 geoxml_program_remove_parameter(GeoXmlProgram * program, GeoXmlProgramParameter * parameter);
 
-#endif //__LIBGEOXML_PROGRAM_H
+#endif //__LIBGEBR_GEOXML_PROGRAM_H

@@ -15,15 +15,15 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_PARAMETER_H
-#define __LIBGEOXML_PARAMETER_H
+#ifndef __LIBGEBR_GEOXML_PARAMETER_H
+#define __LIBGEBR_GEOXML_PARAMETER_H
 
 /**
- * \struct GeoXmlParameters parameters.h libgeoxml/parameters.h
+ * \struct GeoXmlParameter parameter.h geoxml/parameter.h
  * \brief
  * Represents a list of parameters.
  * \dot
- * digraph program {
+ * digraph parameter {
  * 	fontname = "Bitstream Vera Sans"
  * 	fontsize = 8
  * 	size = "6"
@@ -33,22 +33,26 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
+ * 	edge [
+ * 		fontname = "Bitstream Vera Sans"
+ * 		fontsize = 8
+ * 	]
  *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
  * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
- * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
+ * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
+ * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
  * 	"GeoXmlParameterGroup" [ URL = "\ref parameter_group.h" ];
  *
  * 	edge [
- * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ * 		arrowhead = "normal"
  * 	]
  * 	"GeoXmlDocument" -> "GeoXmlFlow";
  * 	"GeoXmlSequence" -> "GeoXmlParameter";
- * 	"GeoXmlParameter" -> "GeoXmlParameter";
+ * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
  * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
  *
@@ -57,8 +61,7 @@
  * 		taillabel = "0..*"
  * 	]
  * 	"GeoXmlFlow" -> "GeoXmlProgram";
- * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
- * 	"GeoXmlParameter" -> "GeoXmlParameter";
+ * 	"GeoXmlParameters" -> "GeoXmlParameter";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -148,9 +151,15 @@ geoxml_parameter_set_type(GeoXmlParameter ** parameter, enum GEOXML_PARAMETERTYP
  *
  * If \p parameter is NULL returns \ref GEOXML_PARAMETERTYPE_STRING.
  *
- * @see GEOXML_PARAMETERTYPE
+ * \see GEOXML_PARAMETERTYPE
  */
 enum GEOXML_PARAMETERTYPE
 geoxml_parameter_get_type(GeoXmlParameter * parameter);
 
-#endif //__LIBGEOXML_PARAMETER_H
+/**
+ * Return TRUE if \p parameter is a GeoXmlProgramParameter
+ */
+gboolean
+geoxml_parameter_get_is_program_parameter(GeoXmlParameter * parameter);
+
+#endif //__LIBGEBR_GEOXML_PARAMETER_H

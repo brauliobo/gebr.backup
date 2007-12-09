@@ -15,28 +15,10 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEBR_GEOXML_TYPES_H
-#define __LIBGEBR_GEOXML_TYPES_H
+#ifndef __LIBGEBR_GEOXML_PARAMETERS_P_H
+#define __LIBGEBR_GEOXML_PARAMETERS_P_H
 
-/**
- * \internal
- * defined in parameter.c
- */
-extern const char*	parameter_type_to_str[];
-extern const int 	parameter_type_to_str_len;
+GeoXmlParameter *
+__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, GdomeElement * before, enum GEOXML_PARAMETERTYPE type);
 
-/**
- * \internal
- */
-#define ENCODING "UTF-8"
-
-/**
- * \internal
- * The extremelly anoying and persintant GdomeException.
- * Declaring one global variable makes possible to use gdome
- * functions in defines, like groxml_document_root_element
- * Defined in document.c.
- */
-extern GdomeException	exception;
-
-#endif // __LIBGEBR_GEOXML_TYPES_H
+#endif //__LIBGEBR_GEOXML_PARAMETERS_P_H

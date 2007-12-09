@@ -15,8 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_XML_H
-#define __LIBGEOXML_XML_H
+#ifndef __LIBGEBR_GEOXML_XML_H
+#define __LIBGEBR_GEOXML_XML_H
 
 /**
  * \internal
@@ -139,4 +139,4 @@ __geoxml_previous_same_element(GdomeElement * element);
 GdomeElement *
 __geoxml_next_same_element(GdomeElement * element);
 
-#endif //__LIBGEOXML_XML_H
+#endif //__LIBGEBR_GEOXML_XML_H

@@ -15,16 +15,15 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_PARAMETERS_H
-#define __LIBGEOXML_PARAMETERS_H
+#ifndef __LIBGEBR_GEOXML_PARAMETERS_H
+#define __LIBGEBR_GEOXML_PARAMETERS_H
 
 /**
- * \struct GeoXmlParameters parameters.h libgeoxml/parameters.h
+ * \struct GeoXmlParameters parameters.h geoxml/parameters.h
  * \brief
  * Represents a list of parameters.
- * \inherit GeoXmlParameter
  * \dot
- * digraph program {
+ * digraph parameters {
  * 	fontname = "Bitstream Vera Sans"
  * 	fontsize = 8
  * 	size = "6"
@@ -34,29 +33,35 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
- *
- * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
- * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
- * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
- * 	"GeoXmlParameter" [ URL = "\ref program_parameter.h" ];
- * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
- * 	"GeoXmlParameterGroup" [ URL = "\ref parameter_group.h" ];
- *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 	]
+ *
+ * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
+ * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
+ * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
+ * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
+ * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
+ * 	"GeoXmlParameterGroup" [ URL = "\ref parameter_group.h" ];
+ *
+ * 	edge [
+ * 		arrowhead = "normal"
+ * 	]
  * 	"GeoXmlDocument" -> "GeoXmlFlow";
+ * 	"GeoXmlSequence" -> "GeoXmlParameter";
  * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
+ * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
  *
  * 	edge [
  * 		arrowhead = "none"
  * 		taillabel = "0..*"
  * 	]
  * 	"GeoXmlFlow" -> "GeoXmlProgram";
- * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
- * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
+ * 	"GeoXmlParameters" -> "GeoXmlParameter";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -108,4 +113,4 @@ geoxml_parameters_get_first_parameter(GeoXmlParameters * parameters);
 glong
 geoxml_parameters_get_number(GeoXmlParameters * parameters);
 
-#endif //__LIBGEOXML_PARAMETERS_H
+#endif //__LIBGEBR_GEOXML_PARAMETERS_H

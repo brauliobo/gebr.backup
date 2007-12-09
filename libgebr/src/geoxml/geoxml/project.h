@@ -15,11 +15,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBGEOXML_PROJECT_H
-#define __LIBGEOXML_PROJECT_H
+#ifndef __LIBGEBR_GEOXML_PROJECT_H
+#define __LIBGEBR_GEOXML_PROJECT_H
 
 /**
- * \struct GeoXmlProject project.h libgeoxml/project.h
+ * \struct GeoXmlProject project.h geoxml/project.h
  * \brief
  * Project compounds a list of lines references.
  * \dot
@@ -33,15 +33,27 @@
  * 		fontsize = 8
  * 		shape = record
  * 	]
- *
- * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
- * 	"GeoXmlProject" [ URL = "\ref project.h" ];
- *
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
  * 		fontsize = 8
  * 	]
+ *
+ * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
+ * 	"GeoXmlProject" [ URL = "\ref project.h" ];
+ * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
+ * 	"GeoXmlProjectLine" [ URL = "\ref GeoXmlProjectLine" ];
+ *
+ * 	edge [
+ * 		arrowhead = "normal"
+ * 	]
  * 	"GeoXmlDocument" -> { "GeoXmlProject" };
+ * 	"GeoXmlSequence" -> { "GeoXmlProjectLine" };
+ *
+ * 	edge [
+ * 		arrowhead = "none"
+ * 		taillabel = "0..*"
+ * 	]
+ * 	"GeoXmlProject" -> { "GeoXmlProjectLine" };
  * }
  * \enddot
  * \see project.h
@@ -171,4 +183,4 @@ geoxml_project_add_line(GeoXmlProject * project, const gchar * source);
 void GEOXML_DEPRECATED
 geoxml_project_remove_line(GeoXmlProject * project, GeoXmlProjectLine * project_line);
 
-#endif //__LIBGEOXML_PROJECT_H
+#endif //__LIBGEBR_GEOXML_PROJECT_H
