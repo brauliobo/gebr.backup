@@ -333,22 +333,22 @@ job_clicked(void)
 	 * Fill job information
 	 */
 	/* who and where */
-	g_string_append_printf(info, "Job executed at %s by %s\n",
+	g_string_append_printf(info, "%s\n", _("Job executed at %s by %s"),
 		job->server->protocol->hostname->str, job->hostname->str);
 	/* start date */
-	g_string_append_printf(info, "Start date: %s\n", job->start_date->str);
+	g_string_append_printf(info, _("%s %s\n"), _("Start date:"), job->start_date->str);
 	/* issues */
 	if (job->issues->len)
-		g_string_append_printf(info, "Issues:\n%s\n", job->issues->str);
+		g_string_append_printf(info, "%s\n%s\n"), _("Issues:"), job->issues->str);
 	/* command line */
 	if (job->cmd_line->len)
-		g_string_append_printf(info, "Command line:\n%s\n\n", job->cmd_line->str);
+		g_string_append_printf(info, "%s\n%s\n\n", _("Command line:"), job->cmd_line->str);
 	/* output */
 	if (job->output->len)
 		g_string_append_printf(info, "%s\n", job->output->str);
 	/* finish date*/
 	if (job->finish_date->len)
-		g_string_append_printf(info, "Finish date: %s", job->finish_date->str);
+		g_string_append_printf(info, "%s %s"), _("Finish date:"), job->finish_date->str);
 	/* to view */
 	gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, info->str, info->len);
 
@@ -380,7 +380,7 @@ job_append_output(struct job * job, GString * output)
 	GString *	text;
 
 	if (!job->output->len) {
-		g_string_printf(job->output, "Output:\n%s", output->str);
+		g_string_printf(job->output, "%s\n%s", _("Output:"), output->str);
 		text = job->output;
 	} else {
 		g_string_append(job->output, output->str);
@@ -476,7 +476,7 @@ job_update_status(struct job * job)
 		/* job label */
 		job_update_label(job);
 		/* job info */
-		g_string_printf(finish_date, "\nFinish date: %s", job->finish_date->str);
+		g_string_printf(finish_date, "\n%s %s", _("Finish date:"), job->finish_date->str);
 		gtk_text_buffer_get_end_iter(gebr.ui_job_control->text_buffer, &iter);
 		gtk_text_buffer_insert(gebr.ui_job_control->text_buffer, &iter, finish_date->str, finish_date->len);
 
