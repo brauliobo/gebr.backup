@@ -132,6 +132,7 @@ parameters_configure_setup_ui(void)
 	scrolledwin = gtk_scrolled_window_new (NULL, NULL);
 	viewport = gtk_viewport_new(NULL, NULL);
 	vbox = gtk_vbox_new(FALSE, 3);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG (ui_parameters->dialog)->vbox), scrolledwin, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER (scrolledwin), viewport);
 	gtk_container_add(GTK_CONTAINER (viewport), vbox);

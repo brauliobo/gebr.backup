@@ -86,6 +86,7 @@ flow_edition_setup_ui(void)
 		gtk_paned_pack1(GTK_PANED(hpanel), frame, FALSE, FALSE);
 
 		scrolledwin = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		gtk_container_add(GTK_CONTAINER(frame), scrolledwin);
 
 		ui_flow_edition->fseq_store = gtk_list_store_new(FSEQ_N_COLUMN,
@@ -168,6 +169,7 @@ flow_edition_setup_ui(void)
 		gtk_box_pack_end(GTK_BOX(hbox), vbox, TRUE, TRUE, 0);
 
 		scrolledwin = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		gtk_container_add(GTK_CONTAINER(vbox), scrolledwin);
 
 		ui_flow_edition->menu_store = gtk_tree_store_new(MENU_N_COLUMN,
@@ -322,11 +324,13 @@ flow_edition_set_status(GtkMenuItem * menuitem)
 static void
 flow_edition_menu_add(void)
 {
-	GtkTreeIter			iter;
 	GtkTreeSelection *		selection;
 	GtkTreeModel *			model;
+	GtkTreeIter			iter;
+
 	gchar *				name;
 	gchar *				filename;
+
 	GeoXmlFlow *			menu;
 	GeoXmlProgram *			program;
 	GeoXmlProgramParameter *	program_parameter;
@@ -370,12 +374,12 @@ flow_edition_menu_add(void)
 		geoxml_program_next(&program);
 	}
 
-	/* add it to the file and to the view */
+	/* add it to the file  */
 	geoxml_flow_add_flow(gebr.flow, menu);
-	flow_add_programs_to_view(menu);
-
 	geoxml_document_free(GEOXML_DOC(menu));
 	flow_save();
+	/* and to the GUI */
+	flow_add_programs_to_view(menu);
 
 out:	g_free(name);
 	g_free(filename);

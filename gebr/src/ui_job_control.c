@@ -130,6 +130,7 @@ job_control_setup_ui(void)
 	gtk_paned_pack1(GTK_PANED(hpanel), frame, FALSE, FALSE);
 
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(frame), scrolledwin);
 
 	ui_job_control->store = gtk_list_store_new(JC_N_COLUMN,
@@ -164,6 +165,7 @@ job_control_setup_ui(void)
 	gtk_box_pack_start(GTK_BOX(vbox), ui_job_control->label, FALSE, TRUE, 0);
 
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_box_pack_end(GTK_BOX(vbox), scrolledwin, TRUE, TRUE, 0);
 
 	ui_job_control->text_buffer = gtk_text_buffer_new(NULL);

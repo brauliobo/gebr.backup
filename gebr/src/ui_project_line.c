@@ -86,6 +86,7 @@ project_line_setup_ui(void)
 
 	/* Left side */
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_paned_pack1(GTK_PANED(hpanel), scrolledwin, FALSE, FALSE);
 	gtk_widget_set_size_request(scrolledwin, 300, -1);
 

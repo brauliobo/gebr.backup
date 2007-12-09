@@ -340,6 +340,8 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 		GdomeElement *		element;
 		GdomeElement *		before;
 
+		__geoxml_set_attr_value(root_element, "version", "0.2.0");
+
 		before = __geoxml_get_first_element(root_element, "email");
 		before = __geoxml_next_element(before);
 
@@ -356,8 +358,6 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 		case GEOXML_DOCUMENT_TYPE_PROJECT:
 			break;
 		}
-
-		__geoxml_set_attr_value(root_element, "version", "0.2.0");
 	}
 
 	ret = GEOXML_RETV_SUCCESS;
