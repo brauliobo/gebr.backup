@@ -300,13 +300,13 @@ flow_edition_set_status(GtkMenuItem * menuitem)
 
 	if (status_menuitem == gebr.configured_menuitem) {
 		geoxml_program_set_status(program, "configured");
-		pixbuf = gebr.pixmaps.configured_icon;
+		pixbuf = gebr.pixmaps.stock_apply;
 	} else if (status_menuitem == gebr.disabled_menuitem) {
 		geoxml_program_set_status(program, "disabled");
-		pixbuf = gebr.pixmaps.disabled_icon;
+		pixbuf = gebr.pixmaps.stock_cancel;
 	} else if (status_menuitem == gebr.unconfigured_menuitem) {
 		geoxml_program_set_status(program, "unconfigured");
-		pixbuf = gebr.pixmaps.unconfigured_icon;
+		pixbuf = gebr.pixmaps.stock_warning;
 	} else
 		return;
 

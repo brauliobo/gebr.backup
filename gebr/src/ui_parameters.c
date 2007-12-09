@@ -228,7 +228,7 @@ parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_param
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
 			gtk_tree_selection_get_selected(selection, &model, &iter);
 			gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &iter,
-					FSEQ_STATUS_COLUMN, gebr.pixmaps.configured_icon,
+					FSEQ_STATUS_COLUMN, gebr.pixmaps.stock_apply,
 					-1);
 
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gebr.configured_menuitem), TRUE);

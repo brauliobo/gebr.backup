@@ -333,13 +333,13 @@ job_clicked(void)
 	 * Fill job information
 	 */
 	/* who and where */
-	g_string_append_printf(info, "%s\n", _("Job executed at %s by %s"),
+	g_string_append_printf(info, _("Job executed at %s by %s\n"),
 		job->server->protocol->hostname->str, job->hostname->str);
 	/* start date */
 	g_string_append_printf(info, _("%s %s\n"), _("Start date:"), job->start_date->str);
 	/* issues */
 	if (job->issues->len)
-		g_string_append_printf(info, "%s\n%s\n"), _("Issues:"), job->issues->str);
+		g_string_append_printf(info, "%s\n%s\n", _("Issues:"), job->issues->str);
 	/* command line */
 	if (job->cmd_line->len)
 		g_string_append_printf(info, "%s\n%s\n\n", _("Command line:"), job->cmd_line->str);
@@ -348,7 +348,7 @@ job_clicked(void)
 		g_string_append_printf(info, "%s\n", job->output->str);
 	/* finish date*/
 	if (job->finish_date->len)
-		g_string_append_printf(info, "%s %s"), _("Finish date:"), job->finish_date->str);
+		g_string_append_printf(info, "%s %s", _("Finish date:"), job->finish_date->str);
 	/* to view */
 	gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, info->str, info->len);
 
@@ -460,13 +460,13 @@ job_update_status(struct job * job)
 
 	switch (job->status) {
 	case JOB_STATUS_RUNNING:
-		pixbuf = gebr.pixmaps.running_icon;
+		pixbuf = gebr.pixmaps.stock_execute;
 		break;
 	case JOB_STATUS_FINISHED: {
 		GtkTextIter	iter;
 		GString *	finish_date;
 
-		pixbuf = gebr.pixmaps.configured_icon;
+		pixbuf = gebr.pixmaps.stock_apply;
 		if (job_is_active(job) == FALSE)
 			break;
 
@@ -486,7 +486,7 @@ job_update_status(struct job * job)
 	}
 	case JOB_STATUS_FAILED:
 	case JOB_STATUS_CANCELED:
-		pixbuf = gebr.pixmaps.disabled_icon;
+		pixbuf = gebr.pixmaps.stock_cancel;
 		break;
 	default:
 		pixbuf = NULL;

@@ -42,6 +42,8 @@ struct gebr {
 	GtkWidget *			notebook;
 	GtkWidget *			statusbar;
 	struct about			about;
+	/* for strange things ;) */
+	GtkWidget *			invisible;
 
 	/* doc: the current selected project or line */
 	GeoXmlDocument *		doc;
@@ -83,10 +85,10 @@ struct gebr {
 
 	/* Pixmaps */
 	struct pixmaps {
-		GdkPixbuf *		configured_icon;
-		GdkPixbuf *		unconfigured_icon;
-		GdkPixbuf *		disabled_icon;
-		GdkPixbuf *		running_icon;
+		GdkPixbuf *		stock_apply;
+		GdkPixbuf *		stock_warning;
+		GdkPixbuf *		stock_cancel;
+		GdkPixbuf *		stock_execute;
 	} pixmaps;
 };
 

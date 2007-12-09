@@ -169,11 +169,11 @@ flow_add_programs_to_view(GeoXmlFlow * flow)
 		geoxml_program_get_menu(program, &menu, &prog_index);
 
 		if (g_ascii_strcasecmp(geoxml_program_get_status(program), "unconfigured") == 0)
-			pixbuf = gebr.pixmaps.unconfigured_icon;
+			pixbuf = gebr.pixmaps.stock_warning;
 		else if (g_ascii_strcasecmp(geoxml_program_get_status(program), "configured") == 0)
-			pixbuf = gebr.pixmaps.configured_icon;
+			pixbuf = gebr.pixmaps.stock_apply;
 		else if (g_ascii_strcasecmp(geoxml_program_get_status(program), "disabled") == 0)
-			pixbuf = gebr.pixmaps.disabled_icon;
+			pixbuf = gebr.pixmaps.stock_cancel;
 		else {
 			gebr_message(WARNING, TRUE, TRUE, _("Unknown flow program '%s' status"),
 				geoxml_program_get_title(program));

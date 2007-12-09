@@ -57,7 +57,6 @@ gebr_init(int argc, char ** argv)
 	GString *	log_filename;
 	GError *	error;
 
-
 	/* initialization */
 	gebr.doc = NULL;
 	gebr.project = NULL;
@@ -79,10 +78,11 @@ gebr_init(int argc, char ** argv)
 	protocol_init();
 
 	/* icons */
-	gebr.pixmaps.unconfigured_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_unconfigured.png", &error);
-	gebr.pixmaps.configured_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_configured.png", &error);
-	gebr.pixmaps.disabled_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_disabled.png", &error);
-	gebr.pixmaps.running_icon = gdk_pixbuf_new_from_file(PIXMAPS_DIR "gebr_running.png", &error);
+	gebr.invisible = gtk_invisible_new();
+	gebr.pixmaps.stock_cancel = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_CANCEL, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
+	gebr.pixmaps.stock_apply = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_APPLY, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
+	gebr.pixmaps.stock_warning = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
+	gebr.pixmaps.stock_execute = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_EXECUTE, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
 
 	/* message */
 	gebr_message(START, TRUE, TRUE, _("GêBR Initiating..."));
@@ -160,9 +160,11 @@ gebr_quit(void)
 	g_free(gebr.ui_job_control);
 	g_free(gebr.ui_server_list);
 
-	g_object_unref(gebr.pixmaps.unconfigured_icon);
-	g_object_unref(gebr.pixmaps.configured_icon);
-	g_object_unref(gebr.pixmaps.disabled_icon);
+	g_object_unref(gebr.pixmaps.stock_cancel);
+	g_object_unref(gebr.pixmaps.stock_apply);
+	g_object_unref(gebr.pixmaps.stock_warning);
+	g_object_unref(gebr.pixmaps.stock_execute);
+	gtk_widget_destroy(gebr.invisible);
 
 	gtk_main_quit();
 
