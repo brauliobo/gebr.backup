@@ -153,7 +153,6 @@ ssh_ask_server_port(struct server * server)
 	g_string_printf(cmd_line, "ssh %s 'test -e ~/.gebr/run/gebrd.run && cat ~/.gebr/run/gebrd.run'",
 		server->address->str);
 	gebr_message(DEBUG, FALSE, TRUE, "ssh_ask_server_port: %s", server->address->str);
-	g_print("ssh_ask_server_port\n");
 	g_signal_connect(process, "ready-read-stdout",
 			G_CALLBACK(ssh_read_server_port_read_stdout), server);
 	g_signal_connect(process, "ready-read-stderr",
@@ -172,7 +171,7 @@ ssh_ask_server_port(struct server * server)
 struct server *
 server_new(const gchar * address)
 {
-	gebr_message(DEBUG, TRUE, TRUE, "server_new: %s", address);
+	gebr_message(DEBUG, TRUE, TRUE, _("new server '%s'"), address);
 
 	GtkTreeIter	iter;
 
@@ -245,14 +244,15 @@ server_free(struct server * server)
 void
 server_connected(GTcpSocket * tcp_socket, struct server * server)
 {
-	gebr_message(DEBUG, TRUE, TRUE, "server_connected\n");
-
 	gchar		hostname[100];
 	gchar *		display;
 	GString *	mcookie_cmd;
 	FILE *		output_fp;
 	gchar		line[1024];
 	gchar **	splits;
+
+	gebr_message(DEBUG, TRUE, TRUE, _("server '%s' connected"),
+		     server->address->str);
 
 	/* initialization */
 	mcookie_cmd = g_string_new(NULL);
@@ -281,7 +281,8 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 static void
 server_disconnected(GTcpSocket * tcp_socket, struct server * server)
 {
-	gebr_message(DEBUG, TRUE, TRUE, "server_disconnected: %s", server->address->str);
+	gebr_message(DEBUG, TRUE, TRUE, _("server '%s' disconnected"),
+		     server->address->str);
 
 	server->port = 0;
 	server->protocol->logged = FALSE;
@@ -296,8 +297,9 @@ server_read(GTcpSocket * tcp_socket, struct server * server)
 	GString *	data;
 
 	data = g_socket_read_string_all(G_SOCKET(tcp_socket));
-	gebr_message(DEBUG, FALSE, TRUE, "server_read: %s", server->address->str);
-	g_print("server_read %s\n", data->str);
+	gebr_message(DEBUG, FALSE, TRUE, "read from server '%s'",
+		     server->address->str);
+	g_print("server_read:\n%s\n", data->str);
 	protocol_receive_data(server->protocol, data);
 	client_parse_server_messages(server);
 
@@ -307,7 +309,8 @@ server_read(GTcpSocket * tcp_socket, struct server * server)
 static void
 server_error(GTcpSocket * tcp_socket, enum GSocketError error, struct server * server)
 {
-	gebr_message(ERROR, FALSE, TRUE, _("server %s reported error %d"), server->address->str, error);
+	gebr_message(ERROR, FALSE, TRUE, _("server '%s' reported error %d"), 
+		     server->address->str, error);
 	server_free(server);
 }
 
