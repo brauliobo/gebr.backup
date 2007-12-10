@@ -631,31 +631,33 @@ parameter_uilabel_update(struct parameter_data * data)
 	gchar *		markup;
 	GString *	uilabel;
 
-	switch (geoxml_program_parameter_get_type(data->parameter)) {
-	case GEOXML_PARAMETERTYPE_STRING:
-		markup = g_markup_printf_escaped ("<i>%s</i> ", _("string"));
-		break;
-	case GEOXML_PARAMETERTYPE_INT:
-		markup = g_markup_printf_escaped ("<i>%s</i> ", _("integer"));
-		break;
-	case GEOXML_PARAMETERTYPE_FILE:
-		markup = g_markup_printf_escaped ("<i>%s</i> ", _("file"));
-		break;
-	case GEOXML_PARAMETERTYPE_FLAG:
-		markup = g_markup_printf_escaped ("<i>%s</i> ", _("flag"));
-		break;
-	case GEOXML_PARAMETERTYPE_FLOAT:
-		markup = g_markup_printf_escaped ("<i>%s</i> ", _("real number"));
-		break;
-	case GEOXML_PARAMETERTYPE_RANGE:
-		markup = g_markup_printf_escaped ("<i>%s</i> ", _("range"));
-		break;
-	default:
-		markup = g_markup_printf_escaped ("<i>%s</i> ", _("unknown"));
-	}
-
+	/* initialization*/
 	uilabel = g_string_new(markup);
 
+	switch (geoxml_program_parameter_get_type(data->parameter)) {
+	case GEOXML_PARAMETERTYPE_STRING:
+		markup = g_markup_printf_escaped("<i>%s</i> ", _("string"));
+		break;
+	case GEOXML_PARAMETERTYPE_INT:
+		markup = g_markup_printf_escaped("<i>%s</i> ", _("integer"));
+		break;
+	case GEOXML_PARAMETERTYPE_FILE:
+		markup = g_markup_printf_escaped("<i>%s</i> ", _("file"));
+		break;
+	case GEOXML_PARAMETERTYPE_FLAG:
+		markup = g_markup_printf_escaped("<i>%s</i> ", _("flag"));
+		break;
+	case GEOXML_PARAMETERTYPE_FLOAT:
+		markup = g_markup_printf_escaped("<i>%s</i> ", _("real number"));
+		break;
+	case GEOXML_PARAMETERTYPE_RANGE:
+		markup = g_markup_printf_escaped("<i>%s</i> ", _("range"));
+		break;
+	default:
+		markup = g_markup_printf_escaped("<i>%s</i> ", _("unknown"));
+	}
+
+	g_string_assign(uilabel, markup);
 	/* keyword */
 	g_string_append(uilabel, geoxml_program_parameter_get_keyword(data->parameter));
 	/* default */
@@ -676,5 +678,8 @@ parameter_uilabel_update(struct parameter_data * data)
 	}
 
 	gtk_label_set_markup(GTK_LABEL(data->label), uilabel->str);
+
+	/* frees */
+	g_free(markup);
 	g_string_free(uilabel, TRUE);
 }
