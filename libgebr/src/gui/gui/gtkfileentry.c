@@ -95,7 +95,7 @@ __gtk_file_entry_browse_button_clicked(GtkButton * button, GtkFileEntry * file_e
 	chooser_dialog = gtk_file_chooser_dialog_new(
 		file_entry->choose_directory == FALSE ? _("Choose file") : _("Choose directory"),
 		NULL,
-		file_entry->choose_directory == FALSE ? GTK_FILE_CHOOSER_ACTION_OPEN : GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+		file_entry->choose_directory == FALSE ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
 		GTK_STOCK_OK, GTK_RESPONSE_OK,
 		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 		NULL);
