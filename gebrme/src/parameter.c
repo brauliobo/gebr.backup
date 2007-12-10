@@ -666,6 +666,8 @@ parameter_uilabel_update(struct parameter_data * data)
 	if ((strlen(geoxml_program_parameter_get_keyword(data->parameter)) *
 	strlen(geoxml_program_parameter_get_label(data->parameter))) > 0)
 		g_string_append(uilabel, ",   ");
+	else
+		g_string_append(uilabel, " ");
 	/* label */
 	if (strlen(geoxml_program_parameter_get_label(data->parameter))) {
 		g_string_append(uilabel, "<i>");

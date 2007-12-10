@@ -56,7 +56,7 @@ help_subst_fields(GString * help)
 		ptr = strstr(help->str, "Flow/Program Title");
 
 		while (ptr != NULL){
-			pos = (ptr - help->str)/sizeof(char);
+			pos = (ptr - help->str)/sizeof(gchar);
 			g_string_erase(help, pos, 18);
 			g_string_insert(help, pos, content);
 			ptr = strstr(help->str, "Flow/Program Title");
@@ -69,7 +69,7 @@ help_subst_fields(GString * help)
 		ptr = strstr(help->str, "Put here an one-line description");
 
 		while (ptr != NULL){
-			pos = (ptr - help->str)/sizeof(char);
+			pos = (ptr - help->str)/sizeof(gchar);
 			g_string_erase(help, pos, 32);
 			g_string_insert(help, pos, content);
 			ptr = strstr(help->str, "Put here an one-line description");
