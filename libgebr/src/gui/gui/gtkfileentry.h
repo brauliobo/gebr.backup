@@ -36,7 +36,7 @@ typedef struct _GtkFileEntry		GtkFileEntry;
 typedef struct _GtkFileEntryClass	GtkFileEntryClass;
 
 struct _GtkFileEntry {
-	GtkBin		parent;
+	GtkHBox		parent;
 
 	GdkWindow *	event_window;
 	GtkWidget *	entry;
@@ -44,7 +44,7 @@ struct _GtkFileEntry {
 	gboolean	choose_directory;
 };
 struct _GtkFileEntryClass {
-	GtkBinClass	parent;
+	GtkHBoxClass	parent;
 
 	/* signals */
 	void		(*path_changed)(GtkFileEntry * self);
