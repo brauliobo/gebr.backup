@@ -632,7 +632,7 @@ parameter_uilabel_update(struct parameter_data * data)
 	GString *	uilabel;
 
 	/* initialization*/
-	uilabel = g_string_new(markup);
+	uilabel = g_string_new(NULL);
 
 	switch (geoxml_program_parameter_get_type(data->parameter)) {
 	case GEOXML_PARAMETERTYPE_STRING:
@@ -664,15 +664,9 @@ parameter_uilabel_update(struct parameter_data * data)
 	g_string_append(uilabel, " = [");
 	g_string_append(uilabel, geoxml_program_parameter_get_default(data->parameter));
 	g_string_append(uilabel, "]");
-	/* separator between keyword and label */
-	if ((strlen(geoxml_program_parameter_get_keyword(data->parameter)) *
-	strlen(geoxml_program_parameter_get_label(data->parameter))) > 0)
-		g_string_append(uilabel, ",   ");
-	else
-		g_string_append(uilabel, " ");
 	/* label */
 	if (strlen(geoxml_program_parameter_get_label(data->parameter))) {
-		g_string_append(uilabel, "<i>");
+		g_string_append(uilabel, ",   <i>");
 		g_string_append(uilabel, geoxml_program_parameter_get_label(data->parameter));
 		g_string_append(uilabel, "</i>");
 	}
