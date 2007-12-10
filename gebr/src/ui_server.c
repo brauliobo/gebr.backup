@@ -28,10 +28,10 @@
 #include "ui_server.h"
 #include "gebr.h"
 #include "support.h"
-#include "server.h"
 
 #define GEBR_SERVER_CLOSE	101
 #define GEBR_SERVER_REMOVE	102
+#define GEBR_SERVER_UPDATE	103
 
 /*
  * Prototypes
@@ -42,6 +42,9 @@ server_list_actions(GtkDialog * dialog, gint arg1, struct ui_server_list * ui_se
 
 static void
 server_list_add(GtkEntry * entry, struct ui_server_list * ui_server_list);
+
+static void
+server_select_cursor_changed(GtkTreeView * tree_view, struct ui_server_select * ui_server_select);
 
 /*
  * Section: Public
@@ -71,6 +74,7 @@ server_list_setup_ui(void)
 	ui_server_list = g_malloc(sizeof(struct ui_server_list));
 
 	ui_server_list->store = gtk_list_store_new(SERVER_N_COLUMN,
+					GDK_TYPE_PIXBUF,
 					G_TYPE_STRING,
 					G_TYPE_POINTER);
 
@@ -92,22 +96,19 @@ server_list_setup_ui(void)
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), label, FALSE, TRUE, 0);
 
 	entry = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), entry, FALSE, TRUE, 0);
 	g_signal_connect(GTK_OBJECT(entry), "activate",
 			GTK_SIGNAL_FUNC(server_list_add), ui_server_list);
 
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), entry, FALSE, TRUE, 0);
-
 	ui_server_list->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_server_list->store));
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), ui_server_list->view, TRUE, TRUE, 0);
 
 	renderer = gtk_cell_renderer_text_new();
-	col = gtk_tree_view_column_new_with_attributes(_("Servers"), renderer, NULL);
-	gtk_tree_view_column_set_sort_column_id (col, SERVER_ADDRESS);
-	gtk_tree_view_column_set_sort_indicator (col, TRUE);
-
+	col = gtk_tree_view_column_new_with_attributes(_("Address"), renderer, NULL);
+	gtk_tree_view_column_set_sort_column_id(col, SERVER_ADDRESS);
+	gtk_tree_view_column_set_sort_indicator(col, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_server_list->view), col);
 	gtk_tree_view_column_add_attribute(col, renderer, "text", SERVER_ADDRESS);
-
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), ui_server_list->view, TRUE, TRUE, 0);
 
 	return ui_server_list;
 }
@@ -188,11 +189,126 @@ server_list_add(GtkEntry * entry, struct ui_server_list * ui_server_list)
 	}
 
 	/* add to store (creating a new server structure) and ... */
-	gtk_list_store_append(gebr.ui_server_list->store, &iter);
-	gtk_list_store_set(gebr.ui_server_list->store, &iter,
-			SERVER_ADDRESS, gtk_entry_get_text(entry),
-			SERVER_POINTER, server_new(gtk_entry_get_text(entry)),
-			-1);
+	server_new(gtk_entry_get_text(entry));
+
 	/* reset entry. */
 	gtk_entry_set_text(entry, "");
+}
+
+/*
+ * Function: server_select_setup_ui
+ * Select a server to run a flow.
+ * The server is build using the store at gebr.ui_server_list.store
+ *
+ */
+struct server *
+server_select_setup_ui(void)
+{
+	struct ui_server_select *	ui_server_select;
+
+	GtkTreeSelection *		selection;
+	GtkTreeIter			first_iter;
+	GtkTreeViewColumn *		col;
+	GtkCellRenderer *		renderer;
+
+	gboolean			has_first;
+	struct server *			server;
+
+	/* initializations */
+	ui_server_select = g_malloc(sizeof(struct ui_server_select));
+	server = NULL;
+
+	has_first = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list->store), &first_iter);
+	if (!has_first) {
+		gebr_message(ERROR, TRUE, FALSE,
+			_("There is no servers available. Please add at least one at Configure/Server"));
+		goto out;
+	}
+	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebr.ui_server_list->store), NULL) == 1) {
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->store), &first_iter,
+			SERVER_POINTER, &server,
+			-1);
+		goto out;
+	}
+
+	ui_server_select->dialog = gtk_dialog_new_with_buttons(_("Select server"),
+							GTK_WINDOW(gebr.window),
+							GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+							NULL);
+	gtk_widget_set_size_request(ui_server_select->dialog, 380, 300);
+	ui_server_select->ok_button = gtk_dialog_add_button(GTK_DIALOG(ui_server_select->dialog), GTK_STOCK_OK, GTK_RESPONSE_OK);
+	gtk_dialog_add_buttons(GTK_DIALOG(ui_server_select->dialog),
+		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+		_("Update"), GEBR_SERVER_UPDATE,
+		NULL);
+
+	ui_server_select->store = gebr.ui_server_list->store;
+	ui_server_select->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(ui_server_select->store));
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(ui_server_select->dialog)->vbox), ui_server_select->view, TRUE, TRUE, 0);
+	g_signal_connect(GTK_OBJECT(ui_server_select->view), "cursor-changed",
+			GTK_SIGNAL_FUNC(server_select_cursor_changed), ui_server_select);
+
+	renderer = gtk_cell_renderer_pixbuf_new();
+	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
+	gtk_tree_view_column_set_sort_column_id(col, SERVER_ADDRESS);
+	gtk_tree_view_column_set_sort_indicator(col, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_server_select->view), col);
+	gtk_tree_view_column_add_attribute(col, renderer, "pixbuf", SERVER_STATUS_ICON);
+
+	renderer = gtk_cell_renderer_text_new();
+	col = gtk_tree_view_column_new_with_attributes(_("Address"), renderer, NULL);
+	gtk_tree_view_column_set_sort_column_id(col, SERVER_ADDRESS);
+	gtk_tree_view_column_set_sort_indicator(col, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(ui_server_select->view), col);
+	gtk_tree_view_column_add_attribute(col, renderer, "text", SERVER_ADDRESS);
+
+	/* select the first server */
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_server_select->view));
+	gtk_tree_selection_select_iter(selection, &first_iter);
+	g_signal_emit_by_name(ui_server_select->view, "cursor-changed");
+
+	gtk_widget_show_all(ui_server_select->dialog);
+	while (1) {
+		switch (gtk_dialog_run(GTK_DIALOG(ui_server_select->dialog))) {
+		case GTK_RESPONSE_OK:
+			server = ui_server_select->selected;
+			break;
+		case GTK_RESPONSE_CANCEL:
+			server = NULL;
+			break;
+		case GEBR_SERVER_UPDATE:
+			/* TODO: */
+			continue;
+		}
+		break;
+	}
+
+	/* frees */
+	gtk_widget_destroy(ui_server_select->dialog);
+	g_free(ui_server_select);
+
+out:	return server;
+}
+
+static void
+server_select_cursor_changed(GtkTreeView * tree_view, struct ui_server_select * ui_server_select)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	struct server *		server;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_server_select->view));
+	gtk_tree_selection_get_selected(selection, &model, &iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(ui_server_select->store), &iter,
+			SERVER_POINTER, &server,
+			-1);
+	if (server->protocol->logged == FALSE) {
+		g_object_set(ui_server_select->ok_button, "sensitive", FALSE, NULL);
+		return;
+	}
+
+	g_object_set(ui_server_select->ok_button, "sensitive", TRUE, NULL);
+	ui_server_select->selected = server;
 }

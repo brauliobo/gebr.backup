@@ -71,10 +71,10 @@ project_line_setup_ui(void)
 	GtkTreeViewColumn *		col;
 	GtkCellRenderer *		renderer;
 
-	GtkWidget *                     scrolledwin;
-	GtkWidget *                     hpanel;
-	GtkWidget *                     frame;
-	GtkWidget *                     infopage;
+	GtkWidget *			scrolledwin;
+	GtkWidget *			hpanel;
+	GtkWidget *			frame;
+	GtkWidget *			infopage;
 
 	/* alloc */
 	ui_project_line = g_malloc(sizeof(struct ui_project_line));
@@ -235,7 +235,7 @@ project_line_load(void)
 	gchar *                 title;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE){
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
 		gebr_message(ERROR, TRUE, FALSE, _("Neither project nor line selected"));
 		return;
 	}

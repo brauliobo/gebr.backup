@@ -203,7 +203,6 @@ job_cancel(void)
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
 		return;
-
 	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
 			JC_STRUCT, &job,
 			-1);
@@ -212,6 +211,8 @@ job_cancel(void)
 		gebr_message(WARNING, TRUE, FALSE, _("Job is not running"));
 		return;
 	}
+	if (confirm_action_dialog(_("Are you sure you want to terminate job '%s'?"), job->title->str) == FALSE)
+		return;
 
 	gebr_message(INFO, TRUE, FALSE, _("Asking server to terminate job"));
 	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to terminate job '%s'"), job->server->address, job->title->str);
@@ -235,10 +236,12 @@ job_close(void)
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
 		return;
-
 	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
 			JC_STRUCT, &job,
 			-1);
+
+	if (confirm_action_dialog(_("Are you sure you want to clear job '%s'?"), job->title->str) == FALSE)
+		return;
 
 	__job_close(job);
 	__job_clear_or_select_first();
@@ -253,6 +256,9 @@ job_clear(void)
 {
 	GtkTreeIter		iter;
 	gboolean		valid;
+
+	if (confirm_action_dialog(_("Are you sure you want to clear all jobs from all servers?")) == FALSE)
+		return;
 
 	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
 	while (valid) {
@@ -286,7 +292,6 @@ job_stop(void)
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
 		return;
-
 	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
 			JC_STRUCT, &job,
 			-1);
@@ -295,6 +300,8 @@ job_stop(void)
 		gebr_message(WARNING, TRUE, FALSE, _("Job is not running"));
 		return;
 	}
+	if (confirm_action_dialog(_("Are you sure you want to kill job '%s'?"), job->title->str) == FALSE)
+		return;
 
 	gebr_message(INFO, TRUE, FALSE, _("Asking server to kill job"));
 	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to kill job '%s'"), job->server->address, job->title->str);
@@ -336,19 +343,19 @@ job_clicked(void)
 	g_string_append_printf(info, _("Job executed at %s by %s\n"),
 		job->server->protocol->hostname->str, job->hostname->str);
 	/* start date */
-	g_string_append_printf(info, _("%s %s\n"), _("Start date:"), job->start_date->str);
+	g_string_append_printf(info, "%s %s\n", _("Start date:"), job->start_date->str);
 	/* issues */
 	if (job->issues->len)
-		g_string_append_printf(info, "%s\n%s\n", _("Issues:"), job->issues->str);
+		g_string_append_printf(info, "\n%s\n%s", _("Issues:"), job->issues->str);
 	/* command line */
 	if (job->cmd_line->len)
-		g_string_append_printf(info, "%s\n%s\n\n", _("Command line:"), job->cmd_line->str);
+		g_string_append_printf(info, "\n%s\n%s\n", _("Command line:"), job->cmd_line->str);
 	/* output */
 	if (job->output->len)
-		g_string_append_printf(info, "%s\n", job->output->str);
+		g_string_append_printf(info, "\n%s", job->output->str);
 	/* finish date*/
 	if (job->finish_date->len)
-		g_string_append_printf(info, "%s %s", _("Finish date:"), job->finish_date->str);
+		g_string_append_printf(info, "\n%s %s", _("Finish date:"), job->finish_date->str);
 	/* to view */
 	gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, info->str, info->len);
 
@@ -379,8 +386,10 @@ job_append_output(struct job * job, GString * output)
 	GtkTextIter	iter;
 	GString *	text;
 
+	if (!output->len)
+		return;
 	if (!job->output->len) {
-		g_string_printf(job->output, "%s\n%s", _("Output:"), output->str);
+		g_string_printf(job->output, "\n%s\n%s", _("Output:"), output->str);
 		text = job->output;
 	} else {
 		g_string_append(job->output, output->str);

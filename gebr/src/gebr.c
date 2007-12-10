@@ -81,6 +81,8 @@ gebr_init(int argc, char ** argv)
 	gebr.pixmaps.stock_apply = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_APPLY, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
 	gebr.pixmaps.stock_warning = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
 	gebr.pixmaps.stock_execute = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_EXECUTE, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
+	gebr.pixmaps.stock_connect = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_CONNECT, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
+	gebr.pixmaps.stock_disconnect = gtk_widget_render_icon(gebr.invisible, GTK_STOCK_DISCONNECT, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
 
 	/* message */
 	gebr_message(START, TRUE, TRUE, _("GêBR Initiating..."));
@@ -162,6 +164,8 @@ gebr_quit(void)
 	g_object_unref(gebr.pixmaps.stock_apply);
 	g_object_unref(gebr.pixmaps.stock_warning);
 	g_object_unref(gebr.pixmaps.stock_execute);
+	g_object_unref(gebr.pixmaps.stock_connect);
+	g_object_unref(gebr.pixmaps.stock_disconnect);
 	gtk_widget_destroy(gebr.invisible);
 
 	gtk_main_quit();
@@ -219,27 +223,15 @@ gebr_config_load(int argc, char ** argv)
 	}
 
 	if (!gebr.config.ggopt.server_given) {
-		GtkTreeIter	iter;
-		gchar		hostname[100];
+		gchar	hostname[100];
 
 		gethostname(hostname, 100);
-		gtk_list_store_append(gebr.ui_server_list->store, &iter);
-		gtk_list_store_set(gebr.ui_server_list->store, &iter,
-				SERVER_ADDRESS, hostname,
-				SERVER_POINTER, server_new(hostname),
-				-1);
+		server_new(hostname);
 	} else {
-		int		i;
+		gint	i;
 
-		for (i = 0; i < gebr.config.ggopt.server_given; ++i) {
-			GtkTreeIter	iter;
-
-			gtk_list_store_append(gebr.ui_server_list->store, &iter);
-			gtk_list_store_set(gebr.ui_server_list->store, &iter,
-						SERVER_ADDRESS, gebr.config.ggopt.server_arg[i],
-						SERVER_POINTER, server_new(gebr.config.ggopt.server_arg[i]),
-						-1);
-		}
+		for (i = 0; i < gebr.config.ggopt.server_given; ++i)
+			server_new(gebr.config.ggopt.server_arg[i]);
 	}
 
 	/* frees */

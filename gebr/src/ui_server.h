@@ -24,21 +24,23 @@
 
 #include <gtk/gtk.h>
 
+#include "server.h"
+
 /* Store field */
 enum {
-	SERVER_ADDRESS = 0,
+	SERVER_STATUS_ICON = 0,
+	SERVER_ADDRESS,
 	SERVER_POINTER,
 	SERVER_N_COLUMN
 };
 
-
-/* 
+/*
  * Struct: ui_server_list
- * 
+ *
  * (start code)
  *   struct ui_server_list {
  *                    GtkWidget *		dialog;
- *   
+ *
  *                    GtkListStore *	store;
  *                    GtkWidget *		view;
  *   };
@@ -53,5 +55,20 @@ struct ui_server_list {
 
 struct ui_server_list *
 server_list_setup_ui(void);
+
+struct ui_server_select {
+	GtkWidget *		dialog;
+
+	struct server *		selected;
+
+	/* same as gebr.ui_server_list.store */
+	GtkListStore *		store;
+	GtkWidget *		view;
+
+	GtkWidget *		ok_button;
+};
+
+struct server *
+server_select_setup_ui(void);
 
 #endif //__UI_SERVER_H

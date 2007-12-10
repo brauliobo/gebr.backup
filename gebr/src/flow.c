@@ -323,16 +323,6 @@ out:	g_free(title);
 void
 flow_run(void)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel     *	model;
-	GtkTreeIter		first_iter;
-	GtkTreeViewColumn *	col;
-	GtkCellRenderer *	renderer;
-
-	GtkWidget *		dialog;
-	GtkWidget *		view;
-
-	gboolean		has_first;
 	struct server *		server;
 
 	/* check for a flow selected */
@@ -340,64 +330,11 @@ flow_run(void)
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
 		return;
 	}
-
-	has_first = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list->store), &first_iter);
-	if (!has_first) {
-		gebr_message(ERROR, TRUE, FALSE,
-			_("There is no servers available. Please add at least one at Configure/Server"));
+	server = server_select_setup_ui();
+	if (server == NULL)
 		return;
-	}
 
-	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebr.ui_server_list->store), NULL) == 1){
-		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list->store), &first_iter,
-			       SERVER_POINTER, &server,
-			       -1);
-		server_run_flow(server);
-		return;
-	}
-
-	dialog = gtk_dialog_new_with_buttons(_("Choose server to run"),
-						GTK_WINDOW(gebr.window),
-						GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-						GTK_STOCK_OK, GTK_RESPONSE_OK,
-						GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-						NULL);
-	gtk_widget_set_size_request(dialog, 380, 300);
-
-	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL (gebr.ui_server_list->store));
-
-	renderer = gtk_cell_renderer_text_new ();
-	col = gtk_tree_view_column_new_with_attributes (_("Servers"), renderer, NULL);
-	gtk_tree_view_column_set_sort_column_id  (col, SERVER_ADDRESS);
-	gtk_tree_view_column_set_sort_indicator  (col, TRUE);
-
-	gtk_tree_view_append_column (GTK_TREE_VIEW (view), col);
-	gtk_tree_view_column_add_attribute (col, renderer, "text", SERVER_ADDRESS);
-
-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), view, TRUE, TRUE, 0);
-
-	/* select the first server */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-	gtk_tree_selection_select_iter(selection, &first_iter);
-
-	gtk_widget_show_all(dialog);
-	switch (gtk_dialog_run(GTK_DIALOG(dialog))) {
-	case GTK_RESPONSE_OK: {
-		GtkTreeIter       	iter;
-
-		gtk_tree_selection_get_selected(selection, &model, &iter);
-		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list->store), &iter,
-				SERVER_POINTER, &server,
-				-1);
-
-		server_run_flow(server);
-
-		break;
-	}
-	case GTK_RESPONSE_CANCEL:
-		break;
-	}
-	gtk_widget_destroy(dialog);
+	server_run_flow(server);
 }
 
 /*
@@ -407,9 +344,9 @@ flow_run(void)
 void
 flow_program_remove(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter;
 
 	GeoXmlProgram *		program;
 	gulong 			nprogram;
@@ -439,11 +376,12 @@ flow_program_remove(void)
 void
 flow_program_move_up(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
-	GtkTreePath *		previous_path;
+	GtkTreeIter		iter;
 	GtkTreeIter 		previous;
+	GtkTreePath *		previous_path;
+
 	GeoXmlProgram *		program;
 	gulong 			nprogram;
 	gchar *			node;
@@ -482,9 +420,10 @@ out:	gtk_tree_path_free(previous_path);
 void
 flow_program_move_down(void)
 {
-	GtkTreeIter		iter, next;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter, next;
+
 	GeoXmlProgram *		program;
 	gulong			nprogram;
 	gchar *			node;

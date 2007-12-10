@@ -42,7 +42,11 @@ client_parse_server_messages(struct server * server)
 
 				/* say we are logged */
 				server->protocol->logged = TRUE;
+				gtk_list_store_set(gebr.ui_server_list->store, &server->iter,
+						SERVER_STATUS_ICON, gebr.pixmaps.stock_connect,
+						-1);
 				g_string_assign(server->protocol->hostname, hostname->str);
+
 				/* request list of jobs */
 				protocol_send_data(server->protocol, server->tcp_socket,
 					protocol_defs.lst_def, 0);

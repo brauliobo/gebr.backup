@@ -89,6 +89,8 @@ struct gebr {
 		GdkPixbuf *		stock_warning;
 		GdkPixbuf *		stock_cancel;
 		GdkPixbuf *		stock_execute;
+		GdkPixbuf *		stock_connect;
+		GdkPixbuf *		stock_disconnect;
 	} pixmaps;
 };
 

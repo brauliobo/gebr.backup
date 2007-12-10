@@ -18,6 +18,8 @@
 #ifndef __SERVER_H
 #define __SERVER_H
 
+#include <gtk/gtk.h>
+
 #include <comm/gtcpsocket.h>
 #include <comm/protocol.h>
 #include <comm/ssh.h>
@@ -33,6 +35,10 @@ struct server {
 	/* ssh tunneling */
 	struct ssh_tunnel *	ssh_tunnel;
 
+	/* iter to set icons on connect/disconnet */
+	GtkTreeIter		iter;
+
+	/* FIXME: change to state */
 	guint			retries;
 };
 

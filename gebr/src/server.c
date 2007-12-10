@@ -96,7 +96,7 @@ ssh_read_server_port_read_stderr(GProcess * process, struct server * server)
 		GTK_BUTTONS_CLOSE,
 		_("Error contacting server host %s via ssh:\n%s"),
 		server->address->str, error->str);
-	
+
 	gebr_message(ERROR, FALSE, TRUE, _("Error contacting server %s via ssh: %s"), server->address->str, error->str);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -172,17 +172,30 @@ ssh_ask_server_port(struct server * server)
 struct server *
 server_new(const gchar * address)
 {
+	gebr_message(DEBUG, TRUE, TRUE, "server_new: %s", address);
+
+	GtkTreeIter	iter;
+
 	struct server *	server;
 
+	/* initialize */
 	server = g_malloc(sizeof(struct server));
+	/* add to the list of servers */
+	gtk_list_store_append(gebr.ui_server_list->store, &iter);
+	gtk_list_store_set(gebr.ui_server_list->store, &iter,
+			SERVER_STATUS_ICON, gebr.pixmaps.stock_disconnect,
+			SERVER_ADDRESS, address,
+			SERVER_POINTER, server,
+			-1);
+	/* fill struct */
 	*server = (struct server) {
 		.tcp_socket = g_tcp_socket_new(),
 		.protocol = protocol_new(),
 		.address = g_string_new(address),
 		.port = 0,
+		.iter = iter,
 		.retries = 0,
 	};
-	gebr_message(DEBUG, TRUE, TRUE, "server_new: %s", address);
 
 	g_signal_connect(server->tcp_socket, "connected",
 			G_CALLBACK(server_connected), server);
@@ -193,6 +206,7 @@ server_new(const gchar * address)
 	g_signal_connect(server->tcp_socket, "error",
 			G_CALLBACK(server_error), server);
 
+	/* initiate the marathon to communicate to server */
 	ssh_ask_server_port(server);
 
 	return server;
@@ -210,7 +224,7 @@ server_free(struct server * server)
 		struct job *	job;
 		GtkTreeIter	this;
 
-		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
 				JC_STRUCT, &job,
 				-1);
 		this = iter;
@@ -231,7 +245,7 @@ server_free(struct server * server)
 void
 server_connected(GTcpSocket * tcp_socket, struct server * server)
 {
-	g_print("server_connected\n");
+	gebr_message(DEBUG, TRUE, TRUE, "server_connected\n");
 
 	gchar		hostname[100];
 	gchar *		display;
@@ -259,6 +273,7 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 	protocol_send_data(server->protocol, server->tcp_socket,
 		protocol_defs.ini_def, 4, PROTOCOL_VERSION, hostname, display, splits[4]);
 
+	/* frees */
 	g_string_free(mcookie_cmd, TRUE);
 	g_strfreev(splits);
 }
@@ -266,8 +281,13 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 static void
 server_disconnected(GTcpSocket * tcp_socket, struct server * server)
 {
-	gebr_message(DEBUG, FALSE, TRUE, "server_disconnected: %s", server->address->str);
+	gebr_message(DEBUG, TRUE, TRUE, "server_disconnected: %s", server->address->str);
+
 	server->port = 0;
+	server->protocol->logged = FALSE;
+	gtk_list_store_set(gebr.ui_server_list->store, &server->iter,
+			SERVER_STATUS_ICON, gebr.pixmaps.stock_disconnect,
+			-1);
 }
 
 static void
