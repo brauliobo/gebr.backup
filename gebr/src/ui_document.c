@@ -157,11 +157,16 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 		GtkTreeSelection *		selection;
 		GtkTreeModel *			model;
 		GtkTreeIter			iter;
+		gchar *                         old_title;
+		gchar *                         new_title;
+		GString *                       doc_type;
 
 		enum GEOXML_DOCUMENT_TYPE	type;
 
-		geoxml_document_set_title(ui_document_properties->document,
-			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->title)));
+		old_title = geoxml_document_get_title(ui_document_properties->document);
+		new_title = gtk_entry_get_text(GTK_ENTRY(ui_document_properties->title));
+		
+		geoxml_document_set_title(ui_document_properties->document, new_title);
 		geoxml_document_set_description(ui_document_properties->document,
 			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->description)));
 		geoxml_document_set_author(ui_document_properties->document,
@@ -181,11 +186,15 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 			project_line_info_update();
 
 			/* SAVE IT! */
-			if (type == GEOXML_DOCUMENT_TYPE_PROJECT)
+			if (type == GEOXML_DOCUMENT_TYPE_PROJECT){
 				document_save(GEOXML_DOC(gebr.project));
-			else
+				doc_type = g_string_new("project");
+				
+			}
+			else{
 				document_save(GEOXML_DOC(gebr.line));
-
+				doc_type = g_string_new("line");
+			}			
 			break;
 		case GEOXML_DOCUMENT_TYPE_FLOW:
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
@@ -194,9 +203,17 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 					   FB_TITLE, geoxml_document_get_title(ui_document_properties->document),
 					   -1);
 			flow_save();
-
+			doc_type = g_string_new("flow");
 			break;
 		}
+		
+		gebr_message(INFO, FALSE, TRUE, "Properties of %s '%s' updated", doc_type->str,
+			     old_title);
+		if (strcmp(old_title, new_title) != 0)
+			gebr_message(INFO, FALSE, TRUE, "Renaming %s '%s' to '%s'",
+				     doc_type->str, old_title, new_title);
+		g_string_free(doc_type, TRUE);
+
 		break;
 	} default:
 		break;
