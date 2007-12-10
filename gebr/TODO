@@ -1,7 +1,5 @@
 Conferir/Corrigir o servidor
 
-substituir o uso de mkstemp.
-
 *feito escrita do arq.*
 Criar uma widget na janela principal para exibir o log, substituindo a
 atual statusbar. Esta widget seria uma janela com barra de scroll e
@@ -18,8 +16,6 @@ tela. Sugestão:
 [ERR] Mensagens de erro
 
 Opção nas preferências para shell.
-
-Validar parametros dos tipos numéricos.
 
 Opção de personalizar a linha de comando com parâmetros do usuário.
 

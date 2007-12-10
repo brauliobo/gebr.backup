@@ -1,18 +1,19 @@
 /*   GêBR - An environment for seismic processing.
- *   Copyright (C) 2007 GêBR core team (http://ui_parameters->sourceforge.net)
+ *   Copyright(C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *   This program is free software: you can redistribute it and/or
+ *   modify it under the terms of the GNU General Public License as
+ *   published by the Free Software Foundation, either version 3 of
+ *   the License, or * (at your option) any later version.
  *
  *   This program is distributed in the hope that it will be useful,
- *   but ui_parameters->THOUT ANY ui_parameters->RRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   along with this program. If not, see
+ *   <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -22,6 +23,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+
+#include <glib.h>
+#include <glib/gprintf.h>
 
 #include <geoxml.h>
 #include <gui/gtkfileentry.h>
@@ -38,7 +43,6 @@
 /*
  * Prototypes
  */
-
 static void
 parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_parameters);
 
@@ -62,6 +66,15 @@ parameters_add_input_flag(GeoXmlProgramParameter * parameter, GtkWidget ** widge
 
 static GtkWidget *
 parameters_add_input_file(GeoXmlProgramParameter * parameter, GtkWidget ** widget);
+
+static void
+validate_int(GtkEntry *entry);
+
+static void
+validate_float(GtkEntry *entry);
+
+gboolean
+validate_on_leaving(GtkWidget *widget, GdkEventFocus *event, gpointer *validate);
 
 /*
  * Section: Public
@@ -394,6 +407,8 @@ parameters_add_input_float(GeoXmlProgramParameter * parameter, GtkWidget ** widg
 	GtkWidget *	hbox;
 
 	hbox = parameters_add_input_string(parameter, widget);
+	g_signal_connect(GTK_OBJECT(*widget), "activate", validate_float, NULL);
+	g_signal_connect(GTK_OBJECT(*widget), "focus-out-event", validate_on_leaving, &validate_float);
 	gtk_widget_set_size_request(*widget, 90, 30);
 
 	return hbox;
@@ -409,6 +424,8 @@ parameters_add_input_int(GeoXmlProgramParameter * parameter, GtkWidget ** widget
 	GtkWidget *	hbox;
 
 	hbox = parameters_add_input_string(parameter, widget);
+	g_signal_connect(GTK_OBJECT(*widget), "activate", validate_int, NULL);
+	g_signal_connect(GTK_OBJECT(*widget), "focus-out-event", validate_on_leaving, &validate_int);
 	gtk_widget_set_size_request(*widget, 90, 30);
 
 	return hbox;
@@ -522,4 +539,60 @@ parameters_add_input_file(GeoXmlProgramParameter * parameter, GtkWidget ** widge
 
 	*widget = file_entry;
 	return hbox;
+}
+
+/*
+ * Function: validate_int
+ * Validate an int parameter
+ */ 
+static void
+validate_int(GtkEntry *entry)
+{
+   gchar       number[15];
+   gchar *     valuestr;
+   gdouble     value;
+   
+
+   valuestr = gtk_entry_get_text(entry);
+   if(strlen(valuestr) > 0){
+      value = g_ascii_strtod(valuestr, NULL);
+      gtk_entry_set_text(entry, g_ascii_dtostr(number, 15, round(value)));
+   }
+}
+
+/*
+ * Function: validate_float
+ * Validate a float parameter
+ */ 
+static void
+validate_float(GtkEntry *entry)
+{
+   gchar *     valuestr;
+   gchar *     last;
+   GString *   value;
+
+   valuestr = gtk_entry_get_text(entry);
+   if(strlen(valuestr) > 0){
+      g_ascii_strtod(valuestr, &last);
+      value = g_string_new(valuestr);
+      g_string_truncate(value, strlen(valuestr) - strlen(last));
+      gtk_entry_set_text(entry, value->str);
+      g_string_free(value, TRUE);
+   }
+}
+
+/*
+ * Function: validate_on_leaving
+ * Call a validation function
+ */
+gboolean
+validate_on_leaving(GtkWidget *widget, GdkEventFocus *event, gpointer *validate )
+{
+
+   static void (*fun) (GtkEntry*);
+
+   fun = validate;
+   
+   fun(GTK_ENTRY(widget));
+   return FALSE;
 }
