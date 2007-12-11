@@ -139,6 +139,7 @@ server_parse_client_messages(struct client * client)
 		if (message->hash == protocol_defs.ini_def.hash) {
 			GList *		arguments;
 			GString *	version, * hostname, * display, * mcookie;
+			gchar *		ssh_client;
 			gchar		server_hostname[100];
 
 			/* organize message data */
@@ -151,24 +152,22 @@ server_parse_client_messages(struct client * client)
 			/* set client info */
 			client->protocol->logged = TRUE;
 			g_string_assign(client->protocol->hostname, hostname->str);
-			g_string_assign(client->address, hostname->str);
 			g_string_assign(client->display, display->str);
 			g_string_assign(client->mcookie, mcookie->str);
 
-			if (client_is_local(client) == FALSE) {
+			ssh_client = getenv("SSH_CLIENT");
+			if (ssh_client != NULL) {
 				GString *	cmd_line;
-				gchar *		ssh_client;
 				gchar **	splits;
 
 				/* get client IP address via SSH */
-				ssh_client = getenv("SSH_CLIENT");
 				splits = g_strsplit(ssh_client, " ", 3);
-				g_string_assign(client->address, splits[0]);
+				g_string_assign(client->remote_address, splits[0]);
 
 				/* add client magic cookie */
 				cmd_line = g_string_new(NULL);
 				g_string_printf(cmd_line, "xauth add %s%s . %s",
-						client->address->str,
+						client->remote_address->str,
 						display->str,
 						mcookie->str);
 				system(cmd_line->str);
