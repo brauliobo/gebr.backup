@@ -334,6 +334,12 @@ flow_run(void)
 	if (server == NULL)
 		return;
 
+	gebr_message(INFO, TRUE, FALSE, _("Asking server to run flow '%s'"),
+		     geoxml_document_get_title(gebr.flow));
+	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to run flow '%s'"),
+		     server->address->str,
+		     geoxml_document_get_title(gebr.flow));
+
 	server_run_flow(server);
 }
 

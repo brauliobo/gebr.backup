@@ -294,7 +294,7 @@ gebr_config_save(void)
 	}
 
 	fclose(fp);
-	gebr_message(INFO, TRUE, TRUE, _("Configuration saved"));
+	gebr_message(INFO, FALSE, TRUE, _("Configuration saved"));
 
 	return TRUE;
 }
