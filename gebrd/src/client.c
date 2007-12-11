@@ -44,9 +44,6 @@ client_add(GTcpSocket * tcp_socket)
 	struct client *	client;
 
 	client = g_malloc(sizeof(struct client));
-	if (client == NULL)
-		goto err;
-
 	*client = (struct client) {
 		.tcp_socket = tcp_socket,
 		.protocol = protocol_new(),
@@ -54,18 +51,16 @@ client_add(GTcpSocket * tcp_socket)
 		.mcookie = g_string_new(NULL),
 		.address = g_string_new(NULL)
 	};
-	if (client->protocol == NULL)
-		goto err;
-	gebrd.clients = g_list_prepend(gebrd.clients, client);
 
+	gebrd.clients = g_list_prepend(gebrd.clients, client);
 	g_signal_connect(tcp_socket, "disconnected",
 			G_CALLBACK(client_disconnected), client);
 	g_signal_connect(tcp_socket, "ready-read",
 			G_CALLBACK(client_read), client);
-g_print("client_add\n");
-	return;
 
-err:	g_socket_close(G_SOCKET(tcp_socket));
+	gebrd_message(DEBUG, TRUE, TRUE, "client_add");
+
+	return;
 }
 
 void
@@ -89,7 +84,8 @@ client_is_local(struct client * client)
 static void
 client_disconnected(GTcpSocket * tcp_socket, struct client * client)
 {
-g_print("client_disconnected\n");
+	gebrd_message(DEBUG, TRUE, TRUE, "client_disconnected");
+
 	gebrd.clients = g_list_remove(gebrd.clients, client);
 	client_free(client);
 }
@@ -99,7 +95,7 @@ client_read(GTcpSocket * tcp_socket, struct client * client)
 {
 	GString *	data;
 
-	data = g_socket_read_string_all(G_SOCKET(tcp_socket));g_print("client_read %s\n", data->str);
+	data = g_socket_read_string_all(G_SOCKET(tcp_socket));
 	if (protocol_receive_data(client->protocol, data) == FALSE) {
 		client_disconnected(tcp_socket, client);
 		goto out;
@@ -108,6 +104,8 @@ client_read(GTcpSocket * tcp_socket, struct client * client)
 		client_disconnected(tcp_socket, client);
 		goto out;
 	}
+
+	gebrd_message(DEBUG, TRUE, TRUE, "client_read %s", data->str);
 
 out:	g_string_free(data, TRUE);
 }

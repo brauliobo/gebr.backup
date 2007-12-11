@@ -32,16 +32,26 @@
  */
 
 static gboolean
-add_program_parameters_to_job(struct job * job, GeoXmlProgram * prog)
+job_add_program_parameters(struct job * job, GeoXmlProgram * program)
 {
-	GeoXmlProgramParameter *	param;
+	GeoXmlParameters *	parameters;
+	GeoXmlSequence*		parameter;
 
-	if (geoxml_program_get_parameters_number(prog) == 0)
-		return TRUE;
+	parameters = geoxml_program_get_parameters(program);
+	parameter = geoxml_parameters_get_first_parameter(parameters);
+	while (parameter != NULL) {
+		enum GEOXML_PARAMETERTYPE	type;
+		GeoXmlProgramParameter *	program_parameter;
 
-	param = geoxml_program_get_first_parameter(prog);
-	while (param != NULL) {
-		switch (geoxml_program_parameter_get_type(param)) {
+		type = geoxml_parameter_get_type(GEOXML_PARAMETER(parameter));
+		if (type == GEOXML_PARAMETERTYPE_GROUP) {
+			/* TODO: */
+			geoxml_sequence_next(&parameter);
+			continue;
+		}
+
+		program_parameter = GEOXML_PROGRAM_PARAMETER(parameter);
+		switch (type) {
 		case GEOXML_PARAMETERTYPE_STRING:
 		case GEOXML_PARAMETERTYPE_INT:
 		case GEOXML_PARAMETERTYPE_FLOAT:
@@ -49,36 +59,43 @@ add_program_parameters_to_job(struct job * job, GeoXmlProgram * prog)
 		case GEOXML_PARAMETERTYPE_FILE: {
 			const gchar *	value;
 
-			value = geoxml_program_parameter_get_value(param);
+			value = geoxml_program_parameter_get_value(program_parameter);
 			if (strlen(value) > 0) {
 				g_string_append_printf(job->cmd_line, "%s\"%s\" ",
-					geoxml_program_parameter_get_keyword(param),
+					geoxml_program_parameter_get_keyword(program_parameter),
 					value);
 			} else {
 				/* Check if this is a required parameter */
-				if (geoxml_program_parameter_get_required(param)) {
-					g_string_append_printf(job->issues, "Required parameter \"%s\" not provided\n",
-						geoxml_program_parameter_get_label(param));
+				if (geoxml_program_parameter_get_required(program_parameter)) {
+					g_string_append_printf(job->issues,
+						_("Required parameter '%s' of program '%s' not provided\n"),
+						geoxml_program_parameter_get_label(program_parameter),
+						geoxml_program_get_title(program));
+
 					return FALSE;
 				}
 			}
+
 			break;
 		}
 		case GEOXML_PARAMETERTYPE_FLAG:
-			if (geoxml_program_parameter_get_flag_status(param)) {
-				g_string_append_printf(job->cmd_line, "%s ", geoxml_program_parameter_get_keyword(param));
-			}
+			if (geoxml_program_parameter_get_flag_status(program_parameter))
+				g_string_append_printf(job->cmd_line, "%s ", geoxml_program_parameter_get_keyword(program_parameter));
+
 			break;
 		default:
-			g_string_append_printf(job->issues, "Unknown parameter type\n");
+			g_string_append_printf(job->issues, _("Unknown parameter type\n"));
+
 			return FALSE;
 		}
-		geoxml_program_parameter_next(&param);
+
+		geoxml_sequence_next(&parameter);
 	}
+
 	return TRUE;
 }
 
-void
+static void
 job_send_clients_output(struct job * job, GString * output)
 {
 	GList *		link;
@@ -99,7 +116,7 @@ job_send_clients_output(struct job * job, GString * output)
 	}
 }
 
-void
+static void
 job_process_read_stdout(GProcess * gjob, struct job * job)
 {
 	GString *	stdout;
@@ -112,7 +129,7 @@ job_process_read_stdout(GProcess * gjob, struct job * job)
 	g_string_free(stdout, TRUE);
 }
 
-void
+static void
 job_process_read_stderr(GProcess * gjob, struct job * job)
 {
 	GString *	stderr;
@@ -125,7 +142,7 @@ job_process_read_stderr(GProcess * gjob, struct job * job)
 	g_string_free(stderr, TRUE);
 }
 
-void
+static void
 job_process_finished(GProcess * gjob, struct job * job)
 {
 	GList *	link;
@@ -149,7 +166,7 @@ job_process_finished(GProcess * gjob, struct job * job)
 	}
 }
 
-GString *
+static GString *
 job_generate_id(void)
 {
 	GString *	jid;
@@ -179,7 +196,6 @@ job_generate_id(void)
 	return jid;
 }
 
-
 /*
  * Public functions
  */
@@ -188,10 +204,12 @@ gboolean
 job_new(struct job ** _job, struct client * client, GString * xml)
 {
 	struct job *		job;
+
 	GeoXmlFlow *		flow;
 	GeoXmlDocument *	document;
-	GeoXmlProgram *		prog;
+	GeoXmlSequence *	program;
 	gulong			nprog;
+
 	gboolean		previous_stdout;
 	guint			issue_number;
 	gboolean		success;
@@ -221,33 +239,33 @@ job_new(struct job ** _job, struct client * client, GString * xml)
 		switch (ret) {
 		case GEOXML_RETV_DTD_SPECIFIED:
 			g_string_append_printf(job->issues,
-				"DTD specified. The <DOCTYPE ...> must not appear in XML.\n"
-				"libgeoxml will find the appriate DTD installed from version.\n");
+				_("DTD specified. The <DOCTYPE ...> must not appear in XML.\n"
+				"libgeoxml will find the appriate DTD installed from version.\n"));
 			break;
 		case GEOXML_RETV_INVALID_DOCUMENT:
 			g_string_append_printf(job->issues,
-				"Invalid document. The has a sintax error or doesn't match the DTD.\n"
-				"In this case see the errors above\n");
+				_("Invalid document. The has a sintax error or doesn't match the DTD.\n"
+				"In this case see the errors above\n"));
 			break;
 		case GEOXML_RETV_CANT_ACCESS_FILE:
 			g_string_append_printf(job->issues,
-				"Can't access file. The file doesn't exist or there is not enough "
-				"permission to read it.\n");
+				_("Can't access file. The file doesn't exist or there is not enough "
+				"permission to read it.\n"));
 			break;
 		case GEOXML_RETV_CANT_ACCESS_DTD:
 			g_string_append_printf(job->issues,
-				"Can't access dtd. The file's DTD couldn't not be found.\n"
+				_("Can't access dtd. The file's DTD couldn't not be found.\n"
 				"It may be a newer version not support by this version of libgeoxml "
-				"or there is an installation problem.\n");
+				"or there is an installation problem.\n"));
 			break;
 		case GEOXML_RETV_NO_MEMORY:
 			g_string_append_printf(job->issues,
-				"Not enough memory. The library stoped after an unsucessful memory allocation.\n");
+				_("Not enough memory. The library stoped after an unsucessful memory allocation.\n"));
 			break;
 		default:
 			g_string_append_printf(job->issues,
-				"Unspecified error %d. "
-				"See library documentation at http://gebr.sf.net/libgeoxml/doc\n", ret);
+				_("Unspecified error %d. "
+				"See library documentation at http://gebr.sf.net/doc/libgebr/geoxml\n"), ret);
 			break;
 		}
 		goto err;
@@ -257,26 +275,27 @@ job_new(struct job ** _job, struct client * client, GString * xml)
 	job->flow = flow;
 	nprog = geoxml_flow_get_programs_number(flow);
 	if (nprog == 0) {
-		g_string_append_printf(job->issues, "Empty flow\n");
+		g_string_append_printf(job->issues, _("Empty flow\n"));
 		goto err;
 	}
 
 	/* Check if there is configured programs */
-	geoxml_flow_get_program(flow, &prog, 0);
-	while (prog != NULL && strcmp(geoxml_program_get_status(prog), "configured") != 0) {
-		g_string_append_printf(job->issues, "%u) Skiping disabled/unconfigured program \"%s\"\n",
-			++issue_number, geoxml_program_get_title(prog));
-		geoxml_program_next(&prog);
+	geoxml_flow_get_program(flow, &program, 0);
+	while (program != NULL && g_ascii_strcasecmp(geoxml_program_get_status(GEOXML_PROGRAM(program)), "configured") != 0) {
+		g_string_append_printf(job->issues, _("%u) Skiping disabled/unconfigured program '%s'\n"),
+			++issue_number, geoxml_program_get_title(GEOXML_PROGRAM(program)));
+
+		geoxml_sequence_next(&program);
 	}
-	if (prog == NULL) {
-		g_string_append_printf(job->issues, "No configured programs\n");
+	if (program == NULL) {
+		g_string_append_printf(job->issues, _("No configured programs\n"));
 		goto err;
 	}
 
 	/* Start with/without stdin */
-	if (geoxml_program_get_stdin(prog)) {
+	if (geoxml_program_get_stdin(GEOXML_PROGRAM(program))) {
 		if (strlen(geoxml_flow_io_get_input(flow)) == 0) {
-			g_string_append_printf(job->issues, "No input file selected\n");
+			g_string_append_printf(job->issues, _("No input file selected\n"));
 			goto err;
 		}
 
@@ -286,75 +305,72 @@ job_new(struct job ** _job, struct client * client, GString * xml)
 	}
 
 	/* Binary followed by an space */
-	g_string_append(job->cmd_line, geoxml_program_get_binary(prog));
-	g_string_append(job->cmd_line, " ");
+	g_string_printf(job->cmd_line, "%s ", geoxml_program_get_binary(GEOXML_PROGRAM(program)));
 
-	if (add_program_parameters_to_job(job, prog) == FALSE) {
-		g_string_append_printf(job->issues, "Unable to configure properly program \"%s\"\n",
-			geoxml_program_get_title(prog));
+	if (job_add_program_parameters(job, GEOXML_PROGRAM(program)) == FALSE)
 		goto err;
-	}
 
-	if (geoxml_program_get_stderr(prog)) {
+	/* check for error file output */
+	if (geoxml_program_get_stderr(GEOXML_PROGRAM(program))) {
 		if (strlen(geoxml_flow_io_get_error(flow)) == 0)
-			g_string_append_printf(job->issues, "%u) No error file selected. Ignoring it.\n",
+			g_string_append_printf(job->issues, _("%u) No error file selected. Ignoring it.\n"),
 				++issue_number);
 		else
 			g_string_append_printf(job->cmd_line, "2>> \"%s\" ", geoxml_flow_io_get_error(flow));
 	}
 
-	previous_stdout = geoxml_program_get_stdout(prog);
-	geoxml_program_next(&prog);
+	previous_stdout = geoxml_program_get_stdout(GEOXML_PROGRAM(program));
+	geoxml_sequence_next(&program);
 
-	while (prog != NULL) {
+	while (program != NULL) {
 		/* Skiping disabled/unconfigured programs */
-		if (strcmp(geoxml_program_get_status(prog), "configured") != 0) {
-			g_string_append_printf(job->issues, "%u) Skipped disabled/unconfigured program \"%s\"\n",
-				++issue_number, geoxml_program_get_title(prog));
-			geoxml_program_next(&prog);
+		if (g_ascii_strcasecmp(geoxml_program_get_status(GEOXML_PROGRAM(program)), "configured") != 0) {
+			g_string_append_printf(job->issues, _("%u) Skipped disabled/unconfigured program '%s'\n"),
+				++issue_number, geoxml_program_get_title(GEOXML_PROGRAM(program)));
+
+			geoxml_sequence_next(&program);
 			continue;
 		}
 
 		/* How to connect chainned programs */
-		int chain_option = geoxml_program_get_stdin(prog) + (previous_stdout << 1);
+		int chain_option = geoxml_program_get_stdin(GEOXML_PROGRAM(program)) + (previous_stdout << 1);
 		switch (chain_option) {
 		case 0: /* Previous does not write to stdin and current does not carry about */
-			g_string_append_printf(job->cmd_line, "; %s ", geoxml_program_get_binary(prog));
+			g_string_append_printf(job->cmd_line, "; %s ", geoxml_program_get_binary(GEOXML_PROGRAM(program)));
 			break;
 		case 1: /* Previous does not write to stdin but current expect something */
-			g_string_append_printf(job->issues, "Broken flow before %s (no input)\n", geoxml_program_get_title(prog));
+			g_string_append_printf(job->issues, _("Broken flow before %s (no input)\n"),
+				geoxml_program_get_title(GEOXML_PROGRAM(program)));
 			goto err;
 		case 2: /* Previous does write to stdin but current does not carry about */
-			g_string_append_printf(job->issues, "Broken flow before %s (unexpected output)\n", geoxml_program_get_title(prog));
+			g_string_append_printf(job->issues, _("Broken flow before %s (unexpected output)\n"),
+				geoxml_program_get_title(GEOXML_PROGRAM(program)));
 			goto err;
 		case 3: /* Both talk to each other */
-			g_string_append_printf(job->cmd_line, "| %s ", geoxml_program_get_binary(prog));
+			g_string_append_printf(job->cmd_line, "| %s ", geoxml_program_get_binary(GEOXML_PROGRAM(program)));
 			break;
 		default:
 			break;
 		}
 
-		previous_stdout = geoxml_program_get_stdout(prog);
-		if (add_program_parameters_to_job(job, prog) == FALSE) {
-			g_string_append_printf(job->issues, "Unable to configure properly program \"%s\"\n",
-				geoxml_program_get_title(prog));
+		previous_stdout = geoxml_program_get_stdout(GEOXML_PROGRAM(program));
+		if (job_add_program_parameters(job, GEOXML_PROGRAM(program)) == FALSE)
 			goto err;
-		}
 
-		if (geoxml_program_get_stderr(prog)) {
+		if (geoxml_program_get_stderr(GEOXML_PROGRAM(program))) {
 			if (strlen(geoxml_flow_io_get_error(flow)) == 0)
-				g_string_append_printf(job->issues, "%u) No error file selected. Ignoring it.\n",
+				g_string_append_printf(job->issues, _("%u) No error file selected. Ignoring it.\n"),
 					++issue_number);
 			else
 				g_string_append_printf(job->cmd_line, "2>> \"%s\" ", geoxml_flow_io_get_error(flow));
 		}
 
-		geoxml_program_next(&prog);
+		geoxml_sequence_next(&program);
 	}
 
 	if (previous_stdout) {
 		if (strlen(geoxml_flow_io_get_output(flow)) == 0) {
-			g_string_append_printf(job->issues, "No output file selected\n");
+			g_string_append_printf(job->issues, _("No output file selected\n"));
 			goto err;
 		}
 		g_string_append_printf(job->cmd_line, ">%s", geoxml_flow_io_get_output(flow));
@@ -408,8 +424,10 @@ job_run_flow(struct job * job, struct client * client)
 {
 	GString *		cmd_line;
 
+	/* initialization */
 	cmd_line = g_string_new(NULL);
 
+	/* command-line */
 	g_string_printf(cmd_line, "bash -l -c \"export DISPLAY=%s%s; %s\"",
 			client->address->str, client->display->str,
 			job->cmd_line->str);
@@ -454,9 +472,8 @@ job_find(GString * jid)
 void
 job_clear(struct job * job)
 {
-	if (g_process_is_running(job->process) == FALSE) {
+	if (g_process_is_running(job->process) == FALSE)
 		job_free(job);
-	}
 }
 
 void

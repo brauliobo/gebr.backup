@@ -20,12 +20,14 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include <glib/gstdio.h>
+
 #include <comm.h>
-#include <misc/utils.h>
 #include <geoxml.h>
 
 #include "server.h"
 #include "gebrd.h"
+#include "support.h"
 #include "job.h"
 #include "client.h"
 
@@ -52,27 +54,21 @@ server_init(void)
 	gebrd.tcp_server = g_tcp_server_new();
 	ret = g_tcp_server_listen(gebrd.tcp_server, host_address, 0);
 	if (ret == FALSE) {
-		g_print("Could not listen for connections.\n");
+		gebrd_message(ERROR, TRUE, TRUE, _("Could not listen for connections.\n"));
 		goto out;
 	}
 	g_signal_connect(gebrd.tcp_server, "new-connection",
 			G_CALLBACK(server_new_connection), NULL);
 
-	/* from libgebr-misc */
-	if (gebr_create_config_dirs() == FALSE) {
-		g_print("Could not access GêBR configuration directories.\n");
-		goto out;
-	}
-
 	/* write on user's home directory a file with a port */
 	g_string_printf(run_filename, "%s/.gebr/run/gebrd.run", getenv("HOME"));
 	if (g_file_test(run_filename->str, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR) == TRUE) {
-		g_print("Run file (~/.gebr/run/gebrd.run) already exists or is not a regular file.\n");
+		gebrd_message(ERROR, TRUE, TRUE, _("Run file (~/.gebr/run/gebrd.run) already exists or is not a regular file.\n"));
 		ret = FALSE;
 		goto out;
 	}
 	if ((run_fp = fopen(run_filename->str, "w")) == NULL) {
-		g_print("Could not write run file.\n");
+		gebrd_message(ERROR, TRUE, TRUE, _("Could not write run file.\n"));
 		ret = FALSE;
 		goto out;
 	}
@@ -111,7 +107,7 @@ server_quit(void)
 	/* delete lock */
 	run_filename = g_string_new(NULL);
 	g_string_printf(run_filename, "%s/.gebr/run/gebrd.run", getenv("HOME"));
-	unlink(run_filename->str);
+	g_unlink(run_filename->str);
 	g_string_free(run_filename, TRUE);
 
 	server_free();
@@ -121,9 +117,11 @@ void
 server_new_connection(void)
 {
 	GTcpSocket *	client_socket;
-g_print("new connection\n");
+
 	while ((client_socket = g_tcp_server_get_next_pending_connection(gebrd.tcp_server)) != NULL)
 		client_add(client_socket);
+
+	gebrd_message(DEBUG, TRUE, TRUE, "server_new_connection\n");
 }
 
 gboolean
