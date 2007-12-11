@@ -1,18 +1,19 @@
 /*   GÍBR - An environment for seismic processing.
- *   Copyright(C) 2007 GÍBR core team(http://sourceforge.net)
+ *   Copyright(C) 2007 GÍBR core team (http://sourceforge.net)
  *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ *   This program is free software: you can redistribute it and/or
+ *   modify it under the terms of the GNU General Public License as
+ *   published by the Free Software Foundation, either version 3 of
+ *   the License, or * (at your option) any later version.
  *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   along with this program. If not, see
+ *   <http://www.gnu.org/licenses/>.
  */
 
 #include "ui_job_control.h"
@@ -49,6 +50,7 @@ job_control_setup_ui(void)
 	GtkIconSize			tmp_toolbar_icon_size;
 	GtkWidget *			toolitem;
 	GtkWidget *			button;
+	GtkTooltips *			tips;
 
 	GtkWidget *			hpanel;
 	GtkWidget *			scrolledwin;
@@ -79,13 +81,17 @@ job_control_setup_ui(void)
 
 	tmp_toolbar_icon_size = gtk_toolbar_get_icon_size(GTK_TOOLBAR(toolbar));
 
+	/* Tooltips */
+	tips = gtk_tooltips_new();
+
 	/* Cancel button = END */
 	toolitem = GTK_WIDGET(gtk_tool_item_new());
 	gtk_container_add(GTK_CONTAINER(toolbar), toolitem);
-
 	button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
+	gtk_tooltips_set_tip(tips, button, _("Ask server to terminate the job"), "");
+
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_cancel), NULL);
 
@@ -96,6 +102,7 @@ job_control_setup_ui(void)
 	button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
+	gtk_tooltips_set_tip(tips, button, _("Clear current job log"), "");
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_close), NULL);
@@ -107,6 +114,7 @@ job_control_setup_ui(void)
 	button = gtk_button_new_from_stock(GTK_STOCK_CLEAR);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
+	gtk_tooltips_set_tip(tips, button, _("Clear all job logs"), "");
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_clear), NULL);
@@ -118,6 +126,7 @@ job_control_setup_ui(void)
 	button = gtk_button_new_from_stock(GTK_STOCK_STOP);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
+	gtk_tooltips_set_tip(tips, button, _("Ask server to kill the job"), "");
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_stop), NULL);
