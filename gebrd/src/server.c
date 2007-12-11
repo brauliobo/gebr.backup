@@ -140,7 +140,6 @@ server_parse_client_messages(struct client * client)
 			GList *		arguments;
 			GString *	version, * hostname, * display, * mcookie;
 			gchar		server_hostname[100];
-			GString *       cmd_line;
 
 			/* organize message data */
 			arguments = protocol_split_new(message->argument, 4);
@@ -152,18 +151,31 @@ server_parse_client_messages(struct client * client)
 			/* set client info */
 			client->protocol->logged = TRUE;
 			g_string_assign(client->protocol->hostname, hostname->str);
+			g_string_assign(client->address, hostname->str);
 			g_string_assign(client->display, display->str);
 			g_string_assign(client->mcookie, mcookie->str);
 
-			/* add client magic cookie */
-			cmd_line = g_string_new(NULL);
-			g_string_printf(cmd_line, "xauth add %s%s . %s",
-					hostname->str,
-					display->str,
-					mcookie->str);
-			printf("%s\n", cmd_line->str);
-			system(cmd_line->str);
-			g_string_free(cmd_line, TRUE);
+			if (client_is_local(client) == FALSE) {
+				GString *	cmd_line;
+				gchar *		ssh_client;
+				gchar **	splits;
+
+				/* get client IP address via SSH */
+				ssh_client = getenv("SSH_CLIENT");
+				splits = g_strsplit(ssh_client, " ", 3);
+				g_string_assign(client->address, splits[0]);
+
+				/* add client magic cookie */
+				cmd_line = g_string_new(NULL);
+				g_string_printf(cmd_line, "xauth add %s%s . %s",
+						client->address->str,
+						display->str,
+						mcookie->str);
+				system(cmd_line->str);
+
+				g_strfreev(splits);
+				g_string_free(cmd_line, TRUE);
+			}
 
 			/* send return */
 			gethostname(server_hostname, 100);

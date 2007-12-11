@@ -24,6 +24,20 @@
 #include "gebrd.h"
 #include "server.h"
 
+/*
+ * Private functions
+ */
+
+static void
+client_disconnected(GTcpSocket * tcp_socket, struct client * client);
+
+static void
+client_read(GTcpSocket * tcp_socket, struct client * client);
+
+/*
+ * Public functions
+ */
+
 void
 client_add(GTcpSocket * tcp_socket)
 {
@@ -37,7 +51,8 @@ client_add(GTcpSocket * tcp_socket)
 		.tcp_socket = tcp_socket,
 		.protocol = protocol_new(),
 		.display = g_string_new(NULL),
-		.mcookie = g_string_new(NULL)
+		.mcookie = g_string_new(NULL),
+		.address = g_string_new(NULL)
 	};
 	if (client->protocol == NULL)
 		goto err;
@@ -60,10 +75,18 @@ client_free(struct client * client)
 	protocol_free(client->protocol);
 	g_string_free(client->display, TRUE);
 	g_string_free(client->mcookie, TRUE);
+	g_string_free(client->address, TRUE);
 	g_free(client);
 }
 
-void
+gboolean
+client_is_local(struct client * client)
+{
+	return g_ascii_strcasecmp(client->address->str, "127.0.0.1") == 0
+		? TRUE : FALSE;
+}
+
+static void
 client_disconnected(GTcpSocket * tcp_socket, struct client * client)
 {
 g_print("client_disconnected\n");
@@ -71,7 +94,7 @@ g_print("client_disconnected\n");
 	client_free(client);
 }
 
-void
+static void
 client_read(GTcpSocket * tcp_socket, struct client * client)
 {
 	GString *	data;
