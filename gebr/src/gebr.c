@@ -223,10 +223,7 @@ gebr_config_load(int argc, char ** argv)
 	}
 
 	if (!gebr.config.ggopt.server_given) {
-		gchar	hostname[100];
-
-		gethostname(hostname, 100);
-		server_new(hostname);
+		server_new("127.0.0.1");
 	} else {
 		gint	i;
 
@@ -285,15 +282,14 @@ gebr_config_save(void)
 	/* Save list of servers */
 	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
 	while (valid) {
-		gchar *	server;
+		struct server *	server;
 
 		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list->store), &iter,
-				SERVER_ADDRESS, &server,
+				SERVER_POINTER, &server,
 				-1);
 
-		fprintf(fp, "server = \"%s\"\n", server);
+		fprintf(fp, "server = \"%s\"\n", server->address->str);
 
-		g_free(server);
 		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
 	}
 

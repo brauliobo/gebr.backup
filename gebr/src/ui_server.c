@@ -168,23 +168,21 @@ server_list_add(GtkEntry * entry, struct ui_server_list * ui_server_list)
 	/* check if it is already in list */
 	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
 	while (valid) {
-		gchar *	server;
+		struct server *	server;
 
 		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter,
-				SERVER_ADDRESS, &server,
+				SERVER_POINTER, &server,
 				-1);
 
-		if (!g_ascii_strcasecmp(server, gtk_entry_get_text(entry))) {
+		if (!g_ascii_strcasecmp(server->address->str, gtk_entry_get_text(entry))) {
 			GtkTreeSelection *	selection;
 
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_server_list->view));
 			gtk_tree_selection_select_iter(selection, &iter);
 
-			g_free(server);
 			return;
 		}
 
-		g_free(server);
 		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
 	}
 

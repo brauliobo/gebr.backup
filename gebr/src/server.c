@@ -119,7 +119,6 @@ ssh_ask_port_finished(GProcess * process, struct server * server)
 	} else {
 // 		GProcess *	server_process;
 		GString *	cmd_line;
-		gchar		hostname[100];
 
 		if (server->state == SERVER_STATE_RUNNED_ASK_PORT)
 			goto out;
@@ -129,11 +128,10 @@ ssh_ask_port_finished(GProcess * process, struct server * server)
 		gebr_message(INFO, TRUE, TRUE, _("Launching server at %s"), server->address->str);
 
 		/* run gebrd via ssh for remote hosts */
-		gethostname(hostname, 100);
-		if (!g_ascii_strcasecmp(hostname, server->address->str))
+		if (g_ascii_strcasecmp(server->address->str, "127.0.0.1") == 0)
 			g_string_printf(cmd_line, "bash -l -c gebrd&");
 		else
-			g_string_printf(cmd_line, "ssh -f -x %s 'bash -l -c gebrd'", server->address->str);
+			g_string_printf(cmd_line, "ssh -f -x %s 'gebrd'", server->address->str);
 
 		system(cmd_line->str);
 		server->state = SERVER_STATE_RUNNED_ASK_PORT;
@@ -174,11 +172,15 @@ ssh_ask_server_port(struct server * server)
  */
 
 struct server *
-server_new(const gchar * address)
+server_new(const gchar * _address)
 {
 	GtkTreeIter	iter;
+	gchar *		address;
 
 	struct server *	server;
+
+	address = g_ascii_strcasecmp(_address, "127.0.0.1") == 0
+		? _("Local server") : (gchar*)_address;
 
 	/* initialize */
 	server = g_malloc(sizeof(struct server));
@@ -193,7 +195,7 @@ server_new(const gchar * address)
 	*server = (struct server) {
 		.tcp_socket = g_tcp_socket_new(),
 		.protocol = protocol_new(),
-		.address = g_string_new(address),
+		.address = g_string_new(_address),
 		.port = 0,
 		.iter = iter
 	};
