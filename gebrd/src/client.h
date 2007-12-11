@@ -33,7 +33,7 @@ struct client {
 	/* magic cookie for xauth */
 	GString *		mcookie;
 	/* 127.0.0.1 or and remote address got via ssh*/
-	GString *		remote_address;
+	GString *		address;
 };
 
 void
@@ -41,5 +41,8 @@ client_add(GTcpSocket * tcp_socket);
 
 void
 client_free(struct client * client);
+
+gboolean
+client_is_local(struct client * client);
 
 #endif //__CLIENT_H

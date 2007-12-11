@@ -52,7 +52,7 @@ client_add(GTcpSocket * tcp_socket)
 		.protocol = protocol_new(),
 		.display = g_string_new(NULL),
 		.mcookie = g_string_new(NULL),
-		.remote_address = g_string_new("")
+		.address = g_string_new(NULL)
 	};
 	if (client->protocol == NULL)
 		goto err;
@@ -75,8 +75,15 @@ client_free(struct client * client)
 	protocol_free(client->protocol);
 	g_string_free(client->display, TRUE);
 	g_string_free(client->mcookie, TRUE);
-	g_string_free(client->remote_address, TRUE);
+	g_string_free(client->address, TRUE);
 	g_free(client);
+}
+
+gboolean
+client_is_local(struct client * client)
+{
+	return g_ascii_strcasecmp(client->address->str, "127.0.0.1") == 0
+		? TRUE : FALSE;
 }
 
 static void

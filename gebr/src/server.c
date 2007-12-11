@@ -264,13 +264,19 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 {
 	gchar		hostname[100];
 	gchar *		display;
-	GString *	mcookie_cmd;
+
+	GString *	cmd_line;
 	FILE *		output_fp;
 	gchar		line[1024];
+
+	GString *	mcookie;
+	GString *	ip;	
 	gchar **	splits;
 
 	/* initialization */
-	mcookie_cmd = g_string_new(NULL);
+	mcookie = g_string_new(NULL);
+	ip = g_string_new(NULL);
+	cmd_line = g_string_new(NULL);
 
 	/* hostname and display */
 	gethostname(hostname, 100);
@@ -278,19 +284,36 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 
 	/* TODO: port to GProcess using blocking calls */
 	/* get this X session magic cookie */
-	g_string_printf(mcookie_cmd, "xauth list %s", display);
-	output_fp = popen(mcookie_cmd->str, "r");
+	g_string_printf(cmd_line, "xauth list %s", display);
+	output_fp = popen(cmd_line->str, "r");
 	fread(line, 1, 1024, output_fp);
 	/* split output and get only the magic cookie */
 	splits = g_strsplit_set(line, " \n", 6);
+	g_string_assign(mcookie, splits[4]);
+
+	/* frees for reuse */
+	g_string_free(cmd_line, TRUE);
+	g_strfreev(splits);
 	pclose(output_fp);
 
+	/* get client IP address via SSH */
+	g_string_printf(cmd_line, "ssh %s echo $SSH_CLIENT", server->protocol->hostname->str);
+	output_fp = popen(cmd_line->str, "r");
+	fread(line, 1, 1024, output_fp);
+	/* split output to get IP */
+	splits = g_strsplit(line, " ", 3);
+	g_string_assign(ip, splits[0]);
+
+	/* send INI */
 	protocol_send_data(server->protocol, server->tcp_socket,
-		protocol_defs.ini_def, 4, PROTOCOL_VERSION, hostname, display, splits[4]);
+		protocol_defs.ini_def, 4, PROTOCOL_VERSION, hostname, ip->str, display, mcookie->str);
 
 	/* frees */
-	g_string_free(mcookie_cmd, TRUE);
+	g_string_free(mcookie, TRUE);
+	g_string_free(ip, TRUE);
+	g_string_free(cmd_line, TRUE);
 	g_strfreev(splits);
+	pclose(output_fp);
 }
 
 static void

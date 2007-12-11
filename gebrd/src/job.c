@@ -407,17 +407,15 @@ void
 job_run_flow(struct job * job, struct client * client)
 {
 	GString *		cmd_line;
-	gchar			server_hostname[100];
 
 	cmd_line = g_string_new(NULL);
-	gethostname(server_hostname, 100);
 
-	if (!g_ascii_strcasecmp(server_hostname, client->protocol->hostname->str)) {
+	if (client_is_local(client) == TRUE) {
 		g_string_printf(cmd_line, "bash -l -c \"%s\"",
 				job->cmd_line->str);
 	} else {
 		g_string_printf(cmd_line, "bash -l -c \"export DISPLAY=%s%s; %s\"",
-				client->remote_address->str, client->display->str,
+				client->address->str, client->display->str,
 				job->cmd_line->str);
 	}
 
