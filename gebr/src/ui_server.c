@@ -276,10 +276,27 @@ server_select_setup_ui(void)
 		case GTK_RESPONSE_CANCEL:
 			server = NULL;
 			break;
-		case GEBR_SERVER_UPDATE:
-			/* TODO: */
+		case GEBR_SERVER_UPDATE: {
+			GtkTreeIter	iter;
+			gboolean	valid;
+
+			valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(ui_server_select->store), &iter);
+			while (valid) {
+				struct server *	server;
+
+				gtk_tree_model_get(GTK_TREE_MODEL(ui_server_select->store), &iter,
+						SERVER_POINTER, &server,
+						-1);
+
+				if (server_is_logged(server) == FALSE)
+					server_connect(server);
+
+				valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(ui_server_select->store), &iter);
+			}
+
 			continue;
-		}
+		}}
+
 		break;
 	}
 

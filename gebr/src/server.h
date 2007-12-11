@@ -35,11 +35,21 @@ struct server {
 	/* ssh tunneling */
 	struct ssh_tunnel *	ssh_tunnel;
 
-	/* iter to set icons on connect/disconnet */
-	GtkTreeIter		iter;
+	enum server_state {
+		SERVER_STATE_ASK_PORT,
+		SERVER_STATE_RUN,
+		SERVER_STATE_RUNNED_ASK_PORT,
+		SERVER_STATE_OPEN_TUNNEL,
+		SERVER_STATE_CONNECT,
+		SERVER_STATE_CONNECTED,
+	} state;
+	enum server_error {
+		SERVER_ERROR_NONE,
+		SERVER_ERROR_SSH_ASK_PORT,
+	} error;
 
-	/* FIXME: change to state */
-	guint			retries;
+	/* iter to set icons on logged/disconneted */
+	GtkTreeIter		iter;
 };
 
 struct server *
@@ -47,6 +57,12 @@ server_new(const gchar * address);
 
 void
 server_free(struct server * server);
+
+void
+server_connect(struct server * server);
+
+gboolean
+server_is_logged(struct server * server);
 
 void
 server_run_flow(struct server * server);

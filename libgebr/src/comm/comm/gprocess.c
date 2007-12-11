@@ -279,6 +279,8 @@ g_process_start(GProcess * process, GString * cmd_line)
 
 	error = NULL;
 	g_shell_parse_argv(cmd_line->str, &argc, &argv, &error);
+	int i;
+	for (i = 0; argv[i] != NULL; ++i) puts(argv[i]);
 	ret = g_spawn_async_with_pipes(
 		NULL, /* working_directory */
 		argv,

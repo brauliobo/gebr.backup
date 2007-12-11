@@ -34,7 +34,7 @@ ssh_tunnel_new(guint16 start_port, const gchar * destination, guint16 remote_por
 		++ssh_tunnel->port;
 
 	cmd_line = g_string_new(NULL);
-	g_string_printf(cmd_line, "bash -c \"ssh -f -L %d:127.0.0.1:%d %s sleep 999d\"", ssh_tunnel->port, remote_port, destination);
+	g_string_printf(cmd_line, "ssh -f -L %d:127.0.0.1:%d %s 'sleep 300'", ssh_tunnel->port, remote_port, destination);
 
 // 	ssh_tunnel->process = g_process_new();
 // 	g_process_start(ssh_tunnel->process, cmd_line);

@@ -164,8 +164,9 @@ struct job *
 job_find(GString * address, GString * jid)
 {
 	GtkTreeIter	iter;
-	struct job *	job;
 	gboolean	valid;
+
+	struct job *	job;
 
 	job = NULL;
 	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
@@ -195,9 +196,10 @@ job_find(GString * address, GString * jid)
 void
 job_cancel(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
 	struct job *	        job;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
@@ -228,9 +230,10 @@ job_cancel(void)
 void
 job_close(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
 	struct job *		job;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
@@ -284,9 +287,10 @@ job_clear(void)
 void
 job_stop(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
 	struct job *	        job;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
@@ -317,21 +321,21 @@ job_stop(void)
 void
 job_clicked(void)
 {
-	GtkTreeIter		iter;
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	struct job *		job;
+	GString *		info;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
 		return;
 
-	struct job *		job;
-	GString *		info;
-
+	info = g_string_new(NULL);
 	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
 			JC_STRUCT, &job,
 			-1);
-	info = g_string_new(NULL);
 
 	/* fill job label */
 	job_update_label(job);
@@ -352,7 +356,7 @@ job_clicked(void)
 		g_string_append_printf(info, "\n%s\n%s\n", _("Command line:"), job->cmd_line->str);
 	/* output */
 	if (job->output->len)
-		g_string_append_printf(info, "\n%s", job->output->str);
+		g_string_append(info, job->output->str);
 	/* finish date*/
 	if (job->finish_date->len)
 		g_string_append_printf(info, "\n%s %s", _("Finish date:"), job->finish_date->str);

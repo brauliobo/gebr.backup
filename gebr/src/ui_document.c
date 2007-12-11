@@ -157,15 +157,16 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 		GtkTreeSelection *		selection;
 		GtkTreeModel *			model;
 		GtkTreeIter			iter;
-		gchar *                         old_title;
-		gchar *                         new_title;
-		GString *                       doc_type;
+
+		gchar *				old_title;
+		gchar *				new_title;
+		gchar *				doc_type;
 
 		enum GEOXML_DOCUMENT_TYPE	type;
 
 		old_title = geoxml_document_get_title(ui_document_properties->document);
 		new_title = gtk_entry_get_text(GTK_ENTRY(ui_document_properties->title));
-		
+
 		geoxml_document_set_title(ui_document_properties->document, new_title);
 		geoxml_document_set_description(ui_document_properties->document,
 			gtk_entry_get_text(GTK_ENTRY(ui_document_properties->description)));
@@ -188,13 +189,12 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 			/* SAVE IT! */
 			if (type == GEOXML_DOCUMENT_TYPE_PROJECT){
 				document_save(GEOXML_DOC(gebr.project));
-				doc_type = g_string_new("project");
-				
+				doc_type = "project";
 			}
-			else{
+			else {
 				document_save(GEOXML_DOC(gebr.line));
-				doc_type = g_string_new("line");
-			}			
+				doc_type = "line";
+			}
 			break;
 		case GEOXML_DOCUMENT_TYPE_FLOW:
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
@@ -203,22 +203,22 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 					   FB_TITLE, geoxml_document_get_title(ui_document_properties->document),
 					   -1);
 			flow_save();
-			doc_type = g_string_new("flow");
+			doc_type = "flow";
 			break;
 		}
-		
-		gebr_message(INFO, FALSE, TRUE, "Properties of %s '%s' updated", doc_type->str,
-			     old_title);
-		if (strcmp(old_title, new_title) != 0)
-			gebr_message(INFO, FALSE, TRUE, "Renaming %s '%s' to '%s'",
-				     doc_type->str, old_title, new_title);
-		g_string_free(doc_type, TRUE);
+
+		gebr_message(INFO, FALSE, TRUE, _("Properties of %s '%s' updated"), doc_type,
+			old_title);
+		if (g_ascii_strcasecmp(old_title, new_title) != 0)
+			gebr_message(INFO, FALSE, TRUE, _("Renaming %s '%s' to '%s'"),
+				doc_type, old_title, new_title);
 
 		break;
 	} default:
 		break;
 	}
 
+	/* frees */
 	gtk_widget_destroy(GTK_WIDGET(ui_document_properties->dialog));
 	g_free(ui_document_properties);
 }

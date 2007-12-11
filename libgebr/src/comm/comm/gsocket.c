@@ -230,12 +230,14 @@ _g_socket_init(GSocket * socket, int fd)
 void
 _g_socket_close(GSocket * socket)
 {
-	GError *	error;
+	if (socket->io_channel != NULL) {
+		GError *	error;
 
-	error = NULL;
-	g_io_channel_shutdown(socket->io_channel, FALSE, &error);
-	g_io_channel_unref(socket->io_channel);
-	g_byte_array_free(socket->queue_write_bytes, TRUE);
+		error = NULL;
+		g_io_channel_shutdown(socket->io_channel, FALSE, &error);
+		g_io_channel_unref(socket->io_channel);
+		g_byte_array_free(socket->queue_write_bytes, TRUE);
+	}
 }
 
 int

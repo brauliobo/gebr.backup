@@ -74,7 +74,7 @@ static void
 validate_float(GtkEntry *entry);
 
 gboolean
-validate_on_leaving(GtkWidget *widget, GdkEventFocus *event, gpointer *validate);
+validate_on_leaving(GtkWidget * widget, GdkEventFocus * event, void (*function)(GtkEntry*));
 
 /*
  * Section: Public
@@ -129,7 +129,7 @@ parameters_configure_setup_ui(void)
 						NULL);
 	gtk_dialog_add_button(GTK_DIALOG(ui_parameters->dialog), "Default", GTK_RESPONSE_DEFAULT);
 	gtk_dialog_add_button(GTK_DIALOG(ui_parameters->dialog), "Help", GTK_RESPONSE_HELP);
-	gtk_widget_set_size_request(ui_parameters->dialog, 600, 350);
+	gtk_widget_set_size_request(ui_parameters->dialog, 630, 400);
 	gtk_box_set_homogeneous(GTK_BOX(GTK_DIALOG(ui_parameters->dialog)->vbox), FALSE);
 
 	/* take the apropriate action when a button is pressed */
@@ -407,9 +407,12 @@ parameters_add_input_float(GeoXmlProgramParameter * parameter, GtkWidget ** widg
 	GtkWidget *	hbox;
 
 	hbox = parameters_add_input_string(parameter, widget);
-	g_signal_connect(GTK_OBJECT(*widget), "activate", validate_float, NULL);
-	g_signal_connect(GTK_OBJECT(*widget), "focus-out-event", validate_on_leaving, &validate_float);
 	gtk_widget_set_size_request(*widget, 90, 30);
+
+	g_signal_connect(GTK_OBJECT(*widget), "activate",
+		GTK_SIGNAL_FUNC(validate_float), NULL);
+	g_signal_connect(GTK_OBJECT(*widget), "focus-out-event",
+		GTK_SIGNAL_FUNC(validate_on_leaving), &validate_float);
 
 	return hbox;
 }
@@ -424,9 +427,12 @@ parameters_add_input_int(GeoXmlProgramParameter * parameter, GtkWidget ** widget
 	GtkWidget *	hbox;
 
 	hbox = parameters_add_input_string(parameter, widget);
-	g_signal_connect(GTK_OBJECT(*widget), "activate", validate_int, NULL);
-	g_signal_connect(GTK_OBJECT(*widget), "focus-out-event", validate_on_leaving, &validate_int);
 	gtk_widget_set_size_request(*widget, 90, 30);
+
+	g_signal_connect(GTK_OBJECT(*widget), "activate",
+		GTK_SIGNAL_FUNC(validate_int), NULL);
+	g_signal_connect(GTK_OBJECT(*widget), "focus-out-event",
+		GTK_SIGNAL_FUNC(validate_on_leaving), &validate_int);
 
 	return hbox;
 }
@@ -544,41 +550,47 @@ parameters_add_input_file(GeoXmlProgramParameter * parameter, GtkWidget ** widge
 /*
  * Function: validate_int
  * Validate an int parameter
- */ 
+ */
 static void
 validate_int(GtkEntry *entry)
 {
-   gchar       number[15];
-   gchar *     valuestr;
-   gdouble     value;
-   
+	gchar		number[15];
+	gchar *		valuestr;
+	gdouble		value;
 
-   valuestr = gtk_entry_get_text(entry);
-   if(strlen(valuestr) > 0){
-      value = g_ascii_strtod(valuestr, NULL);
-      gtk_entry_set_text(entry, g_ascii_dtostr(number, 15, round(value)));
-   }
+	valuestr = (gchar*)gtk_entry_get_text(entry);
+	if (strlen(valuestr) == 0)
+		return;
+
+	value = g_ascii_strtod(valuestr, NULL);
+	gtk_entry_set_text(entry, g_ascii_dtostr(number, 15, round(value)));
 }
 
 /*
  * Function: validate_float
  * Validate a float parameter
- */ 
+ */
 static void
 validate_float(GtkEntry *entry)
 {
-   gchar *     valuestr;
-   gchar *     last;
-   GString *   value;
+	gchar *		valuestr;
+	gchar *		last;
+	GString *	value;
 
-   valuestr = gtk_entry_get_text(entry);
-   if(strlen(valuestr) > 0){
-      g_ascii_strtod(valuestr, &last);
-      value = g_string_new(valuestr);
-      g_string_truncate(value, strlen(valuestr) - strlen(last));
-      gtk_entry_set_text(entry, value->str);
-      g_string_free(value, TRUE);
-   }
+	valuestr = (gchar*)gtk_entry_get_text(entry);
+	if (strlen(valuestr) == 0)
+		return;
+
+	/* initialization */
+	value = g_string_new(NULL);
+
+	g_ascii_strtod(valuestr, &last);
+	g_string_assign(value, valuestr);
+	g_string_truncate(value, strlen(valuestr) - strlen(last));
+	gtk_entry_set_text(entry, value->str);
+
+	/* frees */
+	g_string_free(value, TRUE);
 }
 
 /*
@@ -586,13 +598,9 @@ validate_float(GtkEntry *entry)
  * Call a validation function
  */
 gboolean
-validate_on_leaving(GtkWidget *widget, GdkEventFocus *event, gpointer *validate )
+validate_on_leaving(GtkWidget * widget, GdkEventFocus * event, void (*function)(GtkEntry*))
 {
+	function(GTK_ENTRY(widget));
 
-   static void (*fun) (GtkEntry*);
-
-   fun = validate;
-   
-   fun(GTK_ENTRY(widget));
-   return FALSE;
+	return FALSE;
 }
