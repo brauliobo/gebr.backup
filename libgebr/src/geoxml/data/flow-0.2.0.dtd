@@ -45,9 +45,11 @@
 
 <!ELEMENT group (label, (int | float | string | flag | file | range | enum | group)*)>
 <!ATTLIST group
-    exclusive (yes | no) #REQUIRED
-    instances      CDATA #REQUIRED
-    expand    (yes | no) #REQUIRED>
+    exclusive (yes | no) #REQUIRED    <!-- Only one parameter of the group is considered --> 
+    expand    (yes | no) #REQUIRED    <!-- Whether the group starts expanded or colapsed -->
+    multiple  (yes | no) #REQUIRED    <!-- Whether the parameters can multiple defined or not -->
+    npar         NMTOKEN #REQUIRED    <!-- Number of parameters of an instance -->
+    instances    NMTOKEN #REQUIRED>   <!-- Number of instances of set of parameters -->
 
 <!-- Types of parameters -->
 <!-- Integer -->
