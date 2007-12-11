@@ -292,12 +292,11 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 	g_string_assign(mcookie, splits[4]);
 
 	/* frees for reuse */
-	g_string_free(cmd_line, TRUE);
 	g_strfreev(splits);
 	pclose(output_fp);
 
 	/* get client IP address via SSH */
-	g_string_printf(cmd_line, "ssh %s echo $SSH_CLIENT", server->protocol->hostname->str);
+	g_string_printf(cmd_line, "ssh %s 'echo $SSH_CLIENT'", server->address->str);
 	output_fp = popen(cmd_line->str, "r");
 	fread(line, 1, 1024, output_fp);
 	/* split output to get IP */
@@ -306,7 +305,7 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 
 	/* send INI */
 	protocol_send_data(server->protocol, server->tcp_socket,
-		protocol_defs.ini_def, 4, PROTOCOL_VERSION, hostname, ip->str, display, mcookie->str);
+		protocol_defs.ini_def, 5, PROTOCOL_VERSION, hostname, ip->str, display, mcookie->str);
 
 	/* frees */
 	g_string_free(mcookie, TRUE);

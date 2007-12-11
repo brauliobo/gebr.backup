@@ -410,14 +410,9 @@ job_run_flow(struct job * job, struct client * client)
 
 	cmd_line = g_string_new(NULL);
 
-	if (client_is_local(client) == TRUE) {
-		g_string_printf(cmd_line, "bash -l -c \"%s\"",
-				job->cmd_line->str);
-	} else {
-		g_string_printf(cmd_line, "bash -l -c \"export DISPLAY=%s%s; %s\"",
-				client->address->str, client->display->str,
-				job->cmd_line->str);
-	}
+	g_string_printf(cmd_line, "bash -l -c \"export DISPLAY=%s%s; %s\"",
+			client->address->str, client->display->str,
+			job->cmd_line->str);
 
 	gebrd.jobs = g_list_append(gebrd.jobs, job);
 	g_signal_connect(job->process, "ready-read-stdout",
