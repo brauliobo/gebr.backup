@@ -311,7 +311,7 @@ job_stop(void)
 	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to kill job '%s'"), job->server->address, job->title->str);
 
 	protocol_send_data(job->server->protocol, job->server->tcp_socket,
-		protocol_defs.kil_def, 0);
+		protocol_defs.kil_def, 1, job->jid->str);
 }
 
 /*
@@ -470,43 +470,39 @@ void
 job_update_status(struct job * job)
 {
 	GdkPixbuf *	pixbuf;
+	GtkTextIter	iter;
+	GString *	finish_date;
 
+	/* Select and set icon */
 	switch (job->status) {
 	case JOB_STATUS_RUNNING:
 		pixbuf = gebr.pixmaps.stock_execute;
 		break;
-	case JOB_STATUS_FINISHED: {
-		GtkTextIter	iter;
-		GString *	finish_date;
-
+	case JOB_STATUS_FINISHED:
 		pixbuf = gebr.pixmaps.stock_apply;
-		if (job_is_active(job) == FALSE)
-			break;
-
-		/* initialization */
-		finish_date = g_string_new(NULL);
-
-		/* job label */
-		job_update_label(job);
-		/* job info */
-		g_string_printf(finish_date, "\n%s %s", _("Finish date:"), job->finish_date->str);
-		gtk_text_buffer_get_end_iter(gebr.ui_job_control->text_buffer, &iter);
-		gtk_text_buffer_insert(gebr.ui_job_control->text_buffer, &iter, finish_date->str, finish_date->len);
-
-		/* frees */
-		g_string_free(finish_date, TRUE);
 		break;
-	}
 	case JOB_STATUS_FAILED:
 	case JOB_STATUS_CANCELED:
 		pixbuf = gebr.pixmaps.stock_cancel;
 		break;
-	default:
-		pixbuf = NULL;
-		break;
 	}
-
 	gtk_list_store_set(gebr.ui_job_control->store, &job->iter,
 			JC_ICON, pixbuf,
 			-1);
+
+	if (job_is_active(job) == FALSE || job->status == JOB_STATUS_RUNNING)
+		return;
+
+	/* initialization */
+	finish_date = g_string_new(NULL);
+
+	/* job label */
+	job_update_label(job);
+	/* job info */
+	g_string_printf(finish_date, "\n%s %s", _("Finish date:"), job->finish_date->str);
+	gtk_text_buffer_get_end_iter(gebr.ui_job_control->text_buffer, &iter);
+	gtk_text_buffer_insert(gebr.ui_job_control->text_buffer, &iter, finish_date->str, finish_date->len);
+
+	/* frees */
+	g_string_free(finish_date, TRUE);
 }
