@@ -62,8 +62,6 @@ preferences_setup_ui(void)
 
 	GtkWidget *			table;
 	GtkWidget *			label;
-	GtkTooltips *			tips;
-	GtkWidget *			eventbox;
 
 	/* alloc */
 	ui_preferences = g_malloc(sizeof(struct ui_preferences));
@@ -75,9 +73,6 @@ preferences_setup_ui(void)
 					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 					NULL);
 
-	/* Tooltips */
-	tips = gtk_tooltips_new();
-
 	/* Take the apropriate action when a button is pressed */
 	g_signal_connect(ui_preferences->dialog, "response",
 			G_CALLBACK(preferences_actions), ui_preferences);
@@ -87,74 +82,92 @@ preferences_setup_ui(void)
 	table = gtk_table_new(6, 2, FALSE);
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(ui_preferences->dialog)->vbox), table, TRUE, TRUE, 0);
 
-	/* User name */
+	/*
+	 * User name
+	 */
 	label = gtk_label_new(_("User name"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	ui_preferences->username = gtk_entry_new();
-	gtk_tooltips_set_tip(tips, ui_preferences->username, _("You should know your name"), "");
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
+
+	ui_preferences->username = gtk_entry_new();
+	g_object_set(G_OBJECT(ui_preferences->username), "tooltip-text", _("You should know your name"), NULL);
 	gtk_table_attach(GTK_TABLE(table), ui_preferences->username, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
+
 	/* read config */
 	gtk_entry_set_text(GTK_ENTRY(ui_preferences->username), gebr.config.username->str);
 
-	/* User ui_preferences->email */
+	/*
+	 * User email
+	 */
 	label = gtk_label_new(_("Email"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	ui_preferences->email = gtk_entry_new();
-	gtk_tooltips_set_tip(tips, ui_preferences->email, _("Your email address"), "");
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+
+	ui_preferences->email = gtk_entry_new();
+	g_object_set(G_OBJECT(ui_preferences->email), "tooltip-text", _("Your email address"), NULL);
 	gtk_table_attach(GTK_TABLE(table), ui_preferences->email, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
+
 	/* read config */
 	gtk_entry_set_text(GTK_ENTRY(ui_preferences->email), gebr.config.email->str);
 
-	/* GêBR dir */
+	/*
+	 * GêBR dir
+	 */
 	label = gtk_label_new(_("User's menus directory"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	/* Browse button for user's menus dir */
-	ui_preferences->usermenus = gtk_file_chooser_button_new(_("GÃªBR dir"),
-						GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-
-	eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(eventbox), ui_preferences->usermenus);
-	gtk_tooltips_set_tip(tips, eventbox, _("Path to look for private user's menus"), "");
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), eventbox, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+
+	/* Browse button for user's menus dir */
+	ui_preferences->usermenus = gtk_file_chooser_button_new(_("GÃªBR dir"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	g_object_set(G_OBJECT(ui_preferences->usermenus), "tooltip-text", _("Path to look for private user's menus"), NULL);
+	gtk_table_attach(GTK_TABLE(table), ui_preferences->usermenus, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 3, 3);
+
 	/* read config */
 	if (gebr.config.usermenus->len > 0)
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(ui_preferences->usermenus),
-						gebr.config.usermenus->str);
+			gebr.config.usermenus->str);
 
-	/* Data dir */
+	/*
+	 * Data dir
+	 */
 	label = gtk_label_new(_("Data directory"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
+
 	/* Browse button for ui_preferences->data */
 	ui_preferences->data = gtk_file_chooser_button_new(_("Browser data dir"),
 						GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	g_object_set(G_OBJECT(ui_preferences->data), "tooltip-text", _("Path to store projects, lines and flows"), NULL);
+	gtk_table_attach(GTK_TABLE(table), ui_preferences->data, 1, 2, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
 
-	eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(eventbox), ui_preferences->data);
-	gtk_tooltips_set_tip(tips, eventbox, _("Path to store projects, lines and flows"), "");
-	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), eventbox, 1, 2, 3, 4, GTK_FILL, GTK_FILL, 3, 3);
 	/* read config */
 	if (gebr.config.data->len > 0)
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(ui_preferences->data),
-						gebr.config.data->str);
+			gebr.config.data->str);
 
-	/* Editor */
+	/*
+	 * Editor
+	 */
 	label = gtk_label_new(_("HTML editor"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-	ui_preferences->editor = gtk_entry_new();
-	gtk_tooltips_set_tip(tips, ui_preferences->editor, _("An HTML capable editor to edit helps and reports"), "");
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
+
+	ui_preferences->editor = gtk_entry_new();
+	g_object_set(G_OBJECT(ui_preferences->editor), "tooltip-text", _("An HTML capable editor to edit helps and reports"), NULL);
 	gtk_table_attach(GTK_TABLE(table), ui_preferences->editor, 1, 2, 4, 5, GTK_FILL, GTK_FILL, 3, 3);
+
 	/* read config */
 	gtk_entry_set_text(GTK_ENTRY(ui_preferences->editor), gebr.config.editor->str);
 
 	/* Browser */
 	label = gtk_label_new(_("Browser"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
+
 	ui_preferences->browser = gtk_combo_box_entry_new_text();
+	g_object_set(G_OBJECT(ui_preferences->browser), "tooltip-text", _("An HTML browser to display helps and reports"), NULL);
+	gtk_table_attach(GTK_TABLE(table), ui_preferences->browser, 1, 2, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
+	/* read config */
 	{
 		int		i;
 		gboolean	new_browser;
@@ -175,12 +188,7 @@ preferences_setup_ui(void)
 		}
 	}
 
-	eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(eventbox), ui_preferences->browser);
-	gtk_tooltips_set_tip(tips, eventbox, _("An HTML browser to display helps and reports"), "");
-	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), eventbox, 1, 2, 5, 6, GTK_FILL, GTK_FILL, 3, 3);
-
+	/* finally... */
 	gtk_widget_show_all(ui_preferences->dialog);
 
 	return ui_preferences;

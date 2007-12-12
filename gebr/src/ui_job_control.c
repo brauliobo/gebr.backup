@@ -50,7 +50,6 @@ job_control_setup_ui(void)
 	GtkIconSize			tmp_toolbar_icon_size;
 	GtkWidget *			toolitem;
 	GtkWidget *			button;
-	GtkTooltips *			tips;
 
 	GtkWidget *			hpanel;
 	GtkWidget *			scrolledwin;
@@ -81,16 +80,13 @@ job_control_setup_ui(void)
 
 	tmp_toolbar_icon_size = gtk_toolbar_get_icon_size(GTK_TOOLBAR(toolbar));
 
-	/* Tooltips */
-	tips = gtk_tooltips_new();
-
 	/* Cancel button = END */
 	toolitem = GTK_WIDGET(gtk_tool_item_new());
 	gtk_container_add(GTK_CONTAINER(toolbar), toolitem);
 	button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
-	gtk_tooltips_set_tip(tips, button, _("Ask server to terminate the job"), "");
+	g_object_set(G_OBJECT(button), "tooltip-text", _("Ask server to terminate the job"), NULL);
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_cancel), NULL);
@@ -102,7 +98,7 @@ job_control_setup_ui(void)
 	button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
-	gtk_tooltips_set_tip(tips, button, _("Clear current job log"), "");
+	g_object_set(G_OBJECT(button), "tooltip-text",  _("Clear current job log"), NULL);
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_close), NULL);
@@ -114,7 +110,7 @@ job_control_setup_ui(void)
 	button = gtk_button_new_from_stock(GTK_STOCK_CLEAR);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
-	gtk_tooltips_set_tip(tips, button, _("Clear all job logs"), "");
+	g_object_set(G_OBJECT(button), "tooltip-text", _("Clear all job logs"), NULL);
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_clear), NULL);
@@ -126,7 +122,7 @@ job_control_setup_ui(void)
 	button = gtk_button_new_from_stock(GTK_STOCK_STOP);
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 	gtk_container_add(GTK_CONTAINER(toolitem), button);
-	gtk_tooltips_set_tip(tips, button, _("Ask server to kill the job"), "");
+	g_object_set(G_OBJECT(button), "tooltip-text", _("Ask server to kill the job"), NULL);
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
 			GTK_SIGNAL_FUNC(job_stop), NULL);
@@ -134,7 +130,9 @@ job_control_setup_ui(void)
 	hpanel = gtk_hpaned_new();
 	gtk_box_pack_start(GTK_BOX(vbox), hpanel, TRUE, TRUE, 0);
 
-	/* Left side */
+	/*
+	 * Left side
+	 */
 	frame = gtk_frame_new("Jobs");
 	gtk_paned_pack1(GTK_PANED(hpanel), frame, FALSE, FALSE);
 
@@ -166,7 +164,9 @@ job_control_setup_ui(void)
 	gtk_container_add(GTK_CONTAINER(scrolledwin), ui_job_control->view);
 	gtk_widget_set_size_request(GTK_WIDGET(scrolledwin), 180, 30);
 
-	/* Right side */
+	/*
+	 * Right side
+	 */
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_paned_pack2(GTK_PANED(hpanel), vbox, TRUE, TRUE);
 
