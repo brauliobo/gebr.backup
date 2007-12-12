@@ -118,6 +118,7 @@ job_send_clients_output(struct job * job, GString * _output)
 		/* TODO: what else should be tried? */
 		if (output == NULL) {
 			g_free(output);
+			gebrd_message(ERROR, TRUE, TRUE, _("Job '%s' sent output not in UTF-8"), job->title->str);
 			return;
 		}
 	} else {

@@ -120,7 +120,7 @@ help_edit(GtkButton * button, GeoXmlDocument * document)
 	GString *	help;
 	GString *	cmd_line;
 
-	/* Call an editor */
+	/* Check for editor */
 	if (!gebr.config.editor->len) {
 		gebr_message(ERROR, TRUE, FALSE, _("No editor defined. Choose one at Configure/Preferences"));
 		return;
@@ -130,7 +130,6 @@ help_edit(GtkButton * button, GeoXmlDocument * document)
 	html_path = make_temp_filename("gebr_XXXXXX.html");
 	cmd_line = g_string_new(NULL);
 	help = g_string_new(NULL);
-
 
 	/* Write current help to temporary file */
 	html_fp = fopen(html_path->str, "w");
@@ -147,10 +146,34 @@ help_edit(GtkButton * button, GeoXmlDocument * document)
 
 	/* Read back the help from file */
 	html_fp = fopen(html_path->str, "r");
+	if (html_fp == NULL) {
+		gebr_message(ERROR, TRUE, TRUE, _("Could not read created temporary file."));
+		goto out;
+	}
 	while (fgets(buffer, BUFFER_SIZE, html_fp) != NULL)
 		g_string_append(help, buffer);
 	fclose(html_fp);
 	g_unlink(html_path->str);
+
+	/* ensure UTF-8 encoding */
+	if (g_utf8_validate(help->str, -1, NULL) == FALSE) {
+		gchar *		converted;
+		gsize		bytes_read;
+		gsize		bytes_written;
+		GError *	error;
+
+		error = NULL;
+		converted = g_locale_to_utf8(help->str, -1, &bytes_read, &bytes_written, &error);
+		/* TODO: what else should be tried? */
+		if (converted == NULL) {
+			g_free(converted);
+			gebr_message(ERROR, TRUE, TRUE, _("Please change the report encoding to UTF-8"));
+			goto out;
+		}
+
+		g_string_assign(help, converted);
+		g_free(converted);
+	}
 
 	/* Finally, the edited help back to the document */
 	geoxml_document_set_help(document, help->str);

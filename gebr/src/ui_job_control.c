@@ -328,7 +328,7 @@ job_control_save(void)
 	gtk_text_buffer_get_start_iter(gebr.ui_job_control->text_buffer, &start_iter);
 	gtk_text_buffer_get_end_iter(gebr.ui_job_control->text_buffer, &end_iter);
 	text = gtk_text_buffer_get_text(gebr.ui_job_control->text_buffer, &start_iter, &end_iter, FALSE);
-	fwrite(text, strlen(text), sizeof(gchar), fp);
+	fputs(text, fp);
 	fclose(fp);
 
 	gebr_message(INFO, TRUE, TRUE, _("Saved job information at '%s'"), path);

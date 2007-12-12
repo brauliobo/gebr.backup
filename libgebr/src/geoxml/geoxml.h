@@ -45,9 +45,11 @@
  * 	]
  *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
- * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
- * 	"GeoXmlLine" [ URL = "\ref line.h" ];
  * 	"GeoXmlProject" [ URL = "\ref project.h" ];
+ * 	"GeoXmlProjectLine" [ URL = "\ref GeoXmlProjectLine" ];
+ * 	"GeoXmlLine" [ URL = "\ref line.h" ];
+ * 	"GeoXmlLineFlow" [ URL = "\ref GeoXmlLineFlow" ];
+ * 	"GeoXmlFlow" [ URL = "\ref flow.h" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];

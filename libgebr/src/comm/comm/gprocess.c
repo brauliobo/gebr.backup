@@ -317,17 +317,17 @@ out:	g_strfreev(argv);
 	return ret;
 }
 
+GPid
+g_process_get_pid(GProcess * process)
+{
+	return process->pid;
+}
+
 void
 g_process_kill(GProcess * process)
 {
 	kill(process->pid, SIGKILL);
 	g_spawn_close_pid(process->pid);
-}
-
-GPid
-g_process_get_pid(GProcess * process)
-{
-	return process->pid;
 }
 
 void

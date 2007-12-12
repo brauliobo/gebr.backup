@@ -152,10 +152,12 @@ help_edit(const gchar * help)
 	GString *	cmdline;
 	gchar		buffer[100];
 
-	prepared_html = g_string_new(help);
+	/* initialization */
+	prepared_html = g_string_new(NULL);
 
 	/* help empty; create from template. */
-	if (strlen(prepared_html->str) == 0) {
+	g_string_assign(prepared_html, help);
+	if (prepared_html->len == 0) {
 		/* Read back the help from file */
 		fp = fopen(DATA_DIR "help-template.html", "r");
 		if (fp == NULL) {
@@ -175,14 +177,12 @@ help_edit(const gchar * help)
 	/* CSS fix */
 	help_fix_css(prepared_html);
 
-	/* create temporary filename */
-	html_path = make_temp_filename("gebrme_XXXXXX.html");
-
 	/* load html into a temporary file */
+	html_path = make_temp_filename("gebrme_XXXXXX.html");
 	fp = fopen(html_path->str, "w");
 	if (fp == NULL) {
 		gebrme_message(ERROR, TRUE, TRUE, _("Could not create a temporary file."));
-		goto out;
+		goto err2;
 	}
 	fputs(prepared_html->str, fp);
 	fclose(fp);
@@ -195,7 +195,7 @@ help_edit(const gchar * help)
 	g_string_printf(cmdline, "%s %s", gebrme.config.htmleditor->str, html_path->str);
 	if (system(cmdline->str)) {
 		gebrme_message(ERROR, TRUE, TRUE, _("Could not launch editor"));
-		goto out;
+		goto err;
 	}
 	g_string_free(cmdline, TRUE);
 
@@ -203,12 +203,32 @@ help_edit(const gchar * help)
 	fp = fopen(html_path->str, "r");
 	if (fp == NULL) {
 		gebrme_message(ERROR, TRUE, TRUE, _("Could not read created temporary file."));
-		goto out;
+		goto err;
 	}
 	g_string_assign(prepared_html, "");
 	while (fgets(buffer, sizeof(buffer), fp))
 		g_string_append(prepared_html, buffer);
 	fclose(fp);
+
+	/* ensure UTF-8 encoding */
+	if (g_utf8_validate(prepared_html->str, -1, NULL) == FALSE) {
+		gchar *		converted;
+		gsize		bytes_read;
+		gsize		bytes_written;
+		GError *	error;
+
+		error = NULL;
+		converted = g_locale_to_utf8(prepared_html->str, -1, &bytes_read, &bytes_written, &error);
+		/* TODO: what else should be tried? */
+		if (converted == NULL) {
+			g_free(converted);
+			gebrme_message(ERROR, TRUE, TRUE, _("Please change the help encoding to UTF-8"));
+			goto err;
+		}
+
+		g_string_assign(prepared_html, converted);
+		g_free(converted);
+	}
 
 	/* transform css into a relative path back */
 	{
@@ -229,7 +249,10 @@ help_edit(const gchar * help)
 		}
 	}
 
-	g_unlink(html_path->str);
-out:	g_string_free(html_path, FALSE);
+	g_string_free(html_path, FALSE);
 	return prepared_html;
+
+err:	g_string_free(html_path, FALSE);
+err2:	g_string_free(prepared_html, TRUE);
+	return NULL;
 }
