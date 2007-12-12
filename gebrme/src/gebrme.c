@@ -142,24 +142,24 @@ gebrme_config_save(void)
  * Log a message. If in_statusbar is TRUE it is writen to status bar.
  *
  */
-// void
-// gebrme_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message, ...)
-// {
-// 	gchar *		string;
-// 	va_list		argp;
-//
-// 	va_start(argp, message);
-// 	string = g_strdup_vprintf(message, argp);
-// 	va_end(argp);
-//
-// #ifdef LOG_DEBUG
-// 	if (type == DEBUG)
-// 		g_print("%s\n", string);
-// #endif
-// 	if (in_log_file)
+void
+gebrme_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message, ...)
+{
+	gchar *		string;
+	va_list		argp;
+
+	va_start(argp, message);
+	string = g_strdup_vprintf(message, argp);
+	va_end(argp);
+
+#ifdef LOG_DEBUG
+	if (type == DEBUG)
+		g_print("%s\n", string);
+#endif
+	if (in_log_file)
 // 		log_add_message(gebrme.log, type, string);
-// 	if (in_statusbar)
-// 		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0, string);
-//
-// 	g_free(string);
-// }
+	if (in_statusbar)
+		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0, string);
+
+	g_free(string);
+}

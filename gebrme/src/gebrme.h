@@ -110,7 +110,7 @@ gebrme_config_load(void);
 void
 gebrme_config_save(void);
 
-// void
-// gebrme_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message, ...);
+void
+gebrme_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message, ...);
 
 #endif //__GEBRME_H

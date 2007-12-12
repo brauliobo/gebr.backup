@@ -139,7 +139,7 @@ menu_load_user_directory(void)
 	GString *	path;
 
 	if ((dir = opendir(gebrme.config.menu_dir->str)) == NULL) {
-		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0, _("Could not open menus' directory"));
+		gebrme_message(ERROR, TRUE, TRUE, _("Could not open menus' directory"));
 		return;
 	}
 

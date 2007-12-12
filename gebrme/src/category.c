@@ -52,7 +52,7 @@ category_remove(void)
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebrme.categories_treeview));
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
-		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0, _("Please select a category"));
+		gebrme_message(ERROR, TRUE, FALSE, _("Please select a category"));
 		return;
 	}
 

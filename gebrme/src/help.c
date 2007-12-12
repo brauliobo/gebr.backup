@@ -122,8 +122,7 @@ help_show(const gchar * help)
 	/* open temporary file with help from XML */
 	html_fp = fopen(html_path->str, "w");
 	if (html_fp == NULL) {
-		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
-			_("Could not create an temporary file."));
+		gebrme_message(ERROR, TRUE, TRUE, _("Could not create an temporary file."));
 		goto out;
 	}
 	fputs(prepared_html->str, html_fp);
@@ -160,8 +159,7 @@ help_edit(const gchar * help)
 		/* Read back the help from file */
 		fp = fopen(DATA_DIR "help-template.html", "r");
 		if (fp == NULL) {
-			gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
-				_("Could not open template. Check your installation."));
+			gebrme_message(ERROR, TRUE, TRUE, _("Could not open template. Please check your installation."));
 			return prepared_html;
 		}
 
@@ -183,8 +181,7 @@ help_edit(const gchar * help)
 	/* load html into a temporary file */
 	fp = fopen(html_path->str, "w");
 	if (fp == NULL) {
-		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
-				_("Could not create a temporary file."));
+		gebrme_message(ERROR, TRUE, TRUE, _("Could not create a temporary file."));
 		goto out;
 	}
 	fputs(prepared_html->str, fp);
@@ -197,8 +194,7 @@ help_edit(const gchar * help)
 	cmdline = g_string_new("");
 	g_string_printf(cmdline, "%s %s", gebrme.config.htmleditor->str, html_path->str);
 	if (system(cmdline->str)) {
-		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
-			_("Could not launch editor"));
+		gebrme_message(ERROR, TRUE, TRUE, _("Could not launch editor"));
 		goto out;
 	}
 	g_string_free(cmdline, TRUE);
@@ -206,8 +202,7 @@ help_edit(const gchar * help)
 	/* read back the help from file */
 	fp = fopen(html_path->str, "r");
 	if (fp == NULL) {
-		gtk_statusbar_push(GTK_STATUSBAR(gebrme.statusbar), 0,
-			_("Could not read created temporary file."));
+		gebrme_message(ERROR, TRUE, TRUE, _("Could not read created temporary file."));
 		goto out;
 	}
 	g_string_assign(prepared_html, "");
