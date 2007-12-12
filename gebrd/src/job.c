@@ -96,13 +96,34 @@ job_add_program_parameters(struct job * job, GeoXmlProgram * program)
 }
 
 static void
-job_send_clients_output(struct job * job, GString * output)
+job_send_clients_output(struct job * job, GString * _output)
 {
 	GList *		link;
+	gchar *		output;
+	gboolean	allocated;
 
 	/* FIXME: remove and find the real problem */
 	if (!job->jid->len)
 		return;
+
+	/* ensure UTF-8 encoding */
+	if (g_utf8_validate(_output->str, -1, NULL) == FALSE) {
+		gsize		bytes_read;
+		gsize		bytes_written;
+		GError *	error;
+
+		error = NULL;
+		allocated = TRUE;
+		output = g_locale_to_utf8(_output->str, -1, &bytes_read, &bytes_written, &error);
+		/* TODO: what else should be tried? */
+		if (output == NULL) {
+			g_free(output);
+			return;
+		}
+	} else {
+		allocated = FALSE;
+		output = _output->str;
+	}
 
 	link = g_list_first(gebrd.clients);
 	while (link != NULL) {
@@ -110,18 +131,21 @@ job_send_clients_output(struct job * job, GString * output)
 
 		client = (struct client *)link->data;
 		protocol_send_data(client->protocol, client->tcp_socket,
-			protocol_defs.out_def, 2, job->jid->str, output->str);
+			protocol_defs.out_def, 2, job->jid->str, output);
 
 		link = g_list_next(link);
 	}
+
+	if (allocated)
+		g_free(output);
 }
 
 static void
-job_process_read_stdout(GProcess * gjob, struct job * job)
+job_process_read_stdout(GProcess * process, struct job * job)
 {
 	GString *	stdout;
 
-	stdout = g_process_read_stdout_string_all(gjob);
+	stdout = g_process_read_stdout_string_all(process);
 
 	g_string_append(job->output, stdout->str);
 	job_send_clients_output(job, stdout);
@@ -130,11 +154,11 @@ job_process_read_stdout(GProcess * gjob, struct job * job)
 }
 
 static void
-job_process_read_stderr(GProcess * gjob, struct job * job)
+job_process_read_stderr(GProcess * process, struct job * job)
 {
 	GString *	stderr;
 
-	stderr = g_process_read_stderr_string_all(gjob);
+	stderr = g_process_read_stderr_string_all(process);
 
 	g_string_append(job->output, stderr->str);
 	job_send_clients_output(job, stderr);
@@ -143,7 +167,7 @@ job_process_read_stderr(GProcess * gjob, struct job * job)
 }
 
 static void
-job_process_finished(GProcess * gjob, struct job * job)
+job_process_finished(GProcess * process, struct job * job)
 {
 	GList *	link;
 
