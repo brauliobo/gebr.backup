@@ -223,6 +223,8 @@ protocol_split_new(GString * arguments, guint parts)
 	gchar *		iarg;
 	GList *		split;
 
+	/* TODO: use static array instead of a GList */
+
 	iarg = arguments->str;
 	split = NULL;
 	for (i = 1; i <= parts; ++i) {
