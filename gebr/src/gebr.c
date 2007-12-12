@@ -43,6 +43,7 @@
 #include "document.h"
 #include "flow.h"
 
+#define LOG_DEBUG
 struct gebr gebr;
 
 /*
@@ -62,18 +63,14 @@ gebr_init(int argc, char ** argv)
 	gebr.line = NULL;
 	gebr.flow = NULL;
 	log_filename = g_string_new(NULL);
+	protocol_init();
 
-	/* assembly user's gebr directory */
+	/* log */
 	g_string_printf(log_filename, "%s/.gebr/gebr.log", getenv("HOME"));
-
-	/* log file */
 	gebr.log = log_open(log_filename->str);
 
 	/* allocating list of temporary files */
 	gebr.tmpfiles = g_slist_alloc();
-
-	/* list of servers */
-	protocol_init();
 
 	/* icons */
 	gebr.invisible = gtk_invisible_new();
@@ -287,7 +284,6 @@ gebr_config_save(void)
 		gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_server_list->store), &iter,
 				SERVER_POINTER, &server,
 				-1);
-
 		fprintf(fp, "server = \"%s\"\n", server->address->str);
 
 		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_server_list->store), &iter);
@@ -314,10 +310,14 @@ gebr_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_
 	string = g_strdup_vprintf(message, argp);
 	va_end(argp);
 
+#ifdef LOG_DEBUG
+	if (type == DEBUG)
+		g_print("%s\n", string);
+#endif
 	if (in_log_file)
 		log_add_message(gebr.log, type, string);
 	if (in_statusbar)
-		gtk_statusbar_push(GTK_STATUSBAR (gebr.statusbar), 0, string);
+		gtk_statusbar_push(GTK_STATUSBAR(gebr.statusbar), 0, string);
 
 	g_free(string);
 }

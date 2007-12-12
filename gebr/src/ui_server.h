@@ -56,6 +56,9 @@ struct ui_server_list {
 struct ui_server_list *
 server_list_setup_ui(void);
 
+void
+server_list_updated_status(struct server * server);
+
 struct ui_server_select {
 	GtkWidget *		dialog;
 

@@ -61,7 +61,7 @@ ssh_run_server_finished(GProcess * process, struct server * server)
 {
 	/* now ask via ssh its port */
 	ssh_ask_server_port(server);
-	gebr_message(DEBUG, TRUE, TRUE, "ssh_run_server_finished");
+	gebr_message(DEBUG, FALSE, TRUE, "ssh_run_server_finished");
 // 	g_process_free(process);
 }
 
@@ -76,7 +76,7 @@ ssh_ask_port_read_stdout(GProcess * process, struct server * server)
 	port = strtol(output->str, &strtol_endptr, 10);
 	if (errno != ERANGE)
 		server->port = port;
-	gebr_message(DEBUG, TRUE, TRUE, "ssh_ask_port_read_stdout: port read = %d, server port = %d", port, server->port);
+	gebr_message(DEBUG, FALSE, TRUE, "ssh_ask_port_read_stdout: %d", port, server->port);
 	g_string_free(output, TRUE);
 }
 
@@ -270,7 +270,7 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 	gchar		line[1024];
 
 	GString *	mcookie;
-	GString *	ip;	
+	GString *	ip;
 	gchar **	splits;
 
 	/* initialization */
@@ -308,11 +308,11 @@ server_connected(GTcpSocket * tcp_socket, struct server * server)
 		protocol_defs.ini_def, 5, PROTOCOL_VERSION, hostname, ip->str, display, mcookie->str);
 
 	/* frees */
+	g_strfreev(splits);
+	pclose(output_fp);
 	g_string_free(mcookie, TRUE);
 	g_string_free(ip, TRUE);
 	g_string_free(cmd_line, TRUE);
-	g_strfreev(splits);
-	pclose(output_fp);
 }
 
 static void
@@ -320,9 +320,7 @@ server_disconnected(GTcpSocket * tcp_socket, struct server * server)
 {
 	server->port = 0;
 	server->protocol->logged = FALSE;
-	gtk_list_store_set(gebr.ui_server_list->store, &server->iter,
-			SERVER_STATUS_ICON, gebr.pixmaps.stock_disconnect,
-			-1);
+	server_list_updated_status(server);
 
 	gebr_message(WARNING, TRUE, TRUE, "Server '%s' disconnected",
 		     server->address->str);
@@ -334,12 +332,11 @@ server_read(GTcpSocket * tcp_socket, struct server * server)
 	GString *	data;
 
 	data = g_socket_read_string_all(G_SOCKET(tcp_socket));
-	gebr_message(DEBUG, FALSE, TRUE, "read from server '%s'",
-		     server->address->str);
-	g_print("server_read:\n%s\n", data->str);
-
 	protocol_receive_data(server->protocol, data);
 	client_parse_server_messages(server);
+
+	gebr_message(DEBUG, FALSE, TRUE, "Read from server '%s': %s",
+		server->address->str, data->str);
 
 	g_string_free(data, TRUE);
 }
