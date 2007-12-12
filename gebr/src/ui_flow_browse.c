@@ -335,12 +335,11 @@ flow_browse_info_update(void)
 
 	/* Info button */
 	g_object_set(gebr.ui_flow_browse->info.help,
-		"sensitive", strlen(geoxml_document_get_help(gebr.flow)) ? TRUE : FALSE, NULL);
+		"sensitive", strlen(geoxml_document_get_help(GEOXML_DOC(gebr.flow))) ? TRUE : FALSE, NULL);
 }
 
 static void
 flow_browse_show_help(void)
 {
-	help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(gebr.flow)),
-		_("Flow help"), (gchar*)geoxml_document_get_filename(GEOXML_DOC(gebr.flow)));
+	help_show(geoxml_document_get_help(GEOXML_DOC(gebr.flow)), _("Flow help"));
 }

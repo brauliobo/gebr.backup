@@ -272,7 +272,7 @@ flow_delete(void)
 	gchar *			title;
 	gchar *			filename;
 
-	GeoXmlLineFlow *	line_flow;
+	GeoXmlSequence *	line_flow;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
 	if (gtk_tree_selection_get_selected(selection, &model, &flow_iter) == FALSE) {
@@ -296,12 +296,12 @@ flow_delete(void)
 	/* Seek and destroy */
 	geoxml_line_get_flow(gebr.line, &line_flow, 0);
 	while (line_flow != NULL) {
-		if (g_ascii_strcasecmp(filename, geoxml_line_get_flow_source(line_flow)) == 0) {
-			geoxml_line_remove_flow(gebr.line, line_flow);
+		if (g_ascii_strcasecmp(filename, geoxml_line_get_flow_source(GEOXML_LINE_FLOW(line_flow))) == 0) {
+			geoxml_sequence_remove(line_flow);
 			document_save(GEOXML_DOC(gebr.line));
 			break;
 		}
-		geoxml_line_next_flow(&line_flow);
+		geoxml_sequence_next(&line_flow);
 	}
 
 	/* Free and delete flow from the disk */
@@ -335,10 +335,10 @@ flow_run(void)
 		return;
 
 	gebr_message(INFO, TRUE, FALSE, _("Asking server to run flow '%s'"),
-		     geoxml_document_get_title(gebr.flow));
+		geoxml_document_get_title(GEOXML_DOC(gebr.flow)));
 	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to run flow '%s'"),
-		     server->address->str,
-		     geoxml_document_get_title(gebr.flow));
+		server->address->str,
+		geoxml_document_get_title(GEOXML_DOC(gebr.flow)));
 
 	server_run_flow(server);
 }
@@ -354,7 +354,7 @@ flow_program_remove(void)
 	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
-	GeoXmlProgram *		program;
+	GeoXmlSequence *	program;
 	gulong 			nprogram;
 	gchar *			node;
 
@@ -364,15 +364,17 @@ flow_program_remove(void)
 		return;
 	}
 
+	/* get index of program */
 	node = gtk_tree_model_get_string_from_iter(model, &iter);
-	nprogram = (gulong) atoi(node);
+	nprogram = (gulong)atoi(node);
 	g_free(node);
 
+	/* SEEK AND DESTROY */
 	geoxml_flow_get_program(gebr.flow, &program, nprogram);
-	geoxml_flow_remove_program(gebr.flow, program);
-
+	geoxml_sequence_remove(program);
 	flow_save();
-	gtk_list_store_remove (GTK_LIST_STORE (gebr.ui_flow_edition->fseq_store), &iter);
+	/* from GUI... */
+	gtk_list_store_remove(GTK_LIST_STORE (gebr.ui_flow_edition->fseq_store), &iter);
 }
 
 /*
@@ -388,7 +390,7 @@ flow_program_move_up(void)
 	GtkTreeIter 		previous;
 	GtkTreePath *		previous_path;
 
-	GeoXmlProgram *		program;
+	GeoXmlSequence *	program;
 	gulong 			nprogram;
 	gchar *			node;
 
@@ -403,18 +405,17 @@ flow_program_move_up(void)
 
 	/* Get the index. */
 	node = gtk_tree_model_get_string_from_iter(model, &iter);
-	nprogram = (gulong) atoi(node);
+	nprogram = (gulong)atoi(node);
 	g_free(node);
 
 	/* XML change */
 	geoxml_flow_get_program(gebr.flow, &program, nprogram);
-	geoxml_flow_move_program_up(gebr.flow, program);
+	geoxml_sequence_move_up(program);
 	flow_save();
-
 	/* View change */
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store),
+	gtk_tree_model_get_iter(GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store),
 				&previous, previous_path);
-	gtk_list_store_move_before (gebr.ui_flow_edition->fseq_store, &iter, &previous);
+	gtk_list_store_move_before(gebr.ui_flow_edition->fseq_store, &iter, &previous);
 
 out:	gtk_tree_path_free(previous_path);
 }
@@ -430,7 +431,7 @@ flow_program_move_down(void)
 	GtkTreeModel *		model;
 	GtkTreeIter		iter, next;
 
-	GeoXmlProgram *		program;
+	GeoXmlSequence *	program;
 	gulong			nprogram;
 	gchar *			node;
 
@@ -440,7 +441,7 @@ flow_program_move_down(void)
 		return;
 	}
 	next = iter;
-	if (gtk_tree_model_iter_next ( GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store), &next) == FALSE)
+	if (gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_flow_edition->fseq_store), &next) == FALSE)
 		return;
 
 	/* Get index */
@@ -450,9 +451,8 @@ flow_program_move_down(void)
 
 	/* Update flow */
 	geoxml_flow_get_program(gebr.flow, &program, nprogram);
-	geoxml_flow_move_program_down(gebr.flow, program);
+	geoxml_sequence_move_down(program);
 	flow_save();
-
 	/* Update GUI */
-	gtk_list_store_move_after (gebr.ui_flow_edition->fseq_store, &iter, &next);
+	gtk_list_store_move_after(gebr.ui_flow_edition->fseq_store, &iter, &next);
 }

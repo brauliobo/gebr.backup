@@ -56,14 +56,14 @@ server_error(GTcpSocket * tcp_socket, enum GSocketError error, struct server * s
 static void
 ssh_ask_server_port(struct server * server);
 
-static void
-ssh_run_server_finished(GProcess * process, struct server * server)
-{
-	/* now ask via ssh its port */
-	ssh_ask_server_port(server);
-	gebr_message(DEBUG, FALSE, TRUE, "ssh_run_server_finished");
-// 	g_process_free(process);
-}
+// static void
+// ssh_run_server_finished(GProcess * process, struct server * server)
+// {
+// 	/* now ask via ssh its port */
+// 	ssh_ask_server_port(server);
+// 	gebr_message(DEBUG, FALSE, TRUE, "ssh_run_server_finished");
+// // 	g_process_free(process);
+// }
 
 static void
 ssh_ask_port_read_stdout(GProcess * process, struct server * server)
@@ -348,12 +348,16 @@ server_error(GTcpSocket * tcp_socket, enum GSocketError error, struct server * s
 //	gebr_message(ERROR, FALSE, TRUE, _("Connection error '%s' on server '%s'"), error, server->address->str);
 }
 
+/*
+ * Function: server_run_flow
+ * Ask _server_ to run the current flow (at gebr.flow)
+ *
+ */
 void
 server_run_flow(struct server * server)
 {
 	GeoXmlFlow *		flow_wnh; /* wnh: with no help */
-	GeoXmlProgram *		program;
-	GeoXmlSequence *	sequence;
+	GeoXmlSequence *	program;
 	gchar *			xml;
 
 	/* removes flow's help */
@@ -361,11 +365,10 @@ server_run_flow(struct server * server)
 	geoxml_document_set_help(GEOXML_DOC(flow_wnh), "");
 	/* removes programs' help */
 	geoxml_flow_get_program(flow_wnh, &program, 0);
-	sequence = GEOXML_SEQUENCE(program);
-	while (sequence != NULL) {
-		program = GEOXML_PROGRAM(sequence);
-		geoxml_program_set_help(program, "");
-		geoxml_sequence_next(&sequence);
+	while (program != NULL) {
+		geoxml_program_set_help(GEOXML_PROGRAM(program), "");
+
+		geoxml_sequence_next(&program);
 	}
 
 	/* get the xml */
@@ -374,6 +377,7 @@ server_run_flow(struct server * server)
 	/* finally... */
 	protocol_send_data(server->protocol, server->tcp_socket, protocol_defs.run_def, 1, xml);
 
+	/* frees */
 	g_free(xml);
 	geoxml_document_free(GEOXML_DOC(flow_wnh));
 }

@@ -220,8 +220,8 @@ flow_edition_component_selected(void)
 	GtkTreeIter		iter;
 	GtkTreePath *		path;
 
-	GeoXmlProgram *		program;
-	gchar *			status;
+	GeoXmlSequence *	program;
+	const gchar *		status;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
@@ -231,7 +231,7 @@ flow_edition_component_selected(void)
 
 	path = gtk_tree_model_get_path(model, &iter);
 	geoxml_flow_get_program(gebr.flow, &program, gtk_tree_path_get_indices(path)[0]);
-	status = (gchar *)geoxml_program_get_status(program);
+	status = geoxml_program_get_status(GEOXML_PROGRAM(program));
 
 	if (!g_ascii_strcasecmp(status, "configured"))
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gebr.configured_menuitem), TRUE);
@@ -283,8 +283,10 @@ flow_edition_set_status(GtkMenuItem * menuitem)
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
 	GtkTreePath *		path;
+
 	GtkWidget *		status_menuitem;
-	GeoXmlProgram *		program;
+	GeoXmlSequence *	program;
+
 	GdkPixbuf *		pixbuf;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebr.ui_flow_edition->fseq_view));
@@ -293,19 +295,18 @@ flow_edition_set_status(GtkMenuItem * menuitem)
 		return;
 	}
 
-	status_menuitem = GTK_WIDGET(menuitem);
 	path = gtk_tree_model_get_path(model, &iter);
 	geoxml_flow_get_program(gebr.flow, &program, gtk_tree_path_get_indices(path)[0]);
-	gtk_tree_path_free(path);
+	status_menuitem = GTK_WIDGET(menuitem);
 
 	if (status_menuitem == gebr.configured_menuitem) {
-		geoxml_program_set_status(program, "configured");
+		geoxml_program_set_status(GEOXML_PROGRAM(program), "configured");
 		pixbuf = gebr.pixmaps.stock_apply;
 	} else if (status_menuitem == gebr.disabled_menuitem) {
-		geoxml_program_set_status(program, "disabled");
+		geoxml_program_set_status(GEOXML_PROGRAM(program), "disabled");
 		pixbuf = gebr.pixmaps.stock_cancel;
 	} else if (status_menuitem == gebr.unconfigured_menuitem) {
-		geoxml_program_set_status(program, "unconfigured");
+		geoxml_program_set_status(GEOXML_PROGRAM(program), "unconfigured");
 		pixbuf = gebr.pixmaps.stock_warning;
 	} else
 		return;
@@ -314,6 +315,7 @@ flow_edition_set_status(GtkMenuItem * menuitem)
 			FSEQ_STATUS_COLUMN, pixbuf, -1);
 
 	flow_save();
+	gtk_tree_path_free(path);
 }
 
 /*
@@ -324,16 +326,15 @@ flow_edition_set_status(GtkMenuItem * menuitem)
 static void
 flow_edition_menu_add(void)
 {
-	GtkTreeSelection *		selection;
-	GtkTreeModel *			model;
-	GtkTreeIter			iter;
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
 
-	gchar *				name;
-	gchar *				filename;
+	gchar *			name;
+	gchar *			filename;
 
-	GeoXmlFlow *			menu;
-	GeoXmlProgram *			program;
-	GeoXmlProgramParameter *	program_parameter;
+	GeoXmlFlow *		menu;
+	GeoXmlSequence *	program;
 
 	if (gebr.flow == NULL) {
 		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
@@ -363,15 +364,26 @@ flow_edition_menu_add(void)
 	 */
 	geoxml_flow_get_program(menu, &program, 0);
 	while (program != NULL) {
-		program_parameter = geoxml_program_get_first_parameter(program);
-		while (program_parameter != NULL) {
+		GeoXmlSequence *	parameter;
+
+		parameter = geoxml_parameters_get_first_parameter(
+			geoxml_program_get_parameters(GEOXML_PROGRAM(program)));
+
+		if (geoxml_parameter_get_type(GEOXML_PARAMETER(parameter)) == GEOXML_PARAMETERTYPE_GROUP) {
+			/* TODO: call recursive function */
+			continue;
+		}
+		while (parameter != NULL) {
+			GeoXmlProgramParameter *	program_parameter;
+
+			program_parameter = GEOXML_PROGRAM_PARAMETER(parameter);
 			geoxml_program_parameter_set_value(program_parameter,
 				geoxml_program_parameter_get_default(program_parameter));
 
-			geoxml_program_parameter_next(&program_parameter);
+			geoxml_sequence_next(&parameter);
 		}
 
-		geoxml_program_next(&program);
+		geoxml_sequence_next(&program);
 	}
 
 	/* add it to the file  */
@@ -416,9 +428,7 @@ flow_edition_menu_show_help(void)
 	menu = menu_load(menu_filename);
 	if (menu == NULL)
 		goto out;
-
-	help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(menu)), _("Menu help"),
-		(gchar*)geoxml_document_get_filename(GEOXML_DOC(menu)));
+	help_show(geoxml_document_get_help(GEOXML_DOC(menu)), _("Menu help"));
 
 out:	g_free(menu_filename);
 }

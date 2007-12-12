@@ -156,39 +156,42 @@ flow_io_actions(GtkDialog * dialog, gint arg1, struct ui_flow_io * ui_flow_io)
 void
 flow_add_programs_to_view(GeoXmlFlow * flow)
 {
-	GtkTreeIter	iter;
+	GtkTreeIter		iter;
 
-	GeoXmlProgram *	program;
+	GeoXmlSequence *	program;
 
 	geoxml_flow_get_program(flow, &program, 0);
 	while (program != NULL) {
-		gchar *		menu;
-		gulong		prog_index;
-		GdkPixbuf *	pixbuf;
+		gchar *			menu;
+		gulong			prog_index;
+		const gchar *		status;
 
-		geoxml_program_get_menu(program, &menu, &prog_index);
+		GdkPixbuf *		pixbuf;
 
-		if (g_ascii_strcasecmp(geoxml_program_get_status(program), "unconfigured") == 0)
+		geoxml_program_get_menu(GEOXML_PROGRAM(program), &menu, &prog_index);
+		status = geoxml_program_get_status(GEOXML_PROGRAM(program));
+
+		if (g_ascii_strcasecmp(status, "unconfigured") == 0)
 			pixbuf = gebr.pixmaps.stock_warning;
-		else if (g_ascii_strcasecmp(geoxml_program_get_status(program), "configured") == 0)
+		else if (g_ascii_strcasecmp(status, "configured") == 0)
 			pixbuf = gebr.pixmaps.stock_apply;
-		else if (g_ascii_strcasecmp(geoxml_program_get_status(program), "disabled") == 0)
+		else if (g_ascii_strcasecmp(status, "disabled") == 0)
 			pixbuf = gebr.pixmaps.stock_cancel;
 		else {
 			gebr_message(WARNING, TRUE, TRUE, _("Unknown flow program '%s' status"),
-				geoxml_program_get_title(program));
+				geoxml_program_get_title(GEOXML_PROGRAM(program)));
 			pixbuf = NULL;
 		}
 
 		/* Add to the GUI */
 		gtk_list_store_append(gebr.ui_flow_edition->fseq_store, &iter);
 		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &iter,
-				FSEQ_TITLE_COLUMN, geoxml_program_get_title(program),
+				FSEQ_TITLE_COLUMN, geoxml_program_get_title(GEOXML_PROGRAM(program)),
 				FSEQ_STATUS_COLUMN, pixbuf,
 				FSEQ_MENU_FILE_NAME_COLUMN, menu,
 				FSEQ_MENU_INDEX, prog_index,
 				-1);
 
-		geoxml_program_next(&program);
+		geoxml_sequence_next(&program);
 	}
 }

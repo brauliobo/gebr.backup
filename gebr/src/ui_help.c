@@ -48,7 +48,7 @@ gchar * unable_to_write_help_error = _("Unable to write help in temporary file")
  * Open user's browser with _help_
  */
 void
-help_show(gchar * help, gchar * title, gchar * fname)
+help_show(const gchar * help, const gchar * title)
 {
 	FILE *		html_fp;
 	GString *	html_path;

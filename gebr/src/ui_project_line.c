@@ -379,12 +379,11 @@ project_line_info_update(void)
 static void
 project_line_show_help(void)
 {
-	if (geoxml_document_get_type(gebr.doc) == GEOXML_DOCUMENT_TYPE_PROJECT)
-		help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(gebr.project)),
-			  _("Project report"), (gchar*)geoxml_document_get_filename(GEOXML_DOC(gebr.project)));
-	else
-		help_show((gchar*)geoxml_document_get_help(GEOXML_DOC(gebr.line)),
-			  _("Line report"), (gchar*)geoxml_document_get_filename(GEOXML_DOC(gebr.line)));
+	gchar * title;
+
+	title = (geoxml_document_get_type(gebr.doc) == GEOXML_DOCUMENT_TYPE_PROJECT)
+		? _("Project report") : _("Line report");
+	help_show(geoxml_document_get_help(gebr.doc), title);
 
 	return;
 }

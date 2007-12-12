@@ -257,40 +257,39 @@ menu_scan_directory(const gchar * directory, FILE * index_fp)
 	struct dirent *		file;
 	GString *		path;
 
+	/* initialization */
 	if ((dir = opendir(directory)) == NULL)
 		return;
-
 	path = g_string_new(NULL);
+
 	while ((file = readdir(dir)) != NULL) {
 		if (fnmatch("*.mnu", file->d_name, 1))
 			continue;
 
-		GeoXmlDocument *	document;
-		GeoXmlCategory *	category;
+		GeoXmlDocument *	menu;
+		GeoXmlSequence *	category;
 
 		g_string_printf(path, "%s/%s", directory, file->d_name);
 
-		document = document_load_path(path->str);
-		if (document == NULL)
+		menu = document_load_path(path->str);
+		if (menu == NULL)
 			continue;
 
-		geoxml_flow_get_category(GEOXML_FLOW(document), &category, 0);
+		geoxml_flow_get_category(GEOXML_FLOW(menu), &category, 0);
 		while (category != NULL) {
-			gchar *	category_name;
-
-		        category_name = (gchar *)geoxml_category_get_name(category);
 			fprintf(index_fp, "%s|%s|%s|%s\n",
-				category_name,
-				geoxml_document_get_title(document),
-				geoxml_document_get_description(document),
-				geoxml_document_get_filename(document));
+				geoxml_category_get_name(GEOXML_CATEGORY(category)),
+				geoxml_document_get_title(menu),
+				geoxml_document_get_description(menu),
+				geoxml_document_get_filename(menu));
 
-			geoxml_category_next(&category);
+			geoxml_sequence_next(&category);
 		}
 
-		geoxml_document_free(document);
+		geoxml_document_free(menu);
 	}
 
+	/* frees */
 	closedir(dir);
 	g_string_free(path, TRUE);
 }

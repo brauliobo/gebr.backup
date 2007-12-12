@@ -22,7 +22,7 @@
 #include <geoxml.h>
 
 void
-help_show(gchar * help, gchar * title, gchar * fname);
+help_show(const gchar * help, const gchar * title);
 
 void
 help_edit(GtkButton * button, GeoXmlDocument * document);

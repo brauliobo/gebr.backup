@@ -158,8 +158,8 @@ document_properties_actions(GtkDialog * dialog, gint arg1, struct ui_document_pr
 		GtkTreeModel *			model;
 		GtkTreeIter			iter;
 
-		gchar *				old_title;
-		gchar *				new_title;
+		const gchar *			old_title;
+		const gchar *			new_title;
 		gchar *				doc_type;
 
 		enum GEOXML_DOCUMENT_TYPE	type;

@@ -171,7 +171,7 @@ project_list_populate(void)
 		GtkTreeIter		project_iter, line_iter;
 
 		GeoXmlProject *		project;
-		GeoXmlProjectLine *	project_line;
+		GeoXmlSequence *	project_line;
 
 		if (fnmatch("*.prj", file->d_name, 1))
 			continue;
@@ -190,22 +190,24 @@ project_list_populate(void)
 		geoxml_project_get_line(project, &project_line, 0);
 		while (project_line != NULL) {
 			GeoXmlLine *	line;
+			const gchar *	line_source;
 
-			line = GEOXML_LINE(document_load(geoxml_project_get_line_source(project_line)));
+			line_source = geoxml_project_get_line_source(GEOXML_PROJECT_LINE(project_line));
+			line = GEOXML_LINE(document_load(line_source));
 			if (line == NULL) {
-				geoxml_project_remove_line(project, project_line);
-				geoxml_document_save (GEOXML_DOC(project), geoxml_document_get_filename(GEOXML_DOC(project)));
+				geoxml_sequence_remove(project_line);
+				geoxml_document_save(GEOXML_DOC(project), geoxml_document_get_filename(GEOXML_DOC(project)));
 				continue;
 			}
 
 			gtk_tree_store_append(gebr.ui_project_line->store, &line_iter, &project_iter);
 			gtk_tree_store_set(gebr.ui_project_line->store, &line_iter,
 					PL_TITLE, geoxml_document_get_title(GEOXML_DOC(line)),
-					PL_FILENAME, geoxml_project_get_line_source(project_line),
+					PL_FILENAME, line_source,
 					-1);
 
 			geoxml_document_free(GEOXML_DOC(line));
-			geoxml_project_next_line(&project_line);
+			geoxml_sequence_next(&project_line);
 		}
 
 		geoxml_document_free(GEOXML_DOC(project));
