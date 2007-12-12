@@ -16,6 +16,8 @@
  *   <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
+
 #include "ui_job_control.h"
 #include "gebr.h"
 #include "support.h"
@@ -25,6 +27,25 @@
  * File: ui_job_control.c
  * Responsible for UI for job management.
  */
+
+/*
+ * Prototypes
+ */
+
+static void
+job_control_save(void);
+
+static void
+job_control_cancel(void);
+
+static void
+job_control_close(void);
+
+static void
+job_control_clear(void);
+
+static void
+job_control_stop(void);
 
 /*
  * Section: Public
@@ -47,7 +68,6 @@ job_control_setup_ui(void)
 	GtkWidget *			vbox;
 
 	GtkWidget *			toolbar;
-	GtkIconSize			tmp_toolbar_icon_size;
 	GtkWidget *			toolitem;
 	GtkWidget *			button;
 
@@ -78,7 +98,16 @@ job_control_setup_ui(void)
 	/* FIXME ! */
 	/* g_object_set_property(G_OBJECT(toolbar), "shadow-type", GTK_SHADOW_NONE); */
 
-	tmp_toolbar_icon_size = gtk_toolbar_get_icon_size(GTK_TOOLBAR(toolbar));
+	/* Save */
+	toolitem = GTK_WIDGET(gtk_tool_item_new());
+	gtk_container_add(GTK_CONTAINER(toolbar), toolitem);
+	button = gtk_button_new_from_stock(GTK_STOCK_SAVE);
+	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
+	gtk_container_add(GTK_CONTAINER(toolitem), button);
+	g_object_set(G_OBJECT(button), "tooltip-text", _("Save job information in a file"), NULL);
+
+	g_signal_connect(GTK_BUTTON(button), "clicked",
+			GTK_SIGNAL_FUNC(job_control_save), NULL);
 
 	/* Cancel button = END */
 	toolitem = GTK_WIDGET(gtk_tool_item_new());
@@ -89,10 +118,10 @@ job_control_setup_ui(void)
 	g_object_set(G_OBJECT(button), "tooltip-text", _("Ask server to terminate the job"), NULL);
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
-			GTK_SIGNAL_FUNC(job_cancel), NULL);
+			GTK_SIGNAL_FUNC(job_control_cancel), NULL);
 
 	/* Close button */
-	toolitem =(GtkWidget*) gtk_tool_item_new();
+	toolitem =(GtkWidget*)gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolbar), toolitem);
 
 	button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
@@ -101,7 +130,7 @@ job_control_setup_ui(void)
 	g_object_set(G_OBJECT(button), "tooltip-text",  _("Clear current job log"), NULL);
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
-			GTK_SIGNAL_FUNC(job_close), NULL);
+			GTK_SIGNAL_FUNC(job_control_close), NULL);
 
 	/* Clear button */
 	toolitem =(GtkWidget*) gtk_tool_item_new();
@@ -113,7 +142,7 @@ job_control_setup_ui(void)
 	g_object_set(G_OBJECT(button), "tooltip-text", _("Clear all job logs"), NULL);
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
-			GTK_SIGNAL_FUNC(job_clear), NULL);
+			GTK_SIGNAL_FUNC(job_control_clear), NULL);
 
 	/* Stop button = KILL */
 	toolitem =(GtkWidget*) gtk_tool_item_new();
@@ -125,7 +154,7 @@ job_control_setup_ui(void)
 	g_object_set(G_OBJECT(button), "tooltip-text", _("Ask server to kill the job"), NULL);
 
 	g_signal_connect(GTK_BUTTON(button), "clicked",
-			GTK_SIGNAL_FUNC(job_stop), NULL);
+			GTK_SIGNAL_FUNC(job_control_stop), NULL);
 
 	hpanel = gtk_hpaned_new();
 	gtk_box_pack_start(GTK_BOX(vbox), hpanel, TRUE, TRUE, 0);
@@ -149,7 +178,7 @@ job_control_setup_ui(void)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_job_control->view), FALSE);
 
 	g_signal_connect(GTK_OBJECT(ui_job_control->view), "cursor-changed",
-		GTK_SIGNAL_FUNC(job_clicked), NULL);
+		GTK_SIGNAL_FUNC(job_control_clicked), NULL);
 
 	renderer = gtk_cell_renderer_pixbuf_new();
 	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
@@ -187,4 +216,223 @@ job_control_setup_ui(void)
 	gtk_container_add(GTK_CONTAINER(scrolledwin), text_view);
 
 	return ui_job_control;
+}
+
+/*
+ * Function: job_control_clicked
+ * *Fill me in!*
+ */
+void
+job_control_clicked(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	struct job *		job;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
+			JC_STRUCT, &job,
+			-1);
+
+	job_fill_info(job);
+}
+
+/*
+ * Section: Private
+ * Private functions.
+ */
+
+/*
+ * Function: job_control_save
+ * *Fill me in!*
+ */
+static void
+job_control_save(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	GtkWidget *		chooser_dialog;
+	GtkFileFilter *		filefilter;
+
+	gchar *			path;
+	FILE *			fp;
+
+	GtkTextIter		start_iter;
+	GtkTextIter		end_iter;
+	gchar *			text;
+
+	struct job *	        job;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
+			JC_STRUCT, &job,
+			-1);
+
+	/* run file chooser */
+	chooser_dialog = gtk_file_chooser_dialog_new(_("Choose filename to save"), NULL,
+						     GTK_FILE_CHOOSER_ACTION_SAVE,
+						     GTK_STOCK_SAVE, GTK_RESPONSE_YES,
+						     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+						     NULL);
+	filefilter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filefilter, _("Text (*.txt)"));
+	gtk_file_filter_add_pattern(filefilter, "*.txt");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser_dialog), filefilter);
+
+	/* show file chooser */
+	gtk_widget_show(chooser_dialog);
+	if (gtk_dialog_run(GTK_DIALOG(chooser_dialog)) != GTK_RESPONSE_YES)
+		return;
+	path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser_dialog));
+
+	/* save to file */
+	fp = fopen(path, "w");
+	if (fp == NULL) {
+		gebr_message(ERROR, TRUE, TRUE, _("Could not write file"));
+		goto out;
+	}
+	gtk_text_buffer_get_start_iter(gebr.ui_job_control->text_buffer, &start_iter);
+	gtk_text_buffer_get_end_iter(gebr.ui_job_control->text_buffer, &end_iter);
+	text = gtk_text_buffer_get_text(gebr.ui_job_control->text_buffer, &start_iter, &end_iter, FALSE);
+	fwrite(text, strlen(text), sizeof(gchar), fp);
+	fclose(fp);
+
+	gebr_message(INFO, TRUE, TRUE, _("Saved job information at '%s'"), path);
+
+	g_free(text);
+out:	g_free(path);
+	gtk_widget_destroy(chooser_dialog);
+}
+
+/*
+ * Function: job_control_cancel
+ * *Fill me in!*
+ */
+void
+job_control_cancel(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	struct job *	        job;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
+			JC_STRUCT, &job,
+			-1);
+
+	if (job->status != JOB_STATUS_RUNNING) {
+		gebr_message(WARNING, TRUE, FALSE, _("Job is not running"));
+		return;
+	}
+	if (confirm_action_dialog(_("Are you sure you want to terminate job '%s'?"), job->title->str) == FALSE)
+		return;
+
+	gebr_message(INFO, TRUE, FALSE, _("Asking server to terminate job"));
+	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to terminate job '%s'"), job->server->address, job->title->str);
+
+	protocol_send_data(job->server->protocol, job->server->tcp_socket,
+		protocol_defs.end_def, 1, job->jid->str);
+}
+
+/*
+ * Function: job_control_close
+ * *Fill me in!*
+ */
+void
+job_control_close(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	struct job *		job;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
+			JC_STRUCT, &job,
+			-1);
+
+	if (confirm_action_dialog(_("Are you sure you want to clear job '%s'?"), job->title->str) == FALSE)
+		return;
+
+	job_close(job);
+	job_clear_or_select_first();
+}
+
+/*
+ * Function: job_control_clear
+ * *Fill me in!*
+ */
+void
+job_control_clear(void)
+{
+	GtkTreeIter		iter;
+	gboolean		valid;
+
+	if (confirm_action_dialog(_("Are you sure you want to clear all jobs from all servers?")) == FALSE)
+		return;
+
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
+	while (valid) {
+		struct job *	job;
+		GtkTreeIter	this;
+
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
+				JC_STRUCT, &job,
+				-1);
+		/* go to next before the possible deletion */
+		this = iter;
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
+
+		job_close(job);
+	}
+	job_clear_or_select_first();
+}
+
+/*
+ * Function: job_control_stop
+ * *Fill me in!*
+ */
+void
+job_control_stop(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	struct job *	        job;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
+			JC_STRUCT, &job,
+			-1);
+
+	if (job->status != JOB_STATUS_RUNNING) {
+		gebr_message(WARNING, TRUE, FALSE, _("Job is not running"));
+		return;
+	}
+	if (confirm_action_dialog(_("Are you sure you want to kill job '%s'?"), job->title->str) == FALSE)
+		return;
+
+	gebr_message(INFO, TRUE, FALSE, _("Asking server to kill job"));
+	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to kill job '%s'"), job->server->address, job->title->str);
+
+	protocol_send_data(job->server->protocol, job->server->tcp_socket,
+		protocol_defs.kil_def, 1, job->jid->str);
 }

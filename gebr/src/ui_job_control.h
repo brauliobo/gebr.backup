@@ -42,4 +42,7 @@ struct ui_job_control {
 struct ui_job_control *
 job_control_setup_ui(void);
 
+void
+job_control_clicked(void);
+
 #endif //__UI_JOB_CONTROL_H

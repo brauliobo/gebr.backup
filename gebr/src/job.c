@@ -25,41 +25,7 @@
 #include "job.h"
 #include "gebr.h"
 #include "support.h"
-
-/*
- * Internal stuff
- */
-
-void
-__job_close(struct job * job)
-{
-	if (job->status == JOB_STATUS_RUNNING) {
-		gebr_message(ERROR, TRUE, FALSE, _("Can't close running job"));
-		return;
-	}
-	if (g_ascii_strcasecmp(job->jid->str, "0"))
-		protocol_send_data(job->server->protocol, job->server->tcp_socket,
-			protocol_defs.clr_def, 1, job->jid->str);
-
-	job_delete(job);
-}
-
-void
-__job_clear_or_select_first(void)
-{
-	GtkTreeIter		iter;
-	GtkTreeSelection *	selection;
-
-	/* select the first job */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
-	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter) == TRUE) {
-		gtk_tree_selection_select_iter(selection, &iter);
-		job_clicked();
-	} else {
-		gtk_label_set_text(GTK_LABEL(gebr.ui_job_control->label), "");
-		gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, "", 0);
-	}
-}
+#include "ui_job_control.h"
 
 /*
  * Section: Public
@@ -75,8 +41,7 @@ job_add(struct server * server, GString * jid,
 	GString * _status, GString * title,
 	GString * start_date, GString * finish_date,
 	GString * hostname, GString * issues,
-	GString * cmd_line, GString * output,
-	gboolean go_to)
+	GString * cmd_line, GString * output)
 {
 	GtkTreeIter		iter;
 
@@ -99,6 +64,8 @@ job_add(struct server * server, GString * jid,
 		.cmd_line = g_string_new(cmd_line->str),
 		.output = g_string_new(NULL)
 	};
+	if (finish_date == NULL && job->status != JOB_STATUS_RUNNING)
+		g_string_assign(job->finish_date, job->start_date->str);
 
 	/* append to the store and select it */
 	gtk_list_store_append(gebr.ui_job_control->store, &iter);
@@ -108,16 +75,6 @@ job_add(struct server * server, GString * jid,
 			-1);
 	job->iter = iter;
 	job_update_status(job);
-	if (go_to) {
-		GtkTreeSelection *	selection;
-
-		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
-		gtk_tree_selection_select_iter(selection, &iter);
-		job_clicked();
-
-		/* go to jobs pages */
-		gtk_notebook_set_current_page(GTK_NOTEBOOK(gebr.notebook), 3);
-	}
 	job_append_output(job, output);
 
 	return job;
@@ -153,7 +110,46 @@ job_delete(struct job * job)
 	gtk_list_store_remove(gebr.ui_job_control->store, &job->iter);
 	job_free(job);
 
-	__job_clear_or_select_first();
+	job_clear_or_select_first();
+}
+
+/*
+ * Function; job_close
+ * *Fill me in!*
+ */
+void
+job_close(struct job * job)
+{
+	if (job->status == JOB_STATUS_RUNNING) {
+		gebr_message(ERROR, TRUE, FALSE, _("Can't close running job"));
+		return;
+	}
+	if (g_ascii_strcasecmp(job->jid->str, "0"))
+		protocol_send_data(job->server->protocol, job->server->tcp_socket,
+			protocol_defs.clr_def, 1, job->jid->str);
+
+	job_delete(job);
+}
+
+/*
+ * Function; job_clear_or_select_first
+ * *Fill me in!*
+ */
+void
+job_clear_or_select_first(void)
+{
+	GtkTreeIter		iter;
+	GtkTreeSelection *	selection;
+
+	/* select the first job */
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
+	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter) == TRUE) {
+		gtk_tree_selection_select_iter(selection, &iter);
+		job_control_clicked();
+	} else {
+		gtk_label_set_text(GTK_LABEL(gebr.ui_job_control->label), "");
+		gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, "", 0);
+	}
 }
 
 /*
@@ -190,156 +186,19 @@ job_find(GString * address, GString * jid)
 }
 
 /*
- * Function: job_cancel
+ * Function: job_fill_info
  * *Fill me in!*
  */
 void
-job_cancel(void)
+job_fill_info(struct job * job)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GtkTreeIter		iter;
+	GString *	info;
 
-	struct job *	        job;
-
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
-		return;
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
-			JC_STRUCT, &job,
-			-1);
-
-	if (job->status != JOB_STATUS_RUNNING) {
-		gebr_message(WARNING, TRUE, FALSE, _("Job is not running"));
-		return;
-	}
-	if (confirm_action_dialog(_("Are you sure you want to terminate job '%s'?"), job->title->str) == FALSE)
-		return;
-
-	gebr_message(INFO, TRUE, FALSE, _("Asking server to terminate job"));
-	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to terminate job '%s'"), job->server->address, job->title->str);
-
-	protocol_send_data(job->server->protocol, job->server->tcp_socket,
-		protocol_defs.end_def, 1, job->jid->str);
-}
-
-/*
- * Function: job_close
- * *Fill me in!*
- */
-void
-job_close(void)
-{
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GtkTreeIter		iter;
-
-	struct job *		job;
-
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
-		return;
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
-			JC_STRUCT, &job,
-			-1);
-
-	if (confirm_action_dialog(_("Are you sure you want to clear job '%s'?"), job->title->str) == FALSE)
-		return;
-
-	__job_close(job);
-	__job_clear_or_select_first();
-}
-
-/*
- * Function: job_clear
- * *Fill me in!*
- */
-void
-job_clear(void)
-{
-	GtkTreeIter		iter;
-	gboolean		valid;
-
-	if (confirm_action_dialog(_("Are you sure you want to clear all jobs from all servers?")) == FALSE)
-		return;
-
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
-	while (valid) {
-		struct job *	job;
-		GtkTreeIter	this;
-
-		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
-				JC_STRUCT, &job,
-				-1);
-		/* go to next before the possible deletion */
-		this = iter;
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter);
-
-		__job_close(job);
-	}
-	__job_clear_or_select_first();
-}
-
-/*
- * Function: job_stop
- * *Fill me in!*
- */
-void
-job_stop(void)
-{
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GtkTreeIter		iter;
-
-	struct job *	        job;
-
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
-		return;
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
-			JC_STRUCT, &job,
-			-1);
-
-	if (job->status != JOB_STATUS_RUNNING) {
-		gebr_message(WARNING, TRUE, FALSE, _("Job is not running"));
-		return;
-	}
-	if (confirm_action_dialog(_("Are you sure you want to kill job '%s'?"), job->title->str) == FALSE)
-		return;
-
-	gebr_message(INFO, TRUE, FALSE, _("Asking server to kill job"));
-	gebr_message(INFO, FALSE, TRUE, _("Asking server '%s' to kill job '%s'"), job->server->address, job->title->str);
-
-	protocol_send_data(job->server->protocol, job->server->tcp_socket,
-		protocol_defs.kil_def, 1, job->jid->str);
-}
-
-/*
- * Function: job_clicked
- * *Fill me in!*
- */
-void
-job_clicked(void)
-{
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GtkTreeIter		iter;
-
-	struct job *		job;
-	GString *		info;
-
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
-	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
-		return;
-
+	/* initialization */
 	info = g_string_new(NULL);
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter,
-			JC_STRUCT, &job,
-			-1);
 
 	/* fill job label */
 	job_update_label(job);
-
 	/*
 	 * Fill job information
 	 */
@@ -363,7 +222,24 @@ job_clicked(void)
 	/* to view */
 	gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, info->str, info->len);
 
+	/* frees */
 	g_string_free(info, TRUE);
+}
+
+/*
+ * Function: job_set_active
+ * *Fill me in!*
+ */
+void
+job_set_active(struct job * job)
+{
+	GtkTreeSelection *	selection;
+
+	/* select it on view */
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
+	gtk_tree_selection_select_iter(selection, &job->iter);
+
+	job_fill_info(job);
 }
 
 /*
@@ -414,8 +290,7 @@ job_update(struct job * job)
 {
 	if (job_is_active(job) == FALSE)
 		return;
-
-	job_clicked();
+	job_fill_info(job);
 }
 
 /*

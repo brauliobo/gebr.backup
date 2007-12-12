@@ -52,8 +52,7 @@ job_add(struct server * server, GString * jid,
 	GString * status, GString * title,
 	GString * start_date, GString * finish_date,
 	GString * hostname, GString * issues,
-	GString * cmd_line, GString * output,
-	gboolean go_to);
+	GString * cmd_line, GString * output);
 
 void
 job_free(struct job * job);
@@ -61,23 +60,20 @@ job_free(struct job * job);
 void
 job_delete(struct job * job);
 
+void
+job_close(struct job * job);
+
+void
+job_clear_or_select_first(void);
+
 struct job *
 job_find(GString * address, GString * jid);
 
 void
-job_cancel(void);
+job_fill_info(struct job * job);
 
 void
-job_close(void);
-
-void
-job_clear(void);
-
-void
-job_stop(void);
-
-void
-job_clicked(void);
+job_set_active(struct job * job);
 
 gboolean
 job_is_active(struct job * job);

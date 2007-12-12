@@ -72,12 +72,11 @@ preferences_setup_ui(void)
 					GTK_STOCK_OK, GTK_RESPONSE_OK,
 					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 					NULL);
+	gtk_widget_set_size_request(ui_preferences->dialog, 380, 260);
 
 	/* Take the apropriate action when a button is pressed */
 	g_signal_connect(ui_preferences->dialog, "response",
 			G_CALLBACK(preferences_actions), ui_preferences);
-
-	gtk_widget_set_size_request(ui_preferences->dialog, 380, 300);
 
 	table = gtk_table_new(6, 2, FALSE);
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(ui_preferences->dialog)->vbox), table, TRUE, TRUE, 0);
