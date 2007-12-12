@@ -60,7 +60,7 @@ gebrd_init(void)
 		goto out;
 	}
 
-	gebrd_message(INFO, TRUE, TRUE, _("Server started at %u port"), g_tcp_server_server_port(gebrd.tcp_server));
+	gebrd_message(START, TRUE, TRUE, _("Server started at %u port"), g_tcp_server_server_port(gebrd.tcp_server));
 
 	/* frees */
 out:	g_string_free(log_filename, TRUE);
@@ -69,7 +69,9 @@ out:	g_string_free(log_filename, TRUE);
 void
 gebrd_quit(void)
 {
+	gebrd_message(END, TRUE, TRUE, _("Server quited"), g_tcp_server_server_port(gebrd.tcp_server));
 	log_close(gebrd.log);
+
 	server_quit();
 	g_main_loop_quit(gebrd.main_loop);
 	g_main_loop_unref(gebrd.main_loop);
