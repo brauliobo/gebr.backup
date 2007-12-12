@@ -134,13 +134,11 @@ __g_process_read_stdout_watch(GIOChannel * source, GIOCondition condition, GProc
 	}
 	if (condition & G_IO_ERR) {
 		/* TODO: */
-		g_print("__g_process_read_stdout_watch G_IO_ERR\n");
 		return FALSE;
 	}
 	if (condition & G_IO_HUP) {
 		/* TODO: */
 		/* using g_child_add_watch instead */
-		g_print("__g_process_read_stdout_watch G_IO_HUP\n");
 		return FALSE;
 	}
 
@@ -161,7 +159,6 @@ __g_process_read_stderr_watch(GIOChannel * source, GIOCondition condition, GProc
 	}
 	if (condition & G_IO_ERR) {
 		/* TODO: */
-		g_print("__g_process_read_stderr_watch G_IO_ERR\n");
 		return FALSE;
 	}
 	if (condition & G_IO_HUP) {
@@ -169,7 +166,6 @@ __g_process_read_stderr_watch(GIOChannel * source, GIOCondition condition, GProc
 		/* FIXME: */
 		__g_process_free_and_stop_state(process);
 		g_signal_emit(process, object_signals[FINISHED], 0);
-		g_print("__g_process_read_stderr_watch G_IO_HUP\n");
 		return FALSE;
 	}
 
@@ -183,7 +179,7 @@ __g_process_finished_watch(GPid pid, gint status, GProcess * process)
 {
 	gint			exit_code;
 	enum GProcessExitStatus	exit_status;
-g_print("__g_process_finished_watch\n");
+
 	__g_process_free_and_stop_state(process);
 	exit_code = WEXITSTATUS(status);
 	exit_status =  WIFEXITED(status) ? G_PROCESS_NORMAL_EXIT : G_PROCESS_CRASH_EXIT;
@@ -279,8 +275,6 @@ g_process_start(GProcess * process, GString * cmd_line)
 
 	error = NULL;
 	g_shell_parse_argv(cmd_line->str, &argc, &argv, &error);
-	int i;
-	for (i = 0; argv[i] != NULL; ++i) puts(argv[i]);
 	ret = g_spawn_async_with_pipes(
 		NULL, /* working_directory */
 		argv,
@@ -313,8 +307,6 @@ g_process_start(GProcess * process, GString * cmd_line)
 	g_io_channel_set_flags(process->stderr_io_channel,
 		g_io_channel_get_flags(process->stderr_io_channel) | G_IO_FLAG_NONBLOCK, &error);
 
-g_print("%lu\n", g_process_stdout_bytes_available(process));
-g_print("%lu\n", g_process_stderr_bytes_available(process));
 	/* there is already something available now? */
 	if (g_process_stdout_bytes_available(process))
 		g_signal_emit(process, object_signals[READY_READ_STDOUT], 0);

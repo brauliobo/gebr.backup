@@ -231,13 +231,15 @@ protocol_split_new(GString * arguments, guint parts)
 		gssize		arg_size;
 
 		/* get the argument size */
-		sscanf(iarg, "%lu|", &arg_size);
+		if (sscanf(iarg, "%lu|", &arg_size) == EOF) {
+			protocol_split_free(split);
+			break;
+		}
 
 		/* discover the position of separator and get arg, data */
 		sep = strchr(iarg, '|');
 		arg = g_string_new("");
-		if (arg_size)
-			g_string_append_len(arg, sep+1, arg_size);
+		g_string_append_len(arg, sep+1, arg_size);
 
 		/* add to list */
 		split = g_list_append(split, arg);
