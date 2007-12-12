@@ -48,7 +48,7 @@ category_remove(void)
 	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
-	GeoXmlCategory *	category;
+	GeoXmlSequence *	category;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebrme.categories_treeview));
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
@@ -59,9 +59,9 @@ category_remove(void)
 	gtk_tree_model_get (GTK_TREE_MODEL(gebrme.categories_liststore), &iter,
 		CATEGORY_XMLPOINTER, &category,
 		-1);
-
-	geoxml_flow_remove_category(gebrme.current, category);
+	geoxml_sequence_remove(category);
 	gtk_list_store_remove(gebrme.categories_liststore, &iter);
+
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 

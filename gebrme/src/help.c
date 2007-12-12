@@ -78,18 +78,19 @@ help_subst_fields(GString * help)
 
 	/* Categories replacement */
 	if (geoxml_flow_get_categories_number(gebrme.current)) {
-		GeoXmlCategory *	category;
+		GeoXmlSequence *	category;
 		GString *		catstr;
 
 		geoxml_flow_get_category(gebrme.current, &category, 0);
-		catstr = g_string_new(geoxml_category_get_name(category));
-		geoxml_category_next(&category);
-
+		catstr = g_string_new(geoxml_category_get_name(GEOXML_CATEGORY(category)));
+		geoxml_sequence_next(&category);
 		while (category != NULL) {
 			g_string_append(catstr, " | ");
-			g_string_append(catstr, geoxml_category_get_name(category));
-			geoxml_category_next(&category);
+			g_string_append(catstr, geoxml_category_get_name(GEOXML_CATEGORY(category)));
+
+			geoxml_sequence_next(&category);
 		}
+
 		while ((ptr = strstr(help->str, "First category | Second category | ...")) != NULL) {
 			pos = (ptr - help->str)/sizeof(char);
 			g_string_erase(help, pos, 38);

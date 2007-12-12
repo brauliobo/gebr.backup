@@ -27,7 +27,7 @@ struct parameter_data;
 struct parameter_ui_data;
 
 GtkWidget *
-parameter_create_ui(GeoXmlProgramParameter * parameter, gboolean hidden);
+parameter_create_ui(GeoXmlParameter * parameter, gboolean hidden);
 
 void
 parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * data);

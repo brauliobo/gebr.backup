@@ -22,6 +22,7 @@
 #include <geoxml.h>
 
 #include <gui/about.h>
+#include <misc/log.h>
 
 extern struct gebrme gebrme;
 
@@ -78,7 +79,10 @@ struct gebrme {
         	GdkPixbuf *	stock_no;
 	} pixmaps;
 
-	/* temporary files removed when GÃªBRME quits */
+// 	/* log */
+// 	struct log *		log;
+
+	/* temporary files removed when GêBRME quits */
 	GSList *		tmpfiles;
 
 	/* config file */
@@ -105,5 +109,8 @@ gebrme_config_load(void);
 
 void
 gebrme_config_save(void);
+
+// void
+// gebrme_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_file, const gchar * message, ...);
 
 #endif //__GEBRME_H

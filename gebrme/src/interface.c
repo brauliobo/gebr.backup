@@ -31,8 +31,8 @@ create_gebrme_window (void)
 {
 	GtkWidget *		gebrme_window;
 	GtkWidget *		mainwindow_vbox;
-
 	GtkWidget *		menubar;
+
 	GtkWidget *		flow_menuitem;
 	GtkWidget *		flow_menuitem_menu;
 	GtkWidget *		new_menuitem;
@@ -43,13 +43,14 @@ create_gebrme_window (void)
 	GtkWidget *		close_menuitem;
 	GtkWidget *		separator_menuitem;
 	GtkWidget *		quit_menuitem;
+
 	GtkWidget *		edit_menuitem;
 	GtkWidget *		edit_menuitem_menu;
-	GtkWidget *		cut_menuitem;
-	GtkWidget *		copy_menuitem;
-	GtkWidget *		paste_menuitem;
+// 	GtkWidget *		cut_menuitem;
+// 	GtkWidget *		copy_menuitem;
+// 	GtkWidget *		paste_menuitem;
 	GtkWidget *		preferences_menuitem;
-	GtkWidget *		view_menuitem;
+
 	GtkWidget *		help_menuitem;
 	GtkWidget *		help_menuitem_menu;
 	GtkWidget *		about_menuitem;
@@ -183,10 +184,6 @@ create_gebrme_window (void)
 	preferences_menuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_PREFERENCES, accel_group);
 	gtk_widget_show (preferences_menuitem);
 	gtk_container_add (GTK_CONTAINER (edit_menuitem_menu), preferences_menuitem);
-
-// 	view_menuitem = gtk_menu_item_new_with_mnemonic (_("_View"));
-// 	gtk_widget_show (view_menuitem);
-// 	gtk_container_add (GTK_CONTAINER (menubar), view_menuitem);
 
 	help_menuitem = gtk_menu_item_new_with_mnemonic (_("_Help"));
 	gtk_widget_show (help_menuitem);
