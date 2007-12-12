@@ -21,7 +21,6 @@
 #include "gebr.h"
 #include "server.h"
 #include "job.h"
-#include "ui_job_control.h"
 
 gboolean
 client_parse_server_messages(struct server * server)

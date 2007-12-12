@@ -63,9 +63,6 @@ job_delete(struct job * job);
 void
 job_close(struct job * job);
 
-void
-job_clear_or_select_first(void);
-
 struct job *
 job_find(GString * address, GString * jid);
 

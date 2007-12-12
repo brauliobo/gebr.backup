@@ -43,6 +43,6 @@ struct ui_job_control *
 job_control_setup_ui(void);
 
 void
-job_control_clicked(void);
+job_control_clear_or_select_first(void);
 
 #endif //__UI_JOB_CONTROL_H

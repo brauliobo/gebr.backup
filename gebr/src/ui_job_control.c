@@ -33,6 +33,9 @@
  */
 
 static void
+job_control_clicked(void);
+
+static void
 job_control_save(void);
 
 static void
@@ -219,10 +222,38 @@ job_control_setup_ui(void)
 }
 
 /*
- * Function: job_control_clicked
+ * Function; job_control_clear_or_select_first
  * *Fill me in!*
  */
 void
+job_control_clear_or_select_first(void)
+{
+	GtkTreeIter		iter;
+	GtkTreeSelection *	selection;
+
+	/* select the first job */
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view));
+	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_job_control->store), &iter) == TRUE) {
+		gtk_tree_selection_select_iter(selection, &iter);
+		job_control_clicked();
+	} else {
+		gtk_label_set_text(GTK_LABEL(gebr.ui_job_control->label), "");
+		gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, "", 0);
+	}
+}
+
+
+
+/*
+ * Section: Private
+ * Private functions.
+ */
+
+/*
+ * Function: job_control_clicked
+ * *Fill me in!*
+ */
+static void
 job_control_clicked(void)
 {
 	GtkTreeSelection *	selection;
@@ -240,11 +271,6 @@ job_control_clicked(void)
 
 	job_fill_info(job);
 }
-
-/*
- * Section: Private
- * Private functions.
- */
 
 /*
  * Function: job_control_save
@@ -370,7 +396,7 @@ job_control_close(void)
 		return;
 
 	job_close(job);
-	job_clear_or_select_first();
+	job_control_clear_or_select_first();
 }
 
 /*
@@ -400,7 +426,7 @@ job_control_clear(void)
 
 		job_close(job);
 	}
-	job_clear_or_select_first();
+	job_control_clear_or_select_first();
 }
 
 /*
