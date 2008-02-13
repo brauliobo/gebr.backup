@@ -17,17 +17,16 @@
 
 #include <gdome.h>
 
-#include "category.h"
+#include "enum_option.h"
 #include "xml.h"
 #include "types.h"
-#include "value_sequence.h"
 #include "sequence.h"
 
 /*
  * internal structures and funcionts
  */
 
-struct geoxml_category {
+struct geoxml_enum_option {
 	GdomeElement * element;
 };
 
@@ -36,39 +35,29 @@ struct geoxml_category {
  */
 
 void
-geoxml_category_set_name(GeoXmlCategory * category, const gchar * name)
+geoxml_enum_option_set_label(GeoXmlEnumOption * enum_option, const gchar * label)
 {
-	geoxml_value_sequence_set(GEOXML_VALUE_SEQUENCE(category), name);
+	if (enum_option == NULL || label == NULL)
+		return;
+	__geoxml_set_tag_value((GdomeElement*)enum_option, "label", label, __geoxml_create_TextNode);
 }
 
 const gchar *
-geoxml_category_get_name(GeoXmlCategory * category)
+geoxml_enum_option_get_label(GeoXmlEnumOption * enum_option)
 {
-	return geoxml_value_sequence_get(GEOXML_VALUE_SEQUENCE(category));
-}
-
-GeoXmlFlow *
-geoxml_category_flow(GeoXmlCategory * category)
-{
-	if (category == NULL)
-		return NULL;
-	return (GeoXmlFlow*)gdome_n_parentNode((GdomeNode*)category, &exception);
+	return __geoxml_get_tag_value((GdomeElement*)enum_option, "label");
 }
 
 void
-geoxml_category_previous(GeoXmlCategory ** category)
+geoxml_enum_option_set_value(GeoXmlEnumOption * enum_option, const gchar * value)
 {
-	geoxml_sequence_previous((GeoXmlSequence**)category);
+	if (enum_option == NULL || value == NULL)
+		return;
+	__geoxml_set_tag_value((GdomeElement*)enum_option, "value", value, __geoxml_create_TextNode);
 }
 
-void
-geoxml_category_next(GeoXmlCategory ** category)
+const gchar *
+geoxml_enum_option_get_value(GeoXmlEnumOption * enum_option)
 {
-	geoxml_sequence_next((GeoXmlSequence**)category);
-}
-
-void
-geoxml_category_remove(GeoXmlCategory * category)
-{
-	geoxml_sequence_remove((GeoXmlSequence*)category);
+	return __geoxml_get_tag_value((GdomeElement*)enum_option, "value");
 }

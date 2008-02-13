@@ -184,7 +184,6 @@ parameter_create_ui(GeoXmlParameter * parameter, gboolean hidden)
 	/*
 	 * Buttons Up, Down and Remove
 	 */
-
 	button_hbox = gtk_hbox_new(FALSE, 0);
 	gtk_widget_show(button_hbox);
 	gtk_box_pack_end(GTK_BOX(parameter_vbox), button_hbox, TRUE, FALSE, 0);
@@ -228,7 +227,7 @@ parameter_create_ui_type_general(GtkWidget * table, struct parameter_data * data
 	GeoXmlProgramParameter *	program_parameter;
 	GtkWidget *			specific_table;
 
-	specific_table = gtk_table_new(5, 2, FALSE);
+	specific_table = gtk_table_new(6, 2, FALSE);
 	gtk_widget_show(specific_table);
 	gtk_table_attach(GTK_TABLE(table), specific_table, 0, 2, 3, 4,
 			(GtkAttachOptions)(GTK_FILL),
@@ -375,57 +374,76 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 		GtkWidget *	max_entry;
 		GtkWidget *	inc_label;
 		GtkWidget *	inc_entry;
+		GtkWidget *	digits_label;
+		GtkWidget *	digits_entry;
 		gchar *		min_str;
 		gchar *		max_str;
 		gchar *		inc_str;
+		gchar *		digits_str;
 
-		geoxml_program_parameter_get_range_properties(program_parameter, &min_str, &max_str, &inc_str);
+		geoxml_program_parameter_get_range_properties(program_parameter,
+			&min_str, &max_str, &inc_str, &digits_str);
 		data->widget = parameter_widget_new_range(data->parameter, TRUE);
 
-		min_label = gtk_label_new (_("Minimum:"));
-		gtk_widget_show (min_label);
-		gtk_table_attach (GTK_TABLE (table), min_label, 0, 1, 1, 2,
-				(GtkAttachOptions) (GTK_FILL),
-				(GtkAttachOptions) (0), 0, 0);
-		gtk_misc_set_alignment (GTK_MISC (min_label), 0, 0.5);
+		min_label = gtk_label_new(_("Minimum:"));
+		gtk_widget_show(min_label);
+		gtk_table_attach(GTK_TABLE(table), min_label, 0, 1, 1, 2,
+			(GtkAttachOptions)(GTK_FILL),
+			(GtkAttachOptions)(0), 0, 0);
+		gtk_misc_set_alignment(GTK_MISC(min_label), 0, 0.5);
 		min_entry = gtk_entry_new();
-		gtk_widget_show (min_entry);
-		gtk_table_attach (GTK_TABLE (table), min_entry, 1, 2, 1, 2,
-				(GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-				(GtkAttachOptions) (0), 0, 0);
+		gtk_widget_show(min_entry);
+		gtk_table_attach(GTK_TABLE(table), min_entry, 1, 2, 1, 2,
+			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+			(GtkAttachOptions)(0), 0, 0);
 		gtk_entry_set_text(GTK_ENTRY(min_entry), min_str);
 		g_signal_connect(min_entry, "changed",
-				(GCallback)parameter_range_min_changed, data);
+			(GCallback)parameter_range_min_changed, data);
 
-		max_label = gtk_label_new (_("Maximum:"));
-		gtk_widget_show (max_label);
-		gtk_table_attach (GTK_TABLE (table), max_label, 0, 1, 2, 3,
-				(GtkAttachOptions) (GTK_FILL),
-				(GtkAttachOptions) (0), 0, 0);
-		gtk_misc_set_alignment (GTK_MISC (max_label), 0, 0.5);
+		max_label = gtk_label_new(_("Maximum:"));
+		gtk_widget_show(max_label);
+		gtk_table_attach(GTK_TABLE(table), max_label, 0, 1, 2, 3,
+			(GtkAttachOptions)(GTK_FILL),
+			(GtkAttachOptions)(0), 0, 0);
+		gtk_misc_set_alignment(GTK_MISC(max_label), 0, 0.5);
 		max_entry = gtk_entry_new();
-		gtk_widget_show (max_entry);
-		gtk_table_attach (GTK_TABLE (table), max_entry, 1, 2, 2, 3,
-				(GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-				(GtkAttachOptions) (0), 0, 0);
+		gtk_widget_show(max_entry);
+		gtk_table_attach(GTK_TABLE(table), max_entry, 1, 2, 2, 3,
+			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+			(GtkAttachOptions)(0), 0, 0);
 		gtk_entry_set_text(GTK_ENTRY(max_entry), max_str);
 		g_signal_connect(max_entry, "changed",
-				(GCallback)parameter_range_max_changed, data);
+			(GCallback)parameter_range_max_changed, data);
 
-		inc_label = gtk_label_new (_("Increment:"));
-		gtk_widget_show (inc_label);
-		gtk_table_attach (GTK_TABLE (table), inc_label, 0, 1, 4, 5,
-				(GtkAttachOptions) (GTK_FILL),
-				(GtkAttachOptions) (0), 0, 0);
-		gtk_misc_set_alignment (GTK_MISC (inc_label), 0, 0.5);
+		inc_label = gtk_label_new(_("Increment:"));
+		gtk_widget_show(inc_label);
+		gtk_table_attach(GTK_TABLE(table), inc_label, 0, 1, 4, 5,
+			(GtkAttachOptions)(GTK_FILL),
+			(GtkAttachOptions)(0), 0, 0);
+		gtk_misc_set_alignment(GTK_MISC(inc_label), 0, 0.5);
 		inc_entry = gtk_entry_new();
-		gtk_widget_show (inc_entry);
-		gtk_table_attach (GTK_TABLE (table), inc_entry, 1, 2, 4, 5,
-				(GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-				(GtkAttachOptions) (0), 0, 0);
+		gtk_widget_show(inc_entry);
+		gtk_table_attach(GTK_TABLE(table), inc_entry, 1, 2, 4, 5,
+			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+			(GtkAttachOptions)(0), 0, 0);
 		gtk_entry_set_text(GTK_ENTRY(inc_entry), inc_str);
 		g_signal_connect(inc_entry, "changed",
-				(GCallback)parameter_range_inc_changed, data);
+			(GCallback)parameter_range_inc_changed, data);
+
+		digits_label = gtk_label_new(_("Digits:"));
+		gtk_widget_show(digits_label);
+		gtk_table_attach(GTK_TABLE(table), digits_label, 0, 1, 5, 6,
+			(GtkAttachOptions)(GTK_FILL),
+			(GtkAttachOptions)(0), 0, 0);
+		gtk_misc_set_alignment(GTK_MISC(digits_label), 0, 0.5);
+		digits_entry = gtk_entry_new();
+		gtk_widget_show(digits_entry);
+		gtk_table_attach(GTK_TABLE(table), digits_entry, 1, 2, 5, 6,
+			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+			(GtkAttachOptions)(0), 0, 0);
+		gtk_entry_set_text(GTK_ENTRY(digits_entry), digits_str);
+		g_signal_connect(digits_entry, "changed",
+			(GCallback)parameter_range_digits_changed, data);
 
 		break;
 	} case GEOXML_PARAMETERTYPE_ENUM: {
@@ -571,8 +589,6 @@ parameter_type_changed(GtkComboBox * combo, struct parameter_data * data)
 
 	/* change its type */
 	geoxml_parameter_set_type(&data->parameter, (enum GEOXML_PARAMETERTYPE)gtk_combo_box_get_active(combo));
-	if (data->parameter == NULL)
-		puts("parameter_type_changed err");
 
 	/* recreate UI */
 	gtk_container_foreach(GTK_CONTAINER(table), (GtkCallback)gtk_widget_destroy, NULL);
@@ -673,12 +689,13 @@ parameter_range_min_changed(GtkEntry * entry, struct parameter_data * data)
 	gchar *		min_str;
 	gchar *		max_str;
 	gchar *		inc_str;
+	gchar *		digits_str;
 	gdouble		min, max;
 	GtkSpinButton *	spin_button;
 
 	spin_button = GTK_SPIN_BUTTON(data->widget->value_widget);
 	geoxml_program_parameter_get_range_properties(GEOXML_PROGRAM_PARAMETER(data->parameter),
-		&min_str, &max_str, &inc_str);
+		&min_str, &max_str, &inc_str, &digits_str);
 	gtk_spin_button_get_range(spin_button, &min, &max);
 
 	min_str = (gchar*)gtk_entry_get_text(GTK_ENTRY(entry));
@@ -686,7 +703,7 @@ parameter_range_min_changed(GtkEntry * entry, struct parameter_data * data)
 
 	gtk_spin_button_set_range(spin_button, min, max);
 	geoxml_program_parameter_set_range_properties(GEOXML_PROGRAM_PARAMETER(data->parameter),
-		min_str, max_str, inc_str);
+		min_str, max_str, inc_str, digits_str);
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
@@ -697,12 +714,13 @@ parameter_range_max_changed(GtkEntry * entry, struct parameter_data * data)
 	gchar *		min_str;
 	gchar *		max_str;
 	gchar *		inc_str;
+	gchar *		digits_str;
 	gdouble		min, max;
 	GtkSpinButton *	spin_button;
 
 	spin_button = GTK_SPIN_BUTTON(data->widget->value_widget);
 	geoxml_program_parameter_get_range_properties(GEOXML_PROGRAM_PARAMETER(data->parameter),
-		&min_str, &max_str, &inc_str);
+		&min_str, &max_str, &inc_str, &digits_str);
 	gtk_spin_button_get_range(spin_button, &min, &max);
 
 	max_str = (gchar*)gtk_entry_get_text(GTK_ENTRY(entry));
@@ -710,7 +728,7 @@ parameter_range_max_changed(GtkEntry * entry, struct parameter_data * data)
 
 	gtk_spin_button_set_range(spin_button, min, max);
 	geoxml_program_parameter_set_range_properties(GEOXML_PROGRAM_PARAMETER(data->parameter),
-		min_str, max_str, inc_str);
+		min_str, max_str, inc_str, digits_str);
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
@@ -721,19 +739,44 @@ parameter_range_inc_changed(GtkEntry * entry, struct parameter_data * data)
 	gchar *		min_str;
 	gchar *		max_str;
 	gchar *		inc_str;
+	gchar *		digits_str;
 	gdouble		inc;
 	GtkSpinButton *	spin_button;
 
 	spin_button = GTK_SPIN_BUTTON(data->widget->value_widget);
 	geoxml_program_parameter_get_range_properties(GEOXML_PROGRAM_PARAMETER(data->parameter),
-		&min_str, &max_str, &inc_str);
+		&min_str, &max_str, &inc_str, &digits_str);
 
 	inc_str = (gchar*)gtk_entry_get_text(GTK_ENTRY(entry));
 	inc = atof(inc_str);
 
 	gtk_spin_button_set_increments(spin_button, inc, 0);
 	geoxml_program_parameter_set_range_properties(GEOXML_PROGRAM_PARAMETER(data->parameter),
-		min_str, max_str, inc_str);
+		min_str, max_str, inc_str, digits_str);
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+void
+parameter_range_digits_changed(GtkEntry * entry, struct parameter_data * data)
+{
+	gchar *		min_str;
+	gchar *		max_str;
+	gchar *		inc_str;
+	gchar *		digits_str;
+	gdouble		digits;
+	GtkSpinButton *	spin_button;
+
+	spin_button = GTK_SPIN_BUTTON(data->widget->value_widget);
+	geoxml_program_parameter_get_range_properties(GEOXML_PROGRAM_PARAMETER(data->parameter),
+		&min_str, &max_str, &inc_str, &digits_str);
+
+	digits_str = (gchar*)gtk_entry_get_text(GTK_ENTRY(entry));
+	digits = atof(digits_str);
+
+	gtk_spin_button_set_digits(spin_button, digits);
+	geoxml_program_parameter_set_range_properties(GEOXML_PROGRAM_PARAMETER(data->parameter),
+		min_str, max_str, inc_str, digits_str);
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
@@ -745,10 +788,10 @@ parameter_enum_options_add_request(ValueSequenceEdit * sequence_edit, struct par
 
 	g_object_get(G_OBJECT(sequence_edit), "value-widget", &entry, NULL);
 
-	value_sequence_edit_add(sequence_edit,
-		GEOXML_VALUE_SEQUENCE(geoxml_program_parameter_append_enum_option(
-			GEOXML_PROGRAM_PARAMETER(data->parameter),
-			gtk_entry_get_text(entry))));
+// 	value_sequence_edit_add(sequence_edit,
+// 		GEOXML_VALUE_SEQUENCE(geoxml_program_parameter_append_enum_option(
+// 			GEOXML_PROGRAM_PARAMETER(data->parameter),
+// 			gtk_entry_get_text(entry))));
 }
 
 void

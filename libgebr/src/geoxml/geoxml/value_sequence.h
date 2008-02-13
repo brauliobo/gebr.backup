@@ -1,5 +1,5 @@
-/*   libgebr - GêBR Library
- *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   libgebr - Gï¿½BR Library
+ *   Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -40,14 +40,14 @@
  *
  * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
  * 	"GeoXmlValueSequence" [ URL = "\ref value_sequence.h" ];
- * 	"GeoXmlEnumOption" [ URL = "\ref GeoXmlEnumOption" ];
+ * 	"GeoXmlLinePath" [ URL = "\ref GeoXmlLinePath" ];
  * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
  *
  * 	edge [
  * 		arrowhead = "normal"
  * 	]
  * 	"GeoXmlSequence" -> "GeoXmlSequence";
- * 	"GeoXmlValueSequence" -> "GeoXmlEnumOption";
+ * 	"GeoXmlValueSequence" -> "GeoXmlLinePath";
  * 	"GeoXmlValueSequence" -> "GeoXmlCategory";
  * }
  * \enddot

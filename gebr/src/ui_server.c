@@ -103,7 +103,7 @@ server_common_check_for_local(struct ui_server_common * ui_server_common)
 		gtk_tree_model_get(GTK_TREE_MODEL(ui_server_common->store), &iter,
 				SERVER_POINTER, &server,
 				-1);
-		if (server_is_local(server) == TRUE) {
+		if (comm_server_is_local(server->comm) == TRUE) {
 			has_local = TRUE;
 			break;
 		}
@@ -146,7 +146,7 @@ server_common_add(struct ui_server_common * ui_server_common, const gchar * addr
 				SERVER_POINTER, &server,
 				-1);
 
-		if (!g_ascii_strcasecmp(server->address->str, address)) {
+		if (!g_ascii_strcasecmp(server->comm->address->str, address)) {
 			GtkTreeSelection *	selection;
 
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_server_common->view));
@@ -185,16 +185,19 @@ server_actions(GtkDialog * dialog, gint arg1, struct ui_server_common * ui_serve
 					SERVER_POINTER, &server,
 					-1);
 
-			if (server_is_logged(server) == FALSE)
-				server_connect(server);
+			if (comm_server_is_logged(server->comm) == FALSE)
+				comm_server_connect(server->comm);
 
 			valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(ui_server_common->store), &iter);
 		}
 
 		break;
 	}
+	case GTK_RESPONSE_DELETE_EVENT:
+		if (dialog != GTK_DIALOG(gebr.ui_server_list->common.dialog))
+			break;
 	case GEBR_SERVER_CLOSE: /* Only for server list */
-		gtk_widget_hide(ui_server_common->dialog);
+		gtk_widget_hide(gebr.ui_server_list->common.dialog);
 		gebr_config_save();
 		break;
 	case GEBR_SERVER_ADD_LOCAL:
@@ -255,12 +258,14 @@ server_list_setup_ui(void)
 					G_TYPE_POINTER);
 
 	dialog = gtk_dialog_new_with_buttons(_("Servers configuration"),
-						GTK_WINDOW(gebr.window),
-						GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-						GTK_STOCK_REMOVE, GEBR_SERVER_REMOVE,
-						GTK_STOCK_CLOSE, GEBR_SERVER_CLOSE,
-						GTK_STOCK_REFRESH, GEBR_SERVER_REFRESH,
-						NULL);
+		GTK_WINDOW(gebr.window),
+		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+		GTK_STOCK_REMOVE, GEBR_SERVER_REMOVE,
+		GTK_STOCK_CLOSE, GEBR_SERVER_CLOSE,
+		GTK_STOCK_REFRESH, GEBR_SERVER_REFRESH,
+		NULL);
+	g_signal_connect(dialog, "delete-event",
+		G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	ui_server_list->common.dialog = dialog;
 	/* Take the apropriate action when a button is pressed */
 	g_signal_connect(dialog, "response",
@@ -302,14 +307,14 @@ server_list_updated_status(struct server * server)
 	GdkPixbuf *	status_icon;
 // 	GtkTreePath *	path;
 
-	status_icon = server->protocol->logged == TRUE ?
+	status_icon = server->comm->protocol->logged == TRUE ?
 		gebr.pixmaps.stock_connect : gebr.pixmaps.stock_disconnect,
 	gtk_list_store_set(gebr.ui_server_list->common.store, &server->iter,
 		SERVER_STATUS_ICON, status_icon,
 		-1);
 
 	/* update view */
-// 	path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_server_list->common.store), &server->iter);
+// 	path = gtk_tree_model_get_path(GTK_TREE_MODEL(gebr.ui_server_list->common.store), &server->comm->iter);
 	g_signal_emit_by_name(gebr.ui_server_list->common.store, "row-changed", NULL, &server->iter);
 // 	gtk_tree_path_free(path);
 }
@@ -360,14 +365,14 @@ server_select_setup_ui(void)
 		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->common.store), &iter,
 				SERVER_POINTER, &server,
 				-1);
-		if (server_is_logged(server) == TRUE)
+		if (comm_server_is_logged(server->comm) == TRUE)
 			if (connected++ == 0)
 				first_connected_iter = iter;
 
 		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(gebr.ui_server_list->common.store), &iter);
 	}
 	if (connected == 0) {
-		gebr_message(ERROR, TRUE, FALSE,
+		gebr_message(LOG_ERROR, TRUE, FALSE,
 			_("There are no running servers available. Please configure them in Configure/Server"));
 		goto out;
 	}
@@ -450,7 +455,7 @@ server_select_cursor_changed(GtkTreeView * tree_view, struct ui_server_select * 
 			SERVER_POINTER, &server,
 			-1);
 
-	if (server->protocol->logged == FALSE)
+	if (server->comm->protocol->logged == FALSE)
 		g_object_set(ui_server_select->ok_button, "sensitive", FALSE, NULL);
 	else {
 		g_object_set(ui_server_select->ok_button, "sensitive", TRUE, NULL);

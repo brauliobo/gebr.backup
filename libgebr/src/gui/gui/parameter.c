@@ -263,7 +263,8 @@ parameter_widget_init(GeoXmlParameter * parameter, GtkWidget * value_widget, gbo
 		parameter_widget->list_value_widget = gtk_entry_new();
 		gtk_widget_show(parameter_widget->list_value_widget);
 		gtk_box_pack_start(GTK_BOX(hbox), parameter_widget->list_value_widget, TRUE, TRUE, 0);
-		gtk_entry_set_text(GTK_ENTRY(parameter_widget->list_value_widget), parameter_widget_get_value(parameter_widget));
+		gtk_entry_set_text(GTK_ENTRY(parameter_widget->list_value_widget),
+			parameter_widget_get_value(parameter_widget));
 
 		button = gtk_toggle_button_new_with_label(_("Edit list"));
 		gtk_widget_show(button);
@@ -448,16 +449,18 @@ parameter_widget_new_range(GeoXmlParameter * parameter, gboolean use_default_val
 	gchar *				min_str;
 	gchar *				max_str;
 	gchar *				inc_str;
-	double				min, max, inc;
+	gchar *				digits_str;
+	double				min, max, inc, digits;
 
 	geoxml_program_parameter_get_range_properties(
-		GEOXML_PROGRAM_PARAMETER(parameter), &min_str, &max_str, &inc_str);
+		GEOXML_PROGRAM_PARAMETER(parameter), &min_str, &max_str, &inc_str, &digits_str);
 	min = !strlen(min_str) ? DOUBLE_MIN : atof(min_str);
 	max = !strlen(max_str) ? DOUBLE_MAX : atof(max_str);
 	inc = !strlen(inc_str) ? 1.0 : atof(inc_str);
+	digits = !strlen(digits_str) ? 0 : atof(digits_str);
 
 	spin = gtk_spin_button_new_with_range(min, max, inc);
-	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(spin), 3);
+	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(spin), atoi(digits_str));
 	gtk_widget_set_size_request(spin, 90, 30);
 
 	parameter_widget = parameter_widget_init(parameter, spin, use_default_value);
@@ -486,6 +489,7 @@ parameter_widget_new_file(GeoXmlParameter * parameter, gboolean use_default_valu
 		parameter_widget_get_value(parameter_widget));
 	gtk_file_entry_set_choose_directory(GTK_FILE_ENTRY(file_entry),
 		geoxml_program_parameter_get_file_be_directory(GEOXML_PROGRAM_PARAMETER(parameter)));
+	gtk_file_entry_set_do_overwrite_confirmation(GTK_FILE_ENTRY(file_entry), FALSE);
 
 	return parameter_widget;
 }

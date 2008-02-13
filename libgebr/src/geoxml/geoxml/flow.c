@@ -35,6 +35,10 @@ struct geoxml_flow {
 	GeoXmlDocument * document;
 };
 
+struct geoxml_category {
+	GdomeElement * element;
+};
+
 /*
  * library functions.
  */
@@ -184,12 +188,11 @@ geoxml_flow_new_program(GeoXmlFlow * flow)
 GeoXmlProgram *
 geoxml_flow_append_program(GeoXmlFlow * flow)
 {
-	if (flow == NULL)
-		return NULL;
-
 	GdomeElement *	element;
 
 	element = (GdomeElement*)geoxml_flow_new_program(flow);
+	if (element == NULL)
+		return NULL;
 	gdome_el_insertBefore(geoxml_document_root_element(GEOXML_DOC(flow)),
 		(GdomeNode*)element, NULL, &exception);
 

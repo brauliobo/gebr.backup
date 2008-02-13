@@ -53,7 +53,7 @@ __geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PAR
 			geoxml_program_parameter_set_file_be_directory((GeoXmlProgramParameter*)parameter_element, FALSE);
 			break;
 		case GEOXML_PARAMETERTYPE_RANGE:
-			geoxml_program_parameter_set_range_properties((GeoXmlProgramParameter*)parameter_element, "", "", "");
+			geoxml_program_parameter_set_range_properties((GeoXmlProgramParameter*)parameter_element, "", "", "", "");
 			break;
 		default:
 			break;

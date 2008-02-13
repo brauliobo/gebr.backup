@@ -83,8 +83,12 @@
  */
 typedef struct geoxml_flow GeoXmlFlow;
 
+/**
+ * The GeoXmlCategory struct contains private data only, and should be accessed using the functions below.
+ */
+typedef struct geoxml_category GeoXmlCategory;
+
 #include "program.h"
-#include "category.h"
 #include "macros.h"
 #include "sequence.h"
 

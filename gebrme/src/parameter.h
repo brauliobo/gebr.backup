@@ -85,6 +85,9 @@ void
 parameter_range_inc_changed(GtkEntry * entry, struct parameter_data * data);
 
 void
+parameter_range_digits_changed(GtkEntry * entry, struct parameter_data * data);
+
+void
 parameter_enum_options_add_request(ValueSequenceEdit * sequence_edit, struct parameter_data * data);
 
 void

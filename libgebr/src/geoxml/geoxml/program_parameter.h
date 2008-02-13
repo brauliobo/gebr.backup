@@ -59,11 +59,12 @@
  * 	"GeoXmlDocument" -> "GeoXmlFlow";
  * 	"GeoXmlSequence" -> "GeoXmlParameter";
  * 	"GeoXmlSequence" -> "GeoXmlValueSequence";
- * 	"GeoXmlValueSequence" -> "GeoXmlEnumOption";
+ * 	"GeoXmlSequence" -> "GeoXmlEnumOption";
  * 	"GeoXmlValueSequence" -> "GeoXmlCategory";
  * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
  * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
+ * 	"GeoXmlProgramParameter" -> "GeoXmlEnumOption"
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -72,7 +73,6 @@
  * 	"GeoXmlFlow" -> "GeoXmlProgram";
  * 	"GeoXmlFlow" -> "GeoXmlCategory";
  * 	"GeoXmlParameters" -> "GeoXmlParameter";
- * 	"GeoXmlProgramParameter" -> "GeoXmlEnumOption"
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -101,13 +101,9 @@
  */
 typedef struct geoxml_program_parameter GeoXmlProgramParameter;
 
-/**
- * The GeoXmlEnumOption struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct geoxml_enum_option GeoXmlEnumOption;
-
 #include "program_parameter.h"
 #include "program.h"
+#include "enum_option.h"
 #include "value_sequence.h"
 #include "macros.h"
 
@@ -211,21 +207,23 @@ geoxml_program_parameter_set_file_be_directory(GeoXmlProgramParameter * program_
  */
 void
 geoxml_program_parameter_set_range_properties(GeoXmlProgramParameter * program_parameter,
-		const gchar * min, const gchar * max, const gchar * inc);
+	const gchar * min, const gchar * max, const gchar * inc, const gchar * digits);
 
 /**
  *
- * If \p program_parameter or \p value is NULL nothing is done.
+ * If \p program_parameter or \p label or \p value is NULL returns NULL.
  */
 GeoXmlEnumOption *
-geoxml_program_parameter_new_enum_option(GeoXmlProgramParameter * program_parameter, const gchar * value);
+geoxml_program_parameter_new_enum_option(GeoXmlProgramParameter * program_parameter,
+	const gchar * label, const gchar * value);
 
 /**
  *
- * If \p program_parameter or \p value is NULL nothing is done.
+ * If \p program_parameter or \p label or \p value is NULL returns NULL.
  */
 GeoXmlEnumOption *
-geoxml_program_parameter_append_enum_option(GeoXmlProgramParameter * program_parameter, const gchar * value);
+geoxml_program_parameter_append_enum_option(GeoXmlProgramParameter * program_parameter,
+	const gchar * label, const gchar * value);
 
 /**
  * Writes to \p enum_option the \p index ieth enum option that \p program_parameter has.
@@ -345,7 +343,7 @@ geoxml_program_parameter_get_file_be_directory(GeoXmlProgramParameter * program_
  */
 void
 geoxml_program_parameter_get_range_properties(GeoXmlProgramParameter * program_parameter,
-		gchar ** min, gchar ** max, gchar ** inc);
+	gchar ** min, gchar ** max, gchar ** inc, gchar ** digits);
 
 /**
  * \deprecated

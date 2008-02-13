@@ -60,7 +60,7 @@ flow_io_setup_ui(void)
 	GtkWidget *		label;
 
 	if (gebr.flow == NULL) {
-		gebr_message(ERROR, TRUE, FALSE, no_flow_selected_error);
+		gebr_message(LOG_ERROR, TRUE, FALSE, no_flow_selected_error);
 		return NULL;
 	}
 
@@ -93,6 +93,7 @@ flow_io_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), ui_flow_io->input, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL,  3, 3);
 	/* read */
 	gtk_file_entry_set_path(GTK_FILE_ENTRY(ui_flow_io->input), geoxml_flow_io_get_input(gebr.flow));
+	gtk_file_entry_set_do_overwrite_confirmation(GTK_FILE_ENTRY(ui_flow_io->input), FALSE);
 
 	/* Output */
 	label = gtk_label_new(_("Output file"));
@@ -180,7 +181,7 @@ flow_add_programs_to_view(GeoXmlFlow * flow)
 		else if (g_ascii_strcasecmp(status, "disabled") == 0)
 			pixbuf = gebr.pixmaps.stock_cancel;
 		else {
-			gebr_message(WARNING, TRUE, TRUE, _("Unknown flow program '%s' status"),
+			gebr_message(LOG_WARNING, TRUE, TRUE, _("Unknown flow program '%s' status"),
 				geoxml_program_get_title(GEOXML_PROGRAM(program)));
 			pixbuf = NULL;
 		}

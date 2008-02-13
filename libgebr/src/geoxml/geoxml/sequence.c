@@ -1,5 +1,5 @@
-/*   libgebr - GêBR Library
- *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   libgebr - Gï¿½BR Library
+ *   Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -51,10 +51,10 @@ __geoxml_sequence_check(GeoXmlSequence * sequence)
 
 	name = gdome_el_nodeName((GdomeElement*)sequence, &exception);
 	return __geoxml_sequence_is_parameter(sequence) ||
-		(gboolean)!g_ascii_strcasecmp(name->str, "option") ||
 		(gboolean)!g_ascii_strcasecmp(name->str, "program") ||
 		(gboolean)!g_ascii_strcasecmp(name->str, "category") ||
 		(gboolean)!g_ascii_strcasecmp(name->str, "flow") ||
+		(gboolean)!g_ascii_strcasecmp(name->str, "path") ||
 		(gboolean)!g_ascii_strcasecmp(name->str, "line");
 }
 

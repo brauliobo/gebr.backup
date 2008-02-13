@@ -35,10 +35,6 @@ struct geoxml_program_parameter {
 	GdomeElement * element;
 };
 
-struct geoxml_enum_option {
-	GdomeElement * element;
-};
-
 /*
  * library functions.
  */
@@ -176,45 +172,52 @@ geoxml_program_parameter_set_file_be_directory(GeoXmlProgramParameter * program_
 
 void
 geoxml_program_parameter_set_range_properties(GeoXmlProgramParameter * program_parameter,
-		const gchar * min, const gchar * max, const gchar * inc)
+	const gchar * min, const gchar * max, const gchar * inc, const gchar * digits)
 {
-	if (program_parameter == NULL)
+	if (program_parameter == NULL || min == NULL || max == NULL || inc == NULL || digits == NULL)
 		return;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_RANGE)
 		return;
 	__geoxml_set_attr_value((GdomeElement*)program_parameter, "min", min);
 	__geoxml_set_attr_value((GdomeElement*)program_parameter, "max", max);
 	__geoxml_set_attr_value((GdomeElement*)program_parameter, "inc", inc);
+	__geoxml_set_attr_value((GdomeElement*)program_parameter, "digits", digits);
 }
 
 GeoXmlEnumOption *
-geoxml_program_parameter_new_enum_option(GeoXmlProgramParameter * program_parameter, const gchar * value)
+geoxml_program_parameter_new_enum_option(GeoXmlProgramParameter * program_parameter,
+	const gchar * label, const gchar * value)
 {
-	if (program_parameter == NULL || value == NULL)
+	if (program_parameter == NULL || label == NULL || value == NULL)
 		return NULL;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_ENUM)
 		return NULL;
 
 	GeoXmlEnumOption *	enum_option;
+	GdomeElement *		label_element;
+	GdomeElement *		value_element;
 
 	enum_option = (GeoXmlEnumOption*)__geoxml_new_element((GdomeElement*)program_parameter, "option");
-	geoxml_value_sequence_set(GEOXML_VALUE_SEQUENCE(enum_option), value);
+	label_element = __geoxml_new_element((GdomeElement*)enum_option, "label");
+	value_element = __geoxml_new_element((GdomeElement*)enum_option, "value");
+
+	__geoxml_set_element_value(label_element, label, __geoxml_create_TextNode);
+	__geoxml_set_element_value(value_element, value, __geoxml_create_TextNode);
 
 	return enum_option;
 }
 
 GeoXmlEnumOption *
-geoxml_program_parameter_append_enum_option(GeoXmlProgramParameter * program_parameter, const gchar * value)
+geoxml_program_parameter_append_enum_option(GeoXmlProgramParameter * program_parameter,
+	const gchar * label, const gchar * value)
 {
-	if (program_parameter == NULL || value == NULL)
-		return NULL;
-	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_ENUM)
-		return NULL;
-
 	GeoXmlEnumOption *	enum_option;
 
-	enum_option = (GeoXmlEnumOption*)__geoxml_insert_new_element((GdomeElement*)program_parameter, "option", NULL);
-	geoxml_value_sequence_set(GEOXML_VALUE_SEQUENCE(enum_option), value);
+	enum_option = geoxml_program_parameter_new_enum_option(program_parameter, label, value);
+	if (enum_option == NULL)
+		return NULL;
+	gdome_el_insertBefore((GdomeElement*)program_parameter,
+		(GdomeNode*)enum_option, NULL, &exception);
 
 	return enum_option;
 }
@@ -375,15 +378,16 @@ geoxml_program_parameter_get_file_be_directory(GeoXmlProgramParameter * program_
 
 void
 geoxml_program_parameter_get_range_properties(GeoXmlProgramParameter * program_parameter,
-		gchar ** min, gchar ** max, gchar ** inc)
+	gchar ** min, gchar ** max, gchar ** inc, gchar ** digits)
 {
-	if (program_parameter == NULL)
+	if (program_parameter == NULL || *min == NULL || *max == NULL || *inc == NULL || *digits == NULL)
 		return;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_RANGE)
 		return;
 	*min = (gchar*)__geoxml_get_attr_value((GdomeElement*)program_parameter, "min");
 	*max = (gchar*)__geoxml_get_attr_value((GdomeElement*)program_parameter, "max");
 	*inc = (gchar*)__geoxml_get_attr_value((GdomeElement*)program_parameter, "inc");
+	*digits = (gchar*)__geoxml_get_attr_value((GdomeElement*)program_parameter, "digits");
 }
 
 void

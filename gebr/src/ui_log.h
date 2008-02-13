@@ -1,5 +1,5 @@
-/*   GÃªBR Daemon - Process and control execution of flows
- *   Copyright (C) 2007 GÃªBR core team (http://gebr.sourceforge.net)
+/*   GêBR - An environment for seismic processing.
+ *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,12 +15,35 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* include all comm library's headers. */
-#include <comm/ghostaddress.h>
-#include <comm/ghostinfo.h>
-#include <comm/gsocket.h>
-#include <comm/gtcpsocket.h>
-#include <comm/gtcpserver.h>
-#include <comm/gprocess.h>
-#include <comm/protocol.h>
-#include <comm/server.h>
+#ifndef __UI_LOG_H
+#define __UI_LOG_H
+
+#include <gtk/gtk.h>
+
+#include <misc/log.h>
+
+/* Store fields */
+enum {
+	LOG_TYPE_ICON = 0,
+	LOG_DATE,
+	LOG_MESSAGE,
+	LOG_N_COLUMN
+};
+
+struct ui_log {
+	GtkWidget *		widget;
+
+	GtkListStore *		store;
+	GtkWidget *		view;
+};
+
+struct ui_log *
+log_setup_ui(void);
+
+void
+log_set_message(struct ui_log * ui_log, const gchar * message);
+
+void
+log_add_message_to_list(struct ui_log * ui_log, struct log_message * message);
+
+#endif //__UI_LOG_H

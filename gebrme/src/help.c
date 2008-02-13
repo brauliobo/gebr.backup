@@ -83,11 +83,11 @@ help_subst_fields(GString * help)
 		GString *		catstr;
 
 		geoxml_flow_get_category(gebrme.current, &category, 0);
-		catstr = g_string_new(geoxml_category_get_name(GEOXML_CATEGORY(category)));
+		catstr = g_string_new(geoxml_value_sequence_get(GEOXML_VALUE_SEQUENCE(category)));
 		geoxml_sequence_next(&category);
 		while (category != NULL) {
 			g_string_append(catstr, " | ");
-			g_string_append(catstr, geoxml_category_get_name(GEOXML_CATEGORY(category)));
+			g_string_append(catstr, geoxml_value_sequence_get(GEOXML_VALUE_SEQUENCE(category)));
 
 			geoxml_sequence_next(&category);
 		}
@@ -123,7 +123,7 @@ help_show(const gchar * help)
 	/* open temporary file with help from XML */
 	html_fp = fopen(html_path->str, "w");
 	if (html_fp == NULL) {
-		gebrme_message(ERROR, _("Could not create an temporary file."));
+		gebrme_message(LOG_ERROR, _("Could not create an temporary file."));
 		goto out;
 	}
 	fputs(prepared_html->str, html_fp);
@@ -162,7 +162,7 @@ help_edit(const gchar * help)
 		/* Read back the help from file */
 		fp = fopen(GEBRME_DATA_DIR "help-template.html", "r");
 		if (fp == NULL) {
-			gebrme_message(ERROR, _("Could not open template. Please check your installation."));
+			gebrme_message(LOG_ERROR, _("Could not open template. Please check your installation."));
 			return prepared_html;
 		}
 
@@ -182,7 +182,7 @@ help_edit(const gchar * help)
 	html_path = make_temp_filename("gebrme_XXXXXX.html");
 	fp = fopen(html_path->str, "w");
 	if (fp == NULL) {
-		gebrme_message(ERROR, _("Could not create a temporary file."));
+		gebrme_message(LOG_ERROR, _("Could not create a temporary file."));
 		goto err2;
 	}
 	fputs(prepared_html->str, fp);
@@ -195,7 +195,7 @@ help_edit(const gchar * help)
 	cmdline = g_string_new("");
 	g_string_printf(cmdline, "%s %s", gebrme.config.htmleditor->str, html_path->str);
 	if (system(cmdline->str)) {
-		gebrme_message(ERROR, _("Could not launch editor"));
+		gebrme_message(LOG_ERROR, _("Could not launch editor"));
 		goto err;
 	}
 	g_string_free(cmdline, TRUE);
@@ -203,7 +203,7 @@ help_edit(const gchar * help)
 	/* read back the help from file */
 	fp = fopen(html_path->str, "r");
 	if (fp == NULL) {
-		gebrme_message(ERROR, _("Could not read created temporary file."));
+		gebrme_message(LOG_ERROR, _("Could not read created temporary file."));
 		goto err;
 	}
 	g_string_assign(prepared_html, "");
@@ -219,7 +219,7 @@ help_edit(const gchar * help)
 		converted = g_simple_locale_to_utf8(prepared_html->str);
 		if (converted == NULL) {
 			g_free(converted);
-			gebrme_message(ERROR, _("Please change the help encoding to UTF-8"));
+			gebrme_message(LOG_ERROR, _("Please change the help encoding to UTF-8"));
 			goto err;
 		}
 
