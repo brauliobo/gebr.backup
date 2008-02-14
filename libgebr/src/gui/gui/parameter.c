@@ -1,5 +1,5 @@
-/*   libgebr - GêBR Library
- *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   libgebr - Gï¿½BR Library
+ *   Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -475,13 +475,14 @@ parameter_widget_new_range(GeoXmlParameter * parameter, gboolean use_default_val
  * Add an input entry and button to browse for a file or directory
  */
 struct parameter_widget *
-parameter_widget_new_file(GeoXmlParameter * parameter, gboolean use_default_value)
+parameter_widget_new_file(GeoXmlParameter * parameter,
+	GtkFileEntryCustomize customize, gboolean use_default_value)
 {
 	struct parameter_widget *	parameter_widget;
 	GtkWidget *			file_entry;
 
 	/* file entry */
-	file_entry = gtk_file_entry_new();
+	file_entry = gtk_file_entry_new(customize);
 	gtk_widget_set_size_request(file_entry, 220, 30);
 
 	parameter_widget = parameter_widget_init(parameter, file_entry, use_default_value);
@@ -508,8 +509,16 @@ parameter_widget_new_enum(GeoXmlParameter * parameter, gboolean use_default_valu
 	combo_box = gtk_combo_box_new_text();
 	geoxml_program_parameter_get_enum_option(GEOXML_PROGRAM_PARAMETER(parameter), &sequence, 0);
 	while (sequence != NULL) {
-		gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box),
-			geoxml_value_sequence_get(GEOXML_VALUE_SEQUENCE(sequence)));
+		GString *	text;
+
+		text = g_string_new(NULL);
+
+		g_string_printf(text, "%s: %s",
+			geoxml_enum_option_get_value(GEOXML_ENUM_OPTION(sequence)),
+			geoxml_enum_option_get_label(GEOXML_ENUM_OPTION(sequence)));
+		gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), text->str);
+
+		g_string_free(text, TRUE);
 
 		geoxml_sequence_next(&sequence);
 	}
