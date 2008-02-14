@@ -15,6 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
+
 #include "gtkenhancedentry.h"
 #include "support.h"
 
@@ -26,7 +28,10 @@ static void
 __gtk_enhanced_entry_text_changed(GtkEntry * entry, GtkEnhancedEntry * enhanced_entry);
 
 static gboolean
-__gtk_enhanced_entry_focus_out(GtkWidget * widget, GdkEventFocus * event, GtkEnhancedEntry * enhanced_entry);
+__gtk_enhanced_entry_focus_in(GtkEntry * entry, GdkEventFocus * event, GtkEnhancedEntry * enhanced_entry);
+
+static gboolean
+__gtk_enhanced_entry_focus_out(GtkEntry * widget, GdkEventFocus * event, GtkEnhancedEntry * enhanced_entry);
 
 /*
  * gobject stuff
@@ -36,11 +41,6 @@ enum {
 	EMPTY_TEXT = 1,
 	LAST_PROPERTY
 };
-
-enum {
-	LAST_SIGNAL
-};
-static guint object_signals[LAST_SIGNAL];
 
 static void
 gtk_enhanced_entry_set_property(GtkEnhancedEntry * enhanced_entry, guint property_id, const GValue * value, GParamSpec * param_spec)
@@ -61,7 +61,7 @@ gtk_enhanced_entry_get_property(GtkEnhancedEntry * enhanced_entry, guint propert
 {
 	switch (property_id) {
 	case EMPTY_TEXT:
-		g_value_set_pointer(value, gtk_enhanced_get_empty_text(enhanced_entry));
+		g_value_set_pointer(value, (gchar*)gtk_enhanced_get_empty_text(enhanced_entry));
 		break;
 	default:
 		/* We don't have any other property... */
@@ -89,16 +89,26 @@ gtk_enhanced_entry_class_init(GtkEnhancedEntryClass * class)
 static void
 gtk_enhanced_entry_init(GtkEnhancedEntry * enhanced_entry)
 {
-	gdk_window_set_events(GTK_WIDGET(enhanced_entry)->window,
-		GDK_FOCUS_CHANGE_MASK | gdk_window_get_events(GTK_WIDGET(enhanced_entry)->window));
+	enhanced_entry->user_text = NULL;
+// 	gdk_window_set_events(GTK_WIDGET(enhanced_entry)->window,
+// 		GDK_FOCUS_CHANGE_MASK | gdk_window_get_events(GTK_WIDGET(enhanced_entry)->window));
 
 	g_signal_connect(GTK_ENTRY(enhanced_entry), "changed",
 		G_CALLBACK(__gtk_enhanced_entry_text_changed), enhanced_entry);
+	g_signal_connect(GTK_ENTRY(enhanced_entry), "focus-in-event",
+		G_CALLBACK(__gtk_enhanced_entry_focus_in), enhanced_entry);
 	g_signal_connect(GTK_ENTRY(enhanced_entry), "focus-out-event",
 		G_CALLBACK(__gtk_enhanced_entry_focus_out), enhanced_entry);
 }
 
-G_DEFINE_TYPE(GtkEnhancedEntry, gtk_enhanced_entry, GTK_TYPE_HBOX);
+/* FIXME: use this */
+static void
+gtk_enhanced_entry_finalize(GtkEnhancedEntry * enhanced_entry)
+{
+	g_free(enhanced_entry->empty_text);
+}
+
+G_DEFINE_TYPE(GtkEnhancedEntry, gtk_enhanced_entry, GTK_TYPE_ENTRY);
 
 /*
  * Internal functions
@@ -107,16 +117,37 @@ G_DEFINE_TYPE(GtkEnhancedEntry, gtk_enhanced_entry, GTK_TYPE_HBOX);
 static void
 __gtk_enhanced_entry_text_changed(GtkEntry * entry, GtkEnhancedEntry * enhanced_entry)
 {
-	gboolean		has_focus;
 
-	gtk_widget_modify_text(GTK_WIDGET(entry), GTK_STATE_INSENSITIVE,
-		{0, 160, 160, 160});
 }
 
 static gboolean
-__gtk_enhanced_entry_focus_out(GtkWidget * widget, GdkEventFocus * event, GtkEnhancedEntry * enhanced_entry)
+__gtk_enhanced_entry_focus_in(GtkEntry * entry, GdkEventFocus * event, GtkEnhancedEntry * enhanced_entry)
 {
+	gtk_widget_modify_text(GTK_WIDGET(entry), GTK_STATE_ACTIVE, NULL);
 
+	if (enhanced_entry->user_text != NULL) {
+		gtk_entry_set_text(entry, enhanced_entry->user_text);
+		g_free(enhanced_entry->user_text);
+		enhanced_entry->user_text = NULL;
+	}
+
+	return FALSE;
+}
+
+static gboolean
+__gtk_enhanced_entry_focus_out(GtkEntry * entry, GdkEventFocus * event, GtkEnhancedEntry * enhanced_entry)
+{
+	gtk_widget_modify_text(GTK_WIDGET(entry), GTK_STATE_NORMAL,
+		&(GdkColor){0xFFFF, 10, 10, 10});
+	gtk_widget_modify_text(GTK_WIDGET(entry), GTK_STATE_ACTIVE,
+		&(GdkColor){0xFFFF, 10, 10, 10});
+
+	if (!strlen(gtk_entry_get_text(entry)) && enhanced_entry->empty_text != NULL) {
+		enhanced_entry->user_text = strdup(gtk_entry_get_text(entry));
+		gtk_entry_set_text(entry, enhanced_entry->empty_text);
+	}
+
+	return FALSE;
 }
 
 /*
@@ -145,6 +176,7 @@ gtk_enhanced_set_empty_text(GtkEnhancedEntry * enhanced_entry, const gchar * emp
 	if (enhanced_entry->empty_text != NULL)
 		g_free(enhanced_entry->empty_text);
 	enhanced_entry->empty_text = (empty_text != NULL) ? strdup(empty_text) : NULL;
+	__gtk_enhanced_entry_focus_out(GTK_ENTRY(enhanced_entry), NULL, enhanced_entry);
 }
 
 const gchar *
