@@ -1,5 +1,5 @@
-/*   GêBR - An environment for seismic processing.
- *   Copyright(C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   Gï¿½BR - An environment for seismic processing.
+ *   Copyright(C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or
  *   modify it under the terms of the GNU General Public License as
@@ -238,6 +238,13 @@ assembly_line_menu(void)
 	/* Separation line */
 	submenu = gtk_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+
+	/* Paths */
+	submenu = gtk_image_menu_item_new_with_label(_("Paths"));
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(submenu), gtk_image_new_from_stock(GTK_STOCK_DIRECTORY, 1));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+	g_signal_connect(GTK_OBJECT(submenu), "activate",
+			GTK_SIGNAL_FUNC(on_line_path_activate), NULL);
 
 	/* Properties entry */
 	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);

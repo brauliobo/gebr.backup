@@ -57,7 +57,7 @@
  */
 
 /**
- * Promote a sequence to a enum_option.
+ * Promote a sequence to a enum option.
  */
 #define GEOXML_ENUM_OPTION(seq) ((GeoXmlEnumOption*)(seq))
 
@@ -68,6 +68,7 @@ typedef struct geoxml_enum_option GeoXmlEnumOption;
 
 #include "flow.h"
 #include "macros.h"
+#include "program_parameter.h"
 
 /**
  *

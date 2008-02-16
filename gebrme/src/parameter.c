@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include <gui/gtkfileentry.h>
+#include <gui/gtkenhancedentry.h>
 #include <gui/utils.h>
 
 #include "parameter.h"
@@ -319,8 +320,8 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 	gtk_widget_show(widget);
 	gtk_box_pack_start(GTK_BOX(widget), default_label, FALSE, FALSE, 0);
 	gtk_table_attach(GTK_TABLE(table), widget, 0, 1, 0, 1,
-			(GtkAttachOptions)(GTK_FILL),
-			(GtkAttachOptions)(0), 0, 0);
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(GTK_FILL), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(default_label), 0, 0.5);
 
 	default_widget_hbox = gtk_hbox_new(FALSE, 0);
@@ -344,7 +345,7 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 		GtkWidget *		type_label;
 		GtkWidget *		type_combo;
 
-		data->widget = parameter_widget_new_file(data->parameter, TRUE);
+		data->widget = parameter_widget_new_file(data->parameter, NULL, TRUE);
 
 		type_label = gtk_label_new (_("Type:"));
 		gtk_widget_show (type_label);
@@ -447,35 +448,34 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 
 		break;
 	} case GEOXML_PARAMETERTYPE_ENUM: {
-		GtkWidget *		sequence_edit;
+		GtkWidget *		enum_option_edit;
 		GtkWidget *		options_label;
-		GtkWidget *		options_entry;
+		GtkWidget *		vbox;
 
 		GeoXmlSequence *	option;
 
 		data->widget = parameter_widget_new_enum(data->parameter, TRUE);
 
 		options_label = gtk_label_new (_("Options:"));
-		gtk_widget_show (options_label);
-		gtk_table_attach (GTK_TABLE (table), options_label, 0, 1, 1, 2,
-				(GtkAttachOptions) (GTK_FILL),
-				(GtkAttachOptions) (0), 0, 0);
-		gtk_misc_set_alignment (GTK_MISC (options_label), 0, 0.5);
+		gtk_widget_show(options_label);
+		vbox = gtk_vbox_new(FALSE, 0);
+		gtk_widget_show(vbox);
+		gtk_box_pack_start(GTK_BOX(vbox), options_label, FALSE, FALSE, 0);
+		gtk_table_attach(GTK_TABLE (table), vbox, 0, 1, 1, 2,
+			(GtkAttachOptions)(GTK_FILL),
+			(GtkAttachOptions)(GTK_FILL), 0, 0);
+		gtk_misc_set_alignment(GTK_MISC(options_label), 0, 0.5);
 
-		options_entry = gtk_entry_new();
-		gtk_widget_show(options_entry);
 		geoxml_program_parameter_get_enum_option(GEOXML_PROGRAM_PARAMETER(data->parameter), &option, 0);
-		sequence_edit = value_sequence_edit_new_with_sequence(options_entry, GEOXML_VALUE_SEQUENCE(option));
-		value_sequence_edit_load(VALUE_SEQUENCE_EDIT(sequence_edit));
-		gtk_widget_show(sequence_edit);
-		gtk_table_attach (GTK_TABLE (table), sequence_edit, 1, 2, 1, 2,
+		enum_option_edit = enum_option_edit_new(GEOXML_ENUM_OPTION(option),
+			GEOXML_PROGRAM_PARAMETER(data->parameter));
+		gtk_widget_show(enum_option_edit);
+		gtk_table_attach (GTK_TABLE (table), enum_option_edit, 1, 2, 1, 2,
 				(GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
 				(GtkAttachOptions) (0), 0, 0);
-		g_signal_connect(GTK_OBJECT(sequence_edit), "add-request",
-			GTK_SIGNAL_FUNC(parameter_enum_options_add_request), data);
-		g_signal_connect(GTK_OBJECT(sequence_edit), "changed",
+		g_signal_connect(GTK_OBJECT(enum_option_edit), "changed",
 			GTK_SIGNAL_FUNC(parameter_enum_options_changed), data);
-		g_object_set(G_OBJECT(sequence_edit), "user-data", default_widget_hbox, NULL);
+		g_object_set(G_OBJECT(enum_option_edit), "user-data", default_widget_hbox, NULL);
 
 		break;
 	} default:
@@ -782,24 +782,11 @@ parameter_range_digits_changed(GtkEntry * entry, struct parameter_data * data)
 }
 
 void
-parameter_enum_options_add_request(ValueSequenceEdit * sequence_edit, struct parameter_data * data)
-{
-	GtkEntry *	entry;
-
-	g_object_get(G_OBJECT(sequence_edit), "value-widget", &entry, NULL);
-
-// 	value_sequence_edit_add(sequence_edit,
-// 		GEOXML_VALUE_SEQUENCE(geoxml_program_parameter_append_enum_option(
-// 			GEOXML_PROGRAM_PARAMETER(data->parameter),
-// 			gtk_entry_get_text(entry))));
-}
-
-void
-parameter_enum_options_changed(ValueSequenceEdit * sequence_edit, struct parameter_data * data)
+parameter_enum_options_changed(EnumOptionEdit * enum_option_edit, struct parameter_data * data)
 {
 	GtkWidget *	default_widget_hbox;
 
-	g_object_get(G_OBJECT(sequence_edit), "user-data", &default_widget_hbox, NULL);
+	g_object_get(G_OBJECT(enum_option_edit), "user-data", &default_widget_hbox, NULL);
 
 	gtk_widget_destroy(data->widget->widget);
 	data->widget = parameter_widget_new_enum(data->parameter, TRUE);

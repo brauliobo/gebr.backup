@@ -34,6 +34,14 @@ struct geoxml_enum_option {
  * library functions.
  */
 
+GeoXmlProgramParameter *
+geoxml_enum_option_program_parameter(GeoXmlEnumOption * enum_option)
+{
+	if (enum_option == NULL)
+		return NULL;
+	return (GeoXmlProgramParameter*)gdome_el_parentNode((GdomeElement*)enum_option, &exception);
+}
+
 void
 geoxml_enum_option_set_label(GeoXmlEnumOption * enum_option, const gchar * label)
 {

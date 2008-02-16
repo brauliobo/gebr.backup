@@ -1,5 +1,5 @@
-/*   GêBR - An environment for seismic processing.
- *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   Gï¿½BR - An environment for seismic processing.
+ *   Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,6 +32,9 @@ struct ui_flow_io {
 
 struct ui_flow_io *
 flow_io_setup_ui(void);
+
+void
+flow_io_customized_paths_from_line(GtkFileChooser * chooser);
 
 void
 flow_add_programs_to_view(GeoXmlFlow * flow);

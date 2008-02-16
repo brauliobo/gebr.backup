@@ -55,6 +55,7 @@ struct _GtkSequenceEditClass {
 	void		(*move_up)(GtkSequenceEdit * self, GtkTreeIter * iter);
 	void		(*move_down)(GtkSequenceEdit * self, GtkTreeIter * iter);
 	void		(*rename)(GtkSequenceEdit * self, GtkTreeIter * iter, const gchar * new_text);
+	GtkWidget *	(*create_tree_view)(GtkSequenceEdit * self);
 };
 
 GtkWidget *

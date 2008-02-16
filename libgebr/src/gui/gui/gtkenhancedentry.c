@@ -123,7 +123,7 @@ __gtk_enhanced_entry_text_changed(GtkEntry * entry, GtkEnhancedEntry * enhanced_
 static gboolean
 __gtk_enhanced_entry_focus_in(GtkEntry * entry, GdkEventFocus * event, GtkEnhancedEntry * enhanced_entry)
 {
-	gtk_widget_modify_text(GTK_WIDGET(entry), GTK_STATE_ACTIVE, NULL);
+// 	gtk_widget_modify_text(GTK_WIDGET(entry), GTK_STATE_ACTIVE, NULL);
 
 	if (enhanced_entry->user_text != NULL) {
 		gtk_entry_set_text(entry, enhanced_entry->user_text);
@@ -138,9 +138,9 @@ static gboolean
 __gtk_enhanced_entry_focus_out(GtkEntry * entry, GdkEventFocus * event, GtkEnhancedEntry * enhanced_entry)
 {
 	gtk_widget_modify_text(GTK_WIDGET(entry), GTK_STATE_NORMAL,
-		&(GdkColor){0xFFFF, 10, 10, 10});
+		&(GdkColor){0xFFFF, 255, 255, 255});
 	gtk_widget_modify_text(GTK_WIDGET(entry), GTK_STATE_ACTIVE,
-		&(GdkColor){0xFFFF, 10, 10, 10});
+		&(GdkColor){0xFFFF, 255, 255, 255});
 
 	if (!strlen(gtk_entry_get_text(entry)) && enhanced_entry->empty_text != NULL) {
 		enhanced_entry->user_text = strdup(gtk_entry_get_text(entry));
