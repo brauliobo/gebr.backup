@@ -34,12 +34,10 @@
  */
 
 static gboolean
-job_add_program_parameters(struct job * job, GeoXmlProgram * program)
+job_add_program_parameters_aux(struct job * job, GeoXmlParameters * parameters, GeoXmlProgram * program)
 {
-	GeoXmlParameters *	parameters;
-	GeoXmlSequence*		parameter;
+	GeoXmlSequence *	parameter;
 
-	parameters = geoxml_program_get_parameters(program);
 	parameter = geoxml_parameters_get_first_parameter(parameters);
 	while (parameter != NULL) {
 		enum GEOXML_PARAMETERTYPE	type;
@@ -86,6 +84,9 @@ job_add_program_parameters(struct job * job, GeoXmlProgram * program)
 				g_string_append_printf(job->cmd_line, "%s ", geoxml_program_parameter_get_keyword(program_parameter));
 
 			break;
+		case GEOXML_PARAMETERTYPE_GROUP:
+			if (job_add_program_parameters_aux(job, GEOXML_PARAMETERS(parameter), program) == FALSE)
+				return FALSE;
 		default:
 			g_string_append_printf(job->issues, _("Unknown parameter type.\n"));
 
@@ -96,6 +97,12 @@ job_add_program_parameters(struct job * job, GeoXmlProgram * program)
 	}
 
 	return TRUE;
+}
+
+static gboolean
+job_add_program_parameters(struct job * job, GeoXmlProgram * program)
+{
+	return job_add_program_parameters_aux(job, geoxml_program_get_parameters(program), program);
 }
 
 static void

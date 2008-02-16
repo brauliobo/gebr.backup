@@ -94,6 +94,30 @@ void
 geoxml_parameter_group_deinstantiate(GeoXmlParameterGroup * parameter_group);
 
 /**
+ * Get the number of instances of \p parameter_group
+ *
+ * If \p parameter_group is NULL returns 0.
+ */
+gulong
+geoxml_parameter_group_get_instances(GeoXmlParameterGroup * parameter_group);
+
+/**
+ *
+ *
+ *
+ */
+void
+geoxml_parameter_group_set_can_instantiate(GeoXmlParameterGroup * parameter_group, gboolean can_instantiate);
+
+/**
+ * Get the number of parameters that one instance of \p parameter_group has.
+ *
+ * If \p parameter_group is NULL nothing is done.
+ */
+void
+geoxml_parameter_group_set_parameters_by_instance(GeoXmlParameterGroup * parameter_group, gulong number);
+
+/**
  *
  * If \p parameter_group is NULL nothing is done.
  */
@@ -109,12 +133,12 @@ void
 geoxml_parameter_group_set_expand(GeoXmlParameterGroup * parameter_group, const gboolean enable);
 
 /**
- * Get the number of instances of \p parameter_group
  *
- * If \p parameter_group is NULL returns 0.
+ *
+ * If \p parameter_group is NULL returns FALSE.
  */
-gulong
-geoxml_parameter_group_get_instances(GeoXmlParameterGroup * parameter_group);
+gboolean
+geoxml_parameter_group_get_can_instantiate(GeoXmlParameterGroup * parameter_group);
 
 /**
  * Get the number of parameters that one instance of \p parameter_group has.

@@ -42,6 +42,8 @@ geoxml_parameter_group_instantiate(GeoXmlParameterGroup * parameter_group)
 {
 	if (parameter_group == NULL)
 		return;
+	if (geoxml_parameter_group_get_can_instantiate(parameter_group) == FALSE)
+		return;
 
 	gint			i;
 	glong			parameters_by_instance;
@@ -77,6 +79,8 @@ void
 geoxml_parameter_group_deinstantiate(GeoXmlParameterGroup * parameter_group)
 {
 	if (parameter_group == NULL)
+		return;
+	if (geoxml_parameter_group_get_can_instantiate(parameter_group) == FALSE)
 		return;
 
 	gint			i;
@@ -115,6 +119,36 @@ geoxml_parameter_group_deinstantiate(GeoXmlParameterGroup * parameter_group)
 	g_free(string);
 }
 
+gulong
+geoxml_parameter_group_get_instances(GeoXmlParameterGroup * parameter_group)
+{
+	if (parameter_group == NULL)
+		return 0;
+	return (gulong)atol(__geoxml_get_attr_value((GdomeElement*)parameter_group, "instances"));
+}
+
+void
+geoxml_parameter_group_set_can_instantiate(GeoXmlParameterGroup * parameter_group, gboolean can_instantiate)
+{
+	if (parameter_group == NULL)
+		return;
+	__geoxml_set_attr_value((GdomeElement*)parameter_group, "multiple",
+		(can_instantiate == TRUE ? "yes" : "no"));
+}
+
+void
+geoxml_parameter_group_set_parameters_by_instance(GeoXmlParameterGroup * parameter_group, gulong number)
+{
+	if (parameter_group == NULL)
+		return;
+
+	gchar *	string;
+
+	string = g_strdup_printf("%lu", number);
+	__geoxml_set_attr_value((GdomeElement*)parameter_group, "npar", string);
+	g_free(string);
+}
+
 void
 geoxml_parameter_group_set_exclusive(GeoXmlParameterGroup * parameter_group, const gboolean enable)
 {
@@ -131,12 +165,13 @@ geoxml_parameter_group_set_expand(GeoXmlParameterGroup * parameter_group, const 
 	__geoxml_set_attr_value((GdomeElement*)parameter_group, "expand", (enable == TRUE ? "yes" : "no"));
 }
 
-gulong
-geoxml_parameter_group_get_instances(GeoXmlParameterGroup * parameter_group)
+gboolean
+geoxml_parameter_group_get_can_instantiate(GeoXmlParameterGroup * parameter_group)
 {
 	if (parameter_group == NULL)
-		return 0;
-	return (gulong)atol(__geoxml_get_attr_value((GdomeElement*)parameter_group, "instances"));
+		return FALSE;
+	return (!g_ascii_strcasecmp(__geoxml_get_attr_value((GdomeElement*)parameter_group, "multiple"), "yes"))
+		? TRUE : FALSE;
 }
 
 gulong
@@ -144,8 +179,7 @@ geoxml_parameter_group_get_parameters_by_instance(GeoXmlParameterGroup * paramet
 {
 	if (parameter_group == NULL)
 		return 0;
-	return geoxml_parameters_get_number(GEOXML_PARAMETERS(parameter_group))
-		/ geoxml_parameter_group_get_instances(parameter_group);
+	return (gulong)atol(__geoxml_get_attr_value((GdomeElement*)parameter_group, "npar"));
 }
 
 gboolean

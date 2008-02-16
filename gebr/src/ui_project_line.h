@@ -1,5 +1,5 @@
-/*   GêBR - An environment for seismic processing.
- *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   Gï¿½BR - An environment for seismic processing.
+ *   Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or
  *   modify it under the terms of the GNU General Public License as
@@ -44,6 +44,10 @@ struct ui_project_line {
 		GtkWidget *	created;
 		GtkWidget *	modified_label;
 		GtkWidget *	modified;
+
+		GtkWidget *     path_label;
+		GtkWidget *     path1;
+		GtkWidget *     path2;
 
 		GtkWidget *	help;
 		GtkWidget *	author;

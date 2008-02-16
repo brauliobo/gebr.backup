@@ -1,5 +1,5 @@
-/*   GÔøΩBR - An environment for seismic processing.
- *   Copyright (C) 2007 GÔøΩBR core team (http://gebr.sourceforge.net)
+/*   GÍBR ME - GÍBR Menu Editor
+ *   Copyright (C) 2007 GÍBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,28 +15,14 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UI_FLOW_H
-#define __UI_FLOW_H
+#ifndef __PARAMETERS_H
+#define __PARAMETERS_H
 
 #include <gtk/gtk.h>
 
 #include <geoxml.h>
 
-struct ui_flow_io {
-	GtkWidget *		dialog;
+GtkWidget *
+parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden);
 
-	GtkWidget *		input;
-	GtkWidget *		output;
-	GtkWidget *		error;
-};
-
-struct ui_flow_io *
-flow_io_setup_ui(void);
-
-void
-flow_io_customized_paths_from_line(GtkFileChooser * chooser);
-
-void
-flow_add_programs_to_view(GeoXmlFlow * flow);
-
-#endif //__UI_FLOW_H
+#endif //__PARAMETERS_H

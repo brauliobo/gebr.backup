@@ -1,5 +1,5 @@
-/*   GêBR - An environment for seismic processing.
- *   Copyright(C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   Gï¿½BR - An environment for seismic processing.
+ *   Copyright(C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or
  *   modify it under the terms of the GNU General Public License as
@@ -35,6 +35,7 @@
 #include "menu.h"
 #include "flow.h"
 #include "ui_help.h"
+#include "ui_flow.h"
 
 #define GTK_RESPONSE_DEFAULT	GTK_RESPONSE_APPLY
 
@@ -46,7 +47,7 @@ static void
 parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_parameters);
 
 static void
-on_link_button_clicked(GtkButton * button, GeoXmlProgram * program)
+on_link_button_clicked(GtkLinkButton * link_button, GeoXmlProgram * program)
 {
 	GString * cmd_line;
 
@@ -148,7 +149,8 @@ parameters_configure_setup_ui(void)
 
 		alignment = gtk_alignment_new(1, 0, 0, 0);
 		gtk_box_pack_start(GTK_BOX(hbox), alignment, TRUE, TRUE, 5);
-		button = gtk_button_new_with_label(_("Link"));
+		button = gtk_link_button_new_with_label(
+			geoxml_program_get_url(GEOXML_PROGRAM(program)), _("Link"));
 		gtk_container_add(GTK_CONTAINER(alignment), button);
 		gtk_misc_set_alignment(GTK_MISC(label), 1, 0);
 
@@ -193,7 +195,8 @@ parameters_configure_setup_ui(void)
 			widget = parameter_widget_new_flag(GEOXML_PARAMETER(parameter), FALSE);
 			break;
 		case GEOXML_PARAMETERTYPE_FILE:
-			widget = parameter_widget_new_file(GEOXML_PARAMETER(parameter), FALSE);
+			widget = parameter_widget_new_file(GEOXML_PARAMETER(parameter),
+				flow_io_customized_paths_from_line, FALSE);
 			break;
 		case GEOXML_PARAMETERTYPE_ENUM:
 			widget = parameter_widget_new_enum(GEOXML_PARAMETER(parameter), FALSE);
@@ -207,6 +210,7 @@ parameters_configure_setup_ui(void)
 		if (type != GEOXML_PARAMETERTYPE_FLAG) {
 			GtkWidget *	label;
 			gchar *		label_str;
+			GtkWidget *	align_vbox;
 
 			label_str = (gchar*)geoxml_parameter_get_label(GEOXML_PARAMETER(parameter));
 			label = gtk_label_new("");
@@ -220,7 +224,9 @@ parameters_configure_setup_ui(void)
 			} else
 				gtk_label_set_text(GTK_LABEL(label), label_str);
 
-			gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+			align_vbox = gtk_vbox_new(FALSE, 0);
+			gtk_box_pack_start(GTK_BOX(align_vbox), label, FALSE, TRUE, 0);
+			gtk_box_pack_start(GTK_BOX(hbox), align_vbox, FALSE, TRUE, 0);
 			gtk_box_pack_end(GTK_BOX(hbox), widget->widget, FALSE, TRUE, 0);
 		} else {
 			g_object_set(G_OBJECT(widget->value_widget), "label",
@@ -338,7 +344,7 @@ parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_param
 		/* get the program and its path on menu */
 		geoxml_flow_get_program(gebr.flow, &program, index);
 		help = menu_get_help_from_program_ref(GEOXML_PROGRAM(program));
-		help_show(geoxml_program_get_help(GEOXML_PROGRAM(program)), _("Program help"));
+		help_show(help->str, _("Program help"));
 
 		g_string_free(help, TRUE);
 		return;

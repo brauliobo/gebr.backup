@@ -24,6 +24,8 @@
 #include <gui/parameter.h>
 #include <gui/valuesequenceedit.h>
 
+#include "enumoptionedit.h"
+
 struct parameter_data;
 struct parameter_ui_data;
 
@@ -40,7 +42,7 @@ void
 parameter_data_free(GtkObject * expander, struct parameter_data * data);
 
 void
-parameter_add(GtkButton * button, GeoXmlProgram * program);
+parameter_add(GtkButton * button, GeoXmlParameters * parameters);
 
 void
 parameter_up(GtkButton * button, struct parameter_data * data);
@@ -88,10 +90,7 @@ void
 parameter_range_digits_changed(GtkEntry * entry, struct parameter_data * data);
 
 void
-parameter_enum_options_add_request(ValueSequenceEdit * sequence_edit, struct parameter_data * data);
-
-void
-parameter_enum_options_changed(ValueSequenceEdit * sequence_edit, struct parameter_data * data);
+parameter_enum_options_changed(EnumOptionEdit * enum_option_edit, struct parameter_data * data);
 
 void
 parameter_uilabel_update(struct parameter_data * data);

@@ -198,8 +198,8 @@ geoxml_program_parameter_new_enum_option(GeoXmlProgramParameter * program_parame
 	GdomeElement *		value_element;
 
 	enum_option = (GeoXmlEnumOption*)__geoxml_new_element((GdomeElement*)program_parameter, "option");
-	label_element = __geoxml_new_element((GdomeElement*)enum_option, "label");
-	value_element = __geoxml_new_element((GdomeElement*)enum_option, "value");
+	label_element = __geoxml_insert_new_element((GdomeElement*)enum_option, "label", NULL);
+	value_element = __geoxml_insert_new_element((GdomeElement*)enum_option, "value", NULL);
 
 	__geoxml_set_element_value(label_element, label, __geoxml_create_TextNode);
 	__geoxml_set_element_value(value_element, value, __geoxml_create_TextNode);
@@ -380,7 +380,7 @@ void
 geoxml_program_parameter_get_range_properties(GeoXmlProgramParameter * program_parameter,
 	gchar ** min, gchar ** max, gchar ** inc, gchar ** digits)
 {
-	if (program_parameter == NULL || *min == NULL || *max == NULL || *inc == NULL || *digits == NULL)
+	if (program_parameter == NULL || min == NULL || max == NULL || inc == NULL || digits == NULL)
 		return;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_RANGE)
 		return;

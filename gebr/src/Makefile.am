@@ -1,5 +1,5 @@
-# GêBR - An environment for seismic processing.
-# Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+# Gï¿½BR - An environment for seismic processing.
+# Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ gebr_SOURCES = main.c \
 	ui_flow_edition.c \
 	ui_log.c \
 	ui_job_control.c \
+	ui_paths.c \
 	ui_preferences.c \
 	ui_server.c
 noinst_HEADERS = \
@@ -68,6 +69,7 @@ noinst_HEADERS = \
 	ui_flow_edition.h \
 	ui_job_control.h \
 	ui_log.h \
+	ui_paths.h \
 	ui_preferences.h \
 	ui_server.h
 EXTRA_DIST = gebr.ggo ${noinst_HEADERS}

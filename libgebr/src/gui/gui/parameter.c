@@ -59,14 +59,19 @@ __parameter_widget_get_widget_value(struct parameter_widget * parameter_widget, 
 		g_string_assign(value, gtk_file_entry_get_path(GTK_FILE_ENTRY(parameter_widget->value_widget)));
 		break;
 	case GEOXML_PARAMETERTYPE_ENUM: {
-		gchar *	text;
+		gint	index;
 
-		text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(parameter_widget->value_widget));
-		if (text == NULL)
-			text = g_strdup("");
-		g_string_assign(value, text);
+		index = gtk_combo_box_get_active(GTK_COMBO_BOX(parameter_widget->value_widget));
+		if (index == -1)
+			g_string_assign(value, "");
+		else {
+			GeoXmlSequence *	enum_option;
 
-		g_free(text);
+			geoxml_program_parameter_get_enum_option(GEOXML_PROGRAM_PARAMETER(parameter_widget->parameter),
+				&enum_option, index);
+			g_string_assign(value, geoxml_enum_option_get_value(GEOXML_ENUM_OPTION(enum_option)));
+		}
+
 		break;
 	} case GEOXML_PARAMETERTYPE_FLAG:
 		g_string_assign(value,
@@ -225,7 +230,7 @@ parameter_widget_enum_set_widget_value(struct parameter_widget * parameter_widge
 
 	geoxml_program_parameter_get_enum_option(GEOXML_PROGRAM_PARAMETER(parameter_widget->parameter), &option, 0);
 	for (i = 0; option != NULL; ++i, geoxml_sequence_next(&option))
-		if (g_ascii_strcasecmp(value, geoxml_value_sequence_get(GEOXML_VALUE_SEQUENCE(option))) == 0) {
+		if (g_ascii_strcasecmp(value, geoxml_enum_option_get_value(GEOXML_ENUM_OPTION(option))) == 0) {
 			gtk_combo_box_set_active(GTK_COMBO_BOX(parameter_widget->value_widget), i);
 			return;
 		}
