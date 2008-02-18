@@ -1,5 +1,5 @@
-/*   GêBR ME - GêBR Menu Editor
- *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   Gï¿½BR ME - Gï¿½BR Menu Editor
+ *   Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -475,7 +475,7 @@ program_summary_help_edit(GtkButton * button, GeoXmlProgram * program)
 {
 	GString *	help;
 
-	help = help_edit(geoxml_program_get_help(program));
+	help = help_edit(geoxml_program_get_help(program), program);
 	geoxml_program_set_help(program, help->str);
 	g_string_free(help, TRUE);
 

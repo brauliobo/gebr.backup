@@ -47,7 +47,7 @@ static void
 parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_parameters);
 
 static void
-on_link_button_clicked(GtkLinkButton * link_button, GeoXmlProgram * program)
+on_link_button_clicked(GtkButton * button, GeoXmlProgram * program)
 {
 	GString * cmd_line;
 
@@ -149,8 +149,7 @@ parameters_configure_setup_ui(void)
 
 		alignment = gtk_alignment_new(1, 0, 0, 0);
 		gtk_box_pack_start(GTK_BOX(hbox), alignment, TRUE, TRUE, 5);
-		button = gtk_link_button_new_with_label(
-			geoxml_program_get_url(GEOXML_PROGRAM(program)), _("Link"));
+		button = gtk_button_new_with_label(_("Link"));
 		gtk_container_add(GTK_CONTAINER(alignment), button);
 		gtk_misc_set_alignment(GTK_MISC(label), 1, 0);
 

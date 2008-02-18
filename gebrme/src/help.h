@@ -1,5 +1,5 @@
-/*   GêBR ME - GêBR Menu Editor
- *   Copyright (C) 2007 GêBR core team (http://gebr.sourceforge.net)
+/*   Gï¿½BR ME - Gï¿½BR Menu Editor
+ *   Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #define __HELP_H
 
 #include <glib.h>
+#include <geoxml.h>
 
 void
 help_fix_css(GString * help);
@@ -27,6 +28,6 @@ void
 help_show(const gchar * help);
 
 GString *
-help_edit(const gchar * help);
+help_edit(const gchar * help, GeoXmlProgram * program);
 
 #endif //__HELP_H
