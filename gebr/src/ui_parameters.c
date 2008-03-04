@@ -315,9 +315,8 @@ parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_param
 				continue;
 			}
 
-			geoxml_program_parameter_set_default(GEOXML_PROGRAM_PARAMETER(widget->parameter),
+			parameter_widget_set_widget_value(widget,
 				geoxml_program_parameter_get_default(GEOXML_PROGRAM_PARAMETER(widget->parameter)));
-			parameter_widget_update(widget);
 		}
 		return;
 	} case GTK_RESPONSE_HELP: {

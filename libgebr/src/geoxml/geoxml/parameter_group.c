@@ -37,6 +37,14 @@ struct geoxml_parameter_group {
  * library functions.
  */
 
+GeoXmlParameters *
+geoxml_parameter_group_get_parameters(GeoXmlParameterGroup * parameter_group)
+{
+	if (parameter_group == NULL)
+		return NULL;
+	return (GeoXmlParameters*)__geoxml_get_first_element((GdomeElement*)parameter_group, "parameters");
+}
+
 void
 geoxml_parameter_group_instantiate(GeoXmlParameterGroup * parameter_group)
 {

@@ -93,6 +93,12 @@ void
 parameter_enum_options_changed(EnumOptionEdit * enum_option_edit, struct parameter_data * data);
 
 void
+parameter_group_exclusive_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+
+void
+parameter_group_expanded_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+
+void
 parameter_uilabel_update(struct parameter_data * data);
 
 #endif //__PARAMETER_H

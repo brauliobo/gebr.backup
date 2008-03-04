@@ -25,17 +25,17 @@
  * \dot
  * digraph sequence {
  * 	fontname = "Bitstream Vera Sans"
- * 	fontsize = 8
+ * 	fontsize = 9
  * 	size = "6"
  * 	node [
  * 		color = palegreen2, style = filled
  * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ *   fontsize = 9
  * 		shape = record
  * 	]
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ *   fontsize = 9
  * 	]
  *
  * 	"GeoXmlSequence" [ URL = "\ref sequence.h" ];
@@ -43,9 +43,8 @@
  * 	"GeoXmlLineFlow" [ URL = "\ref GeoXmlLineFlow" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
- * 	"GeoXmlCategory" [ URL = "\ref category.h" ];
+ * 	"GeoXmlEnumOption" [ URL = "\ref enum_option.h" ];
  * 	"GeoXmlValueSequence" [ URL = "\ref value_sequence.h" ];
- * 	"GeoXmlEnumOption" [ URL = "\ref GeoXmlEnumOption" ];
  *
  * 	edge [
  * 		arrowhead = "normal"
@@ -54,9 +53,10 @@
  * 	"GeoXmlSequence" -> { "GeoXmlLineFlow" };
  * 	"GeoXmlSequence" -> { "GeoXmlProgram" };
  * 	"GeoXmlSequence" -> { "GeoXmlParameter" };
+ * 	"GeoXmlSequence" -> { "GeoXmlEnumOption" };
  * 	"GeoXmlSequence" -> { "GeoXmlValueSequence" };
- * 	"GeoXmlValueSequence" -> { "GeoXmlEnumOption" };
  * 	"GeoXmlValueSequence" -> { "GeoXmlCategory" };
+ * 	"GeoXmlValueSequence" -> { "GeoXmlLinePath" };
  * }
  * \enddot
  * \see sequence.h

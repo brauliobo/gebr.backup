@@ -59,20 +59,14 @@ __geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PAR
 			break;
 		}
 	} else {
-		exclusive (yes | no) #REQUIRED
-    expand    (yes | no) #REQUIRED
-    multiple  (yes | no) #REQUIRED
-    npar         NMTOKEN #REQUIRED
-    instances    NMTOKEN #REQUIRED>
 		__geoxml_insert_new_element(parameter_element, "label", NULL);
+		__geoxml_insert_new_element(parameter_element, "parameters", NULL);
 		/* attributes */
 		__geoxml_set_attr_value(parameter_element, "exclusive", "no");
 		__geoxml_set_attr_value(parameter_element, "expand", "yes");
 		__geoxml_set_attr_value(parameter_element, "multiple", "yes");
 		__geoxml_set_attr_value(parameter_element, "npar", "0");
 		__geoxml_set_attr_value(parameter_element, "instances", "1");
-		geoxml_parameter_group_set_exclusive((GeoXmlParameterGroup*)parameter_element, FALSE);
-		geoxml_parameter_group_set_expand((GeoXmlParameterGroup*)parameter_element, TRUE);
 	}
 
 	return (GeoXmlParameter*)parameter_element;

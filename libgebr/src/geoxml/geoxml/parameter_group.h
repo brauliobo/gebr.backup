@@ -25,17 +25,17 @@
  * \dot
  * digraph parameter_group {
  * 	fontname = "Bitstream Vera Sans"
- * 	fontsize = 8
+ * 	fontsize = 9
  * 	size = "6"
  * 	node [
  * 		color = palegreen2, style = filled
  * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ *   fontsize = 9
  * 		shape = record
  * 	]
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ *   fontsize = 9
  * 	]
  *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
@@ -54,7 +54,6 @@
  * 	"GeoXmlSequence" -> "GeoXmlParameter";
  * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
  * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
- * 	"GeoXmlParameters" -> "GeoXmlParameterGroup";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -68,17 +67,33 @@
  * 		taillabel = "1"
  * 	]
  * 	"GeoXmlProgram" -> "GeoXmlParameters";
+ * 	"GeoXmlParameterGroup" -> "GeoXmlParameters";
  * }
  * \enddot
  * \see parameter_group.h
  */
+
+#include "parameters.h"
 
 /**
  * The GeoXmlParameterGroup struct contains private data only, and should be accessed using the functions below.
  */
 typedef struct geoxml_parameter_group GeoXmlParameterGroup;
 
+/**
+ * Cast from a GeoXmlSequence to a GeoXmlParameterGroup
+ */
+#define GEOXML_PARAMETER_GROUP(seq) ((GeoXmlParameterGroup*)(seq))
+
 #include <glib.h>
+
+/**
+ * Get \p group's parameters list.
+ *
+ * \see \ref parameters.h "GeoXmlParameters"
+ */
+GeoXmlParameters *
+geoxml_parameter_group_get_parameters(GeoXmlParameterGroup * parameter_group);
 
 /**
  * Instanciate \p parameter_group.

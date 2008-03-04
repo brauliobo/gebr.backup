@@ -25,17 +25,17 @@
  * \dot
  * digraph program {
  * 	fontname = "Bitstream Vera Sans"
- * 	fontsize = 8
+ * 	fontsize = 9
  * 	size = "6"
  * 	node [
  * 		color = palegreen2, style = filled
  * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ *   fontsize = 9
  * 		shape = record
  * 	]
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 8
+ *   fontsize = 9
  * 	]
  *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
