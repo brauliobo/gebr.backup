@@ -44,7 +44,6 @@
 #include "document.h"
 #include "flow.h"
 
-#define __DEBUG
 struct gebr gebr;
 
 /*
@@ -340,7 +339,7 @@ gebr_message(enum log_message_type type, gboolean in_statusbar, gboolean in_log_
 	string = g_strdup_vprintf(message, argp);
 	va_end(argp);
 
-#ifdef __DEBUG
+#ifdef GEBR_DEBUG
 	if (type == LOG_DEBUG)
 		g_print("%s\n", string);
 	else if (in_statusbar)

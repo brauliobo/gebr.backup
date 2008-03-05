@@ -73,6 +73,9 @@ gebrd_message(enum log_message_type type, const gchar * message, ...)
 	string = g_strdup_vprintf(message, argp);
 	va_end(argp);
 
+#ifndef GEBRD_DEBUG
+	if (type != LOG_DEBUG)
+#endif
 	log_add_message(gebrd.log, type, string);
 
 	g_free(string);
