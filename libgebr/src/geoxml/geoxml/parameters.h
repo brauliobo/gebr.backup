@@ -93,6 +93,11 @@ typedef struct geoxml_parameters GeoXmlParameters;
  * Create a new parameter.
  * Use geoxml_sequence_prepend or geoxml_sequence_append to add it to the
  * list of parameters.
+ *
+ * If \p parameters is a from a group parameter and it has more than one instance,
+ * then NULL is returned
+ *
+ * If \p parameters is NULL returns NULL.
  */
 GeoXmlParameter *
 geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
@@ -100,6 +105,11 @@ geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAM
 /**
  * Create a new parameter and append it to \p parameters.
  * Provided for convenience.
+ *
+ * If \p parameters is a from a group parameter and it has more than one instance,
+ * then NULL is returned
+ *
+ * If \p parameters is NULL returns NULL.
  *
  * \see geoxml_parameters_new_parameter
  */

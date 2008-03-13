@@ -119,7 +119,8 @@ geoxml_sequence_next(GeoXmlSequence ** sequence);
  * Removes \p sequence from its sequence. It is not deleted and can be reinserted
  * into sequence using geoxml_sequence_prepend or geoxml_sequence_append.
  *
- * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_NULL_PTR, GEOXML_RETV_NOT_A_SEQUENCE
+ * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_NULL_PTR,
+ * GEOXML_RETV_NOT_A_SEQUENCE, GEOXML_RETV_MORE_THAN_ONE_INSTANCES
  */
 int
 geoxml_sequence_remove(GeoXmlSequence * sequence);

@@ -19,6 +19,13 @@
 #define __LIBGEBR_GEOXML_PARAMETERS_P_H
 
 /**
+ * If \p parameters is a group and it was instantiated only once,
+ * then adjust the number of parameters of a instance (npar)
+ */
+gboolean
+__geoxml_parameters_adjust_group_npar(GeoXmlParameters * parameters, gint adjust);
+
+/**
  * \internal
  * Create a new parameter with type \p type.
  */
