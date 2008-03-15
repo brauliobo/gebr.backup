@@ -26,6 +26,7 @@ gebrme_SOURCES = \
 	category.c \
 	program.c \
 	parameters.c \
+	groupparameters.c \
 	parameter.c \
 	enumoptionedit.c \
 	help.c \
@@ -39,7 +40,8 @@ noinst_HEADERS = \
 	summary.h \
 	category.h \
 	program.h \
-	parameters.c \
+	parameters.h \
+	groupparameters.h \
 	parameter.h \
 	enumoptionedit.h \
 	help.h \

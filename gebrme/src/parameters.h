@@ -22,6 +22,11 @@
 
 #include <geoxml.h>
 
+struct parameters_data {
+	gboolean		is_group;
+	GeoXmlParameters *	parameters;
+};
+
 GtkWidget *
 parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden);
 

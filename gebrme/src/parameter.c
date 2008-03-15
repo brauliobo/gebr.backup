@@ -25,9 +25,13 @@
 #include "parameter.h"
 #include "support.h"
 #include "gebrme.h"
-#include "parameters.h"
+#include "groupparameters.h"
 #include "interface.h"
 #include "menu.h"
+
+/*
+ * Section: Private
+ */
 
 /* Persintant pointer of GeoXmlParameter. As
  * it may change (because of geoxml_parameter_set_type)
@@ -37,12 +41,62 @@ struct parameter_data {
 	GeoXmlParameter *		parameter;
 	GtkWidget *			label;
 
+	struct parameters_data * 	parameters_data;
 	/* for non-groups */
 	struct parameter_widget *	widget;
 };
 
+static void
+parameter_create_ui_type_general(GtkWidget * table, struct parameter_data * data);
+static void
+parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * data);
+static void
+parameter_data_free(GtkObject * expander, struct parameter_data * data);
+static void
+parameter_up(GtkButton * button, struct parameter_data * data);
+static void
+parameter_down(GtkButton * button, struct parameter_data * data);
+static void
+parameter_remove(GtkButton * button, struct parameter_data * data);
+static void
+parameter_type_changed(GtkComboBox * combo, struct parameter_data * data);
+static void
+parameter_required_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+static void
+parameter_is_list_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+static void
+parameter_separator_changed(GtkEntry * entry, struct parameter_data * data);
+static void
+parameter_label_changed(GtkEntry * entry, struct parameter_data * data);
+static void
+parameter_keyword_changed(GtkEntry * entry, struct parameter_data * data);
+static void
+parameter_default_widget_changed(struct parameter_widget * widget, struct parameter_data * data);
+static void
+parameter_file_type_changed(GtkComboBox * combo, struct parameter_data * data);
+static void
+parameter_range_min_changed(GtkEntry * entry, struct parameter_data * data);
+static void
+parameter_range_max_changed(GtkEntry * entry, struct parameter_data * data);
+static void
+parameter_range_inc_changed(GtkEntry * entry, struct parameter_data * data);
+static void
+parameter_range_digits_changed(GtkEntry * entry, struct parameter_data * data);
+static void
+parameter_enum_options_changed(EnumOptionEdit * enum_option_edit, struct parameter_data * data);
+static void
+parameter_group_exclusive_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+static void
+parameter_group_expanded_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+static void
+parameter_uilabel_update(struct parameter_data * data);
+
+/*
+ * Public functions
+ */
+
 GtkWidget *
-parameter_create_ui(GeoXmlParameter * parameter, gboolean hidden)
+parameter_create_ui(GeoXmlParameter * parameter, struct parameters_data * parameters_data, gboolean hidden)
 {
 	struct parameter_data *		data;
 
@@ -67,6 +121,7 @@ parameter_create_ui(GeoXmlParameter * parameter, gboolean hidden)
 
 	data = g_malloc(sizeof(struct parameter_data));
 	data->parameter = parameter;
+	data->parameters_data = parameters_data;
 
 	frame = gtk_frame_new("");
 	gtk_widget_show(frame);
@@ -84,14 +139,27 @@ parameter_create_ui(GeoXmlParameter * parameter, gboolean hidden)
 	gtk_box_pack_start(GTK_BOX(depth_hbox), parameter_vbox, TRUE, TRUE, 0);
 	gtk_widget_show(parameter_vbox);
 
-	parameter_label_widget = gtk_hbox_new(FALSE, 0);
-	gtk_expander_set_label_widget(GTK_EXPANDER(parameter_expander), parameter_label_widget);
-	gtk_widget_show(parameter_label_widget);
-	gtk_expander_hacked_define(parameter_expander, parameter_label_widget);
-	parameter_label = gtk_label_new("");
-	data->label = parameter_label;
-	gtk_widget_show(parameter_label);
-	gtk_box_pack_start(GTK_BOX(parameter_label_widget), parameter_label, FALSE, FALSE, 0);
+	if (parameters_data->is_group == TRUE &&
+	geoxml_parameter_group_get_exclusive(((struct group_parameters_data *)parameters_data)->group) == TRUE) {
+		parameter_label_widget = gtk_hbox_new(FALSE, 0);
+		parameter_label_widget = gtk_radio_button_new_with_label(FALSE, 0);
+		gtk_expander_set_label_widget(GTK_EXPANDER(parameter_expander), parameter_label_widget);
+		gtk_widget_show(parameter_label_widget);
+		gtk_expander_hacked_define(parameter_expander, parameter_label_widget);
+		parameter_label = gtk_label_new("");
+		data->label = parameter_label;
+		gtk_widget_show(parameter_label);
+		gtk_box_pack_start(GTK_BOX(parameter_label_widget), parameter_label, FALSE, FALSE, 0);
+	} else {
+		parameter_label_widget = gtk_hbox_new(FALSE, 0);
+		gtk_expander_set_label_widget(GTK_EXPANDER(parameter_expander), parameter_label_widget);
+		gtk_widget_show(parameter_label_widget);
+		gtk_expander_hacked_define(parameter_expander, parameter_label_widget);
+		parameter_label = gtk_label_new("");
+		data->label = parameter_label;
+		gtk_widget_show(parameter_label);
+		gtk_box_pack_start(GTK_BOX(parameter_label_widget), parameter_label, FALSE, FALSE, 0);
+	}
 
 	parameter_table = gtk_table_new (3, 2, FALSE);
 	gtk_widget_show (parameter_table);
@@ -195,6 +263,27 @@ parameter_create_ui(GeoXmlParameter * parameter, gboolean hidden)
 
 	return frame;
 }
+
+void
+parameter_add(GtkButton * button, struct parameters_data * parameters_data)
+{
+	GtkWidget *		parameter_widget;
+	GtkWidget *		parameters_vbox;
+
+	GeoXmlParameter *	parameter;
+
+	g_object_get(G_OBJECT(button), "user-data", &parameters_vbox, NULL);
+
+	parameter = geoxml_parameters_append_parameter(parameters_data->parameters, GEOXML_PARAMETERTYPE_STRING);
+	parameter_widget = parameter_create_ui(parameter, parameters_data, TRUE);
+	gtk_box_pack_start(GTK_BOX(parameters_vbox), parameter_widget, FALSE, TRUE, 0);
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+/*
+ * Section: Private
+ */
 
 void
 parameter_create_ui_type_general(GtkWidget * table, struct parameter_data * data)
@@ -386,9 +475,8 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 	if (type == GEOXML_PARAMETERTYPE_GROUP) {
 		GtkWidget *	parameters;
 
-		parameters = parameters_create_ui(
-			geoxml_parameter_group_get_parameters(GEOXML_PARAMETER_GROUP(data->parameter)),
-			TRUE);
+		parameters = group_parameters_create_ui(
+			GEOXML_PARAMETER_GROUP(data->parameter), TRUE);
 		gtk_table_attach(GTK_TABLE(table), parameters, 0, 2, 0, 1,
 			(GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
 			(GtkAttachOptions)(GTK_FILL|GTK_EXPAND), 0, 0);
@@ -408,7 +496,6 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 
 	default_widget_hbox = gtk_hbox_new(FALSE, 0);
 	gtk_widget_show(default_widget_hbox);
-
 
 	program_parameter = GEOXML_PROGRAM_PARAMETER(data->parameter);
 	switch (type) {
@@ -580,23 +667,6 @@ void
 parameter_data_free(GtkObject * expander, struct parameter_data * data)
 {
 	g_free(data);
-}
-
-void
-parameter_add(GtkButton * button, GeoXmlParameters * parameters)
-{
-	GtkWidget *		parameter_widget;
-	GtkWidget *		parameters_vbox;
-
-	GeoXmlParameter *	parameter;
-
-	g_object_get(G_OBJECT(button), "user-data", &parameters_vbox, NULL);
-
-	parameter = geoxml_parameters_append_parameter(parameters, GEOXML_PARAMETERTYPE_STRING);
-	parameter_widget = parameter_create_ui(parameter, TRUE);
-	gtk_box_pack_start(GTK_BOX(parameters_vbox), parameter_widget, FALSE, TRUE, 0);
-
-	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
 void

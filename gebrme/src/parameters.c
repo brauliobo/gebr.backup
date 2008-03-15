@@ -19,6 +19,18 @@
 #include "support.h"
 #include "parameter.h"
 
+/*
+ * Internal stuff
+ */
+void
+parameters_data_free(GtkObject * expander, struct parameters_data * data)
+{
+	g_free(data);
+}
+
+/*
+ * Public functions
+ */
 GtkWidget *
 parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden)
 {
@@ -26,15 +38,22 @@ parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden)
 	GtkWidget *			parameters_label_widget;
 	GtkWidget *			parameters_label;
 	GtkWidget *			parameters_vbox;
-
-	GeoXmlSequence *		parameter;
 	GtkWidget *			widget;
 	GtkWidget *			depth_hbox;
+
+	GeoXmlSequence *		i;
+	struct parameters_data *	data;
 
 	parameters_expander = gtk_expander_new("");
 	gtk_expander_set_expanded (GTK_EXPANDER (parameters_expander), hidden);
 	gtk_widget_show(parameters_expander);
 	depth_hbox = create_depth(parameters_expander);
+
+	data = g_malloc(sizeof(struct parameters_data));
+	data->parameters = parameters;
+	data->is_group = FALSE;
+	g_signal_connect(parameters_expander, "destroy",
+		GTK_SIGNAL_FUNC(parameters_data_free), data);
 
 	parameters_vbox = gtk_vbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(depth_hbox), parameters_vbox, TRUE, TRUE, 0);
@@ -51,18 +70,18 @@ parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden)
 	gtk_widget_show(widget);
 	gtk_box_pack_start(GTK_BOX(parameters_label_widget), widget, FALSE, TRUE, 5);
 	g_signal_connect(widget, "clicked",
-		GTK_SIGNAL_FUNC(parameter_add), parameters);
+		GTK_SIGNAL_FUNC(parameter_add), data);
 	g_object_set(G_OBJECT(widget),
 		"user-data", parameters_vbox,
 		"relief", GTK_RELIEF_NONE,
 		NULL);
 
-	parameter = geoxml_parameters_get_first_parameter(parameters);
-	while (parameter != NULL) {
+	i = geoxml_parameters_get_first_parameter(parameters);
+	while (i != NULL) {
 		gtk_box_pack_start(GTK_BOX(parameters_vbox),
-			parameter_create_ui(GEOXML_PARAMETER(parameter), hidden), FALSE, TRUE, 0);
+			parameter_create_ui(GEOXML_PARAMETER(i), data, hidden), FALSE, TRUE, 0);
 
-		geoxml_sequence_next(&parameter);
+		geoxml_sequence_next(&i);
 	}
 
 	return parameters_expander;

@@ -15,25 +15,20 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PARAMETER_H
-#define __PARAMETER_H
+#ifndef __GROUP_PARAMETERS_H
+#define __GROUP_PARAMETERS_H
 
-#include <gtk/gtk.h>
+#include "parameters.h"
 
-#include <geoxml.h>
-#include <gui/parameter.h>
-#include <gui/valuesequenceedit.h>
+struct group_parameters_data {
+	struct parameters_data	parameters;
 
-#include "enumoptionedit.h"
-
-struct parameters_data;
-struct parameter_data;
-struct parameter_ui_data;
+	GeoXmlParameterGroup *	group;
+	/* for an exclusive group */
+	GSList *		radio_group;
+};
 
 GtkWidget *
-parameter_create_ui(GeoXmlParameter * parameter, struct parameters_data * parameters_data, gboolean hidden);
+group_parameters_create_ui(GeoXmlParameterGroup * parameter_group, gboolean hidden);
 
-void
-parameter_add(GtkButton * button, struct parameters_data * parameters_data);
-
-#endif //__PARAMETER_H
+#endif //__GROUP_PARAMETERS_H
