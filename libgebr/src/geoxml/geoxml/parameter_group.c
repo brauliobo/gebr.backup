@@ -23,6 +23,7 @@
 #include "xml.h"
 #include "types.h"
 #include "parameters.h"
+#include "parameters_p.h"
 #include "parameter_p.h"
 
 /*
@@ -70,7 +71,7 @@ geoxml_parameter_group_instantiate(GeoXmlParameterGroup * parameter_group)
 		gdome_el_insertBefore((GdomeElement*)parameter_group, clone, NULL, &exception);
 
 		/* reset its value */
-		geoxml_parameter_reset((GeoXmlParameter*)clone);
+		geoxml_parameter_reset((GeoXmlParameter*)clone, TRUE);
 
 		geoxml_sequence_next(&parameter);
 	}
@@ -163,6 +164,9 @@ geoxml_parameter_group_set_exclusive(GeoXmlParameterGroup * parameter_group, con
 	if (parameter_group == NULL)
 		return;
 	__geoxml_set_attr_value((GdomeElement*)parameter_group, "exclusive", (enable == TRUE ? "yes" : "no"));
+	/* clean all parameters values */
+	__geoxml_parameters_reset(
+		geoxml_parameter_group_get_parameters(parameter_group), FALSE);
 }
 
 void

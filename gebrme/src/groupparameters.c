@@ -72,14 +72,14 @@ group_parameters_create_ui(GeoXmlParameterGroup * parameter_group, gboolean hidd
 	gtk_widget_show(widget);
 	gtk_box_pack_start(GTK_BOX(group_parameters_label_widget), widget, FALSE, TRUE, 5);
 	g_signal_connect(widget, "clicked",
-		GTK_SIGNAL_FUNC(parameter_add), &data->parameters);
+		GTK_SIGNAL_FUNC(parameter_add), data);
 	g_object_set(G_OBJECT(widget),
 		"user-data", group_parameters_vbox,
 		"relief", GTK_RELIEF_NONE,
 		NULL);
 
-	data->radio_group = (geoxml_parameter_group_get_exclusive(parameter_group) == TRUE)
-		? g_slist_alloc() : NULL;
+	data->group = parameter_group;
+	data->radio_group = NULL;
 	i = geoxml_parameters_get_first_parameter(data->parameters.parameters);
 	while (i != NULL) {
 		gtk_box_pack_start(GTK_BOX(group_parameters_vbox),

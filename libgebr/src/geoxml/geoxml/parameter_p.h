@@ -18,11 +18,6 @@
 #ifndef __LIBGEBR_GEOXML_PARAMETER_P_H
 #define __LIBGEBR_GEOXML_PARAMETER_P_H
 
-/**
- * \internal
- * Reset recursively \p parameter's value.
- */
-void
-geoxml_parameter_reset(GeoXmlParameter * parameter);
+
 
 #endif //__LIBGEBR_GEOXML_PARAMETER_P_H

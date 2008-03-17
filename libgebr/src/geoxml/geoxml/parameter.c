@@ -22,6 +22,7 @@
 #include "types.h"
 #include "parameters.h"
 #include "parameters_p.h"
+#include "parameter_group.h"
 #include "program_parameter.h"
 
 /*
@@ -43,23 +44,8 @@ const int parameter_type_to_str_len = 8;
 /*
  * private functions
  */
-void
-geoxml_parameter_reset(GeoXmlParameter * parameter)
-{
-	if (geoxml_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_GROUP) {
-		GeoXmlSequence *	i;
 
-		/* call geoxml_parameter_reset on each child */
-		i = geoxml_parameters_get_first_parameter(GEOXML_PARAMETERS(parameter));
-		while (i != NULL) {
-			geoxml_parameter_reset(GEOXML_PARAMETER(i));
-			geoxml_sequence_next(&i);
-		}
-	} else
-		__geoxml_set_tag_value((GdomeElement*)parameter,
-			geoxml_parameter_get_type(parameter) != GEOXML_PARAMETERTYPE_FLAG ? "value" : "state",
-			"", __geoxml_create_TextNode);
-}
+
 
 /*
  * library functions.
@@ -132,4 +118,28 @@ geoxml_parameter_get_label(GeoXmlParameter * parameter)
 	if (parameter == NULL)
 		return NULL;
 	return __geoxml_get_tag_value((GdomeElement*)parameter, "label");
+}
+
+void
+geoxml_parameter_reset(GeoXmlParameter * parameter, gboolean recursive)
+{
+	if (parameter == NULL)
+		return;
+	if (geoxml_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_GROUP) {
+		GeoXmlSequence *	i;
+
+		if (recursive == FALSE)
+			return;
+
+		/* call geoxml_parameter_reset on each child */
+		i = geoxml_parameters_get_first_parameter(
+			geoxml_parameter_group_get_parameters(GEOXML_PARAMETER_GROUP(parameter)));
+		while (i != NULL) {
+			geoxml_parameter_reset(GEOXML_PARAMETER(i), recursive);
+			geoxml_sequence_next(&i);
+		}
+	} else {
+		geoxml_program_parameter_set_value(GEOXML_PROGRAM_PARAMETER(parameter), "");
+		geoxml_program_parameter_set_default(GEOXML_PROGRAM_PARAMETER(parameter), "");
+	}
 }

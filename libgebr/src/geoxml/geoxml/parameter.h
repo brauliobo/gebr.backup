@@ -186,4 +186,10 @@ geoxml_parameter_set_label(GeoXmlParameter * parameter, const gchar * label);
 const gchar *
 geoxml_parameter_get_label(GeoXmlParameter * parameter);
 
+/**
+ * Reset \p parameter's value. If \p recursive, do it for groups and do recursively.
+ */
+void
+geoxml_parameter_reset(GeoXmlParameter * parameter, gboolean recursive);
+
 #endif //__LIBGEBR_GEOXML_PARAMETER_H

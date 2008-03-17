@@ -239,7 +239,7 @@ menu_selected(void)
 	/* programs */
 	geoxml_flow_get_program(gebrme.current, &program, 0);
 	while (program != NULL) {
-		program_create_ui(GEOXML_PROGRAM(program), FALSE);
+		program_create_ui(GEOXML_PROGRAM(program), TRUE);
 		geoxml_sequence_next(&program);
 	}
 

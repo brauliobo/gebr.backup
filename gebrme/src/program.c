@@ -75,7 +75,7 @@ program_create_ui(GeoXmlProgram * program, gboolean hidden)
 	program_expander = gtk_expander_new("");
 	gtk_box_pack_start(GTK_BOX(gebrme.programs_vbox), program_expander, FALSE, TRUE, 0);
 	if (geoxml_flow_get_programs_number(gebrme.current) > 1)
-		gtk_expander_set_expanded(GTK_EXPANDER(program_expander), hidden);
+		gtk_expander_set_expanded(GTK_EXPANDER(program_expander), !hidden);
 	else
 		gtk_expander_set_expanded(GTK_EXPANDER(program_expander), TRUE);
 	gtk_widget_show(program_expander);
@@ -143,7 +143,7 @@ program_create_ui(GeoXmlProgram * program, gboolean hidden)
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(io_stderr_checkbutton), geoxml_program_get_stderr(program));
 
 	summary_expander = gtk_expander_new(_("Summary"));
-	gtk_expander_set_expanded (GTK_EXPANDER (summary_expander), hidden);
+	gtk_expander_set_expanded(GTK_EXPANDER(summary_expander), !hidden);
 	gtk_box_pack_start(GTK_BOX(program_vbox), summary_expander, FALSE, TRUE, 0);
 	gtk_widget_show(summary_expander);
 	depth_hbox = create_depth(summary_expander);
@@ -272,7 +272,7 @@ program_add(void)
 	geoxml_program_set_stdout(program, TRUE);
 	geoxml_program_set_stderr(program, TRUE);
 	/* ui */
-	program_create_ui(program, TRUE);
+	program_create_ui(program, FALSE);
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
