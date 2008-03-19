@@ -46,13 +46,13 @@ geoxml_parameter_group_get_parameters(GeoXmlParameterGroup * parameter_group)
 	return (GeoXmlParameters*)__geoxml_get_first_element((GdomeElement*)parameter_group, "parameters");
 }
 
-void
+gboolean
 geoxml_parameter_group_instantiate(GeoXmlParameterGroup * parameter_group)
 {
 	if (parameter_group == NULL)
-		return;
+		return FALSE;
 	if (geoxml_parameter_group_get_can_instantiate(parameter_group) == FALSE)
-		return;
+		return FALSE;
 
 	gint			i;
 	glong			parameters_by_instance;
@@ -82,15 +82,17 @@ geoxml_parameter_group_instantiate(GeoXmlParameterGroup * parameter_group)
 	__geoxml_set_attr_value((GdomeElement*)parameter_group, "instances", string);
 
 	g_free(string);
+
+	return TRUE;
 }
 
-void
+gboolean
 geoxml_parameter_group_deinstantiate(GeoXmlParameterGroup * parameter_group)
 {
 	if (parameter_group == NULL)
-		return;
+		return FALSE;
 	if (geoxml_parameter_group_get_can_instantiate(parameter_group) == FALSE)
-		return;
+		return FALSE;
 
 	gint			i;
 	gulong			fpoli; /* fpoli: first parameter of last instance :D */
@@ -102,8 +104,8 @@ geoxml_parameter_group_deinstantiate(GeoXmlParameterGroup * parameter_group)
 
 	/* get the number of instances and check if we have at least one */
 	instances = geoxml_parameter_group_get_instances(parameter_group);
-	if ((instances - 1) == 1)
-		return;
+	if (instances == 1)
+		return FALSE;
 	parameters_by_instance = geoxml_parameter_group_get_parameters_by_instance(parameter_group);
 	fpoli = parameters_by_instance*(instances-1);
 	parameter = geoxml_parameters_get_first_parameter(GEOXML_PARAMETERS(parameter_group));
@@ -126,6 +128,8 @@ geoxml_parameter_group_deinstantiate(GeoXmlParameterGroup * parameter_group)
 	__geoxml_set_attr_value((GdomeElement*)parameter_group, "instances", string);
 
 	g_free(string);
+
+	return TRUE;
 }
 
 gulong
@@ -143,6 +147,8 @@ geoxml_parameter_group_set_can_instantiate(GeoXmlParameterGroup * parameter_grou
 		return;
 	__geoxml_set_attr_value((GdomeElement*)parameter_group, "multiple",
 		(can_instantiate == TRUE ? "yes" : "no"));
+	if (can_instantiate == FALSE)
+		while (geoxml_parameter_group_deinstantiate(parameter_group) == TRUE);
 }
 
 void

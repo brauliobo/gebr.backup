@@ -99,13 +99,13 @@ geoxml_parameter_group_get_parameters(GeoXmlParameterGroup * parameter_group);
  * Instanciate \p parameter_group.
  * Duplicates the parameters of one instance of parameter_group
  */
-void
+gboolean
 geoxml_parameter_group_instantiate(GeoXmlParameterGroup * parameter_group);
 
 /**
  *
  */
-void
+gboolean
 geoxml_parameter_group_deinstantiate(GeoXmlParameterGroup * parameter_group);
 
 /**
@@ -117,8 +117,9 @@ gulong
 geoxml_parameter_group_get_instances(GeoXmlParameterGroup * parameter_group);
 
 /**
- *
- *
+ * Set wheter \p parameter_group can have more than one instance.
+ * If \p can_instantiate is FALSE, group is deinstantiated till it has only one
+ * one instance
  *
  */
 void
@@ -148,7 +149,7 @@ void
 geoxml_parameter_group_set_expand(GeoXmlParameterGroup * parameter_group, const gboolean enable);
 
 /**
- *
+ * Get wheter \p parameter_group can have more than one instance.
  *
  * If \p parameter_group is NULL returns FALSE.
  */
