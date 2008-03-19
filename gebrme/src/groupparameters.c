@@ -26,8 +26,6 @@ void
 group_parameters_data_free(GtkObject * expander, struct group_parameters_data * data)
 {
 	g_free(data);
-	if (data->radio_group != NULL)
-		g_slist_free(data->radio_group);
 }
 
 /*

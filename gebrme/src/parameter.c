@@ -143,28 +143,28 @@ parameter_create_ui(GeoXmlParameter * parameter, struct parameters_data * parame
 	gtk_widget_show(parameter_vbox);
 
 	if (parameters_data->is_group == TRUE &&
-	geoxml_parameter_group_get_exclusive(((struct group_parameters_data *)parameters_data)->group) == TRUE) {
+	geoxml_parameter_group_get_exclusive(((struct group_parameters_data *)parameters_data)->group) == TRUE &&
+	geoxml_parameter_get_is_program_parameter(parameter) == TRUE) {
 		GtkWidget *	radio_button;
 
 		parameter_label_widget = gtk_hbox_new(FALSE, 0);
 		gtk_expander_set_label_widget(GTK_EXPANDER(parameter_expander), parameter_label_widget);
 		gtk_expander_hacked_define(parameter_expander, parameter_label_widget);
 
-		radio_button = gtk_radio_button_new_with_label(
-			((struct group_parameters_data *)parameters_data)->radio_group, "");
-		if (((struct group_parameters_data *)parameters_data)->radio_group == NULL)
-			((struct group_parameters_data *)parameters_data)->radio_group =
-				gtk_radio_button_get_group(GTK_RADIO_BUTTON(radio_button));
+		radio_button = gtk_radio_button_new(
+			((struct group_parameters_data *)parameters_data)->radio_group);
+		((struct group_parameters_data *)parameters_data)->radio_group =
+			gtk_radio_button_get_group(GTK_RADIO_BUTTON(radio_button));
 		gtk_box_pack_start(GTK_BOX(parameter_label_widget), radio_button, FALSE, FALSE, 0);
 		g_signal_connect(radio_button, "toggled",
 			(GCallback)parameter_change_exclusive, data);
 
 		parameter_label = gtk_label_new("");
-		g_object_set(G_OBJECT(parameter_label), "user-data", radio_button, NULL);
 		gtk_box_pack_start(GTK_BOX(parameter_label_widget), parameter_label, FALSE, FALSE, 0);
 		data->label = parameter_label;
-		gtk_widget_show_all(parameter_label_widget);
+		g_object_set(G_OBJECT(parameter_label), "user-data", radio_button, NULL);
 
+		gtk_widget_show_all(parameter_label_widget);
 	} else {
 		parameter_label_widget = gtk_hbox_new(FALSE, 0);
 		gtk_expander_set_label_widget(GTK_EXPANDER(parameter_expander), parameter_label_widget);
@@ -497,6 +497,7 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 			(GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
 			(GtkAttachOptions)(GTK_FILL|GTK_EXPAND), 0, 0);
 
+		data->widget = NULL;
 		return;
 	}
 
@@ -674,8 +675,9 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 		GtkToggleButton *	radio_button;
 
 		g_object_get(G_OBJECT(data->label), "user-data", &radio_button, NULL);
-		gtk_toggle_button_set_active(radio_button,
+		gtk_toggle_button_set_active(radio_button, (gboolean)
 			strlen(geoxml_program_parameter_get_default(program_parameter)));
+		g_signal_emit_by_name(radio_button, "toggled");
 	}
 
 	default_widget = data->widget->widget;
@@ -985,8 +987,7 @@ parameter_change_exclusive(GtkToggleButton * toggle_button, struct parameter_dat
 	active = gtk_toggle_button_get_active(toggle_button);
 	if (active == FALSE)
 		geoxml_parameter_reset(data->parameter, FALSE);
-	if (data->widget != NULL)
-		gtk_widget_set_sensitive(GTK_WIDGET(data->widget->widget), active);
+	gtk_widget_set_sensitive(GTK_WIDGET(data->widget->widget), active);
 }
 
 void
@@ -1011,9 +1012,7 @@ parameter_group_exclusive_changed(GtkToggleButton * toggle_button, struct parame
 	}
 	geoxml_parameter_group_set_exclusive(GEOXML_PARAMETER_GROUP(data->parameter),
 		gtk_toggle_button_get_active(toggle_button));
-
-	g_slist_free(((struct group_parameters_data *)data->parameters_data)->radio_group);
-	((struct group_parameters_data *)data->parameters_data)->radio_group = g_slist_alloc();
+	((struct group_parameters_data *)data->parameters_data)->radio_group = NULL;
 
 	/* rebuild parameters' widgets */
 	gtk_container_foreach(GTK_CONTAINER(data->specific_table), (GtkCallback)gtk_widget_destroy, NULL);
