@@ -44,9 +44,6 @@
 #  define N_(String) (String)
 #endif
 
-GtkWidget *
-create_depth(GtkWidget * container);
-
 #define gtk_expander_hacked_define(expander, label_widget)			\
 	g_signal_connect_after ((gpointer) label_widget, "expose-event",	\
 			(GCallback)gtk_expander_hacked_idle,			\

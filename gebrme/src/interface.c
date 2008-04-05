@@ -345,7 +345,7 @@ create_gebrme_window (void)
 	gtk_container_add(GTK_CONTAINER(edition_viewport), edition_vbox);
 
 	summary_expander = gtk_expander_new (NULL);
-	depth_hbox = create_depth(summary_expander);
+	depth_hbox = gtk_container_add_depth_hbox(summary_expander);
 	gtk_widget_show(summary_expander);
 	gtk_box_pack_start(GTK_BOX (edition_vbox), summary_expander, FALSE, FALSE, 0);
 	gtk_expander_set_expanded(GTK_EXPANDER (summary_expander), TRUE);
@@ -516,7 +516,7 @@ create_gebrme_window (void)
 	g_object_set(G_OBJECT(programs_add_button), "relief", GTK_RELIEF_NONE, NULL);
 
 	/* Programs' depth */
-	depth_hbox = create_depth(programs_frame);
+	depth_hbox = gtk_container_add_depth_hbox(programs_frame);
 
 	/* Program view */
 	programs_scrolledwindow = gtk_scrolled_window_new (NULL, NULL);

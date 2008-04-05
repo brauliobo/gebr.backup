@@ -58,7 +58,7 @@ on_open_activate(void)
 
 	/* open it */
 	path = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (chooser_dialog));
-	menu_open(path);
+	menu_open(path, TRUE);
 
 	g_free(path);
 out:	gtk_widget_destroy(chooser_dialog);

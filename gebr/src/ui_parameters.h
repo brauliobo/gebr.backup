@@ -28,7 +28,8 @@ struct ui_parameters {
 
 	int				program_index;
 	struct parameter_widget **	widgets;
-	int				widgets_number;
+
+	GList *				to_free_list;
 };
 
 struct ui_parameters *

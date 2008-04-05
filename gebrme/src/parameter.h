@@ -26,14 +26,26 @@
 
 #include "enumoptionedit.h"
 
-struct parameters_data;
-struct parameter_data;
-struct parameter_ui_data;
+/* Persintant pointer of GeoXmlParameter. As
+ * it may change (because of geoxml_parameter_set_type)
+ * we must keep a container for it and share this container beetween signals.
+ */
+struct parameter_data {
+	GeoXmlParameter *		parameter;
+	GtkWidget *			label;
+	GtkWidget *			specific_table;
+
+	struct parameters_data * 	parameters_data;
+	/* for in-group parameter */
+	GtkWidget *			radio_button;
+	/* for non-groups */
+	struct parameter_widget *	widget;
+};
 
 GtkWidget *
 parameter_create_ui(GeoXmlParameter * parameter, struct parameters_data * parameters_data, gboolean hidden);
 
 void
-parameter_add(GtkButton * button, struct parameters_data * parameters_data);
+parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * data);
 
 #endif //__PARAMETER_H

@@ -30,4 +30,7 @@ struct parameters_data {
 GtkWidget *
 parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden);
 
+void
+parameters_add(GtkButton * button, struct parameters_data * parameters_data);
+
 #endif //__PARAMETERS_H

@@ -162,11 +162,12 @@ geoxml_parameters_get_number(GeoXmlParameters * parameters)
 	if (parameters == NULL)
 		return -1;
 
-	gint		i;
-	gint		parameters_number = 0;
+	gint			parameters_number = 0;
+	GeoXmlSequence *	parameter;
 
-	for (i = 0; i < parameter_type_to_str_len; ++i)
-		parameters_number += __geoxml_get_elements_number((GdomeElement*)parameters, parameter_type_to_str[i]);
+	parameter = geoxml_parameters_get_first_parameter(parameters);
+	for (parameters_number = 0; parameter != NULL; ++parameters_number)
+		geoxml_sequence_next(&parameter);
 
 	return parameters_number;
 }

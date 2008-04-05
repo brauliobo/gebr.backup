@@ -46,4 +46,7 @@ confirm_action_dialog(const gchar * title, const gchar * message, ...);
 void
 set_tooltip(GtkWidget * widget, const gchar * tip);
 
+GtkWidget *
+gtk_container_add_depth_hbox(GtkWidget * container);
+
 #endif //__LIBGEBR_GUI_UTILS_H

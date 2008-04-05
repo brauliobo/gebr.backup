@@ -45,7 +45,9 @@ job_add_program_parameters_aux(struct job * job, GeoXmlParameters * parameters, 
 
 		type = geoxml_parameter_get_type(GEOXML_PARAMETER(parameter));
 		if (type == GEOXML_PARAMETERTYPE_GROUP) {
-			/* TODO: */
+			job_add_program_parameters_aux(job,
+				geoxml_parameter_group_get_parameters(GEOXML_PARAMETER_GROUP(parameter)),
+				program);
 			geoxml_sequence_next(&parameter);
 			continue;
 		}

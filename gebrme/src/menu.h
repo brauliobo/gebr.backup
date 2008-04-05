@@ -28,7 +28,7 @@ GeoXmlFlow *
 menu_load(const gchar * path);
 
 void
-menu_open(const gchar * path);
+menu_open(const gchar * path, gboolean select);
 
 void
 menu_load_user_directory(void);

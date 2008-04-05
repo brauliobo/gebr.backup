@@ -79,7 +79,7 @@ program_create_ui(GeoXmlProgram * program, gboolean hidden)
 	else
 		gtk_expander_set_expanded(GTK_EXPANDER(program_expander), TRUE);
 	gtk_widget_show(program_expander);
-	depth_hbox = create_depth(program_expander);
+	depth_hbox = gtk_container_add_depth_hbox(program_expander);
 
 	/* used to prevent that popup menu will show up in expander child
 	 * and enable it on a label
@@ -111,7 +111,7 @@ program_create_ui(GeoXmlProgram * program, gboolean hidden)
 	gtk_widget_show(io_label);
 	gtk_box_pack_start(GTK_BOX(io_vbox), io_label, FALSE, FALSE, 0);
 
-	io_depth_hbox = create_depth(io_vbox);
+	io_depth_hbox = gtk_container_add_depth_hbox(io_vbox);
 	io_vbox = gtk_vbox_new(FALSE, 0);
 	gtk_widget_show(io_vbox);
 	gtk_box_pack_start(GTK_BOX(io_depth_hbox), io_vbox, FALSE, TRUE, 0);
@@ -146,7 +146,7 @@ program_create_ui(GeoXmlProgram * program, gboolean hidden)
 	gtk_expander_set_expanded(GTK_EXPANDER(summary_expander), !hidden);
 	gtk_box_pack_start(GTK_BOX(program_vbox), summary_expander, FALSE, TRUE, 0);
 	gtk_widget_show(summary_expander);
-	depth_hbox = create_depth(summary_expander);
+	depth_hbox = gtk_container_add_depth_hbox(summary_expander);
 
 	summary_table = gtk_table_new (5, 2, FALSE);
 	gtk_widget_show (summary_table);

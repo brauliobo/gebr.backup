@@ -15,9 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <gui/utils.h>
+
 #include "parameters.h"
 #include "support.h"
 #include "parameter.h"
+#include "menu.h"
 
 /*
  * Internal stuff
@@ -47,7 +50,7 @@ parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden)
 	parameters_expander = gtk_expander_new("");
 	gtk_expander_set_expanded (GTK_EXPANDER (parameters_expander), hidden);
 	gtk_widget_show(parameters_expander);
-	depth_hbox = create_depth(parameters_expander);
+	depth_hbox = gtk_container_add_depth_hbox(parameters_expander);
 
 	data = g_malloc(sizeof(struct parameters_data));
 	data->parameters = parameters;
@@ -70,7 +73,7 @@ parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden)
 	gtk_widget_show(widget);
 	gtk_box_pack_start(GTK_BOX(parameters_label_widget), widget, FALSE, TRUE, 5);
 	g_signal_connect(widget, "clicked",
-		GTK_SIGNAL_FUNC(parameter_add), data);
+		GTK_SIGNAL_FUNC(parameters_add), data);
 	g_object_set(G_OBJECT(widget),
 		"user-data", parameters_vbox,
 		"relief", GTK_RELIEF_NONE,
@@ -85,4 +88,21 @@ parameters_create_ui(GeoXmlParameters * parameters, gboolean hidden)
 	}
 
 	return parameters_expander;
+}
+
+void
+parameters_add(GtkButton * button, struct parameters_data * parameters_data)
+{
+	GtkWidget *		parameter_widget;
+	GtkWidget *		parameters_vbox;
+
+	GeoXmlParameter *	parameter;
+
+	g_object_get(G_OBJECT(button), "user-data", &parameters_vbox, NULL);
+
+	parameter = geoxml_parameters_append_parameter(parameters_data->parameters, GEOXML_PARAMETERTYPE_STRING);
+	parameter_widget = parameter_create_ui(parameter, parameters_data, FALSE);
+	gtk_box_pack_start(GTK_BOX(parameters_vbox), parameter_widget, FALSE, TRUE, 0);
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }

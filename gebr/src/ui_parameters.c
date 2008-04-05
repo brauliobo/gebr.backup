@@ -1,4 +1,4 @@
-/*   Gï¿½BR - An environment for seismic processing.
+/*   GêBR - An environment for seismic processing.
  *   Copyright(C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or
@@ -28,6 +28,7 @@
 #include <glib/gprintf.h>
 
 #include <geoxml.h>
+#include <gui/utils.h>
 
 #include "ui_parameters.h"
 #include "gebr.h"
@@ -43,21 +44,20 @@
  * Prototypes
  */
 
+static struct parameter_widget **
+parameters_load(struct ui_parameters * ui_parameters, GtkWidget * vbox, GeoXmlParameters * parameters);
+
+static void
+parameters_submit(struct ui_parameters * ui_parameters, struct parameter_widget ** widgets);
+
+static void
+parameters_to_default(struct ui_parameters * ui_parameters, struct parameter_widget ** widgets);
+
 static void
 parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_parameters);
 
 static void
-on_link_button_clicked(GtkButton * button, GeoXmlProgram * program)
-{
-	GString * cmd_line;
-
-	cmd_line = g_string_new(NULL);
-	g_string_printf(cmd_line, "%s %s &", gebr.config.browser->str, geoxml_program_get_url(program));
-
-	system(cmd_line->str);
-
-	g_string_free(cmd_line, TRUE);
-}
+on_link_button_clicked(GtkButton * button, GeoXmlProgram * program);
 
 /*
  * Section: Public
@@ -89,9 +89,6 @@ parameters_configure_setup_ui(void)
 	GtkWidget *			viewport;
 
 	GeoXmlSequence *		program;
-	GeoXmlParameters *		parameters;
-	GeoXmlSequence *		parameter;
-	gulong				i;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
@@ -162,21 +159,67 @@ parameters_configure_setup_ui(void)
 	viewport = gtk_viewport_new(NULL, NULL);
 	vbox = gtk_vbox_new(FALSE, 3);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG (ui_parameters->dialog)->vbox), scrolledwin, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER (scrolledwin), viewport);
-	gtk_container_add(GTK_CONTAINER (viewport), vbox);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(ui_parameters->dialog)->vbox), scrolledwin, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(scrolledwin), viewport);
+	gtk_container_add(GTK_CONTAINER(viewport), vbox);
 
-	parameters = geoxml_program_get_parameters(GEOXML_PROGRAM(program));
+	/* load programs parameters into UI */
+	ui_parameters->to_free_list = NULL;
+	ui_parameters->widgets = parameters_load(ui_parameters, vbox,
+		geoxml_program_get_parameters(GEOXML_PROGRAM(program)));
+
+	gtk_widget_show_all(ui_parameters->dialog);
+
+	return ui_parameters;
+}
+
+
+/*
+ * Section: Private
+ * Private functions.
+ */
+
+/*
+ * Function: parameters_load
+ * Load a GeoXmlParameters instance into UI
+ */
+static struct parameter_widget **
+parameters_load(struct ui_parameters * ui_parameters, GtkWidget * vbox, GeoXmlParameters * parameters)
+{
+	GeoXmlSequence *		parameter;
+	struct parameter_widget **	widgets;
+	gulong				i, widgets_number;
+
+	widgets_number = geoxml_parameters_get_number(parameters);
+	widgets = g_malloc(sizeof(void*) * (widgets_number+1));
 	parameter = geoxml_parameters_get_first_parameter(parameters);
-	ui_parameters->widgets_number = geoxml_parameters_get_number(parameters);
-	ui_parameters->widgets = g_malloc(sizeof(GtkWidget*)*ui_parameters->widgets_number);
-	for (i = 0; i < ui_parameters->widgets_number; ++i) {
+	for (i = 0; i < widgets_number; ++i) {
 		enum GEOXML_PARAMETERTYPE	type;
 
 		GtkWidget *			hbox;
 		struct parameter_widget *	widget;
 
 		type = geoxml_parameter_get_type(GEOXML_PARAMETER(parameter));
+		if (type == GEOXML_PARAMETERTYPE_GROUP) {
+			GtkWidget *	expander;
+			GtkWidget *	group_vbox;
+
+			expander = gtk_expander_new(geoxml_parameter_get_label(GEOXML_PARAMETER(parameter)));
+			gtk_widget_show(expander);
+			hbox = gtk_container_add_depth_hbox(expander);
+			group_vbox = gtk_vbox_new(FALSE, 3);
+			gtk_widget_show(group_vbox);
+			gtk_container_add(GTK_CONTAINER(hbox), group_vbox);
+			gtk_expander_set_expanded(GTK_EXPANDER(expander),
+				geoxml_parameter_group_get_expand(GEOXML_PARAMETER_GROUP(parameter)));
+
+			widgets[i] = (struct parameter_widget *)parameters_load(ui_parameters, group_vbox,
+				geoxml_parameter_group_get_parameters(GEOXML_PARAMETER_GROUP(parameter)));
+			gtk_box_pack_start(GTK_BOX(vbox), expander, FALSE, TRUE, 0);
+
+			geoxml_sequence_next(&parameter);
+			continue;
+		}
 		switch (type) {
 		case GEOXML_PARAMETERTYPE_FLOAT:
 			widget = parameter_widget_new_float(GEOXML_PARAMETER(parameter), FALSE);
@@ -235,22 +278,68 @@ parameters_configure_setup_ui(void)
 		}
 
 		/* set and add */
-		ui_parameters->widgets[i] = widget;
+		widgets[i] = widget;
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 
 		geoxml_sequence_next(&parameter);
 	}
 
-	gtk_widget_show_all(ui_parameters->dialog);
+	widgets[i] = NULL;
+	ui_parameters->to_free_list = g_list_prepend(ui_parameters->to_free_list, widgets);
 
-	return ui_parameters;
+	return widgets;
 }
 
+/*
+ * Function: parameters_submit
+ * Call parameter_widget_submit for each _widgets_
+ *
+ */
+static void
+parameters_submit(struct ui_parameters * ui_parameters, struct parameter_widget ** widgets)
+{
+	gulong	i;
+
+	for (i = 0; widgets[i] != NULL; ++i) {
+		enum GEOXML_PARAMETERTYPE	type;
+		struct parameter_widget *	widget;
+
+		widget = ui_parameters->widgets[i];
+		type = geoxml_parameter_get_type(widget->parameter);
+		if (type == GEOXML_PARAMETERTYPE_GROUP) {
+			parameters_submit(ui_parameters, (struct parameter_widget **)widget);
+			continue;
+		}
+
+		parameter_widget_submit(widget);
+	}
+}
 
 /*
- * Section: Private
- * Private functions.
+ * Function: parameters_to_default
+ * Call parameter_widget_submit for each _widgets_
+ *
  */
+static void
+parameters_to_default(struct ui_parameters * ui_parameters, struct parameter_widget ** widgets)
+{
+	gulong	i;
+
+	for (i = 0; widgets[i] != NULL; ++i) {
+		enum GEOXML_PARAMETERTYPE	type;
+		struct parameter_widget *	widget;
+
+		widget = ui_parameters->widgets[i];
+		type = geoxml_parameter_get_type(widget->parameter);
+		if (type == GEOXML_PARAMETERTYPE_GROUP) {
+			parameters_to_default(ui_parameters, (struct parameter_widget **)widget);
+			continue;
+		}
+
+		parameter_widget_set_widget_value(widget,
+			geoxml_program_parameter_get_default(GEOXML_PROGRAM_PARAMETER(widget->parameter)));
+	}
+}
 
 /*
  * Function: parameters_actions
@@ -263,7 +352,6 @@ parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_param
 	switch (arg1) {
 	case GTK_RESPONSE_OK: {
 		GeoXmlSequence *	program;
-		int			i;
 
 		/* Set program state to configured */
 		geoxml_flow_get_program(gebr.flow, &program, ui_parameters->program_index);
@@ -283,41 +371,15 @@ parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_param
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gebr.configured_menuitem), TRUE);
 		}
 
-		for (i = 0; i < ui_parameters->widgets_number; ++i) {
-			enum GEOXML_PARAMETERTYPE	type;
-			struct parameter_widget *	widget;
-
-			widget = ui_parameters->widgets[i];
-			type = geoxml_parameter_get_type(widget->parameter);
-			if (type == GEOXML_PARAMETERTYPE_GROUP) {
-				/* TODO: call recursive function */
-				continue;
-			}
-
-			parameter_widget_submit(widget);
-		}
+		/* Write values from UI to XML */
+		parameters_submit(ui_parameters, ui_parameters->widgets);
 
 		flow_save();
 		break;
 	} case GTK_RESPONSE_CANCEL:
 		break;
 	case GTK_RESPONSE_DEFAULT: {
-		int	i;
-
-		for (i = 0; i < ui_parameters->widgets_number; ++i) {
-			enum GEOXML_PARAMETERTYPE	type;
-			struct parameter_widget *	widget;
-
-			widget = ui_parameters->widgets[i];
-			type = geoxml_parameter_get_type(widget->parameter);
-			if (type == GEOXML_PARAMETERTYPE_GROUP) {
-				/* TODO: call recursive function */
-				continue;
-			}
-
-			parameter_widget_set_widget_value(widget,
-				geoxml_program_parameter_get_default(GEOXML_PROGRAM_PARAMETER(widget->parameter)));
-		}
+		parameters_to_default(ui_parameters, ui_parameters->widgets);
 		return;
 	} case GTK_RESPONSE_HELP: {
 		GtkTreeSelection *	selection;
@@ -352,6 +414,20 @@ parameters_actions(GtkDialog *dialog, gint arg1, struct ui_parameters * ui_param
 
 	/* gui free */
 	gtk_widget_destroy(GTK_WIDGET(dialog));
-	g_free(ui_parameters->widgets);
+	g_list_foreach(ui_parameters->to_free_list, (GFunc)g_free, NULL);
+	g_list_free(ui_parameters->to_free_list);
 	g_free(ui_parameters);
+}
+
+static void
+on_link_button_clicked(GtkButton * button, GeoXmlProgram * program)
+{
+	GString * cmd_line;
+
+	cmd_line = g_string_new(NULL);
+	g_string_printf(cmd_line, "%s %s &", gebr.config.browser->str, geoxml_program_get_url(program));
+
+	system(cmd_line->str);
+
+	g_string_free(cmd_line, TRUE);
 }

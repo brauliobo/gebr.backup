@@ -19,6 +19,7 @@
 #define __GROUP_PARAMETERS_H
 
 #include "parameters.h"
+struct parameter_data;
 
 struct group_parameters_data {
 	struct parameters_data	parameters;
@@ -29,6 +30,12 @@ struct group_parameters_data {
 };
 
 GtkWidget *
-group_parameters_create_ui(GeoXmlParameterGroup * parameter_group, gboolean hidden);
+group_parameters_create_ui(struct parameter_data * parameter_data, gboolean hidden);
+
+void
+group_parameters_instatiate(GtkButton * button, struct parameters_data * parameters_data);
+
+void
+group_parameters_deinstatiate(GtkButton * button, struct parameters_data * parameters_data);
 
 #endif //__GROUP_PARAMETERS_H
