@@ -155,32 +155,4 @@ geoxml_project_set_line_source(GeoXmlProjectLine * project_line, const gchar * s
 const gchar *
 geoxml_project_get_line_source(GeoXmlProjectLine * project_line);
 
-/**
- * \deprecated
- * Use geoxml_sequence_previous instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_project_previous_line(GeoXmlProjectLine ** project_line);
-
-/**
- * \deprecated
- * Use geoxml_sequence_next instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_project_next_line(GeoXmlProjectLine ** project_line);
-
-/**
- * \deprecated
- * See geoxml_project_new_line instead. Kept only for backwards compatible and should not be used in newly written code
- */
-GeoXmlProjectLine * GEOXML_DEPRECATED
-geoxml_project_add_line(GeoXmlProject * project, const gchar * source);
-
-/**
- * \deprecated
- * Use geoxml_sequence_remove instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_project_remove_line(GeoXmlProject * project, GeoXmlProjectLine * project_line);
-
 #endif //__LIBGEBR_GEOXML_PROJECT_H

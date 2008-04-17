@@ -161,27 +161,3 @@ geoxml_line_get_paths_number(GeoXmlLine * line)
 		return -1;
 	return __geoxml_get_elements_number(geoxml_document_root_element(GEOXML_DOC(line)), "path");
 }
-
-void
-geoxml_line_previous_flow(GeoXmlLineFlow ** line_flow)
-{
-	geoxml_sequence_previous((GeoXmlSequence**)line_flow);
-}
-
-void
-geoxml_line_next_flow(GeoXmlLineFlow ** line_flow)
-{
-	geoxml_sequence_next((GeoXmlSequence**)line_flow);
-}
-
-GeoXmlLineFlow *
-geoxml_line_add_flow(GeoXmlLine * line, const gchar * source)
-{
-	return geoxml_line_append_flow(line, source);
-}
-
-void
-geoxml_line_remove_flow(GeoXmlLine * line, GeoXmlLineFlow * line_flow)
-{
-	geoxml_sequence_remove(GEOXML_SEQUENCE(line_flow));
-}

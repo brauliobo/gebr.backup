@@ -204,32 +204,4 @@ geoxml_line_get_path(GeoXmlLine * line, GeoXmlSequence ** path, gulong index);
 glong
 geoxml_line_get_paths_number(GeoXmlLine * line);
 
-/**
- * \deprecated
- * Use geoxml_sequence_previous instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_line_previous_flow(GeoXmlLineFlow ** line_flow);
-
-/**
- * \deprecated
- * Use geoxml_sequence_next instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_line_next_flow(GeoXmlLineFlow ** line_flow);
-
-/**
- * \deprecated
- * See geoxml_line_new_flow instead. Kept only for backwards compatible and should not be used in newly written code
- */
-GeoXmlLineFlow * GEOXML_DEPRECATED
-geoxml_line_add_flow(GeoXmlLine * line, const gchar * source);
-
-/**
- * \deprecated
- * Use geoxml_sequence_remove instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_line_remove_flow(GeoXmlLine * line, GeoXmlLineFlow * line_flow);
-
 #endif //__LIBGEBR_GEOXML_LINE_H

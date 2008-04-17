@@ -101,27 +101,3 @@ geoxml_project_get_line_source(GeoXmlProjectLine * project_line)
 		return NULL;
 	return __geoxml_get_attr_value((GdomeElement*)project_line, "source");
 }
-
-void
-geoxml_project_previous_line(GeoXmlProjectLine ** project_line)
-{
-	geoxml_sequence_previous((GeoXmlSequence**)project_line);
-}
-
-void
-geoxml_project_next_line(GeoXmlProjectLine ** project_line)
-{
-	geoxml_sequence_next((GeoXmlSequence**)project_line);
-}
-
-GeoXmlProjectLine *
-geoxml_project_add_line(GeoXmlProject * project, const gchar * source)
-{
-	return geoxml_project_append_line(project, source);
-}
-
-void
-geoxml_project_remove_line(GeoXmlProject * project, GeoXmlProjectLine * project_line)
-{
-	geoxml_sequence_remove(GEOXML_SEQUENCE(project_line));
-}

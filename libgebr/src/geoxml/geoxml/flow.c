@@ -165,7 +165,7 @@ geoxml_flow_append_program(GeoXmlFlow * flow)
 
 	element = __geoxml_insert_new_element(
 		geoxml_document_root_element(GEOXML_DOC(flow)), "program",
-		__geoxml_get_first_element(geoxml_document_root_element(GEOXML_DOC(flow)), "history"));
+		__geoxml_get_first_element(geoxml_document_root_element(GEOXML_DOC(flow)), "revision"));
 
 	/* elements/attibutes */
 	geoxml_program_set_stdin((GeoXmlProgram*)element, FALSE);
@@ -244,34 +244,4 @@ geoxml_flow_get_categories_number(GeoXmlFlow * flow)
 	if (flow == NULL)
 		return -1;
 	return __geoxml_get_elements_number(geoxml_document_root_element(GEOXML_DOC(flow)), "category");
-}
-
-void
-geoxml_flow_remove_program(GeoXmlFlow * flow, GeoXmlProgram * program)
-{
-	geoxml_sequence_remove((GeoXmlSequence*)program);
-}
-
-void
-geoxml_flow_move_program(GeoXmlFlow * flow, GeoXmlProgram * program, GeoXmlProgram * before_program)
-{
-	geoxml_sequence_move_before((GeoXmlSequence*)program, (GeoXmlSequence*)before_program);
-}
-
-int
-geoxml_flow_move_program_up(GeoXmlFlow * flow, GeoXmlProgram * program)
-{
-	return geoxml_sequence_move_up((GeoXmlSequence*)program);
-}
-
-int
-geoxml_flow_move_program_down(GeoXmlFlow * flow, GeoXmlProgram * program)
-{
-	return geoxml_sequence_move_down((GeoXmlSequence*)program);
-}
-
-void
-geoxml_flow_remove_category(GeoXmlFlow * flow, GeoXmlCategory * category)
-{
-	geoxml_sequence_remove((GeoXmlSequence*)category);
 }

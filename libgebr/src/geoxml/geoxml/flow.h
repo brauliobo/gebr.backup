@@ -249,41 +249,4 @@ geoxml_flow_get_category(GeoXmlFlow * flow, GeoXmlSequence ** category, gulong i
 glong
 geoxml_flow_get_categories_number(GeoXmlFlow * flow);
 
-/**
- * \deprecated
- * Use \ref geoxml_sequence_remove instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_flow_remove_program(GeoXmlFlow * flow, GeoXmlProgram * program);
-
-/**
- * \deprecated
- * Use \ref geoxml_sequence_move instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_flow_move_program(GeoXmlFlow * flow, GeoXmlProgram * program, GeoXmlProgram * before_program);
-
-/**
- * \deprecated
- * Use \ref geoxml_sequence_move_up instead. Kept only for backwards compatible and should not be used in newly written code
- */
-int GEOXML_DEPRECATED
-geoxml_flow_move_program_up(GeoXmlFlow * flow, GeoXmlProgram * program);
-
-/**
- * \deprecated
- * Use \ref geoxml_sequence_move_down instead. Kept only for backwards compatible and should not be used in newly written code
- */
-int GEOXML_DEPRECATED
-geoxml_flow_move_program_down(GeoXmlFlow * flow, GeoXmlProgram * program);
-
-/**
- * \deprecated
- * Use \ref geoxml_sequence_remove instead. Kept only for backwards compatible and should not be used in newly written code
- */
-void GEOXML_DEPRECATED
-geoxml_flow_remove_category(GeoXmlFlow * flow, GeoXmlCategory * category);
-
-
-
 #endif //__LIBGEBR_GEOXML_FLOW_H

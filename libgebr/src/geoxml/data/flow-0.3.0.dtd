@@ -1,4 +1,4 @@
-<!ELEMENT flow (filename, title, description, help, author, email, date, category*, io, program*, history*)>
+<!ELEMENT flow (filename, title, description, help, author, email, date, category*, io, program*, revision*)>
 <!ATTLIST flow
    version CDATA #FIXED "0.3.0">
 
@@ -36,8 +36,8 @@
    stderr (yes | no)                             #REQUIRED
    status (disabled | configured | unconfigured) #REQUIRED>
 
-<!ELEMENT history (#PCDATA)>
-<!ATTLIST history
+<!ELEMENT revision (#PCDATA)>
+<!ATTLIST revision
    date    CDATA #REQUIRED
    comment CDATA #REQUIRED>
 
