@@ -94,8 +94,7 @@ geoxml_parameter_get_type(GeoXmlParameter * parameter)
 		if (!strcmp(parameter_type_to_str[i], tag_name->str))
 			return (enum GEOXML_PARAMETERTYPE)i;
 
-	/* just to suppress warning */
-	return GEOXML_PARAMETERTYPE_GROUP;
+	return GEOXML_PARAMETERTYPE_UNKNOWN;
 }
 
 gboolean
@@ -129,18 +128,15 @@ geoxml_parameter_reset(GeoXmlParameter * parameter, gboolean recursive)
 	if (parameter == NULL)
 		return;
 	if (geoxml_parameter_get_type(parameter) == GEOXML_PARAMETERTYPE_GROUP) {
-		GeoXmlSequence *	i;
+		GeoXmlSequence *	instance;
 
 		if (recursive == FALSE)
 			return;
 
 		/* call geoxml_parameter_reset on each child */
-		i = geoxml_parameters_get_first_parameter(
-			geoxml_parameter_group_get_parameters(GEOXML_PARAMETER_GROUP(parameter)));
-		while (i != NULL) {
-			geoxml_parameter_reset(GEOXML_PARAMETER(i), recursive);
-			geoxml_sequence_next(&i);
-		}
+		geoxml_parameter_group_get_instance(GEOXML_PARAMETER_GROUP(parameter), &instance, 0);
+		for (; instance != NULL; geoxml_sequence_next(&instance))
+			geoxml_parameters_reset(GEOXML_PARAMETERS(instance), recursive);
 	} else {
 		geoxml_program_parameter_set_value(GEOXML_PROGRAM_PARAMETER(parameter), "");
 		__geoxml_program_parameter_reset_default(GEOXML_PROGRAM_PARAMETER(parameter));

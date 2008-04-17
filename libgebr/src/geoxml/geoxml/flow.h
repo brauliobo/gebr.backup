@@ -192,17 +192,6 @@ const gchar *
 geoxml_flow_io_get_error(GeoXmlFlow * flow);
 
 /**
- * Creates a new program associated with \p flow.
- * \p program is append to the list of programs.
- *
- * If \p flow is NULL nothing is done.
- *
- * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
- */
-GeoXmlProgram *
-geoxml_flow_new_program(GeoXmlFlow * flow);
-
-/**
  * Creates a new program associated and append to the list of programs
  * Provided for convenience
  *
@@ -231,17 +220,6 @@ geoxml_flow_get_program(GeoXmlFlow * flow, GeoXmlSequence ** program, gulong ind
  */
 glong
 geoxml_flow_get_programs_number(GeoXmlFlow * flow);
-
-/**
- * Creates a new category named as \p name in \p flow and returns a pointer to it.
- * \p category is appended to the list of categories.
- *
- * If \p flow is NULL nothing is done.
- *
- * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
- */
-GeoXmlCategory *
-geoxml_flow_new_category(GeoXmlFlow * flow, const gchar * name);
 
 /**
  * Creates a new category and append it to the list of categories.

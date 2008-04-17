@@ -122,21 +122,9 @@ GeoXmlLine *
 geoxml_line_new();
 
 /**
- * Creates a new flow reference located at \p source and returns a pointer to it.
- * The flow returned should be added using geoxml_sequence_prepend or geoxml_sequence_append
+ * Create a new flow and append it to list of flows references.
  *
- * If \p line is NULL returns NULL.
- *
- * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
- */
-GeoXmlLineFlow *
-geoxml_line_new_flow(GeoXmlLine * line, const gchar * source);
-
-/**
- * Create a new flow and append to list of flows references.
- * Provided for convenience.
- *
- * \see geoxml_line_new_flow
+ * If \p line or \p source is NULL returns NULL
  */
 GeoXmlLineFlow *
 geoxml_line_append_flow(GeoXmlLine * line, const gchar * source);

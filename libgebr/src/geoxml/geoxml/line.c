@@ -54,20 +54,6 @@ geoxml_line_new()
 }
 
 GeoXmlLineFlow *
-geoxml_line_new_flow(GeoXmlLine * line, const gchar * source)
-{
-	if (line == NULL)
-		return NULL;
-
-	GeoXmlLineFlow * line_flow;
-
-	line_flow = (GeoXmlLineFlow*)__geoxml_new_element(geoxml_document_root_element(GEOXML_DOC(line)), "flow");
-	__geoxml_set_attr_value((GdomeElement*)line_flow, "source", source);
-
-	return line_flow;
-}
-
-GeoXmlLineFlow *
 geoxml_line_append_flow(GeoXmlLine * line, const gchar * source)
 {
 	if (line == NULL)
@@ -75,7 +61,8 @@ geoxml_line_append_flow(GeoXmlLine * line, const gchar * source)
 
 	GeoXmlLineFlow* line_flow;
 
-	line_flow = (GeoXmlLineFlow*)__geoxml_insert_new_element(geoxml_document_root_element(GEOXML_DOC(line)), "flow", NULL);
+	line_flow = (GeoXmlLineFlow*)__geoxml_insert_new_element(
+		geoxml_document_root_element(GEOXML_DOC(line)), "flow", NULL);
 	__geoxml_set_attr_value((GdomeElement*)line_flow, "source", source);
 
 	return line_flow;

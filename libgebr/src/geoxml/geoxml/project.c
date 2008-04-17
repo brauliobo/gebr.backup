@@ -49,21 +49,6 @@ geoxml_project_new()
 }
 
 GeoXmlProjectLine *
-geoxml_project_new_line(GeoXmlProject * project, const gchar * source)
-{
-	if (project == NULL)
-		return NULL;
-
-	GeoXmlProjectLine * project_line;
-
-	project_line = (GeoXmlProjectLine*)__geoxml_new_element(
-		geoxml_document_root_element(GEOXML_DOC(project)), "line");
-	__geoxml_set_attr_value((GdomeElement*)project_line, "source", source);
-
-	return project_line;
-}
-
-GeoXmlProjectLine *
 geoxml_project_append_line(GeoXmlProject * project, const gchar * source)
 {
 	if (project == NULL)

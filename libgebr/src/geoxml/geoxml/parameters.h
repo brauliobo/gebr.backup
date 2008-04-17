@@ -45,7 +45,7 @@
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
  * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
  * 	"GeoXmlProgramParameter" [ URL = "\ref program_parameter.h" ];
- * 	"GeoXmlParameterGroup" [ URL = "\ref parameter_group.h" ];
+ * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
  *
  * 	edge [
  * 		arrowhead = "normal"
@@ -53,7 +53,7 @@
  * 	"GeoXmlDocument" -> "GeoXmlFlow";
  * 	"GeoXmlSequence" -> "GeoXmlParameter";
  * 	"GeoXmlParameter" -> "GeoXmlProgramParameter";
- * 	"GeoXmlParameter" -> "GeoXmlParameterGroup";
+ * 	"GeoXmlParameter" -> "GeoXmlParameters";
  *
  * 	edge [
  * 		arrowhead = "none"
@@ -67,17 +67,16 @@
  * 		taillabel = "1"
  * 	]
  * 	"GeoXmlProgram" -> "GeoXmlParameters";
- * 	"GeoXmlParameterGroup" -> "GeoXmlParameters";
+ * 	"GeoXmlParameters" -> "GeoXmlParameters";
  * }
  * \enddot
  * \see parameters.h
  */
 
 /**
- * Get the base parameters class of \p group, which is
- * a GeoXmlParameterGroup instance.
+ * Cast a GeoXmlSequence to a GeoXmlParameters.
  */
-#define GEOXML_PARAMETERS(group) ((GeoXmlParameters*)(group))
+#define GEOXML_PARAMETERS(seq) ((GeoXmlParameters*)(seq))
 
 /**
  * The GeoXmlParameters struct contains private data only, and should be accessed using the functions below.
@@ -104,6 +103,28 @@ GeoXmlParameter *
 geoxml_parameters_append_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
 
 /**
+ * Set this \p parameters to be an exclusive group and \p parameter
+ * to be its exclusive parameter by default.
+ * If \p parameter is NULL then you want to use the group in non-exclusive mode
+ *
+ * If \p parameters is NULL nothing is done.
+ *
+ * \see geoxml_parameters_get_exclusive
+ * geoxml_parameters_set_selected
+ */
+void
+geoxml_parameters_set_exclusive(GeoXmlParameters * parameters, GeoXmlParameter * parameter);
+
+/**
+ * If \p parameters is a exclusive group (aka has a non-NULL exclusive parameter set)
+ * then select \p parameter to be current derised for use parameter; otherwise, nothing is done.
+ *
+ * If \p parameters is NULL nothing is done.
+ */
+void
+geoxml_parameters_set_selected(GeoXmlParameters * parameters, GeoXmlParameter * parameter);
+
+/**
  * Get the first paramater of \p program.
  *
  * If \p parameters is NULL returns NULL.
@@ -114,9 +135,7 @@ geoxml_parameters_get_first_parameter(GeoXmlParameters * parameters);
 /**
  * Get the parameter at \p index
  *
- * \note Due to XML estrutucture, it is very slow to get the nieth paramater.
- * Therefore, you should avoid this function and use \ref geoxml_parameters_get_first_parameter
- * instead
+ *
  */
 int
 geoxml_parameters_get_parameter(GeoXmlParameters * parameters, GeoXmlSequence ** parameter, gulong index);
@@ -130,11 +149,34 @@ glong
 geoxml_parameters_get_number(GeoXmlParameters * parameters);
 
 /**
- * Return TRUE if \p parameters is a instance of GeoXmlParameterGroup
+ *
+ * If \p parameters is NULL returns FALSE.
+ */
+GeoXmlParameter *
+geoxml_parameters_get_exclusive(GeoXmlParameters * parameters);
+
+/**
+ * If \p parameters is a exclusive group (aka has a non-NULL exclusive parameter set)
+ * then select \p parameter to be current derised for use parameter; otherwise, returns NULL
+ *
+ * If \p parameters is NULL returns NULL.
+ */
+GeoXmlParameter *
+geoxml_parameters_get_selected(GeoXmlParameters * parameters);
+
+/**
+ * Return TRUE if \p parameters is part of a group
  *
  * If \p parameters is NULL returns FALSE.
  */
 gboolean
-geoxml_parameters_get_is_group(GeoXmlParameters * parameters);
+geoxml_parameters_get_is_in_group(GeoXmlParameters * parameters);
+
+/**
+ * Reset \p parameters' values and d,
+ * including default values.
+ */
+void
+geoxml_parameters_reset(GeoXmlParameters * parameters, gboolean recursive);
 
 #endif //__LIBGEBR_GEOXML_PARAMETERS_H

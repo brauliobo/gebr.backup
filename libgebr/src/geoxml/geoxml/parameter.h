@@ -133,6 +133,10 @@ enum GEOXML_PARAMETERTYPE {
 	 * A sequence of parameters.
 	 */
 	GEOXML_PARAMETERTYPE_GROUP,
+	/**
+	 * In case of error.
+	 */
+	GEOXML_PARAMETERTYPE_UNKNOWN,
 };
 
 /**
@@ -187,7 +191,7 @@ const gchar *
 geoxml_parameter_get_label(GeoXmlParameter * parameter);
 
 /**
- * Reset \p parameter's value. If \p recursive, do it for groups and do recursively.
+ * Reset \p parameter's value and default. If \p recursive, do it for groups and do recursively.
  */
 void
 geoxml_parameter_reset(GeoXmlParameter * parameter, gboolean recursive);

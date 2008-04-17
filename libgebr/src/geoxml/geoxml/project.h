@@ -113,19 +113,9 @@ GeoXmlProject *
 geoxml_project_new();
 
 /**
- * Creates a new line reference located at \p source and returns a pointer to it.
- * The line returned should be added using geoxml_sequence_prepend or geoxml_sequence_append
+ * Create a new line and append it to list of flows references.
  *
- * If \p project is NULL returns NULL.
- */
-GeoXmlProjectLine *
-geoxml_project_new_line(GeoXmlProject * project, const gchar * source);
-
-/**
- * Create a new flow and append to list of flows references.
- * Provided for convenience.
- *
- * \see geoxml_project_new_line
+ * If \p project or \p source is NULL returns NULL.
  */
 GeoXmlProjectLine *
 geoxml_project_append_line(GeoXmlProject * project, const gchar * source);

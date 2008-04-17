@@ -32,12 +32,4 @@ __geoxml_parameters_adjust_group_npar(GeoXmlParameters * parameters, glong adjus
 GeoXmlParameter *
 __geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type, gboolean adjust_npar);
 
-/**
- * \internal
- * Change all \p parameters' values to \p value,
- * including default values.
- */
-void
-__geoxml_parameters_reset(GeoXmlParameters * parameters, gboolean recursive);
-
 #endif //__LIBGEBR_GEOXML_PARAMETERS_P_H

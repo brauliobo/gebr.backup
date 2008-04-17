@@ -43,6 +43,7 @@
  * 	"GeoXmlProjectLine" [ URL = "\ref GeoXmlProjectLine" ];
  * 	"GeoXmlLineFlow" [ URL = "\ref GeoXmlLineFlow" ];
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
+ * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
  * 	"GeoXmlEnumOption" [ URL = "\ref enum_option.h" ];
  * 	"GeoXmlValueSequence" [ URL = "\ref value_sequence.h" ];
@@ -54,6 +55,7 @@
  * 	"GeoXmlSequence" -> { "GeoXmlProjectLine" };
  * 	"GeoXmlSequence" -> { "GeoXmlLineFlow" };
  * 	"GeoXmlSequence" -> { "GeoXmlProgram" };
+ * 	"GeoXmlSequence" -> { "GeoXmlParameters" };
  * 	"GeoXmlSequence" -> { "GeoXmlParameter" };
  * 	"GeoXmlSequence" -> { "GeoXmlEnumOption" };
  * 	"GeoXmlSequence" -> { "GeoXmlValueSequence" };

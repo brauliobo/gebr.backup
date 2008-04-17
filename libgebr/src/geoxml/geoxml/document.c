@@ -195,7 +195,7 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 			}
 		}
 	}
-	/* 0.2.1 to 0.2.2 */
+	/* flow 0.2.1 to 0.2.2 */
 	if (strcmp(version, "0.2.2") < 0) {
 		if (geoxml_document_get_type(((GeoXmlDocument*)document)) == GEOXML_DOCUMENT_TYPE_FLOW) {
 			GeoXmlSequence *	program;
@@ -248,33 +248,124 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 			}
 		}
 	}
-	/* 0.2.2 to 0.2.3 */
-	if (strcmp(version, "0.2.3") < 0) {
+	/* flow 0.2.2 to 0.2.3
+	 * nothing changed. why? because the changes were about the removed group support
+	 */
+	/* flow 0.2.3 to 0.3.0 */
+	if (strcmp(version, "0.3.0") < 0) {
 		if (geoxml_document_get_type(((GeoXmlDocument*)document)) == GEOXML_DOCUMENT_TYPE_FLOW) {
-			GeoXmlSequence *	program;
-			GeoXmlSequence *	parameter;
-
-			__geoxml_set_attr_value(root_element, "version", "0.2.3");
+			GeoXmlSequence *		program;
 
 			geoxml_flow_get_program(GEOXML_FLOW(document), &program, 0);
 			while (program != NULL) {
-				parameter = geoxml_parameters_get_first_parameter(
-					geoxml_program_get_parameters(GEOXML_PROGRAM(program)));
-				for (; parameter != NULL; geoxml_sequence_next(&parameter)) {
-					const gchar *	exclusive;
+				GeoXmlParameters *	parameters;
+				GdomeElement *		old_parameter;
 
-					if (geoxml_parameter_get_type(GEOXML_PARAMETER(parameter))
-					!= GEOXML_PARAMETERTYPE_GROUP)
-						continue;
+				parameters = geoxml_program_get_parameters(GEOXML_PROGRAM(program));
+				old_parameter = __geoxml_get_first_element((GdomeElement*)parameters, "*");
+				while (old_parameter != NULL) {
+					GdomeElement *			parameter;
+					GdomeElement *			property;
 
-					exclusive = __geoxml_get_attr_value((GdomeElement*)parameter, "exclusive");
-					__geoxml_set_attr_value((GdomeElement*)parameter, "exclusive",
-						!strcmp(exclusive, "yes") ? "1" : "0");
+					enum GEOXML_PARAMETERTYPE	type;
+					GdomeDOMString*			tag_name;
+					int				i;
+
+					type = GEOXML_PARAMETERTYPE_UNKNOWN;
+					tag_name = gdome_el_tagName(old_parameter, &exception);
+					for (i = 0; i < parameter_type_to_str_len; ++i)
+						if (!strcmp(parameter_type_to_str[i], tag_name->str)) {
+							type = (enum GEOXML_PARAMETERTYPE)i;
+							break;
+						}
+
+					parameter = __geoxml_insert_new_element((GdomeElement*)parameters,
+						"parameter", old_parameter);
+					gdome_el_insertBefore(parameter, (GdomeNode*)
+						__geoxml_get_first_element(old_parameter, "label"),
+						NULL, &exception);
+					gdome_el_insertBefore(parameter, (GdomeNode*)old_parameter, NULL, &exception);
+
+					property = __geoxml_insert_new_element(old_parameter, "property", NULL);
+					gdome_el_insertBefore(property,
+						(GdomeNode*)__geoxml_get_first_element(old_parameter, "keyword"),
+						NULL, &exception);
+					if (type != GEOXML_PARAMETERTYPE_FLAG) {
+						GdomeDOMString *	name;
+						GdomeDOMString *	separator;
+
+						name = gdome_str_mkref("required");
+						gdome_el_setAttribute(property, name,
+							gdome_el_getAttribute(old_parameter, name, &exception),
+							&exception);
+						gdome_el_removeAttribute(old_parameter, name, &exception);
+						gdome_str_unref(name);
+
+						name = gdome_str_mkref("separator");
+						separator = gdome_el_getAttribute(old_parameter, name, &exception);
+						if (strlen(separator->str)) {
+							GdomeElement *	value;
+							gchar **	value_splits;
+							gchar **	default_splits;
+							int		i;
+
+							value = __geoxml_get_first_element(old_parameter, "value");
+							value_splits = g_strsplit(
+								__geoxml_get_element_value(old_parameter),
+								separator->str, 0);
+							default_splits = g_strsplit(
+								__geoxml_get_attr_value(old_parameter, "default"),
+								separator->str, 0);
+							for (i = 0;; ++i) {
+								GdomeElement *	split_value;
+
+								if (value_splits[i] == NULL && default_splits[i] == NULL)
+									break;
+
+								split_value = __geoxml_insert_new_element(
+									property, "value", NULL);
+								if (value_splits[i] != NULL)
+									__geoxml_set_element_value(split_value, value_splits[i],
+									__geoxml_create_TextNode);
+								if (default_splits[i] != NULL)
+									__geoxml_set_attr_value(split_value, "default", default_splits[i]);
+							}
+							g_strfreev(value_splits);
+							g_strfreev(default_splits);
+
+							gdome_el_removeChild(old_parameter, (GdomeNode*)value, &exception);
+						} else {
+							gdome_el_insertBefore(property, (GdomeNode*)
+								__geoxml_get_first_element(old_parameter, "value"),
+								NULL, &exception);
+						}
+						gdome_el_setAttribute(property, name, separator, &exception);
+						gdome_el_removeAttribute(old_parameter, name, &exception);
+						gdome_str_unref(name);
+					} else {
+						GdomeElement *	state;
+						GdomeElement *	value;
+
+						value = __geoxml_insert_new_element((GdomeElement*)property,
+							"value", NULL);
+						state = __geoxml_get_first_element(old_parameter, "state");
+						__geoxml_set_element_value(value,
+							__geoxml_get_element_value(state),
+							__geoxml_create_TextNode);
+						__geoxml_set_attr_value(value, "default",
+							__geoxml_get_attr_value(state, "default"));
+
+						gdome_el_removeChild(old_parameter, (GdomeNode*)state, &exception);
+					}
+
+					old_parameter = __geoxml_next_element(old_parameter);
 				}
+
 				geoxml_sequence_next(&program);
 			}
 		}
 	}
+
 
 	ret = GEOXML_RETV_SUCCESS;
 out:	g_string_free(dtd_filename, TRUE);

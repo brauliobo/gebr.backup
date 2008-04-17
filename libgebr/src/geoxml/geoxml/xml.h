@@ -114,19 +114,25 @@ __geoxml_set_tag_value(GdomeElement * parent_element, const gchar * tag_name, co
 
 /**
  * \internal
+ * Set attribute with name \p attr_name of \p element to \p attr_value.
+ * If it doesn't exist it is created.
+ */
+void
+__geoxml_set_attr_value(GdomeElement * element, const gchar * name, const gchar * value);
+
+/**
+ * \internal
  * Get attribute with name \p attr_name of \p element value.
  * If it doesn't exist it an empty string is returned.
  */
 const gchar *
-__geoxml_get_attr_value(GdomeElement * element, const gchar * attr_name);
+__geoxml_get_attr_value(GdomeElement * element, const gchar * name);
 
 /**
  * \internal
- * Set attribute with name \p attr_name of \p element to \p attr_value.
- * If it doesn't exist it created.
  */
 void
-__geoxml_set_attr_value(GdomeElement * element, const gchar * attr_name, const gchar * attr_value);
+__geoxml_remove_attr(GdomeElement * element, const gchar * name);
 
 /**
  * \internal

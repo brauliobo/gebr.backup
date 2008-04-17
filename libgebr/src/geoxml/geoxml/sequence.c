@@ -37,15 +37,11 @@ struct geoxml_sequence {
 static gboolean
 __geoxml_sequence_is_parameter(GeoXmlSequence * sequence)
 {
-	GdomeDOMString *	name;
 	GdomeElement *		parent;
 
-	name = gdome_el_nodeName((GdomeElement*)sequence, &exception);
 	parent = (GdomeElement*)gdome_el_parentNode((GdomeElement*)sequence, &exception);
-	return	(gboolean)!strcmp(
-			gdome_el_nodeName(parent, &exception)->str, "parameters") ||
-		(gboolean)!strcmp(
-			gdome_el_nodeName(parent, &exception)->str, "group");
+
+	return(gboolean)!strcmp(gdome_el_nodeName(parent, &exception)->str, "parameters");
 }
 
 static gboolean
@@ -56,6 +52,8 @@ __geoxml_sequence_check(GeoXmlSequence * sequence)
 	name = gdome_el_nodeName((GdomeElement*)sequence, &exception);
 	return __geoxml_sequence_is_parameter(sequence) ||
 		(gboolean)!strcmp(name->str, "option") ||
+		((gboolean)!strcmp(name->str, "parameters") &&
+			geoxml_parameters_get_is_in_group((GeoXmlParameters*)sequence)) ||
 		(gboolean)!strcmp(name->str, "program") ||
 		(gboolean)!strcmp(name->str, "category") ||
 		(gboolean)!strcmp(name->str, "flow") ||
@@ -162,8 +160,9 @@ geoxml_sequence_move_before(GeoXmlSequence * sequence, GeoXmlSequence * position
 
 	gdome_n_insertBefore(gdome_el_parentNode((GdomeElement*)sequence, &exception),
 		(GdomeNode*)sequence, (GdomeNode*)position, &exception);
-	/* TODO: handle GDOME_WRONG_DOCUMENT_ERR */
-	return GEOXML_RETV_SUCCESS;
+
+	return exception == GDOME_NOEXCEPTION_ERR
+		? GEOXML_RETV_SUCCESS : GEOXML_RETV_DIFFERENT_SEQUENCES;
 }
 
 int
@@ -189,15 +188,17 @@ geoxml_sequence_move_after(GeoXmlSequence * sequence, GeoXmlSequence * position)
 
 		gdome_n_insertBefore(gdome_el_parentNode((GdomeElement*)sequence, &exception),
 			(GdomeNode*)sequence, (GdomeNode*)first, &exception);
-		/* TODO: handle GDOME_WRONG_DOCUMENT_ERR */
-		return GEOXML_RETV_SUCCESS;
+
+		return exception == GDOME_NOEXCEPTION_ERR
+			? GEOXML_RETV_SUCCESS : GEOXML_RETV_DIFFERENT_SEQUENCES;
 	}
 
 	geoxml_sequence_next(&position);
 	gdome_n_insertBefore(gdome_el_parentNode((GdomeElement*)sequence, &exception),
 		(GdomeNode*)sequence, (GdomeNode*)position, &exception);
-	/* TODO: handle GDOME_WRONG_DOCUMENT_ERR */
-	return GEOXML_RETV_SUCCESS;
+
+	return exception == GDOME_NOEXCEPTION_ERR
+		? GEOXML_RETV_SUCCESS : GEOXML_RETV_DIFFERENT_SEQUENCES;
 }
 
 int

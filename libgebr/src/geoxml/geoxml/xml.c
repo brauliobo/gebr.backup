@@ -227,13 +227,23 @@ __geoxml_set_tag_value(GdomeElement * parent_element, const gchar * tag_name, co
 	__geoxml_set_element_value(__geoxml_get_first_element(parent_element, tag_name), tag_value, create_func);
 }
 
+void
+__geoxml_set_attr_value(GdomeElement * element, const gchar * name, const gchar * value)
+{
+	GdomeDOMString *	string;
+
+	string = gdome_str_mkref(name);
+	gdome_el_setAttribute(element, string, gdome_str_mkref_dup(value), &exception);
+	gdome_str_unref(string);
+}
+
 const gchar *
-__geoxml_get_attr_value(GdomeElement * element, const gchar * attr_name)
+__geoxml_get_attr_value(GdomeElement * element, const gchar * name)
 {
 	GdomeDOMString *	string;
 	GdomeDOMString *	attr_value;
 
-	string = gdome_str_mkref(attr_name);
+	string = gdome_str_mkref(name);
 	attr_value = gdome_el_getAttribute(element, string, &exception);
 	gdome_str_unref(string);
 
@@ -241,12 +251,12 @@ __geoxml_get_attr_value(GdomeElement * element, const gchar * attr_name)
 }
 
 void
-__geoxml_set_attr_value(GdomeElement * element, const gchar * attr_name, const gchar * attr_value)
+__geoxml_remove_attr(GdomeElement * element, const gchar * name)
 {
 	GdomeDOMString *	string;
 
-	string = gdome_str_mkref(attr_name);
-	gdome_el_setAttribute(element, string, gdome_str_mkref_dup(attr_value), &exception);
+	string = gdome_str_mkref(name);
+	gdome_el_removeAttribute(element, string, &exception);
 	gdome_str_unref(string);
 }
 
