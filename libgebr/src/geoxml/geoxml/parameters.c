@@ -23,8 +23,10 @@
 #include "parameters.h"
 #include "xml.h"
 #include "types.h"
+#include "error.h"
 #include "parameter_group.h"
 #include "program_parameter.h"
+#include "program_parameter_p.h"
 
 /*
  * internal stuff
@@ -35,7 +37,7 @@ struct geoxml_parameters {
 };
 
 gboolean
-__geoxml_parameters_adjust_group_npar(GeoXmlParameters * parameters, gint adjust)
+__geoxml_parameters_adjust_group_npar(GeoXmlParameters * parameters, glong adjust)
 {
 	GdomeElement *	parent_element;
 	gchar *		value;
@@ -46,20 +48,20 @@ __geoxml_parameters_adjust_group_npar(GeoXmlParameters * parameters, gint adjust
 	if (strcmp(__geoxml_get_attr_value(parent_element, "instances"), "1") != 0)
 		return FALSE;
 
-	value = g_strdup_printf("%d",
-		atoi(__geoxml_get_attr_value(parent_element, "npar")) + adjust);
+	value = g_strdup_printf("%lu",
+		atol(__geoxml_get_attr_value(parent_element, "npar")) + adjust);
 	__geoxml_set_attr_value(parent_element, "npar", value);
 
 	return TRUE;
 }
 
 GeoXmlParameter *
-__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type)
+__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type, gboolean adjust_npar)
 {
 	GdomeElement *	parameter_element;
 
 	/* increases the npar counter if it is a group */
-	if (__geoxml_parameters_adjust_group_npar(parameters, +1) == FALSE)
+	if (adjust_npar == TRUE && __geoxml_parameters_adjust_group_npar(parameters, +1) == FALSE)
 		return NULL;
 
 	parameter_element = __geoxml_new_element((GdomeElement*)parameters, parameter_type_to_str[type]);
@@ -69,29 +71,30 @@ __geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PAR
 		__geoxml_insert_new_element(parameter_element, (type != GEOXML_PARAMETERTYPE_FLAG) ? "value" : "state", NULL);
 
 		if (type != GEOXML_PARAMETERTYPE_FLAG)
-			geoxml_program_parameter_set_required((GeoXmlProgramParameter*)parameter_element, FALSE);
-		else
-			geoxml_program_parameter_set_flag_default((GeoXmlProgramParameter*)parameter_element, FALSE);
-
+			geoxml_program_parameter_set_required(
+				(GeoXmlProgramParameter*)parameter_element, FALSE);
 		switch (type) {
 		case GEOXML_PARAMETERTYPE_FILE:
-			geoxml_program_parameter_set_file_be_directory((GeoXmlProgramParameter*)parameter_element, FALSE);
+			geoxml_program_parameter_set_file_be_directory(
+				(GeoXmlProgramParameter*)parameter_element, FALSE);
 			break;
 		case GEOXML_PARAMETERTYPE_RANGE:
-			geoxml_program_parameter_set_range_properties((GeoXmlProgramParameter*)parameter_element, "", "", "", "");
+			geoxml_program_parameter_set_range_properties(
+				(GeoXmlProgramParameter*)parameter_element, "", "", "", "");
 			break;
 		default:
 			break;
 		}
+		__geoxml_program_parameter_reset_default((GeoXmlProgramParameter*)parameter_element);
 	} else {
 		__geoxml_insert_new_element(parameter_element, "label", NULL);
 		__geoxml_insert_new_element(parameter_element, "parameters", NULL);
 		/* attributes */
-		__geoxml_set_attr_value(parameter_element, "exclusive", "no");
 		__geoxml_set_attr_value(parameter_element, "expand", "yes");
 		__geoxml_set_attr_value(parameter_element, "multiple", "yes");
 		__geoxml_set_attr_value(parameter_element, "npar", "0");
 		__geoxml_set_attr_value(parameter_element, "instances", "1");
+		__geoxml_set_attr_value(parameter_element, "exclusive", "0");
 	}
 
 	return (GeoXmlParameter*)parameter_element;
@@ -126,14 +129,6 @@ __geoxml_parameters_reset(GeoXmlParameters * parameters, gboolean recursive)
  */
 
 GeoXmlParameter *
-geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type)
-{
-	if (parameters == NULL)
-		return NULL;
-	return __geoxml_parameters_new_parameter(parameters, type);
-}
-
-GeoXmlParameter *
 geoxml_parameters_append_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type)
 {
 	if (parameters == NULL)
@@ -141,7 +136,7 @@ geoxml_parameters_append_parameter(GeoXmlParameters * parameters, enum GEOXML_PA
 
 	GdomeElement *	element;
 
-	element = (GdomeElement*)__geoxml_parameters_new_parameter(parameters, type);
+	element = (GdomeElement*)__geoxml_parameters_new_parameter(parameters, type, TRUE);
 	if (element == NULL)
 		return NULL;
 	gdome_el_insertBefore((GdomeElement*)parameters, (GdomeNode*)element, NULL, &exception);
@@ -155,6 +150,30 @@ geoxml_parameters_get_first_parameter(GeoXmlParameters * parameters)
 	if (parameters == NULL)
 		return NULL;
 	return (GeoXmlSequence*)__geoxml_get_first_element((GdomeElement*)parameters, "*");
+}
+
+int
+geoxml_parameters_get_parameter(GeoXmlParameters * parameters, GeoXmlSequence ** _parameter, gulong index)
+{
+	if (parameters == NULL) {
+		*_parameter = NULL;
+		return GEOXML_RETV_NULL_PTR;
+	}
+
+	gulong			i;
+	GeoXmlSequence *	parameter;
+
+	parameter = (GeoXmlSequence*)__geoxml_get_first_element((GdomeElement*)parameters, "*");
+	for (i = 0; i < index; ++i) {
+		parameter = (GeoXmlSequence*)__geoxml_next_element((GdomeElement*)parameter);
+		if (parameter == NULL) {
+			*_parameter = parameter;
+			return GEOXML_RETV_INVALID_INDEX;
+		}
+	}
+	*_parameter = parameter;
+
+	return GEOXML_RETV_SUCCESS;
 }
 
 glong

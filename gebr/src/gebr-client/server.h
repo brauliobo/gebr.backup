@@ -15,45 +15,25 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PARAMETERS_H
-#define __PARAMETERS_H
+#ifndef __SERVER_H
+#define __SERVER_H
 
 #include <glib.h>
-#include <gtk/gtk.h>
 
-#include <gui/parameter.h>
+#include <comm/gtcpsocket.h>
+#include <comm/protocol.h>
+#include <comm/server.h>
 
-struct parameter_data {
-	GeoXmlParameter *			parameter;
-	union {
-		/* program parameter */
-		struct parameter_widget	*	widget;
-		/* group */
-		struct {
-			GList *			parameters;
-			GtkWidget *		vbox;
-			GSList *		radio_group;
-		} group;
-	} data;
+struct server {
+	struct comm_server *	comm;
+
+
 };
 
-/*
- *
- */
-struct ui_parameters {
-	GtkWidget *					dialog;
+struct server *
+server_new(const gchar * address);
 
-	GeoXmlProgram *					program;
-	int						program_index;
-	GtkWidget *					root_vbox;
-	GList *						to_free_list;
-	GtkWidget *					deinstanciate_button;
+void
+server_free(struct server * server);
 
-	/* list of struct parameter_data */
-	GList *						parameters;
-};
-
-struct ui_parameters *
-parameters_configure_setup_ui(void);
-
-#endif //__PARAMETERS_H
+#endif //__SERVER_H

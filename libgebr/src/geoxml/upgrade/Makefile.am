@@ -1,5 +1,5 @@
-# Gï¿½BR - An environment for seismic processing.
-# Copyright (C) 2007 Gï¿½BR core team (http://gebr.sourceforge.net)
+# libgebr - GêBR Library
+# Copyright (C) 2007  Bráulio Barros de Oliveira (brauliobo@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,4 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = gebr gebr-client
+bin_PROGRAMS = gebr-geoxml-upgrade
+gebr_geoxml_upgrade_SOURCES = upgrade.c
+
+INCLUDES = -I..
+AM_CFLAGS = -Wall $(GDOME2_CFLAGS)
+gebr_geoxml_upgrade_LDADD = ../geoxml/libgebr_geoxml.la

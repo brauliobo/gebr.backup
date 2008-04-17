@@ -26,6 +26,7 @@
 #include "parameters_p.h"
 #include "parameter_group.h"
 #include "program_parameter.h"
+#include "program_parameter_p.h"
 
 /*
  * internal stuff
@@ -65,7 +66,7 @@ geoxml_parameter_set_type(GeoXmlParameter ** parameter, enum GEOXML_PARAMETERTYP
 	old_parameter = *parameter;
 	parent_element = (GdomeElement*)gdome_el_parentNode((GdomeElement*)old_parameter, &exception);
 
-	*parameter = __geoxml_parameters_new_parameter((GeoXmlParameters*)parent_element, type);
+	*parameter = __geoxml_parameters_new_parameter((GeoXmlParameters*)parent_element, type, FALSE);
 	gdome_el_insertBefore(parent_element, (GdomeNode*)*parameter, (GdomeNode*)old_parameter, &exception);
 
 	/* restore label and keyword */
@@ -142,6 +143,6 @@ geoxml_parameter_reset(GeoXmlParameter * parameter, gboolean recursive)
 		}
 	} else {
 		geoxml_program_parameter_set_value(GEOXML_PROGRAM_PARAMETER(parameter), "");
-		geoxml_program_parameter_set_default(GEOXML_PROGRAM_PARAMETER(parameter), "");
+		__geoxml_program_parameter_reset_default(GEOXML_PROGRAM_PARAMETER(parameter));
 	}
 }

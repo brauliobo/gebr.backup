@@ -1,5 +1,5 @@
-/*   GeBR ME - GeBR Menu Editor
- *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
+/*   libgebr - GeBR Library
+ *   Copyright (C) 2007 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,26 +15,31 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GROUP_PARAMETERS_H
-#define __GROUP_PARAMETERS_H
+#include <gdome.h>
 
-#include "parameters.h"
-struct parameter_data;
+#include "object.h"
+#include "xml.h"
 
-struct group_parameters_data {
-	struct parameters_data	parameters;
+/*
+ * internal structures and funcionts
+ */
 
-	struct parameter_data *	parameter;
-	GtkWidget *		widget;
-
-	/* for an exclusive group */
-	GSList *		radio_group;
+struct geoxml_object {
+	GdomeElement * element;
 };
 
-struct group_parameters_data *
-group_parameters_create_ui(struct parameter_data * parameter_data, gboolean expanded);
+/*
+ * library functions.
+ */
 
 void
-group_parameters_reset_exclusive(struct group_parameters_data * data);
+geoxml_object_set_user_data(GeoXmlObject * object, gpointer user_data)
+{
+	((GdomeNode*)object)->user_data = user_data;
+}
 
-#endif //__GROUP_PARAMETERS_H
+gpointer
+geoxml_object_get_user_data(GeoXmlObject * object)
+{
+	return ((GdomeNode*)object)->user_data;
+}

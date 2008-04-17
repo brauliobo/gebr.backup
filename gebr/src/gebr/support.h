@@ -1,4 +1,4 @@
-/*   GeBR Daemon - Process and control execution of flows
+/*   GeBR - An environment for seismic processing.
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -15,25 +15,31 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <locale.h>
-/* TODO: Check for libintl on configure */
+#ifndef __SUPPORT_H
+#define __SUPPORT_H
+
+/*
+ * Standard gettext macros.
+ */
 #ifdef ENABLE_NLS
 #  include <libintl.h>
+#  undef _
+#  define _(String) dgettext (PACKAGE, String)
+#  define Q_(String) g_strip_context ((String), gettext (String))
+#  ifdef gettext_noop
+#    define N_(String) gettext_noop (String)
+#  else
+#    define N_(String) (String)
+#  endif
+#else
+#  define textdomain(String) (String)
+#  define gettext(String) (String)
+#  define dgettext(Domain,Message) (Message)
+#  define dcgettext(Domain,Message,Type) (Message)
+#  define bindtextdomain(Domain,Directory) (Domain)
+#  define _(String) (String)
+#  define Q_(String) g_strip_context ((String), (String))
+#  define N_(String) (String)
 #endif
 
-#include <glib.h>
-
-#include "gebrd.h"
-
-int
-main(int argc, char ** argv)
-{
-#ifdef ENABLE_NLS
-	bindtextdomain(GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-	textdomain(GETTEXT_PACKAGE);
-#endif
-	gebrd_init();
-
-	return 0;
-}
+#endif //__SUPPORT_H

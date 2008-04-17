@@ -1,4 +1,4 @@
-/*   GeBR ME - GeBR Menu Editor
+/*   GeBR - An environment for seismic processing.
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -15,26 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GROUP_PARAMETERS_H
-#define __GROUP_PARAMETERS_H
+#ifndef __CLIENT_H
+#define __CLIENT_H
 
-#include "parameters.h"
-struct parameter_data;
+#include "server.h"
 
-struct group_parameters_data {
-	struct parameters_data	parameters;
+gboolean
+client_parse_server_messages(struct comm_server * comm_server, struct server * server);
 
-	struct parameter_data *	parameter;
-	GtkWidget *		widget;
-
-	/* for an exclusive group */
-	GSList *		radio_group;
-};
-
-struct group_parameters_data *
-group_parameters_create_ui(struct parameter_data * parameter_data, gboolean expanded);
-
-void
-group_parameters_reset_exclusive(struct group_parameters_data * data);
-
-#endif //__GROUP_PARAMETERS_H
+#endif //__CLIENT_H

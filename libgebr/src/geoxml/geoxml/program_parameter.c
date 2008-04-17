@@ -36,6 +36,18 @@ struct geoxml_program_parameter {
 	GdomeElement * element;
 };
 
+void
+__geoxml_program_parameter_reset_default(GeoXmlProgramParameter * program_parameter)
+{
+	enum GEOXML_PARAMETERTYPE	type;
+
+	type = geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter));
+	if (type == GEOXML_PARAMETERTYPE_FLAG)
+		geoxml_program_parameter_set_flag_default(program_parameter, FALSE);
+	else
+		geoxml_program_parameter_set_default(program_parameter, "");
+}
+
 /*
  * library functions.
  */
@@ -302,20 +314,10 @@ geoxml_program_parameter_get_default(GeoXmlProgramParameter * program_parameter)
 		return NULL;
 
 	GdomeElement *		element;
-// 	GdomeDOMString *	string;
-// 	gboolean		ret;
 	gchar *			tag_name;
 
 	tag_name = (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) == GEOXML_PARAMETERTYPE_FLAG) ? "state" : "value";
 	element = __geoxml_get_first_element((GdomeElement*)program_parameter, tag_name);
-
-	/* TODO: add support for removing or adding a default value */
-// 	string = gdome_str_mkref("default");
-// 	ret = (gboolean)gdome_el_hasAttribute(element, string, &exception);
-// 	gdome_str_unref(string);
-//
-// 	if (ret == FALSE)
-// 		return "";
 
 	return __geoxml_get_attr_value(element, "default");
 }

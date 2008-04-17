@@ -23,14 +23,14 @@
  * then adjust the number of parameters of a instance (npar)
  */
 gboolean
-__geoxml_parameters_adjust_group_npar(GeoXmlParameters * parameters, gint adjust);
+__geoxml_parameters_adjust_group_npar(GeoXmlParameters * parameters, glong adjust);
 
 /**
  * \internal
  * Create a new parameter with type \p type.
  */
 GeoXmlParameter *
-__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
+__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type, gboolean adjust_npar);
 
 /**
  * \internal

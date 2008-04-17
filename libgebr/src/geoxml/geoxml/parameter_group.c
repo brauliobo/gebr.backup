@@ -188,22 +188,50 @@ geoxml_parameter_group_set_parameters_by_instance(GeoXmlParameterGroup * paramet
 }
 
 void
-geoxml_parameter_group_set_exclusive(GeoXmlParameterGroup * parameter_group, const gboolean enable)
-{
-	if (parameter_group == NULL)
-		return;
-	__geoxml_set_attr_value((GdomeElement*)parameter_group, "exclusive", (enable == TRUE ? "yes" : "no"));
-	/* clean all parameters values */
-	__geoxml_parameters_reset(
-		geoxml_parameter_group_get_parameters(parameter_group), FALSE);
-}
-
-void
 geoxml_parameter_group_set_expand(GeoXmlParameterGroup * parameter_group, const gboolean enable)
 {
 	if (parameter_group == NULL)
 		return;
 	__geoxml_set_attr_value((GdomeElement*)parameter_group, "expand", (enable == TRUE ? "yes" : "no"));
+}
+
+void
+geoxml_parameter_group_set_exclusive(GeoXmlParameterGroup * parameter_group, GeoXmlParameter * parameter)
+{
+	if (parameter_group == NULL)
+		return;
+	if (parameter == NULL) {
+		__geoxml_set_attr_value((GdomeElement*)parameter_group, "exclusive", "0");
+		return;
+	}
+
+	gchar *	value;
+
+	value = g_strdup_printf("%ld", __geoxml_get_element_index((GdomeElement*)parameter)+1);
+	__geoxml_set_attr_value((GdomeElement*)parameter_group, "exclusive", value);
+	g_free(value);
+
+	if (geoxml_parameter_group_get_selected(parameter_group) == NULL)
+		geoxml_parameter_group_set_selected(parameter_group, parameter);
+}
+
+void
+geoxml_parameter_group_set_selected(GeoXmlParameterGroup * parameter_group, GeoXmlParameter * parameter)
+{
+	if (parameter_group == NULL)
+		return;
+	if (geoxml_parameter_group_get_exclusive(parameter_group) == NULL)
+		return;
+	if (parameter == NULL) {
+		__geoxml_set_attr_value((GdomeElement*)parameter_group, "selected", "0");
+		return;
+	}
+
+	gchar *	value;
+
+	value = g_strdup_printf("%ld", __geoxml_get_element_index((GdomeElement*)parameter)+1);
+	__geoxml_set_attr_value((GdomeElement*)parameter_group, "selected", value);
+	g_free(value);
 }
 
 gboolean
@@ -224,19 +252,62 @@ geoxml_parameter_group_get_parameters_by_instance(GeoXmlParameterGroup * paramet
 }
 
 gboolean
-geoxml_parameter_group_get_exclusive(GeoXmlParameterGroup * parameter_group)
-{
-	if (parameter_group == NULL)
-		return FALSE;
-	return (!strcmp(__geoxml_get_attr_value((GdomeElement*)parameter_group, "exclusive"), "yes"))
-		? TRUE : FALSE;
-}
-
-gboolean
 geoxml_parameter_group_get_expand(GeoXmlParameterGroup * parameter_group)
 {
 	if (parameter_group == NULL)
 		return FALSE;
 	return (!strcmp(__geoxml_get_attr_value((GdomeElement*)parameter_group, "expand"), "yes"))
 		? TRUE : FALSE;
+}
+
+GeoXmlParameter *
+geoxml_parameter_group_get_exclusive(GeoXmlParameterGroup * parameter_group)
+{
+	if (parameter_group == NULL)
+		return FALSE;
+
+	gulong			index;
+	GeoXmlSequence *	parameter;
+
+	index = atol(__geoxml_get_attr_value((GdomeElement*)parameter_group, "exclusive"));
+	if (index == 0)
+		return NULL;
+	index--;
+	geoxml_parameters_get_parameter((GeoXmlParameters*)
+		__geoxml_get_first_element((GdomeElement*)parameter_group, "parameters"),
+		&parameter, index);
+
+	/* there isn't a parameter at index, so use the first parameter of the group */
+	if (parameter == NULL)
+		return geoxml_parameters_get_first_parameter(
+			geoxml_parameter_group_get_parameters(parameter_group));
+
+	return (GeoXmlParameter *)parameter;
+}
+
+GeoXmlParameter *
+geoxml_parameter_group_get_selected(GeoXmlParameterGroup * parameter_group)
+{
+	if (parameter_group == NULL)
+		return FALSE;
+	if (geoxml_parameter_group_get_exclusive(parameter_group) == NULL)
+		return NULL;
+
+	gulong			index;
+	GeoXmlSequence *	parameter;
+
+	index = atol(__geoxml_get_attr_value((GdomeElement*)parameter_group, "selected"));
+	if (index == 0)
+		return NULL;
+	index--;
+	geoxml_parameters_get_parameter((GeoXmlParameters*)
+		__geoxml_get_first_element((GdomeElement*)parameter_group, "parameters"),
+		&parameter, index);
+
+	/* there isn't a parameter at index, so use the first parameter of the group */
+	if (parameter == NULL)
+		return geoxml_parameters_get_first_parameter(
+			geoxml_parameter_group_get_parameters(parameter_group));
+
+	return (GeoXmlParameter *)parameter;
 }

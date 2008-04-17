@@ -90,19 +90,6 @@ typedef struct geoxml_parameters GeoXmlParameters;
 #include "sequence.h"
 
 /**
- * Create a new parameter.
- * Use geoxml_sequence_prepend or geoxml_sequence_append to add it to the
- * list of parameters.
- *
- * If \p parameters is a from a group parameter and it has more than one instance,
- * then NULL is returned
- *
- * If \p parameters is NULL returns NULL.
- */
-GeoXmlParameter *
-geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
-
-/**
  * Create a new parameter and append it to \p parameters.
  * Provided for convenience.
  *
@@ -119,11 +106,20 @@ geoxml_parameters_append_parameter(GeoXmlParameters * parameters, enum GEOXML_PA
 /**
  * Get the first paramater of \p program.
  *
- * \note Due to internal implementation, it is very slow to get the nieth paramater.
- * If you want so, you'll need to call geoxml_sequence_next multiple times
+ * If \p parameters is NULL returns NULL.
  */
 GeoXmlSequence *
 geoxml_parameters_get_first_parameter(GeoXmlParameters * parameters);
+
+/**
+ * Get the parameter at \p index
+ *
+ * \note Due to XML estrutucture, it is very slow to get the nieth paramater.
+ * Therefore, you should avoid this function and use \ref geoxml_parameters_get_first_parameter
+ * instead
+ */
+int
+geoxml_parameters_get_parameter(GeoXmlParameters * parameters, GeoXmlSequence ** parameter, gulong index);
 
 /**
  * Get the number of parameters that \p parameters has.

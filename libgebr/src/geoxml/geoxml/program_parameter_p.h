@@ -1,5 +1,5 @@
-/*   GeBR ME - GeBR Menu Editor
- *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
+/*   libgebr - G�BR Library
+ *   Copyright (C) 2007 G�BR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,26 +15,18 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GROUP_PARAMETERS_H
-#define __GROUP_PARAMETERS_H
+#ifndef __LIBGEBR_GEOXML_PROGRAM_PARAMETER_P_H
+#define __LIBGEBR_GEOXML_PROGRAM_PARAMETER_P_H
 
-#include "parameters.h"
-struct parameter_data;
+#include "program_parameter.h"
 
-struct group_parameters_data {
-	struct parameters_data	parameters;
-
-	struct parameter_data *	parameter;
-	GtkWidget *		widget;
-
-	/* for an exclusive group */
-	GSList *		radio_group;
-};
-
-struct group_parameters_data *
-group_parameters_create_ui(struct parameter_data * parameter_data, gboolean expanded);
-
+/**
+ * \internal
+ * Reseting a program parameter default is not only settting it to a empty string.
+ * In fact, this will break XML, as some default are implemented as enumerated attributes.
+ *
+ */
 void
-group_parameters_reset_exclusive(struct group_parameters_data * data);
+__geoxml_program_parameter_reset_default(GeoXmlProgramParameter * parameter);
 
-#endif //__GROUP_PARAMETERS_H
+#endif //__LIBGEBR_GEOXML_PROGRAM_PARAMETER_P_H

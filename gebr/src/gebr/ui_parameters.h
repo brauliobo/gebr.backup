@@ -1,4 +1,4 @@
-/*   GeBR ME - GeBR Menu Editor
+/*   GeBR - An environment for seismic processing.
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -18,21 +18,48 @@
 #ifndef __PARAMETERS_H
 #define __PARAMETERS_H
 
+#include <glib.h>
 #include <gtk/gtk.h>
 
-#include <geoxml.h>
+#include <gui/parameter.h>
 
-struct parameters_data {
-	gboolean		is_group;
-	GeoXmlParameters *	parameters;
+struct parameter_data {
+	GeoXmlParameter *			parameter;
 
-	GtkWidget *		vbox;
+	/* vbox packed widget */
+	GtkWidget *				widget;
+	/* for in-group(exclusive) parameter */
+	GtkWidget *				radio_button;
+
+	union {
+		/* program parameter */
+		struct parameter_widget	*	widget;
+		/* group */
+		struct {
+			GtkWidget *		vbox;
+			GtkWidget *		deinstanciate_button;
+			GSList *		radio_group;
+		} group;
+	} specific;
 };
 
-GtkWidget *
-parameters_create_ui(GeoXmlParameters * parameters, gboolean expanded);
+/*
+ *
+ */
+struct ui_parameters {
+	GtkWidget *		dialog;
+	GtkWidget *		vbox;
+
+	/* cloned program for editing */
+	GeoXmlProgram *		program;
+	/* original program index */
+	int			program_index;
+};
+
+struct ui_parameters *
+parameters_configure_setup_ui(void);
 
 void
-parameters_add(GtkButton * button, struct parameters_data * parameters_data);
+parameters_reset_to_default(GeoXmlParameters * parameters);
 
 #endif //__PARAMETERS_H

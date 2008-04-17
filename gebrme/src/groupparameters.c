@@ -29,11 +29,18 @@
 static void
 group_parameters_data_free(GtkObject * expander, struct group_parameters_data * data);
 
+static void
+group_parameters_instanciate(GtkButton * button, struct group_parameters_data * data);
+
+static void
+group_parameters_deinstanciate(GtkButton * button, struct group_parameters_data * data);
+
 /*
  * Public functions
  */
-GtkWidget *
-group_parameters_create_ui(struct parameter_data * parameter_data, gboolean hidden)
+
+struct group_parameters_data *
+group_parameters_create_ui(struct parameter_data * parameter_data, gboolean expanded)
 {
 	GtkWidget *			group_parameters_expander;
 	GtkWidget *			group_parameters_label_widget;
@@ -47,17 +54,15 @@ group_parameters_create_ui(struct parameter_data * parameter_data, gboolean hidd
 	GeoXmlParameterGroup *		parameter_group;
 	struct group_parameters_data *	data;
 
-	group_parameters_expander = gtk_expander_new("");
-	gtk_expander_set_expanded (GTK_EXPANDER (group_parameters_expander), hidden);
-	gtk_widget_show(group_parameters_expander);
-	depth_hbox = gtk_container_add_depth_hbox(group_parameters_expander);
-
 	parameter_group = GEOXML_PARAMETER_GROUP(parameter_data->parameter);
 	data = g_malloc(sizeof(struct group_parameters_data));
-	data->parameters.is_group = TRUE;
-	data->parameters.parameters = geoxml_parameter_group_get_parameters(parameter_group);
+
+	group_parameters_expander = gtk_expander_new("");
+	gtk_expander_set_expanded(GTK_EXPANDER(group_parameters_expander), expanded);
 	g_signal_connect(group_parameters_expander, "destroy",
 		GTK_SIGNAL_FUNC(group_parameters_data_free), data);
+	gtk_widget_show(group_parameters_expander);
+	depth_hbox = gtk_container_add_depth_hbox(group_parameters_expander);
 
 	group_parameters_vbox = gtk_vbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(depth_hbox), group_parameters_vbox, TRUE, TRUE, 0);
@@ -71,94 +76,111 @@ group_parameters_create_ui(struct parameter_data * parameter_data, gboolean hidd
 	gtk_widget_show(group_parameters_label);
 	gtk_box_pack_start(GTK_BOX(group_parameters_label_widget), group_parameters_label, FALSE, TRUE, 0);
 
+	widget = gtk_button_new_from_stock(GTK_STOCK_ADD);
+	gtk_widget_show(widget);
+	/* FIXME: workaroung gtk bug! */
+// 	gtk_widget_set_sensitive(widget, geoxml_parameter_group_get_instances(parameter_group) == 1);
+	gtk_box_pack_start(GTK_BOX(group_parameters_label_widget), widget, FALSE, TRUE, 5);
+	g_signal_connect(widget, "clicked",
+		GTK_SIGNAL_FUNC(parameters_add), data);
+	g_object_set(G_OBJECT(widget),
+		"visible", geoxml_parameter_group_get_instances(parameter_group) == 1,
+		"relief", GTK_RELIEF_NONE,
+		NULL);
+
 	if (geoxml_parameter_group_get_can_instanciate(parameter_group)) {
 		instanciate_button = gtk_button_new();
 		gtk_widget_show(instanciate_button);
+		gtk_box_pack_start(GTK_BOX(group_parameters_label_widget), instanciate_button, FALSE, TRUE, 5);
 		g_signal_connect(instanciate_button, "clicked",
 			GTK_SIGNAL_FUNC(group_parameters_instanciate), data);
 		g_object_set(G_OBJECT(instanciate_button),
 			"label", _("Instanciate"),
 			"image", gtk_image_new_from_stock(GTK_STOCK_ADD, GTK_ICON_SIZE_SMALL_TOOLBAR),
-			"user-data", parameter_data,
 			"relief", GTK_RELIEF_NONE,
 			NULL);
-	} else
-		instanciate_button = NULL;
-	if (geoxml_parameter_group_get_instances(parameter_group) == 1) {
-		widget = gtk_button_new_from_stock(GTK_STOCK_ADD);
-		gtk_widget_show(widget);
-		gtk_box_pack_start(GTK_BOX(group_parameters_label_widget), widget, FALSE, TRUE, 5);
-		g_signal_connect(widget, "clicked",
-			GTK_SIGNAL_FUNC(parameters_add), data);
-		g_object_set(G_OBJECT(widget),
-			"user-data", group_parameters_vbox,
-			"relief", GTK_RELIEF_NONE,
-			NULL);
-
-		if (instanciate_button != NULL)
-			gtk_box_pack_start(GTK_BOX(group_parameters_label_widget), instanciate_button, FALSE, TRUE, 5);
-	} else {
-		gtk_box_pack_start(GTK_BOX(group_parameters_label_widget), instanciate_button, FALSE, TRUE, 5);
 
 		widget = gtk_button_new();
 		gtk_widget_show(widget);
+		gtk_widget_set_sensitive(widget, geoxml_parameter_group_get_instances(parameter_group) > 1);
 		gtk_box_pack_start(GTK_BOX(group_parameters_label_widget), widget, FALSE, TRUE, 5);
 		g_signal_connect(widget, "clicked",
 			GTK_SIGNAL_FUNC(group_parameters_deinstanciate), data);
 		g_object_set(G_OBJECT(widget),
 			"label", _("Deinstanciate"),
 			"image", gtk_image_new_from_stock(GTK_STOCK_REMOVE, GTK_ICON_SIZE_SMALL_TOOLBAR),
-			"user-data", parameter_data,
 			"relief", GTK_RELIEF_NONE,
 			NULL);
 	}
 
-	data->group = parameter_group;
-	data->radio_group = NULL;
+	*data = (struct group_parameters_data) {
+		.parameters = (struct parameters_data) {
+			.is_group = TRUE,
+			.vbox = group_parameters_vbox,
+			.parameters = geoxml_parameter_group_get_parameters(parameter_group),
+		},
+		.parameter = parameter_data,
+		.widget = group_parameters_expander,
+		.radio_group = NULL
+	};
+
 	i = geoxml_parameters_get_first_parameter(data->parameters.parameters);
 	while (i != NULL) {
 		gtk_box_pack_start(GTK_BOX(group_parameters_vbox),
-			parameter_create_ui(GEOXML_PARAMETER(i), (struct parameters_data *)data, hidden), FALSE, TRUE, 0);
+			parameter_create_ui(GEOXML_PARAMETER(i), (struct parameters_data *)data, expanded), FALSE, TRUE, 0);
 
 		geoxml_sequence_next(&i);
 	}
 
-	return group_parameters_expander;
+	return data;
 }
 
 void
-group_parameters_instanciate(GtkButton * button, struct parameters_data * parameters_data)
+group_parameters_reset_exclusive(struct group_parameters_data * data)
 {
-	struct parameter_data *	parameter_data;
+	GeoXmlSequence *	first;
+	struct parameter_data *	first_data;
+	GtkToggleButton *	radio_button;
 
-	g_object_get(G_OBJECT(button), "user-data", &parameter_data, NULL);
+	first = geoxml_parameters_get_first_parameter(data->parameters.parameters);
+	first_data = (struct parameter_data *)geoxml_object_get_user_data(GEOXML_OBJECT(first));
 
-	geoxml_parameter_group_instanciate(GEOXML_PARAMETER_GROUP(parameter_data->parameter));
-	/* rebuild parameters' widgets */
-	gtk_container_foreach(GTK_CONTAINER(parameter_data->specific_table), (GtkCallback)gtk_widget_destroy, NULL);
-	parameter_create_ui_type_specific(parameter_data->specific_table, parameter_data);
-
-	menu_saved_status_set(MENU_STATUS_UNSAVED);
-}
-
-void
-group_parameters_deinstanciate(GtkButton * button, struct parameters_data * parameters_data)
-{
-	struct parameter_data *	parameter_data;
-
-	g_object_get(G_OBJECT(button), "user-data", &parameter_data, NULL);
-
-	geoxml_parameter_group_deinstanciate(GEOXML_PARAMETER_GROUP(parameter_data->parameter));
-	/* rebuild parameters' widgets */
-	gtk_container_foreach(GTK_CONTAINER(parameter_data->specific_table), (GtkCallback)gtk_widget_destroy, NULL);
-	parameter_create_ui_type_specific(parameter_data->specific_table, parameter_data);
-
-	menu_saved_status_set(MENU_STATUS_UNSAVED);
+	g_object_get(G_OBJECT(first_data->label), "user-data", &radio_button, NULL);
+	gtk_toggle_button_set_active(radio_button, TRUE);
 }
 
 /*
  * Section: Private
  */
+
+static void
+group_parameters_instanciate(GtkButton * button, struct group_parameters_data * data)
+{
+	geoxml_parameter_group_instanciate(GEOXML_PARAMETER_GROUP(data->parameter->parameter));
+	/* rebuild parameters' widgets */
+	gtk_container_foreach(GTK_CONTAINER(data->parameter->specific_table), (GtkCallback)gtk_widget_destroy, NULL);
+	parameter_create_ui_type_specific(data->parameter->specific_table, data->parameter);
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+static void
+group_parameters_deinstanciate(GtkButton * button, struct group_parameters_data * data)
+{
+	GeoXmlParameter *	exclusive;
+
+	exclusive = geoxml_parameter_group_get_exclusive(GEOXML_PARAMETER_GROUP(data->parameter->parameter));
+	geoxml_parameter_group_deinstanciate(GEOXML_PARAMETER_GROUP(data->parameter->parameter));
+	/* the exclusive was deleted? */
+	if (exclusive != geoxml_parameter_group_get_exclusive(GEOXML_PARAMETER_GROUP(data->parameter->parameter)))
+		group_parameters_reset_exclusive(data);
+
+	/* rebuild parameters' widgets */
+	gtk_container_foreach(GTK_CONTAINER(data->parameter->specific_table), (GtkCallback)gtk_widget_destroy, NULL);
+	parameter_create_ui_type_specific(data->parameter->specific_table, data->parameter);
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
 
 static void
 group_parameters_data_free(GtkObject * expander, struct group_parameters_data * data)
