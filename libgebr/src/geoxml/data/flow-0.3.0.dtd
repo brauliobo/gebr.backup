@@ -1,6 +1,7 @@
 <!ELEMENT flow (filename, title, description, help, author, email, date, category*, io, program*, revision*)>
 <!ATTLIST flow
-   version CDATA #FIXED "0.3.0">
+   version CDATA #FIXED "0.3.0"
+   lastid  IDREF #REQUIRED>
 
 <!-- Name of the XML flow file -->
 <!ELEMENT filename (#PCDATA)>
@@ -52,23 +53,25 @@
 
 <!ELEMENT parameters (parameter*)>
 <!ATTLIST parameters
-    exclusive NMTOKEN #REQUIRED
-    selected  NMTOKEN #IMPLIED>
+    exclusive CDATA #REQUIRED
+    selected  CDATA #IMPLIED>
 
 <!ELEMENT group (parameters+)>
 <!ATTLIST group
     expand       (yes | no) #REQUIRED
     instanciable (yes | no) #REQUIRED>
 
-<!ELEMENT parameter (label, (int | float | string | flag | file | range | enum | group)>
+<!ELEMENT parameter (label, (reference | int | float | string | flag | file | range | enum | group)>
+<!ATTLIST parameter
+   id ID #REQUIRED>
 
 <!-- Short text to be displayed as label for a parameter -->
 <!ELEMENT label (#PCDATA)>
 
 <!ELEMENT property (keyword, value+)>
 <!ATTLIST property
-   required (yes | no) #REQUIRED
-   separator     CDATA #IMPLIED>
+   required  (yes | no) #REQUIRED
+   separator CDATA      #IMPLIED>
 
 <!-- Keyword to build the command line -->
 <!ELEMENT keyword (#PCDATA)>
@@ -78,6 +81,10 @@
    default CDATA #IMPLIED>
 
 <!-- Types of parameters -->
+<!-- Reference -->
+<!ELEMENT reference (value)>
+<!ATTLIST reference
+   id IDREF #REQUIRED>
 <!-- Integer -->
 <!ELEMENT int (property)>
 <!-- Real number -->
@@ -93,10 +100,10 @@
 <!-- Range -->
 <!ELEMENT range (property)>
 <!ATTLIST range
-   min            CDATA #REQUIRED
-   max            CDATA #REQUIRED
-   inc            CDATA #REQUIRED
-   digits         CDATA #REQUIRED>
+   min    CDATA #REQUIRED
+   max    CDATA #REQUIRED
+   inc    CDATA #REQUIRED
+   digits CDATA #REQUIRED>
 <!-- Enum -->
 <!ELEMENT enum (property, option*)>
 <!ELEMENT option (label, value)>
