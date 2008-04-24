@@ -75,6 +75,7 @@ geoxml_parameter_group_instanciate(GeoXmlParameterGroup * parameter_group)
 
 	geoxml_parameter_group_get_instance(parameter_group, &first_instance, 0);
 	new_instance = (GeoXmlParameters*)geoxml_sequence_append_clone(first_instance);
+	__geoxml_parameter_group_turn_instance_to_reference(new_instance);
 	geoxml_parameters_reset(new_instance, TRUE);
 
 	return new_instance;

@@ -24,6 +24,7 @@
 #include "xml.h"
 #include "error.h"
 #include "parameter.h"
+#include "parameter_p.h"
 #include "program_p.h"
 #include "types.h"
 #include "sequence.h"
@@ -174,7 +175,9 @@ geoxml_program_parameter_set_file_be_directory(GeoXmlProgramParameter * program_
 		return;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_FILE)
 		return;
-	__geoxml_set_attr_value((GdomeElement*)program_parameter, "directory", (is_directory == TRUE ? "yes" : "no"));
+	__geoxml_set_attr_value(
+		__geoxml_parameter_get_type_element(GEOXML_PARAMETER(program_parameter)),
+		"directory", (is_directory == TRUE ? "yes" : "no"));
 }
 
 void
@@ -185,10 +188,14 @@ geoxml_program_parameter_set_range_properties(GeoXmlProgramParameter * program_p
 		return;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_RANGE)
 		return;
-	__geoxml_set_attr_value((GdomeElement*)program_parameter, "min", min);
-	__geoxml_set_attr_value((GdomeElement*)program_parameter, "max", max);
-	__geoxml_set_attr_value((GdomeElement*)program_parameter, "inc", inc);
-	__geoxml_set_attr_value((GdomeElement*)program_parameter, "digits", digits);
+
+	GdomeElement *	type_element;
+
+	type_element = __geoxml_parameter_get_type_element(GEOXML_PARAMETER(program_parameter));
+	__geoxml_set_attr_value(type_element, "min", min);
+	__geoxml_set_attr_value(type_element, "max", max);
+	__geoxml_set_attr_value(type_element, "inc", inc);
+	__geoxml_set_attr_value(type_element, "digits", digits);
 }
 
 GeoXmlEnumOption *
@@ -364,7 +371,8 @@ geoxml_program_parameter_get_file_be_directory(GeoXmlProgramParameter * program_
 		return FALSE;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_FILE)
 		return FALSE;
-	return (!strcmp(__geoxml_get_attr_value((GdomeElement*)program_parameter, "directory"), "yes"))
+	return (!strcmp(__geoxml_get_attr_value(
+		__geoxml_parameter_get_type_element(GEOXML_PARAMETER(program_parameter)), "directory"), "yes"))
 		? TRUE : FALSE;
 }
 
@@ -376,8 +384,12 @@ geoxml_program_parameter_get_range_properties(GeoXmlProgramParameter * program_p
 		return;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_RANGE)
 		return;
-	*min = (gchar*)__geoxml_get_attr_value((GdomeElement*)program_parameter, "min");
-	*max = (gchar*)__geoxml_get_attr_value((GdomeElement*)program_parameter, "max");
-	*inc = (gchar*)__geoxml_get_attr_value((GdomeElement*)program_parameter, "inc");
-	*digits = (gchar*)__geoxml_get_attr_value((GdomeElement*)program_parameter, "digits");
+
+	GdomeElement *	type_element;
+
+	type_element = __geoxml_parameter_get_type_element(GEOXML_PARAMETER(program_parameter));
+	*min = (gchar*)__geoxml_get_attr_value(type_element, "min");
+	*max = (gchar*)__geoxml_get_attr_value(type_element, "max");
+	*inc = (gchar*)__geoxml_get_attr_value(type_element, "inc");
+	*digits = (gchar*)__geoxml_get_attr_value(type_element, "digits");
 }
