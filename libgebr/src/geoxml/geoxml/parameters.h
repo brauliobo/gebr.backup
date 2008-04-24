@@ -90,17 +90,25 @@ typedef struct geoxml_parameters GeoXmlParameters;
 
 /**
  * Create a new parameter and append it to \p parameters.
- * Provided for convenience.
  *
  * If \p parameters is a from a group parameter and it has more than one instance,
  * then NULL is returned
  *
  * If \p parameters is NULL returns NULL.
- *
- * \see geoxml_parameters_new_parameter
  */
 GeoXmlParameter *
 geoxml_parameters_append_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type);
+
+/**
+ * Create a new parameter which references \p parameter, and append it to \p parameters.
+ *
+ * If \p parameters is a from a group parameter and it has more than one instance,
+ * then NULL is returned
+ *
+ * If \p parameters is NULL returns NULL.
+ */
+GeoXmlParameter *
+geoxml_parameters_append_reference_parameter(GeoXmlParameters * parameters, GeoXmlParameter * reference);
 
 /**
  * Set this \p parameters to be an exclusive group and \p parameter

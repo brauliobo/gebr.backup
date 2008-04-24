@@ -70,6 +70,8 @@ __geoxml_document_clone_doc(GdomeDocument * source, GdomeDocumentType * document
 	root_element = gdome_doc_documentElement(document, &exception);
 	__geoxml_set_attr_value(root_element, "version",
 		__geoxml_get_attr_value(source_root_element, "version"));
+	__geoxml_set_attr_value(root_element, "lastid",
+		__geoxml_get_attr_value(source_root_element, "lastid"));
 
 	node = gdome_el_firstChild(source_root_element, &exception);
 	do {
@@ -435,6 +437,7 @@ geoxml_document_new(const gchar * name, const gchar * version)
 	/* document (root) element */
 	root_element = gdome_doc_documentElement(document, &exception);
 	__geoxml_set_attr_value(root_element, "version", version);
+	__geoxml_set_attr_value(root_element, "lastid", "0");
 
 	/* elements (as specified in DTD) */
 	__geoxml_insert_new_element(root_element, "filename", NULL);

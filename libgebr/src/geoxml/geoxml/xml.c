@@ -15,9 +15,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
+#include <stdlib.h>
+
 #include <gdome.h>
 #include <glib.h>
-#include <string.h>
 
 #include "xml.h"
 #include "types.h"
@@ -126,6 +128,19 @@ __geoxml_get_element_at(GdomeElement * parent_element, const gchar * tag_name, g
 
 	gdome_str_unref(string);
 	gdome_nl_unref(node_list, &exception);
+
+	return element;
+}
+
+GdomeElement *
+__geoxml_get_element_by_id(GdomeElement * base, const gchar * id)
+{
+	GdomeDOMString *	string;
+	GdomeElement *		element;
+
+	string = gdome_str_mkref(id);
+	element = gdome_doc_getElementById(gdome_el_ownerDocument(base, &exception), string, &exception);
+	gdome_str_unref(string);
 
 	return element;
 }
@@ -310,4 +325,29 @@ __geoxml_next_same_element(GdomeElement * element)
 		return next_element;
 
 	return NULL;
+}
+
+void
+__geoxml_element_assign_new_id(GdomeElement * element)
+{
+	GdomeElement *	document_element;
+	gulong		lastid;
+	gchar *		lastid_str;
+
+	document_element = (GdomeElement*)gdome_el_ownerDocument(element, &exception);
+	lastid = atol(__geoxml_get_attr_value(document_element, "lastid"));
+	lastid++;
+	lastid_str = g_strdup_printf("%lu", lastid);
+
+	__geoxml_set_attr_value(document_element, "lastid", lastid_str);
+	__geoxml_set_attr_value(element, "id", lastid_str);
+
+	g_free(lastid_str);
+}
+
+void
+__geoxml_element_assign_reference_id(GdomeElement * element, GdomeElement * reference)
+{
+	__geoxml_set_attr_value(element, "id",
+		__geoxml_get_attr_value(reference, "id"));
 }

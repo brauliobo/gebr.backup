@@ -22,9 +22,11 @@
 #include "parameter.h"
 #include "xml.h"
 #include "types.h"
+#include "error.h"
 #include "parameters.h"
 #include "parameters_p.h"
 #include "parameter_group.h"
+#include "parameter_group_p.h"
 #include "program_parameter.h"
 #include "program_parameter_p.h"
 
@@ -39,44 +41,128 @@ struct geoxml_parameter {
 const char * parameter_type_to_str[] = {
 	"string", "int", "file",
 	"flag", "float", "range",
-	"enum", "group"
+	"enum", "group", "reference"
 };
 
-const int parameter_type_to_str_len = 8;
+const int parameter_type_to_str_len = 9;
 
 /*
  * private functions
  */
 
+GdomeElement *
+__geoxml_parameter_get_type_element(GeoXmlParameter * parameter)
+{
+	GdomeElement *	type_element;
 
+	type_element = __geoxml_get_first_element((GdomeElement*)parameter, "label");
+	type_element = __geoxml_next_element(type_element);
+
+	return type_element;
+}
+
+void
+__geoxml_parameter_set_be_reference(GeoXmlParameter * parameter, GeoXmlParameter * reference, gboolean new)
+{
+	GdomeElement *			reference_element;
+	GdomeElement *			type_element;
+	enum GEOXML_PARAMETERTYPE	type;
+
+	type = geoxml_parameter_get_type(parameter);
+	if (type == GEOXML_PARAMETERTYPE_GROUP) {
+		__geoxml_parameter_group_turn_to_reference(GEOXML_PARAMETER_GROUP(parameter));
+		return;
+	}
+
+	type_element = __geoxml_parameter_get_type_element(parameter);
+	reference_element = __geoxml_insert_new_element((GdomeElement*)parameter,
+		"reference", type_element);
+	gdome_el_removeChild((GdomeElement*)parameter, (GdomeNode*)type_element, &exception);
+
+	__geoxml_element_assign_reference_id(reference_element, (GdomeElement*)reference);
+	if (new == TRUE)
+		__geoxml_element_assign_new_id((GdomeElement*)parameter);
+}
+
+gboolean
+__geoxml_parameter_insert_type(GeoXmlParameter * parameter, enum GEOXML_PARAMETERTYPE type)
+{
+	if (type == GEOXML_PARAMETERTYPE_REFERENCE)
+		return FALSE;
+
+	GdomeElement *	type_element;
+
+	type_element = __geoxml_insert_new_element((GdomeElement*)parameter, parameter_type_to_str[type], NULL);
+	switch (type) {
+	case GEOXML_PARAMETERTYPE_GROUP: {
+		GeoXmlParameters *	parameters;
+
+		parameters = (GeoXmlParameters*)__geoxml_insert_new_element(type_element, "parameters", NULL);
+		geoxml_parameters_set_exclusive(parameters, NULL);
+
+		break;
+	} default: {
+		GdomeElement *		property_element;
+
+		property_element = __geoxml_insert_new_element(type_element, "property", NULL);
+		__geoxml_insert_new_element(property_element, "keyword", NULL);
+		__geoxml_insert_new_element(property_element, "label", NULL);
+		__geoxml_insert_new_element(property_element, "value", NULL);
+
+		switch (type) {
+		case GEOXML_PARAMETERTYPE_FILE:
+			geoxml_program_parameter_set_file_be_directory(
+				(GeoXmlProgramParameter*)parameter, FALSE);
+			break;
+		case GEOXML_PARAMETERTYPE_RANGE:
+			geoxml_program_parameter_set_range_properties(
+				(GeoXmlProgramParameter*)parameter, "", "", "", "");
+			break;
+		default:
+			if (type != GEOXML_PARAMETERTYPE_FLAG)
+				geoxml_program_parameter_set_required(
+					(GeoXmlProgramParameter*)parameter, FALSE);
+			break;
+		}
+		__geoxml_program_parameter_reset_default((GeoXmlProgramParameter*)parameter);
+
+		break;
+	}}
+
+	return TRUE;
+}
 
 /*
  * library functions.
  */
 
-void
-geoxml_parameter_set_type(GeoXmlParameter ** parameter, enum GEOXML_PARAMETERTYPE type)
+gboolean
+geoxml_parameter_set_type(GeoXmlParameter * parameter, enum GEOXML_PARAMETERTYPE type)
 {
-	if (*parameter == NULL)
-		return;
+	if (parameter == NULL)
+		return FALSE;
 
-	GdomeElement *		parent_element;
-	GeoXmlParameter *	old_parameter;
+	GdomeElement *		old_type_element;
 
-	old_parameter = *parameter;
-	parent_element = (GdomeElement*)gdome_el_parentNode((GdomeElement*)old_parameter, &exception);
+	old_type_element = __geoxml_parameter_get_type_element(parameter);
+	if (__geoxml_parameter_insert_type(parameter, type) == FALSE)
+		return FALSE;
+	gdome_n_removeChild((GdomeNode*)parameter, (GdomeNode*)old_type_element, &exception);
 
-	*parameter = __geoxml_parameters_new_parameter((GeoXmlParameters*)parent_element, type, FALSE);
-	gdome_el_insertBefore(parent_element, (GdomeNode*)*parameter, (GdomeNode*)old_parameter, &exception);
+	return TRUE;
+}
 
-	/* restore label and keyword */
-	geoxml_parameter_set_label(GEOXML_PARAMETER(*parameter),
-		geoxml_parameter_get_label(GEOXML_PARAMETER(old_parameter)));
-	if (geoxml_parameter_get_is_program_parameter(*parameter))
-		geoxml_program_parameter_set_keyword(GEOXML_PROGRAM_PARAMETER(*parameter),
-			geoxml_program_parameter_get_keyword(GEOXML_PROGRAM_PARAMETER(old_parameter)));
+int
+geoxml_parameter_set_be_reference(GeoXmlParameter * parameter, GeoXmlParameter * reference)
+{
+	if (parameter == NULL || reference == NULL)
+		return GEOXML_RETV_NULL_PTR;
+	if (parameter == reference)
+		return GEOXML_RETV_REFERENCE_TO_ITSELF;
 
-	gdome_el_removeChild(parent_element, (GdomeNode*)old_parameter, &exception);
+	__geoxml_parameter_set_be_reference(parameter, reference, FALSE);
+
+	return GEOXML_RETV_SUCCESS;
 }
 
 enum GEOXML_PARAMETERTYPE
@@ -88,7 +174,7 @@ geoxml_parameter_get_type(GeoXmlParameter * parameter)
 	GdomeDOMString*		tag_name;
 	int			i;
 
-	tag_name = gdome_el_tagName((GdomeElement*)parameter, &exception);
+	tag_name = gdome_el_tagName(__geoxml_parameter_get_type_element(parameter), &exception);
 
 	for (i = 0; i < parameter_type_to_str_len; ++i)
 		if (!strcmp(parameter_type_to_str[i], tag_name->str))

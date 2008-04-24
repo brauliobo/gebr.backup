@@ -98,6 +98,10 @@ enum GEOXML_RETV {
 	 * container of the parameter was instatiated.
 	 */
 	GEOXML_RETV_MORE_THAN_ONE_INSTANCES	= -11,
+	/**
+	 * The user tried to create a parameter that reference to itself
+	 */
+	GEOXML_RETV_REFERENCE_TO_ITSELF		= -12,
 };
 
 #endif //__LIBGEBR_GEOXML_ERROR_H

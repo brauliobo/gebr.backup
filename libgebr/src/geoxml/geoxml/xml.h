@@ -72,6 +72,13 @@ __geoxml_get_element_at(GdomeElement * parent_element, const gchar * tag_name, g
  * \internal
  *
  */
+GdomeElement *
+__geoxml_get_element_by_id(GdomeElement * base, const gchar * id);
+
+/**
+ * \internal
+ *
+ */
 glong
 __geoxml_get_element_index(GdomeElement * element);
 
@@ -161,5 +168,20 @@ __geoxml_previous_same_element(GdomeElement * element);
  */
 GdomeElement *
 __geoxml_next_same_element(GdomeElement * element);
+
+/**
+ * \internal
+ * Assign to \p element a new unique ID based on document lastid attibute.
+ * Increment lastid and use it as ID
+ */
+void
+__geoxml_element_assign_new_id(GdomeElement * element);
+
+/**
+ * \internal
+ * Assign \p reference's ID to \p element
+ */
+void
+__geoxml_element_assign_reference_id(GdomeElement * element, GdomeElement * reference);
 
 #endif //__LIBGEBR_GEOXML_XML_H

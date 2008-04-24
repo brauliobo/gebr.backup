@@ -19,17 +19,17 @@
 #define __LIBGEBR_GEOXML_PARAMETERS_P_H
 
 /**
- * If \p parameters is a group and it was instantiated only once,
- * then adjust the number of parameters of a instance (npar)
+ * If \p parameters is a group, then it could not be instantiated to be changed,
+ * otherwise, return TRUE.
  */
 gboolean
-__geoxml_parameters_adjust_group_npar(GeoXmlParameters * parameters, glong adjust);
+__geoxml_parameters_group_check(GeoXmlParameters * parameters);
 
 /**
  * \internal
  * Create a new parameter with type \p type.
  */
 GeoXmlParameter *
-__geoxml_parameters_new_parameter(GeoXmlParameters * parameters, enum GEOXML_PARAMETERTYPE type, gboolean adjust_npar);
+__geoxml_parameters_new_parameter(enum GEOXML_PARAMETERTYPE type, gboolean adjust_npar);
 
 #endif //__LIBGEBR_GEOXML_PARAMETERS_P_H

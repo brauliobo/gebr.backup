@@ -134,6 +134,11 @@ enum GEOXML_PARAMETERTYPE {
 	 */
 	GEOXML_PARAMETERTYPE_GROUP,
 	/**
+	 * A reference to other parameter. If the referenced parameter is a program parameter,
+	 * then this parameter will only have its value as a difference.
+	 */
+	GEOXML_PARAMETERTYPE_REFERENCE,
+	/**
 	 * In case of error.
 	 */
 	GEOXML_PARAMETERTYPE_UNKNOWN,
@@ -141,16 +146,21 @@ enum GEOXML_PARAMETERTYPE {
 
 /**
  * Change \p parameter type to \p type.
- * This funcion will create a new parameter and delete the old, as
- * needed to change its type. Because of this, \p parameter pointer
- * will be changed.
- * Keyword and label of \p parameter will have the same value after the change;
- * all other properties will lost their value.
+ * Only label of \p parameter will have the same value after the change;
+ * all other properties will have their value lost.
  *
  * If \p parameter is NULL nothing is done.
  */
-void
-geoxml_parameter_set_type(GeoXmlParameter ** parameter, enum GEOXML_PARAMETERTYPE type);
+gboolean
+geoxml_parameter_set_type(GeoXmlParameter * parameter, enum GEOXML_PARAMETERTYPE type);
+
+/**
+ * Change \p parameter to reference \p reference.
+ *
+ * Return one of GEOXML_RETV_SUCCESS, GEOXML_RETV_REFERENCE_TO_ITSELF, GEOXML_RETV_NULL_PTR
+ */
+int
+geoxml_parameter_set_be_reference(GeoXmlParameter * parameter, GeoXmlParameter * reference);
 
 /**
  * Returns \p parameter 's type.

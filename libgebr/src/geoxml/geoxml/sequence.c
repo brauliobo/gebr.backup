@@ -115,7 +115,7 @@ geoxml_sequence_remove(GeoXmlSequence * sequence)
 		GeoXmlParameters *	parameters;
 
 		parameters = (GeoXmlParameters*)gdome_el_parentNode((GdomeElement*)sequence, &exception);
-		if (__geoxml_parameters_adjust_group_npar(parameters, -1) == FALSE)
+		if (__geoxml_parameters_group_check(parameters) == FALSE)
 			return GEOXML_RETV_MORE_THAN_ONE_INSTANCES;
 	} else if (!__geoxml_sequence_check(sequence))
 		return GEOXML_RETV_NOT_A_SEQUENCE;
@@ -134,7 +134,7 @@ geoxml_sequence_append_clone(GeoXmlSequence * sequence)
 		GeoXmlParameters *	parameters;
 
 		parameters = (GeoXmlParameters*)gdome_el_parentNode((GdomeElement*)sequence, &exception);
-		if (__geoxml_parameters_adjust_group_npar(parameters, +1) == FALSE)
+		if (__geoxml_parameters_group_check(parameters) == FALSE)
 			return NULL;
 	} else if (!__geoxml_sequence_check(sequence))
 		return NULL;

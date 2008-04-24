@@ -21,6 +21,7 @@
 #include <gdome.h>
 
 #include "parameter_group.h"
+#include "parameter_group_p.h"
 #include "xml.h"
 #include "types.h"
 #include "error.h"
@@ -35,6 +36,27 @@
 struct geoxml_parameter_group {
 	GdomeElement * element;
 };
+
+void
+__geoxml_parameter_group_turn_instance_to_reference(GeoXmlParameters * instance)
+{
+	GeoXmlSequence *	parameter;
+
+	geoxml_parameters_get_parameter(instance, &parameter, 0);
+	for (; parameter != NULL; geoxml_sequence_next(&parameter))
+		__geoxml_parameter_set_be_reference(GEOXML_PARAMETER(parameter),
+			GEOXML_PARAMETER(parameter), TRUE);
+}
+
+void
+__geoxml_parameter_group_turn_to_reference(GeoXmlParameterGroup * parameter_group)
+{
+	GeoXmlSequence *	instance;
+
+	geoxml_parameter_group_get_instance(parameter_group, &instance, 0);
+	for (; instance != NULL; geoxml_sequence_next(&instance))
+		__geoxml_parameter_group_turn_instance_to_reference(GEOXML_PARAMETERS(instance));
+}
 
 /*
  * library functions.
