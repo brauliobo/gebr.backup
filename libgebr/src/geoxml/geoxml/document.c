@@ -55,10 +55,11 @@ __geoxml_document_clone_doc(GdomeDocument * source, GdomeDocumentType * document
 	if (source == NULL)
 		return NULL;
 
-	GdomeDocument *	document;
-	GdomeElement *	root_element;
-	GdomeElement *	source_root_element;
-	GdomeNode *	node;
+	GdomeDocument *		document;
+	GdomeElement *		root_element;
+	GdomeElement *		source_root_element;
+	GdomeDOMString *	string;
+	GdomeNode *		node;
 
 	source_root_element = gdome_doc_documentElement(source, &exception);
 	document = gdome_di_createDocument(dom_implementation,
@@ -70,8 +71,12 @@ __geoxml_document_clone_doc(GdomeDocument * source, GdomeDocumentType * document
 	root_element = gdome_doc_documentElement(document, &exception);
 	__geoxml_set_attr_value(root_element, "version",
 		__geoxml_get_attr_value(source_root_element, "version"));
-	__geoxml_set_attr_value(root_element, "lastid",
-		__geoxml_get_attr_value(source_root_element, "lastid"));
+	/* lastid */
+	string = gdome_str_mkref("lastid");
+	if (gdome_el_hasAttribute(source_root_element, string, &exception) == TRUE)
+		__geoxml_set_attr_value(root_element, "lastid",
+			__geoxml_get_attr_value(source_root_element, "lastid"));
+	gdome_str_unref(string);
 
 	node = gdome_el_firstChild(source_root_element, &exception);
 	do {
@@ -253,8 +258,13 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 	/* flow 0.2.2 to 0.2.3
 	 * nothing changed. why? because the changes were about the removed group support
 	 */
+	if (strcmp(version, "0.2.3") < 0)
+		__geoxml_set_attr_value(root_element, "version", "0.2.3");
 	/* flow 0.2.3 to 0.3.0 */
 	if (strcmp(version, "0.3.0") < 0) {
+		__geoxml_set_attr_value(root_element, "version", "0.3.0");
+		__geoxml_set_attr_value(root_element, "lastid", "");
+
 		if (geoxml_document_get_type(((GeoXmlDocument*)document)) == GEOXML_DOCUMENT_TYPE_FLOW) {
 			GeoXmlSequence *		program;
 
@@ -264,8 +274,11 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 				GdomeElement *		old_parameter;
 
 				parameters = geoxml_program_get_parameters(GEOXML_PROGRAM(program));
+				__geoxml_set_attr_value((GdomeElement*)parameters, "exclusive", "0");
 				old_parameter = __geoxml_get_first_element((GdomeElement*)parameters, "*");
 				while (old_parameter != NULL) {
+					GdomeNode *			node;
+					GdomeElement *			next_parameter;
 					GdomeElement *			parameter;
 					GdomeElement *			property;
 
@@ -283,12 +296,16 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 
 					parameter = __geoxml_insert_new_element((GdomeElement*)parameters,
 						"parameter", old_parameter);
+					__geoxml_element_assign_new_id(parameter);
 					gdome_el_insertBefore(parameter, (GdomeNode*)
 						__geoxml_get_first_element(old_parameter, "label"),
 						NULL, &exception);
+
+					next_parameter = __geoxml_next_element(old_parameter);
 					gdome_el_insertBefore(parameter, (GdomeNode*)old_parameter, NULL, &exception);
 
-					property = __geoxml_insert_new_element(old_parameter, "property", NULL);
+					property = __geoxml_insert_new_element(old_parameter, "property",
+						(GdomeElement*)gdome_el_firstChild(old_parameter, &exception));
 					gdome_el_insertBefore(property,
 						(GdomeNode*)__geoxml_get_first_element(old_parameter, "keyword"),
 						NULL, &exception);
@@ -356,11 +373,16 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 							__geoxml_create_TextNode);
 						__geoxml_set_attr_value(value, "default",
 							__geoxml_get_attr_value(state, "default"));
+						__geoxml_set_attr_value(property, "required", "no");
 
 						gdome_el_removeChild(old_parameter, (GdomeNode*)state, &exception);
 					}
+					/* for appeareance FIXME:*/
+// 					node = gdome_el_firstChild(old_parameter, &exception);
+// 					if (gdome_n_nodeType(node, &exception) != GDOME_ELEMENT_NODE)
+// 						gdome_el_removeChild(old_parameter, node, &exception);
 
-					old_parameter = __geoxml_next_element(old_parameter);
+					old_parameter = next_parameter;
 				}
 
 				geoxml_sequence_next(&program);

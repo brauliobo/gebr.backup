@@ -61,7 +61,7 @@
     expand       (yes | no) #REQUIRED
     instanciable (yes | no) #REQUIRED>
 
-<!ELEMENT parameter (label, (reference | int | float | string | flag | file | range | enum | group)>
+<!ELEMENT parameter (label, (reference | int | float | string | flag | file | range | enum | group))>
 <!ATTLIST parameter
    id ID #REQUIRED>
 
@@ -81,7 +81,7 @@
    default CDATA #IMPLIED>
 
 <!-- Types of parameters -->
-<!-- Reference -->
+<!-- Reference (except for groups) -->
 <!ELEMENT reference (value)>
 <!ATTLIST reference
    id IDREF #REQUIRED>

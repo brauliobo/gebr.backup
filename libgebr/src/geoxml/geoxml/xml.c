@@ -17,6 +17,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <gdome.h>
 #include <glib.h>
@@ -334,10 +335,17 @@ __geoxml_element_assign_new_id(GdomeElement * element)
 	gulong		lastid;
 	gchar *		lastid_str;
 
-	document_element = (GdomeElement*)gdome_el_ownerDocument(element, &exception);
-	lastid = atol(__geoxml_get_attr_value(document_element, "lastid"));
+	document_element = gdome_doc_documentElement(gdome_el_ownerDocument(element, &exception), &exception);
+// 	lastid = atol(__geoxml_get_attr_value(document_element, "lastid"));
+// 	lastid++;
+// 	lastid_str = g_strdup_printf("%lu", lastid);
+        lastid_str = (gchar*)__geoxml_get_attr_value(document_element, "lastid");
+	if (strlen(lastid_str))
+		sscanf(lastid_str, "n%lu", &lastid);
+	else
+		lastid = 0;
 	lastid++;
-	lastid_str = g_strdup_printf("%lu", lastid);
+	lastid_str = g_strdup_printf("n%lu", lastid);
 
 	__geoxml_set_attr_value(document_element, "lastid", lastid_str);
 	__geoxml_set_attr_value(element, "id", lastid_str);

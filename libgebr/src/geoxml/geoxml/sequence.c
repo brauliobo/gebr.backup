@@ -175,19 +175,13 @@ geoxml_sequence_move_after(GeoXmlSequence * sequence, GeoXmlSequence * position)
 	if (position != NULL && !__geoxml_sequence_is_same_sequence(sequence, position))
 		return GEOXML_RETV_DIFFERENT_SEQUENCES;
 
-	/* TODO: more eficient implementation */
 	if (position == NULL) {
-		GeoXmlSequence *	i;
-		GeoXmlSequence *	first;
+		GdomeNode *	parent_element;
 
-		i = sequence;
-		do {
-			first = i;
-			geoxml_sequence_previous(&i);
-		} while (i != NULL);
-
-		gdome_n_insertBefore(gdome_el_parentNode((GdomeElement*)sequence, &exception),
-			(GdomeNode*)sequence, (GdomeNode*)first, &exception);
+		parent_element = gdome_el_parentNode((GdomeElement*)sequence, &exception);
+		gdome_n_insertBefore(parent_element, (GdomeNode*)sequence,
+			gdome_n_firstChild(parent_element, &exception),
+			&exception);
 
 		return exception == GDOME_NOEXCEPTION_ERR
 			? GEOXML_RETV_SUCCESS : GEOXML_RETV_DIFFERENT_SEQUENCES;
