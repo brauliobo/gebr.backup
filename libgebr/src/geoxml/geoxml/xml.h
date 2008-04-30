@@ -181,6 +181,7 @@ __geoxml_next_same_element(GdomeElement * element);
  * \internal
  * Assign to \p element a new unique ID based on document lastid attibute.
  * Increment lastid and use it as ID
+ * Automatically change references ids.
  */
 void
 __geoxml_element_assign_new_id(GdomeElement * element);

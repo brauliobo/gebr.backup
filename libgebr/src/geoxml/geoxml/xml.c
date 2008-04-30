@@ -381,6 +381,7 @@ __geoxml_element_assign_new_id(GdomeElement * element)
 	GdomeElement *	document_element;
 	gulong		lastid;
 	gchar *		lastid_str;
+	GdomeElement *	reference_element;
 
 	document_element = gdome_doc_documentElement(gdome_el_ownerDocument(element, &exception), &exception);
         lastid_str = (gchar*)__geoxml_get_attr_value(document_element, "lastid");
@@ -390,6 +391,11 @@ __geoxml_element_assign_new_id(GdomeElement * element)
 		lastid = 0;
 	lastid++;
 	lastid_str = g_strdup_printf("n%lu", lastid);
+
+	/* change referenced elements */
+	__geoxml_foreach_xpath_result(reference_element,
+	__geoxml_get_elements_by_idref(element, __geoxml_get_attr_value(element, "id")))
+		__geoxml_set_attr_value(reference_element, "id", lastid_str);
 
 	__geoxml_set_attr_value(document_element, "lastid", lastid_str);
 	__geoxml_set_attr_value(element, "id", lastid_str);
