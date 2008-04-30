@@ -113,13 +113,21 @@ geoxml_sequence_remove(GeoXmlSequence * sequence)
 		return GEOXML_RETV_NULL_PTR;
 	if (__geoxml_sequence_is_parameter(sequence)) {
 		GeoXmlParameters *	parameters;
+		GdomeElement *		reference_element;
 
 		parameters = (GeoXmlParameters*)gdome_el_parentNode((GdomeElement*)sequence, &exception);
 		if (__geoxml_parameters_group_check(parameters) == FALSE)
 			return GEOXML_RETV_MORE_THAN_ONE_INSTANCES;
 
 		/* remove referenced parameters */
-		
+		__geoxml_foreach_xpath_result(reference_element,
+		__geoxml_get_elements_by_idref((GdomeElement*)sequence, __geoxml_get_attr_value((GdomeElement*)sequence, "id"))) {
+			GdomeNode *		parameter_element;
+
+			parameter_element = gdome_el_parentNode(reference_element, &exception);
+			gdome_n_removeChild(gdome_n_parentNode(parameter_element, &exception),
+				parameter_element, &exception);
+		}
 	} else if (!__geoxml_sequence_check(sequence))
 		return GEOXML_RETV_NOT_A_SEQUENCE;
 

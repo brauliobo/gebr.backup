@@ -18,6 +18,10 @@
 #ifndef __LIBGEBR_GEOXML_XML_H
 #define __LIBGEBR_GEOXML_XML_H
 
+#include <gdome.h>
+#include <gdome-xpath.h>
+#include <glib.h>
+
 /**
  * \internal
  *

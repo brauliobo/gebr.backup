@@ -123,6 +123,10 @@ geoxml_sequence_next(GeoXmlSequence ** sequence);
  * Removes \p sequence from its sequence. It is not deleted and can be reinserted
  * into sequence using geoxml_sequence_prepend or geoxml_sequence_append.
  *
+ * A special case are the parameter. It cannot be removed if it belongs to an
+ * instanciated group. Also, if it is removed, all referenced parameters are
+ * automatically removed
+ *
  * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_NULL_PTR,
  * GEOXML_RETV_NOT_A_SEQUENCE, GEOXML_RETV_MORE_THAN_ONE_INSTANCES
  */

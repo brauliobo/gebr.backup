@@ -19,10 +19,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <gdome.h>
-#include <gdome-xpath.h>
-#include <glib.h>
-
 #include "xml.h"
 #include "types.h"
 
