@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include <gdome.h>
+#include <gdome-xpath.h>
 #include <glib.h>
 
 #include "xml.h"
@@ -114,23 +115,40 @@ __geoxml_get_first_element(GdomeElement * parent_element, const gchar * tag_name
 }
 
 GdomeElement *
-__geoxml_get_element_at(GdomeElement * parent_element, const gchar * tag_name, gulong index)
+__geoxml_get_element_at(GdomeElement * parent_element, const gchar * tag_name, gulong index, gboolean recursive)
 {
-	GdomeElement *		element;
-	GdomeNodeList *		node_list;
-	GdomeDOMString *	string;
+	if (recursive == FALSE) {
+		GString *		expression;
+		GdomeElement *		child;
+		GdomeXPathResult *	xpath_result;
 
-	string = gdome_str_mkref(tag_name);
+		expression = g_string_new(NULL);
 
-	node_list = gdome_el_getElementsByTagName(parent_element, string, &exception);
-	if (index >= gdome_nl_length(node_list, &exception))
-		return NULL;
-	element = (GdomeElement*)gdome_nl_item(node_list, index, &exception);
+		g_string_printf(expression, "child::%s[%lu]", tag_name, index);
+		xpath_result = __geoxml_xpath_evaluate(parent_element, expression->str);
+		child = (GdomeElement*)gdome_xpresult_singleNodeValue(xpath_result, &exception);
 
-	gdome_str_unref(string);
-	gdome_nl_unref(node_list, &exception);
+		g_string_free(expression, TRUE);
+		gdome_xpresult_unref(xpath_result, &exception);
 
-	return element;
+		return child;
+	} else {
+		GdomeElement *		element;
+		GdomeNodeList *		node_list;
+		GdomeDOMString *	string;
+
+		string = gdome_str_mkref(tag_name);
+
+		node_list = gdome_el_getElementsByTagName(parent_element, string, &exception);
+		if (index >= gdome_nl_length(node_list, &exception))
+			return NULL;
+		element = (GdomeElement*)gdome_nl_item(node_list, index, &exception);
+
+		gdome_str_unref(string);
+		gdome_nl_unref(node_list, &exception);
+
+		return element;
+	}
 }
 
 GdomeElement *
@@ -152,12 +170,14 @@ __geoxml_get_element_index(GdomeElement * element)
 	glong		index;
 	GdomeElement *	i;
 
+	/* TODO: try XPath position() */
+
 	/* root element */
 	if (gdome_el_parentNode(element, &exception) == NULL)
 		return 0;
 
 	index = 0;
-	i = __geoxml_get_element_at((GdomeElement*)gdome_el_parentNode(element, &exception), "*", 0);
+	i = __geoxml_get_element_at((GdomeElement*)gdome_el_parentNode(element, &exception), "*", 0, FALSE);
 	do {
 		if (i == element)
 			return index;
@@ -170,17 +190,23 @@ __geoxml_get_element_index(GdomeElement * element)
 gulong
 __geoxml_get_elements_number(GdomeElement * parent_element, const gchar * tag_name)
 {
-	GdomeNodeList *		node_list;
-	GdomeDOMString *	string;
+	GString *		expression;
+	GdomeElement *		child;
+	GdomeXPathResult *	xpath_result;
 	gulong			elements_number;
 
-	string = gdome_str_mkref(tag_name);
+	expression = g_string_new(NULL);
+	elements_number = 0;
 
-	node_list = gdome_el_getElementsByTagName(parent_element, string, &exception);
-	elements_number = gdome_nl_length(node_list, &exception);
+	g_string_printf(expression, "child::%s", tag_name);
+	xpath_result = __geoxml_xpath_evaluate(parent_element, expression->str);
 
-	gdome_str_unref(string);
-	gdome_nl_unref(node_list, &exception);
+	/* TODO: use an expression instead */
+	__geoxml_foreach_xpath_result(child, xpath_result)
+		elements_number++;
+
+	g_string_free(expression, TRUE);
+	gdome_xpresult_unref(xpath_result, &exception);
 
 	return elements_number;
 }
@@ -336,9 +362,6 @@ __geoxml_element_assign_new_id(GdomeElement * element)
 	gchar *		lastid_str;
 
 	document_element = gdome_doc_documentElement(gdome_el_ownerDocument(element, &exception), &exception);
-// 	lastid = atol(__geoxml_get_attr_value(document_element, "lastid"));
-// 	lastid++;
-// 	lastid_str = g_strdup_printf("%lu", lastid);
         lastid_str = (gchar*)__geoxml_get_attr_value(document_element, "lastid");
 	if (strlen(lastid_str))
 		sscanf(lastid_str, "n%lu", &lastid);
@@ -358,4 +381,23 @@ __geoxml_element_assign_reference_id(GdomeElement * element, GdomeElement * refe
 {
 	__geoxml_set_attr_value(element, "id",
 		__geoxml_get_attr_value(reference, "id"));
+}
+
+GdomeXPathResult *
+__geoxml_xpath_evaluate(GdomeElement * context, const gchar * expression)
+{
+	GdomeDOMString *	string;
+	GdomeXPathEvaluator *	xpath_evaluator;
+	GdomeXPathResult *	xpath_result;
+
+	string = gdome_str_mkref(expression);
+	xpath_evaluator = gdome_xpeval_mkref();
+	xpath_result = gdome_xpeval_evaluate(xpath_evaluator, string, (GdomeNode*)context,
+		NULL, 0, NULL, &exception);
+
+	/* frees */
+	gdome_str_unref(string);
+	gdome_xpeval_unref(xpath_evaluator, &exception);
+
+	return xpath_result;
 }

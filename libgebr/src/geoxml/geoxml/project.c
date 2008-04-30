@@ -71,7 +71,8 @@ geoxml_project_get_line(GeoXmlProject * project, GeoXmlSequence ** project_line,
 		return GEOXML_RETV_NULL_PTR;
 	}
 
-	*project_line = (GeoXmlSequence*)__geoxml_get_element_at(geoxml_document_root_element(GEOXML_DOC(project)), "line", index);
+	*project_line = (GeoXmlSequence*)__geoxml_get_element_at(
+		geoxml_document_root_element(GEOXML_DOC(project)), "line", index, FALSE);
 
 	return (*project_line == NULL)
 		? GEOXML_RETV_INVALID_INDEX

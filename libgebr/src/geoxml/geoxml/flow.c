@@ -192,7 +192,8 @@ geoxml_flow_get_program(GeoXmlFlow * flow, GeoXmlSequence ** program, gulong ind
 		return GEOXML_RETV_NULL_PTR;
 	}
 
-	*program = (GeoXmlSequence*)__geoxml_get_element_at(geoxml_document_root_element(GEOXML_DOC(flow)), "program", index);
+	*program = (GeoXmlSequence*)__geoxml_get_element_at(
+		geoxml_document_root_element(GEOXML_DOC(flow)), "program", index, FALSE);
 
 	return (*program == NULL)
 		? GEOXML_RETV_INVALID_INDEX
@@ -231,7 +232,8 @@ geoxml_flow_get_category(GeoXmlFlow * flow, GeoXmlSequence ** category, gulong i
 		return GEOXML_RETV_NULL_PTR;
 	}
 
-	*category = (GeoXmlSequence*)__geoxml_get_element_at(geoxml_document_root_element(GEOXML_DOC(flow)), "category", index);
+	*category = (GeoXmlSequence*)__geoxml_get_element_at(
+		geoxml_document_root_element(GEOXML_DOC(flow)), "category", index, FALSE);
 
 	return (*category == NULL)
 		? GEOXML_RETV_INVALID_INDEX

@@ -56,17 +56,18 @@ __geoxml_insert_new_element(GdomeElement * parent_element, const gchar * tag_nam
 /**
  * \internal
  * Get the first child element of \p parent_element with tag name
- * \p tag_name.
+ * \p tag_name. The child might not be a direct child of \p parent_element
  */
 GdomeElement *
 __geoxml_get_first_element(GdomeElement * parent_element, const gchar * tag_name);
 
 /**
  * \internal
- *
+ * Get the child element of \p parent_element at \p index position. If recursive is TRUE,
+ * all the childs (direct or not) are considered
  */
 GdomeElement *
-__geoxml_get_element_at(GdomeElement * parent_element, const gchar * tag_name, gulong index);
+__geoxml_get_element_at(GdomeElement * parent_element, const gchar * tag_name, gulong index, gboolean recursive);
 
 /**
  * \internal
@@ -84,7 +85,7 @@ __geoxml_get_element_index(GdomeElement * element);
 
 /**
  * \internal
- *
+ * Search only for childs elements named \p tag_name of \p parent_element, not recursevely
  */
 gulong
 __geoxml_get_elements_number(GdomeElement * parent_element, const gchar * tag_name);
@@ -183,5 +184,22 @@ __geoxml_element_assign_new_id(GdomeElement * element);
  */
 void
 __geoxml_element_assign_reference_id(GdomeElement * element, GdomeElement * reference);
+
+/**
+ * \internal
+ * Easy function to evaluate a XPath expression. Use in combination with
+ * \ref __geoxml_foreach_xpath_result or use .
+ */
+GdomeXPathResult *
+__geoxml_xpath_evaluate(GdomeElement * context, const gchar * expression);
+
+/**
+ * \internal
+ * Iterates elements of a GdomeXPathResult at \p result
+ */
+#define __geoxml_foreach_xpath_result(element, result) \
+	if (result != NULL) \
+		for (element = (GdomeElement*)gdome_xpresult_singleNodeValue(result, &exception); \
+		element != NULL; element = (GdomeElement*)gdome_xpresult_iterateNext(result, &exception))
 
 #endif //__LIBGEBR_GEOXML_XML_H

@@ -77,7 +77,7 @@ geoxml_line_get_flow(GeoXmlLine * line, GeoXmlSequence ** line_flow, gulong inde
 	}
 
 	*line_flow = (GeoXmlSequence*)__geoxml_get_element_at(
-		geoxml_document_root_element(GEOXML_DOC(line)), "flow", index);
+		geoxml_document_root_element(GEOXML_DOC(line)), "flow", index, FALSE);
 
 	return (*line_flow == NULL)
 		? GEOXML_RETV_INVALID_INDEX
@@ -147,7 +147,8 @@ geoxml_line_get_path(GeoXmlLine * line, GeoXmlSequence ** path, gulong index)
 		return GEOXML_RETV_NULL_PTR;
 	}
 
-	*path = (GeoXmlSequence*)__geoxml_get_element_at(geoxml_document_root_element(GEOXML_DOC(line)), "path", index);
+	*path = (GeoXmlSequence*)__geoxml_get_element_at(
+		geoxml_document_root_element(GEOXML_DOC(line)), "path", index, FALSE);
 
 	return (*path == NULL)
 		? GEOXML_RETV_INVALID_INDEX

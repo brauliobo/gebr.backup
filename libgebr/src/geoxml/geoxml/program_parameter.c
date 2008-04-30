@@ -80,7 +80,9 @@ geoxml_program_parameter_set_required(GeoXmlProgramParameter * program_parameter
 		return;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) == GEOXML_PARAMETERTYPE_FLAG)
 		return;
-	__geoxml_set_attr_value((GdomeElement*)program_parameter, "required", (required == TRUE ? "yes" : "no"));
+	__geoxml_set_attr_value(
+		__geoxml_get_first_element((GdomeElement*)program_parameter, "property"),
+		"required", (required == TRUE ? "yes" : "no"));
 }
 
 void
@@ -102,7 +104,7 @@ geoxml_program_parameter_set_be_list(GeoXmlProgramParameter * program_parameter,
 	GdomeElement *		element;
 	GdomeDOMString *	string;
 
-	element = (GdomeElement*)program_parameter;
+	element = __geoxml_get_first_element((GdomeElement*)program_parameter, "property");
 	string = gdome_str_mkref("separator");
 	if (is_list == TRUE) {
 		if (gdome_el_hasAttribute(element, string, &exception) == FALSE)
@@ -122,7 +124,9 @@ geoxml_program_parameter_set_list_separator(GeoXmlProgramParameter * program_par
 		return;
 	if (separator == NULL)
 		return;
-	__geoxml_set_attr_value((GdomeElement*)program_parameter, "separator", separator);
+	__geoxml_set_attr_value(
+		__geoxml_get_first_element((GdomeElement*)program_parameter, "property"),
+		"separator", separator);
 }
 
 void
@@ -246,7 +250,7 @@ geoxml_program_parameter_get_enum_option(GeoXmlProgramParameter * program_parame
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) != GEOXML_PARAMETERTYPE_ENUM)
 		return GEOXML_RETV_PARAMETER_NOT_ENUM;
 
-	*enum_option = (GeoXmlSequence*)__geoxml_get_element_at((GdomeElement*)program_parameter, "option", index);
+	*enum_option = (GeoXmlSequence*)__geoxml_get_element_at((GdomeElement*)program_parameter, "option", index, FALSE);
 
 	return (*enum_option == NULL)
 		? GEOXML_RETV_INVALID_INDEX
@@ -270,7 +274,9 @@ geoxml_program_parameter_get_required(GeoXmlProgramParameter * program_parameter
 		return FALSE;
 	if (geoxml_parameter_get_type(GEOXML_PARAMETER(program_parameter)) == GEOXML_PARAMETERTYPE_FLAG)
 		return FALSE;
-	return (!strcmp(__geoxml_get_attr_value((GdomeElement*)program_parameter, "required"), "yes"))
+	return (!strcmp(__geoxml_get_attr_value(
+			__geoxml_get_first_element((GdomeElement*)program_parameter, "property"), 
+			"required"), "yes"))
 		? TRUE : FALSE;
 }
 
@@ -294,7 +300,8 @@ geoxml_program_parameter_get_is_list(GeoXmlProgramParameter * program_parameter)
 	gboolean		is_list;
 
 	string = gdome_str_mkref("separator");
-	is_list = gdome_el_hasAttribute((GdomeElement*)program_parameter, string, &exception);
+	is_list = gdome_el_hasAttribute(__geoxml_get_first_element((GdomeElement*)program_parameter, "property"),
+		string, &exception);
 	gdome_str_unref(string);
 
 	return is_list;
@@ -305,7 +312,8 @@ geoxml_program_parameter_get_list_separator(GeoXmlProgramParameter * program_par
 {
 	if (geoxml_program_parameter_get_is_list(program_parameter) == FALSE)
 		return NULL;
-	return __geoxml_get_attr_value((GdomeElement*)program_parameter, "separator");
+	return __geoxml_get_attr_value(
+		__geoxml_get_first_element((GdomeElement*)program_parameter, "property"), "separator");
 }
 
 const gchar *
