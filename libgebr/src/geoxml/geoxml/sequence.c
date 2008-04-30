@@ -117,6 +117,9 @@ geoxml_sequence_remove(GeoXmlSequence * sequence)
 		parameters = (GeoXmlParameters*)gdome_el_parentNode((GdomeElement*)sequence, &exception);
 		if (__geoxml_parameters_group_check(parameters) == FALSE)
 			return GEOXML_RETV_MORE_THAN_ONE_INSTANCES;
+
+		/* remove referenced parameters */
+		
 	} else if (!__geoxml_sequence_check(sequence))
 		return GEOXML_RETV_NOT_A_SEQUENCE;
 

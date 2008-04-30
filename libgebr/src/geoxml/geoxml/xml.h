@@ -80,6 +80,13 @@ __geoxml_get_element_by_id(GdomeElement * base, const gchar * id);
  * \internal
  *
  */
+GdomeXPathResult *
+__geoxml_get_elements_by_idref(GdomeElement * base, const gchar * idref);
+
+/**
+ * \internal
+ *
+ */
 glong
 __geoxml_get_element_index(GdomeElement * element);
 
@@ -196,10 +203,14 @@ __geoxml_xpath_evaluate(GdomeElement * context, const gchar * expression);
 /**
  * \internal
  * Iterates elements of a GdomeXPathResult at \p result
+ * This macro will auto free \p result and you can use it
+ * as __geoxml_foreach_xpath_result(element, __geoxml_xpath_evaluate(context, expression))
  */
-#define __geoxml_foreach_xpath_result(element, result) \
-	if (result != NULL) \
-		for (element = (GdomeElement*)gdome_xpresult_singleNodeValue(result, &exception); \
-		element != NULL; element = (GdomeElement*)gdome_xpresult_iterateNext(result, &exception))
+#define __geoxml_foreach_xpath_result(element, _result) \
+	GdomeXPathResult * xpath_result = _result; \
+	if (xpath_result != NULL) \
+		for (element = (GdomeElement*)gdome_xpresult_singleNodeValue(xpath_result, &exception); \
+		element != NULL || (gdome_xpresult_unref(xpath_result, &exception), 0); \
+		element = (GdomeElement*)gdome_xpresult_iterateNext(xpath_result, &exception))
 
 #endif //__LIBGEBR_GEOXML_XML_H

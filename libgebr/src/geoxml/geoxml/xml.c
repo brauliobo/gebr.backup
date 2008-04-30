@@ -164,6 +164,31 @@ __geoxml_get_element_by_id(GdomeElement * base, const gchar * id)
 	return element;
 }
 
+GdomeXPathResult *
+__geoxml_get_elements_by_idref(GdomeElement * base, const gchar * idref)
+{
+	GString *		expression;
+	GdomeXPathResult *	xpath_result;
+	GdomeElement *		document_element;
+
+	expression = g_string_new(NULL);
+	document_element = gdome_doc_documentElement(gdome_el_ownerDocument(base, &exception), &exception);
+
+	g_string_printf(expression, "idref(('%s'))", idref);
+	xpath_result = __geoxml_xpath_evaluate(document_element, expression->str);
+
+	/* the result may contain document's element because of lastid attribute
+	 * if so, ignore it */
+	if ((GdomeElement*)gdome_xpresult_singleNodeValue(xpath_result, &exception) == document_element) {
+		puts("idref at document element");
+		gdome_xpresult_iterateNext(xpath_result, &exception);
+	}
+
+	g_string_free(expression, TRUE);
+
+	return xpath_result;
+}
+
 glong
 __geoxml_get_element_index(GdomeElement * element)
 {
@@ -192,21 +217,17 @@ __geoxml_get_elements_number(GdomeElement * parent_element, const gchar * tag_na
 {
 	GString *		expression;
 	GdomeElement *		child;
-	GdomeXPathResult *	xpath_result;
 	gulong			elements_number;
 
 	expression = g_string_new(NULL);
 	elements_number = 0;
 
 	g_string_printf(expression, "child::%s", tag_name);
-	xpath_result = __geoxml_xpath_evaluate(parent_element, expression->str);
-
 	/* TODO: use an expression instead */
-	__geoxml_foreach_xpath_result(child, xpath_result)
+	__geoxml_foreach_xpath_result(child, __geoxml_xpath_evaluate(parent_element, expression->str))
 		elements_number++;
 
 	g_string_free(expression, TRUE);
-	gdome_xpresult_unref(xpath_result, &exception);
 
 	return elements_number;
 }
