@@ -21,7 +21,10 @@
 int
 main(int argc, char ** argv)
 {
+	static gchar **		files;
 	static GOptionEntry	entries[] = {
+		{ G_OPTION_REMAINING, 0, G_OPTION_FLAG_FILENAME, G_OPTION_ARG_FILENAME_ARRAY, &files, "",
+			"arq1.flw arq2.mnu arq3.prj arq34.lne ..." },
 		{NULL}
 	};
 	gint			ret;
@@ -29,9 +32,9 @@ main(int argc, char ** argv)
 	GError *		error = NULL;
 	GOptionContext *	context;
 
-	context = g_option_context_new("LibGeoXml XML validator");
+	context = g_option_context_new(NULL);
 	g_option_context_set_summary(context,
-		""
+		"LibGeoXml XML validator"
 	);
 	g_option_context_set_description(context,
 		""
@@ -46,10 +49,10 @@ main(int argc, char ** argv)
 		goto out;
 	}
 
-	for (i = 1; argv[i] != NULL; ++i) {
-		ret = geoxml_document_validate(argv[i]);
+	for (i = 0; files[i] != NULL; ++i) {
+		ret = geoxml_document_validate(files[i]);
 		if (ret < 0) {
-			printf("%s INVALID: ", argv[i]);
+			printf("%s INVALID: ", files[i]);
 			switch (ret) {
 			case GEOXML_RETV_DTD_SPECIFIED:
 				printf("DTD specified. The <DOCTYPE ...> must not appear in XML.\n"
@@ -80,10 +83,11 @@ main(int argc, char ** argv)
 			continue;
 		}
 
-		printf("%s valid!\n", argv[i]);
+		printf("%s valid!\n", files[i]);
 	}
 
 	ret = 0;
+	g_strfreev(files);
 out:	g_option_context_free(context);
 
 	return ret;

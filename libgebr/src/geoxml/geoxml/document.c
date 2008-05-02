@@ -514,10 +514,6 @@ geoxml_document_clone(GeoXmlDocument * source)
 
 	GdomeDocument *	document;
 
-	document = g_malloc(sizeof(struct geoxml_document));
-	if (document == NULL)
-		return NULL;
-
 	document = __geoxml_document_clone_doc((GdomeDocument*)source, NULL);
 
 	/* increase reference count */

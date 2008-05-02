@@ -1,5 +1,5 @@
-/*   libgebr - G�BR Library
- *   Copyright (C) 2007-2008 G�BR core team (http://gebr.sourceforge.net)
+/*   libgebr - GeBR Library
+ *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -57,6 +57,7 @@ __geoxml_sequence_check(GeoXmlSequence * sequence)
 			geoxml_parameters_get_is_in_group((GeoXmlParameters*)sequence)) ||
 		(gboolean)!strcmp(name->str, "program") ||
 		(gboolean)!strcmp(name->str, "category") ||
+		(gboolean)!strcmp(name->str, "revision") ||
 		(gboolean)!strcmp(name->str, "flow") ||
 		(gboolean)!strcmp(name->str, "path") ||
 		(gboolean)!strcmp(name->str, "line");

@@ -120,7 +120,7 @@ __geoxml_get_element_at(GdomeElement * parent_element, const gchar * tag_name, g
 
 		expression = g_string_new(NULL);
 
-		g_string_printf(expression, "child::%s[%lu]", tag_name, index);
+		g_string_printf(expression, "child::%s[%lu]", tag_name, index+1);
 		xpath_result = __geoxml_xpath_evaluate(parent_element, expression->str);
 		child = (GdomeElement*)gdome_xpresult_singleNodeValue(xpath_result, &exception);
 

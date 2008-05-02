@@ -35,7 +35,8 @@ noinst_HEADERS = \
 	types.h
 EXTRA_DIST = ${noinst_HEADERS}
 
-INCLUDES =
+INCLUDES = -I../../misc
 AM_CFLAGS = -Wall -std=gnu99 @DEBUG_CFLAGS@ $(GLIB_CFLAGS) $(GDOME2_CFLAGS)
-libgebr_geoxml_la_LIBADD = $(GLIB_LIBS) $(GDOME2_LIBS)
+libgebr_geoxml_la_LIBADD = $(GLIB_LIBS) $(GDOME2_LIBS) \
+	../../misc/misc/libgebr_misc.la
 libgebr_geoxml_la_LDFLAGS = -version-info @GEOXML_VERSION_INFO@

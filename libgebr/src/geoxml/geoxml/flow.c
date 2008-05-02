@@ -17,6 +17,8 @@
 
 #include <gdome.h>
 
+#include <misc/date.h>
+
 #include "flow.h"
 #include "defines.h"
 #include "xml.h"
@@ -38,6 +40,10 @@ struct geoxml_flow {
 };
 
 struct geoxml_category {
+	GdomeElement * element;
+};
+
+struct geoxml_revision {
 	GdomeElement * element;
 };
 
@@ -278,3 +284,132 @@ geoxml_flow_get_categories_number(GeoXmlFlow * flow)
 		return -1;
 	return __geoxml_get_elements_number(geoxml_document_root_element(GEOXML_DOC(flow)), "category");
 }
+
+gboolean
+geoxml_flow_change_to_revision(GeoXmlFlow * flow, GeoXmlRevision * revision)
+{
+	if (flow == NULL || revision == NULL)
+		return FALSE;
+
+	GeoXmlDocument *	revision_flow;
+	GeoXmlSequence *	first_revision;
+	GdomeElement *		child;
+
+	if (geoxml_document_load_buffer(&revision_flow,
+	__geoxml_get_element_value((GdomeElement*)revision)))
+		return FALSE;
+
+	geoxml_flow_get_revision(flow, &first_revision, 0);
+	/* remove all elements till first_revision
+	 * WARNING: for this implementation to work revision must be
+	 * the last child of flow. Be careful when changing the DTD!
+	 */
+	child = __geoxml_get_first_element(geoxml_document_root_element(GEOXML_DOCUMENT(flow)), "*");
+	while (child != NULL) {
+		GdomeElement *	aux;
+
+		if (child == (GdomeElement*)first_revision)
+			break;
+		aux = __geoxml_next_element(child);
+		gdome_el_removeChild(
+			geoxml_document_root_element(GEOXML_DOCUMENT(flow)),
+			(GdomeNode*)child, &exception);
+		child = aux;
+	}
+
+	/* add all revision elements */
+	child = __geoxml_get_first_element(geoxml_document_root_element(GEOXML_DOCUMENT(revision_flow)), "*");
+	for (; child != NULL; child = __geoxml_next_element(child)) {
+		GdomeNode *	new_node;
+
+		new_node = gdome_doc_importNode((GdomeDocument*)flow,
+			(GdomeNode*)child, TRUE, &exception);
+		gdome_el_insertBefore(geoxml_document_root_element(GEOXML_DOCUMENT(flow)),
+			(GdomeNode*)new_node, (GdomeNode*)first_revision, &exception);
+	}
+
+	return TRUE;
+}
+
+GeoXmlRevision *
+geoxml_flow_append_revision(GeoXmlFlow * flow, const gchar * comment)
+{
+	if (flow == NULL)
+		return NULL;
+
+	GeoXmlRevision *	revision;
+	GeoXmlFlow *		revision_flow;
+	gchar *			revision_xml;
+	GeoXmlSequence *	i;
+
+	revision = (GeoXmlRevision*)__geoxml_insert_new_element(
+		geoxml_document_root_element(GEOXML_DOCUMENT(flow)),
+		"revision", NULL);
+	__geoxml_set_attr_value((GdomeElement*)revision, "date", iso_date());
+	__geoxml_set_attr_value((GdomeElement*)revision, "comment", comment);
+
+	revision_flow = GEOXML_FLOW(geoxml_document_clone(GEOXML_DOCUMENT(flow)));
+	geoxml_document_to_string(GEOXML_DOCUMENT(revision_flow), &revision_xml);
+	/* remove revisions from the revision flow. */
+	geoxml_flow_get_revision(revision_flow, &i, 0);
+	while (i != NULL) {
+		GeoXmlSequence *	aux;
+
+		aux = (GeoXmlSequence*)__geoxml_next_element((GdomeElement*)i);
+		gdome_el_removeChild(geoxml_document_root_element(GEOXML_DOCUMENT(revision_flow)),
+			(GdomeNode*)i, &exception);
+
+		i = aux;
+	}
+
+	/* save the xml */
+	geoxml_document_to_string(GEOXML_DOCUMENT(revision_flow), &revision_xml);
+	__geoxml_set_element_value((GdomeElement*)revision,
+		revision_xml, __geoxml_create_CDATASection);
+
+	/* frees */
+	g_free(revision_xml);
+	geoxml_document_free(GEOXML_DOCUMENT(revision_flow));
+
+	return revision;
+}
+
+int
+geoxml_flow_get_revision(GeoXmlFlow * flow, GeoXmlSequence ** revision, gulong index)
+{
+	if (flow == NULL) {
+		*revision = NULL;
+		return GEOXML_RETV_NULL_PTR;
+	}
+
+	*revision = (GeoXmlSequence*)__geoxml_get_element_at(
+		geoxml_document_root_element(GEOXML_DOCUMENT(flow)),
+		"revision", index, FALSE);
+
+	return (*revision == NULL)
+		? GEOXML_RETV_INVALID_INDEX
+		: GEOXML_RETV_SUCCESS;
+}
+
+void
+geoxml_flow_get_revision_data(GeoXmlRevision * revision, gchar ** flow, gchar ** date, gchar ** comment)
+{
+	if (revision == NULL)
+		return;
+
+	if (flow != NULL)
+		*flow = (gchar*)__geoxml_get_element_value((GdomeElement*)revision);
+	if (date != NULL)
+		*date = localized_date(__geoxml_get_attr_value((GdomeElement*)revision, "date"));
+	if (comment != NULL)
+		*comment = (gchar*)__geoxml_get_attr_value((GdomeElement*)revision, "comment");
+}
+
+glong
+geoxml_flow_get_revisions_number(GeoXmlFlow * flow)
+{
+	if (flow == NULL)
+		return -1;
+	return __geoxml_get_elements_number(geoxml_document_root_element(GEOXML_DOC(flow)), "revision");
+}
+

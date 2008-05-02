@@ -87,6 +87,11 @@ typedef struct geoxml_flow GeoXmlFlow;
  */
 typedef struct geoxml_category GeoXmlCategory;
 
+/**
+ * The GeoXmlRevision struct contains private data only, and should be accessed using the functions below.
+ */
+typedef struct geoxml_revision GeoXmlRevision;
+
 #include "program.h"
 #include "macros.h"
 #include "sequence.h"
@@ -248,5 +253,59 @@ geoxml_flow_get_category(GeoXmlFlow * flow, GeoXmlSequence ** category, gulong i
  */
 glong
 geoxml_flow_get_categories_number(GeoXmlFlow * flow);
+
+/**
+ * Change all the flow data to the one stored at revision, except, of course,
+ * the list of revisions.
+ * Be aware that all \p flow data will be lost. If you don't want that, call
+ * \ref geoxml_flow_append_revision before.
+ *
+ * If \p flow or \p revision is NULL nothing is done.
+ * If it fails because the revision could not be loaded, returns FALSE.
+ * On success, return TRUE.
+ */
+gboolean
+geoxml_flow_change_to_revision(GeoXmlFlow * flow, GeoXmlRevision * revision);
+
+/**
+ * Creates a new revision with the current time append to the list of revisions
+ * An revision is a way to keep the history of the flow changes. You can then restore
+ * one revision with \ref geoxml_flow_change_to_revision
+ *
+ * If \p flow is NULL nothing is done.
+ */
+GeoXmlRevision *
+geoxml_flow_append_revision(GeoXmlFlow * flow, const gchar * comment);
+
+/**
+ * Writes to \p revision the \p index ieth revision that \p flow has.
+ * If an error ocurred, the content of \p revision is assigned to NULL.
+ *
+ * If \p flow is NULL nothing is done.
+ *
+ * Returns one of: GEOXML_RETV_SUCCESS, GEOXML_RETV_INVALID_INDEX, GEOXML_RETV_NULL_PTR
+ *
+ * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
+ */
+int
+geoxml_flow_get_revision(GeoXmlFlow * flow, GeoXmlSequence ** revision, gulong index);
+
+/**
+ * Get information of \p revision. The flow is stored at \p flow and can be
+ * loaded with geoxml_document_load_buffer. \p receive the date of creation of \p revision.
+ * A NULL value of \p flow or \p date or \p comment mean not set.
+ *
+ * If \p revision in NULL nothing is done.
+ */
+void
+geoxml_flow_get_revision_data(GeoXmlRevision * revision, gchar ** flow, gchar ** date, gchar ** comment);
+
+/**
+ * Get the number of revisions \p flow has.
+ *
+ * If \p flow is NULL returns -1.
+ */
+glong
+geoxml_flow_get_revisions_number(GeoXmlFlow * flow);
 
 #endif //__LIBGEBR_GEOXML_FLOW_H

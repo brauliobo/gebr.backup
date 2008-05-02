@@ -209,7 +209,8 @@ __geoxml_xpath_evaluate(GdomeElement * context, const gchar * expression);
  * \internal
  * Iterates elements of a GdomeXPathResult at \p result
  * This macro will auto free \p result and you can use it
- * as __geoxml_foreach_xpath_result(element, __geoxml_xpath_evaluate(context, expression))
+ * as __geoxml_foreach_xpath_result(element, __geoxml_xpath_evaluate(context, expression)).
+ * If you use 'break' then you have to free it yourself.
  */
 #define __geoxml_foreach_xpath_result(element, _result) \
 	GdomeXPathResult * xpath_result = _result; \
