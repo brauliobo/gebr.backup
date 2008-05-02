@@ -22,11 +22,13 @@
 
 /**
  * \internal
- * Reseting a program parameter default is not only settting it to a empty string.
- * In fact, this will break XML, as some default are implemented as enumerated attributes.
- *
+ * Assign to all values elements the values \p value and
+ * \p default_value for default value.
+ * A NULL pointer mean to no set.
+ * An empty value means reset.
  */
 void
-__geoxml_program_parameter_reset_default(GeoXmlProgramParameter * parameter);
+__geoxml_program_parameter_set_all_value(GeoXmlProgramParameter * program_parameter,
+	const gchar * value, const gchar * default_value);
 
 #endif //__LIBGEBR_GEOXML_PROGRAM_PARAMETER_P_H

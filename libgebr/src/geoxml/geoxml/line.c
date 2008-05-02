@@ -59,7 +59,7 @@ geoxml_line_append_flow(GeoXmlLine * line, const gchar * source)
 	if (line == NULL)
 		return NULL;
 
-	GeoXmlLineFlow* line_flow;
+	GeoXmlLineFlow *	line_flow;
 
 	line_flow = (GeoXmlLineFlow*)__geoxml_insert_new_element(
 		geoxml_document_root_element(GEOXML_DOC(line)), "flow", NULL);

@@ -45,6 +45,7 @@
  * 	"GeoXmlProgram" [ URL = "\ref program.h" ];
  * 	"GeoXmlParameters" [ URL = "\ref parameters.h" ];
  * 	"GeoXmlParameter" [ URL = "\ref parameter.h" ];
+ * 	"GeoXmlPropertyValue" [ URL = "\ref GeoXmlPropertyValue" ];
  * 	"GeoXmlEnumOption" [ URL = "\ref enum_option.h" ];
  * 	"GeoXmlValueSequence" [ URL = "\ref value_sequence.h" ];
  *
@@ -57,6 +58,7 @@
  * 	"GeoXmlSequence" -> { "GeoXmlProgram" };
  * 	"GeoXmlSequence" -> { "GeoXmlParameters" };
  * 	"GeoXmlSequence" -> { "GeoXmlParameter" };
+ * 	"GeoXmlSequence" -> { "GeoXmlPropertyValue" };
  * 	"GeoXmlSequence" -> { "GeoXmlEnumOption" };
  * 	"GeoXmlSequence" -> { "GeoXmlValueSequence" };
  * 	"GeoXmlValueSequence" -> { "GeoXmlCategory" };

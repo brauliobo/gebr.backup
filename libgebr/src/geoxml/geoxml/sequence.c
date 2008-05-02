@@ -51,6 +51,7 @@ __geoxml_sequence_check(GeoXmlSequence * sequence)
 
 	name = gdome_el_nodeName((GdomeElement*)sequence, &exception);
 	return __geoxml_sequence_is_parameter(sequence) ||
+		(gboolean)!strcmp(name->str, "value") ||
 		(gboolean)!strcmp(name->str, "option") ||
 		((gboolean)!strcmp(name->str, "parameters") &&
 			geoxml_parameters_get_is_in_group((GeoXmlParameters*)sequence)) ||

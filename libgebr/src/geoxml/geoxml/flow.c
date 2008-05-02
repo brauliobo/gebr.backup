@@ -18,13 +18,15 @@
 #include <gdome.h>
 
 #include "flow.h"
-#include "document.h"
-#include "document_p.h"
-#include "program.h"
 #include "defines.h"
 #include "xml.h"
 #include "error.h"
 #include "types.h"
+#include "document.h"
+#include "document_p.h"
+#include "program.h"
+#include "parameters.h"
+#include "parameter_group.h"
 #include "value_sequence.h"
 
 /*
@@ -38,6 +40,31 @@ struct geoxml_flow {
 struct geoxml_category {
 	GdomeElement * element;
 };
+
+static void
+__geoxml_flow_id_reasign_imported_parameters(GeoXmlParameters * parameters)
+{
+	GeoXmlSequence *		parameter;
+	enum GEOXML_PARAMETERTYPE	type;
+
+	geoxml_parameters_get_parameter(parameters, &parameter, 0);
+	for (; parameter != NULL; geoxml_sequence_next(&parameter)) {
+		type = geoxml_parameter_get_type(GEOXML_PARAMETER(parameter));
+		if (type == GEOXML_PARAMETERTYPE_GROUP) {
+			GeoXmlSequence *	instance;
+
+			geoxml_parameter_group_get_instance(GEOXML_PARAMETER_GROUP(parameter),
+				&instance, 0);
+			do {
+				__geoxml_flow_id_reasign_imported_parameters(GEOXML_PARAMETERS(instance));
+				geoxml_sequence_next(&instance);
+			} while (instance != NULL);
+			continue;
+		}
+
+		__geoxml_element_assign_new_id((GdomeElement*)parameter);
+	}
+}
 
 /*
  * library functions.
@@ -78,12 +105,16 @@ geoxml_flow_add_flow(GeoXmlFlow * flow, GeoXmlFlow * flow2)
 
 	/* clear each copied program help */
 	for (i = 0; i < n; ++i) {
-		GdomeNode* new_node = gdome_doc_importNode((GdomeDocument*)flow,
+		GdomeNode * new_node = gdome_doc_importNode((GdomeDocument*)flow,
 			gdome_nl_item(flow2_node_list, i, &exception), TRUE, &exception);
 
-		gdome_el_appendChild(geoxml_document_root_element(GEOXML_DOC(flow)), new_node, &exception);
+		gdome_el_insertBefore(geoxml_document_root_element(GEOXML_DOC(flow)), new_node, (GdomeNode*)
+			__geoxml_get_first_element(geoxml_document_root_element(GEOXML_DOC(flow)), "revision"),
+			&exception);
 
 		geoxml_program_set_help((GeoXmlProgram*)new_node, "");
+		__geoxml_flow_id_reasign_imported_parameters(
+			geoxml_program_get_parameters((GeoXmlProgram*)new_node));
 	}
 
 	gdome_str_unref(string);

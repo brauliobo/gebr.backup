@@ -27,6 +27,7 @@
 #include "program_parameter.h"
 #include "program_parameter_p.h"
 #include "parameter_p.h"
+#include "parameter_group.h"
 
 /*
  * internal stuff
@@ -45,8 +46,8 @@ __geoxml_parameters_group_check(GeoXmlParameters * parameters)
 	if (strcmp(gdome_el_nodeName(parent_element, &exception)->str, "group") != 0)
 		return TRUE;
 	/* problem with recursive getElementsByName */
-// 	if (geoxml_parameter_group_get_instances_number(GEOXML_PARAMETER_GROUP(parent_element) > 1)
-// 		return FALSE;
+	if (geoxml_parameter_group_get_instances_number(GEOXML_PARAMETER_GROUP(parent_element)) > 1)
+		return FALSE;
 
 	return TRUE;
 }

@@ -119,12 +119,11 @@ __geoxml_parameter_insert_type(GeoXmlParameter * parameter, enum GEOXML_PARAMETE
 				(GeoXmlProgramParameter*)parameter, "", "", "", "");
 			break;
 		default:
-			if (type != GEOXML_PARAMETERTYPE_FLAG)
-				geoxml_program_parameter_set_required(
-					(GeoXmlProgramParameter*)parameter, FALSE);
+			geoxml_program_parameter_set_required(
+				(GeoXmlProgramParameter*)parameter, FALSE);
 			break;
 		}
-		__geoxml_program_parameter_reset_default((GeoXmlProgramParameter*)parameter);
+		__geoxml_program_parameter_set_all_value((GeoXmlProgramParameter*)parameter, "", "");
 
 		break;
 	}}
@@ -223,8 +222,6 @@ geoxml_parameter_reset(GeoXmlParameter * parameter, gboolean recursive)
 		geoxml_parameter_group_get_instance(GEOXML_PARAMETER_GROUP(parameter), &instance, 0);
 		for (; instance != NULL; geoxml_sequence_next(&instance))
 			geoxml_parameters_reset(GEOXML_PARAMETERS(instance), recursive);
-	} else {
-		geoxml_program_parameter_set_value(GEOXML_PROGRAM_PARAMETER(parameter), "");
-		__geoxml_program_parameter_reset_default(GEOXML_PROGRAM_PARAMETER(parameter));
-	}
+	} else
+		__geoxml_program_parameter_set_all_value(GEOXML_PROGRAM_PARAMETER(parameter), "", "");
 }
