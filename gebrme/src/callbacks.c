@@ -27,14 +27,19 @@
 #include "menu.h"
 #include "preferences.h"
 
+/*
+ * File: callbacks.c
+ * General interface callbacks. See <interface.c>
+ */
+
 void
-on_new_activate(void)
+on_menu_new_activate(void)
 {
 	menu_new();
 }
 
 void
-on_open_activate(void)
+on_menu_open_activate(void)
 {
 	GtkWidget *		chooser_dialog;
 	GtkFileFilter *		filefilter;
@@ -65,7 +70,7 @@ out:	gtk_widget_destroy(chooser_dialog);
 }
 
 void
-on_save_activate(void)
+on_menu_save_activate(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
@@ -74,9 +79,9 @@ on_save_activate(void)
 	gchar *			path;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebrme.menus_treeview));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebrme.ui_menu.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.menus_liststore), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
 
@@ -88,11 +93,11 @@ on_save_activate(void)
 	}
 
 	g_free(path);
-	on_save_as_activate();
+	on_menu_save_as_activate();
 }
 
 void
-on_save_as_activate(void)
+on_menu_save_as_activate(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
@@ -128,9 +133,9 @@ on_save_as_activate(void)
 	filename = g_path_get_basename(path);
 
 	/* get selection, change the view and save to disk */
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebrme.menus_treeview));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebrme.ui_menu.tree_view));
 	gtk_tree_selection_get_selected (selection, &model, &iter);
-	gtk_list_store_set (gebrme.menus_liststore, &iter,
+	gtk_list_store_set (gebrme.ui_menu.list_store, &iter,
 			MENU_FILENAME, filename,
 			MENU_PATH, path,
 			-1);
@@ -143,7 +148,7 @@ out:	gtk_widget_destroy(chooser_dialog);
 }
 
 void
-on_revert_activate(void)
+on_menu_revert_activate(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
@@ -157,9 +162,9 @@ on_revert_activate(void)
 		return;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebrme.menus_treeview));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebrme.ui_menu.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.menus_liststore), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
 
@@ -175,7 +180,7 @@ on_revert_activate(void)
 		return;
 	/* revert to the one in disk */
 	geoxml_document_free(GEOXML_DOC(gebrme.current));
-	gtk_list_store_set(gebrme.menus_liststore, &iter,
+	gtk_list_store_set(gebrme.ui_menu.list_store, &iter,
 		MENU_XMLPOINTER, menu,
 		-1);
 	menu_selected();
@@ -186,7 +191,7 @@ on_revert_activate(void)
 }
 
 void
-on_delete_activate(void)
+on_menu_delete_activate(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
@@ -199,9 +204,9 @@ on_delete_activate(void)
 		return;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.menus_treeview));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.menus_liststore), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
 
@@ -216,13 +221,13 @@ on_delete_activate(void)
 		gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 	} else
-		on_close_activate();
+		on_menu_close_activate();
 
 	g_free(path);
 }
 
 void
-on_close_activate(void)
+on_menu_close_activate(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
@@ -230,10 +235,10 @@ on_close_activate(void)
 
 	GdkPixbuf *		pixbuf;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.menus_treeview));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.menus_liststore), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
 				MENU_STATUS, &pixbuf,
 				-1);
 
@@ -252,7 +257,7 @@ on_close_activate(void)
 		case GTK_RESPONSE_YES: {
 			gchar *	path;
 
-			gtk_tree_model_get(GTK_TREE_MODEL(gebrme.menus_liststore), &iter,
+			gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
 				MENU_PATH, &path,
 				-1);
 
@@ -271,7 +276,7 @@ on_close_activate(void)
 	}
 
 	geoxml_document_free(GEOXML_DOC(gebrme.current));
-	gtk_list_store_remove(gebrme.menus_liststore, &iter);
+	gtk_list_store_remove(gebrme.ui_menu.list_store, &iter);
 
 	if (gtk_tree_model_iter_n_children(model, NULL) == 0)
 		menu_new();
@@ -285,37 +290,37 @@ on_close_activate(void)
 }
 
 void
-on_quit_activate(void)
+on_menu_quit_activate(void)
 {
 	gebrme_quit();
 }
 
 void
-on_cut_activate(void)
+on_menu_cut_activate(void)
 {
 
 }
 
 void
-on_copy_activate(void)
+on_menu_copy_activate(void)
 {
 
 }
 
 void
-on_paste_activate(void)
+on_menu_paste_activate(void)
 {
 
 }
 
 void
-on_preferences_activate(void)
+on_configure_preferences_activate(void)
 {
 	create_preferences_window();
 }
 
 void
-on_about_activate(void)
+on_help_about_activate(void)
 {
 	gtk_widget_show(gebrme.about.dialog);
 }

@@ -19,7 +19,29 @@
 #define __MENU_H
 
 #include <glib.h>
-#include <gebrme.h>
+
+typedef enum {
+        MENU_STATUS_SAVED,
+        MENU_STATUS_UNSAVED
+} MenuStatus;
+
+enum {
+        MENU_STATUS,
+	MENU_FILENAME,
+	MENU_XMLPOINTER,
+	MENU_PATH,
+	MENU_N_COLUMN
+};
+
+struct ui_menu {
+	GtkWidget *		widget;
+
+	GtkListStore *		list_store;
+	GtkWidget *		tree_view;
+};
+
+void
+menu_setup_ui();
 
 void
 menu_new(void);

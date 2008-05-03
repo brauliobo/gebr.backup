@@ -21,42 +21,30 @@
 #include <gtk/gtk.h>
 
 void
-on_new_activate(void);
+on_menu_new_activate(void);
 
 void
-on_open_activate(void);
+on_menu_open_activate(void);
 
 void
-on_save_activate(void);
+on_menu_save_activate(void);
 
 void
-on_save_as_activate(void);
+on_menu_save_as_activate(void);
 
 void
-on_revert_activate(void);
+on_menu_revert_activate(void);
 
 void
-on_delete_activate(void);
+on_menu_delete_activate(void);
 
 void
-on_close_activate(void);
+on_menu_close_activate(void);
 
 void
-on_quit_activate(void);
+on_configure_preferences_activate(void);
 
 void
-on_cut_activate(void);
-
-void
-on_copy_activate(void);
-
-void
-on_paste_activate(void);
-
-void
-on_preferences_activate(void);
-
-void
-on_about_activate(void);
+on_help_about_activate(void);
 
 #endif //__CALLBACKS_H

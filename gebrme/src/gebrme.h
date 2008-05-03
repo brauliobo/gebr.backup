@@ -24,20 +24,9 @@
 #include <gui/about.h>
 #include <misc/log.h>
 
+#include "menu.h"
+
 extern struct gebrme gebrme;
-
-typedef enum {
-        MENU_STATUS_SAVED,
-        MENU_STATUS_UNSAVED
-} MenuStatus;
-
-enum {
-        MENU_STATUS,
-	MENU_FILENAME,
-	MENU_XMLPOINTER,
-	MENU_PATH,
-	MENU_N_COLUMN
-};
 
 enum {
 	CATEGORY_NAME,
@@ -54,14 +43,28 @@ struct gebrme {
 	struct about		about;
 	GtkWidget *		statusbar;
 	GtkWidget *		invisible;
+	GtkAccelGroup *		accel_group;
+
+	struct ui_menu		ui_menu;
 
 	/* actions */
-	GtkAction *		save_action;
-	GtkAction *		revert_action;
-
-	/* menus list */
-	GtkListStore *		menus_liststore;
-	GtkWidget *		menus_treeview;
+	struct gebrme_actions {
+		struct {
+			GtkAction *		new;
+			GtkAction *		open;
+			GtkAction *		save;
+			GtkAction *		save_as;
+			GtkAction *		revert;
+			GtkAction *		delete;
+			GtkAction *		close;
+		} menu;
+		struct {
+			
+		} program;
+		struct {
+			
+		} parameter;
+	} actions;
 
 	/* title, description, author and email */
 	GtkWidget *		title_entry;

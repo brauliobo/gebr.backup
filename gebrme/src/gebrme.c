@@ -57,13 +57,13 @@ gebrme_init(void)
 	/* load status icons */
 	gebrme.invisible = gtk_invisible_new();
 	gebrme.pixmaps.stock_no = gtk_widget_render_icon(gebrme.invisible, GTK_STOCK_NO, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
-
+/*
 	if (!strcmp(gebrme.config.menu_dir->str, ""))
 		create_preferences_window();
 	else
 		menu_load_user_directory();
-	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebrme.menus_liststore), NULL) == 0)
-		menu_new();
+	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebrme.ui_menu.list_store), NULL) == 0)
+		menu_new();*/
 }
 
 void
@@ -71,6 +71,8 @@ gebrme_quit(void)
 {
 	if (!menu_cleanup())
 		return;
+
+	g_object_unref(gebrme.accel_group);
 
 	/* free config stuff */
 	g_key_file_free(gebrme.config.keyfile);

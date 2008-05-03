@@ -20,7 +20,7 @@
 
 #include <gtk/gtk.h>
 
-GtkWidget *
-create_gebrme_window (void);
+void
+gebrme_create_window(void);
 
 #endif //__INTERFACE_H

@@ -24,27 +24,26 @@
 #include <gtk/gtk.h>
 
 #include "interface.h"
+#include "gebrme.h"
 
 int
 main(int argc, char *argv[])
 {
-	GtkWidget *	gebrme_window;
-
 #ifdef ENABLE_NLS
-	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-	textdomain (GETTEXT_PACKAGE);
+	bindtextdomain(GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
+	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+	textdomain(GETTEXT_PACKAGE);
 #endif
 
 	gtk_set_locale ();
-	gtk_init (&argc, &argv);
+	gtk_init(&argc, &argv);
 
 	/* temporary: necessary for representing fractional numbers only with comma */
 	setlocale(LC_NUMERIC, "C");
 
-	gebrme_window = create_gebrme_window ();
-	gtk_widget_show (gebrme_window);
+	gebrme_create_window();
+	gtk_widget_show(gebrme.window);
+	gtk_main();
 
-	gtk_main ();
 	return 0;
 }

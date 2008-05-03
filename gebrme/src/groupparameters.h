@@ -27,8 +27,7 @@ struct group_parameters_data {
 	struct parameter_data *	parameter;
 	GtkWidget *		widget;
 
-	/* for an exclusive group */
-	GSList *		radio_group;
+	GList *			radio_group;
 };
 
 struct group_parameters_data *

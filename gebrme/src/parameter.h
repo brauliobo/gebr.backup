@@ -33,6 +33,7 @@ struct group_parameters_data;
  */
 struct parameter_data {
 	GeoXmlParameter *				parameter;
+
 	GtkWidget *					frame;
 	GtkWidget *					label;
 	GtkWidget *					specific_table;
