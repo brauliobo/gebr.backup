@@ -109,21 +109,6 @@ geoxml_line_get_flow_source(GeoXmlLineFlow * line_flow)
 }
 
 GeoXmlLinePath *
-geoxml_line_new_path(GeoXmlLine * line, const gchar * path)
-{
-	if (line == NULL || path == NULL)
-		return NULL;
-
-	GeoXmlLinePath *	line_path;
-
-	line_path = (GeoXmlLinePath*)__geoxml_new_element(
-		geoxml_document_root_element(GEOXML_DOC(line)), "path");
-	geoxml_value_sequence_set(GEOXML_VALUE_SEQUENCE(line_path), path);
-
-	return line_path;
-}
-
-GeoXmlLinePath *
 geoxml_line_append_path(GeoXmlLine * line, const gchar * path)
 {
 	if (line == NULL || path == NULL)

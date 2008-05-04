@@ -110,6 +110,28 @@ geoxml_parameters_set_exclusive(GeoXmlParameters * parameters, GeoXmlParameter *
 		geoxml_parameters_set_selected(parameters, parameter);
 }
 
+GeoXmlParameter *
+geoxml_parameters_get_exclusive(GeoXmlParameters * parameters)
+{
+	if (parameters == NULL)
+		return FALSE;
+
+	gulong			index;
+	GeoXmlSequence *	parameter;
+
+	index = atol(__geoxml_get_attr_value((GdomeElement*)parameters, "exclusive"));
+	if (index == 0)
+		return NULL;
+	index--;
+	geoxml_parameters_get_parameter(parameters, &parameter, index);
+
+	/* there isn't a parameter at index, so use the first parameter of the group */
+	if (parameter == NULL)
+		return (GeoXmlParameter*)geoxml_parameters_get_first_parameter(parameters);
+
+	return (GeoXmlParameter*)parameter;
+}
+
 void
 geoxml_parameters_set_selected(GeoXmlParameters * parameters, GeoXmlParameter * parameter)
 {
@@ -127,6 +149,30 @@ geoxml_parameters_set_selected(GeoXmlParameters * parameters, GeoXmlParameter * 
 	value = g_strdup_printf("%ld", __geoxml_get_element_index((GdomeElement*)parameter)+1);
 	__geoxml_set_attr_value((GdomeElement*)parameters, "selected", value);
 	g_free(value);
+}
+
+GeoXmlParameter *
+geoxml_parameters_get_selected(GeoXmlParameters * parameters)
+{
+	if (parameters == NULL)
+		return FALSE;
+	if (geoxml_parameters_get_exclusive(parameters) == NULL)
+		return NULL;
+
+	gulong			index;
+	GeoXmlSequence *	parameter;
+
+	index = atol(__geoxml_get_attr_value((GdomeElement*)parameters, "selected"));
+	if (index == 0)
+		return NULL;
+	index--;
+	geoxml_parameters_get_parameter(parameters, &parameter, index);
+
+	/* there isn't a parameter at index, so use the first parameter of the group */
+	if (parameter == NULL)
+		return (GeoXmlParameter*)geoxml_parameters_get_first_parameter(parameters);
+
+	return (GeoXmlParameter *)parameter;
 }
 
 GeoXmlSequence *
@@ -175,52 +221,6 @@ geoxml_parameters_get_number(GeoXmlParameters * parameters)
 		geoxml_sequence_next(&parameter);
 
 	return parameters_number;
-}
-
-GeoXmlParameter *
-geoxml_parameters_get_exclusive(GeoXmlParameters * parameters)
-{
-	if (parameters == NULL)
-		return FALSE;
-
-	gulong			index;
-	GeoXmlSequence *	parameter;
-
-	index = atol(__geoxml_get_attr_value((GdomeElement*)parameters, "exclusive"));
-	if (index == 0)
-		return NULL;
-	index--;
-	geoxml_parameters_get_parameter(parameters, &parameter, index);
-
-	/* there isn't a parameter at index, so use the first parameter of the group */
-	if (parameter == NULL)
-		return (GeoXmlParameter*)geoxml_parameters_get_first_parameter(parameters);
-
-	return (GeoXmlParameter*)parameter;
-}
-
-GeoXmlParameter *
-geoxml_parameters_get_selected(GeoXmlParameters * parameters)
-{
-	if (parameters == NULL)
-		return FALSE;
-	if (geoxml_parameters_get_exclusive(parameters) == NULL)
-		return NULL;
-
-	gulong			index;
-	GeoXmlSequence *	parameter;
-
-	index = atol(__geoxml_get_attr_value((GdomeElement*)parameters, "selected"));
-	if (index == 0)
-		return NULL;
-	index--;
-	geoxml_parameters_get_parameter(parameters, &parameter, index);
-
-	/* there isn't a parameter at index, so use the first parameter of the group */
-	if (parameter == NULL)
-		return (GeoXmlParameter*)geoxml_parameters_get_first_parameter(parameters);
-
-	return (GeoXmlParameter *)parameter;
 }
 
 gboolean

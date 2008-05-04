@@ -167,18 +167,7 @@ const gchar *
 geoxml_line_get_flow_source(GeoXmlLineFlow * line_flow);
 
 /**
- * Creates a new path pathd as \p path in \p line and returns a pointer to it.
- *
- * If \p line is NULL nothing is done.
- *
- * \see geoxml_sequence_move geoxml_sequence_move_up geoxml_sequence_move_down geoxml_sequence_remove
- */
-GeoXmlLinePath *
-geoxml_line_new_path(GeoXmlLine * line, const gchar * path);
-
-/**
  * Creates a new path and append it to the list of path.
- * Provided for convenience.
  *
  * \see geoxml_line_new_path
  */

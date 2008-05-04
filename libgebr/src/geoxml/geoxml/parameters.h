@@ -124,6 +124,13 @@ void
 geoxml_parameters_set_exclusive(GeoXmlParameters * parameters, GeoXmlParameter * parameter);
 
 /**
+ *
+ * If \p parameters is NULL returns FALSE.
+ */
+GeoXmlParameter *
+geoxml_parameters_get_exclusive(GeoXmlParameters * parameters);
+
+/**
  * If \p parameters is a exclusive group (aka has a non-NULL exclusive parameter set)
  * then select \p parameter to be current derised for use parameter; otherwise, nothing is done.
  *
@@ -131,6 +138,15 @@ geoxml_parameters_set_exclusive(GeoXmlParameters * parameters, GeoXmlParameter *
  */
 void
 geoxml_parameters_set_selected(GeoXmlParameters * parameters, GeoXmlParameter * parameter);
+
+/**
+ * If \p parameters is a exclusive group (aka has a non-NULL exclusive parameter set)
+ * then select \p parameter to be current derised for use parameter; otherwise, returns NULL
+ *
+ * If \p parameters is NULL returns NULL.
+ */
+GeoXmlParameter *
+geoxml_parameters_get_selected(GeoXmlParameters * parameters);
 
 /**
  * Get the first paramater of \p program.
@@ -157,22 +173,6 @@ glong
 geoxml_parameters_get_number(GeoXmlParameters * parameters);
 
 /**
- *
- * If \p parameters is NULL returns FALSE.
- */
-GeoXmlParameter *
-geoxml_parameters_get_exclusive(GeoXmlParameters * parameters);
-
-/**
- * If \p parameters is a exclusive group (aka has a non-NULL exclusive parameter set)
- * then select \p parameter to be current derised for use parameter; otherwise, returns NULL
- *
- * If \p parameters is NULL returns NULL.
- */
-GeoXmlParameter *
-geoxml_parameters_get_selected(GeoXmlParameters * parameters);
-
-/**
  * Return TRUE if \p parameters is part of a group
  *
  * If \p parameters is NULL returns FALSE.
@@ -181,8 +181,8 @@ gboolean
 geoxml_parameters_get_is_in_group(GeoXmlParameters * parameters);
 
 /**
- * Reset \p parameters' values and d,
- * including default values.
+ * Reset \p parameters' values and default values.
+ * If \p recursive is true also do it for group (recursively)
  */
 void
 geoxml_parameters_reset(GeoXmlParameters * parameters, gboolean recursive);
