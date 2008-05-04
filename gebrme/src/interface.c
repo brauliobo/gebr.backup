@@ -66,7 +66,7 @@ gebrme_create_window(void)
 	gtk_window_set_default_icon(pixmaps_gebr_icon_16x16());
 	gebrme.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(gebrme.window), "GêBR ME");
-	gtk_widget_set_size_request(gebrme.window, 800, 600);
+	gtk_widget_set_size_request(gebrme.window, 500, 300);
 	gebrme.about = about_setup_ui("GêBRME", _("Flow describer for GêBR"));
 
 	g_signal_connect(gebrme.window, "delete_event",
@@ -250,7 +250,7 @@ gebrme_create_window(void)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(_("Menu")));
 
 	toolbar = gtk_toolbar_new();
-	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_BOTH);
+	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.menu.new)), -1);
@@ -282,7 +282,7 @@ gebrme_create_window(void)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(_("Program")));
 
 	toolbar = gtk_toolbar_new();
-	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_BOTH);
+	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.program.new)), -1);

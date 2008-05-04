@@ -46,6 +46,9 @@ static GtkTreeIter
 program_append_to_ui(GeoXmlProgram * program);
 
 static void
+program_selected(void);
+
+static void
 program_select_iter(GtkTreeIter iter);
 
 static GtkMenu *
@@ -118,20 +121,17 @@ program_setup_ui(void)
 	gtk_widget_show(gebrme.ui_program.tree_view);
 	gtk_container_add(GTK_CONTAINER(scrolled_window), gebrme.ui_program.tree_view);
 	g_signal_connect(gebrme.ui_program.tree_view, "cursor-changed",
-		(GCallback)program_load_menu, NULL);
+		(GCallback)program_selected, NULL);
 	g_signal_connect(gebrme.ui_program.tree_view, "row-activated",
 		GTK_SIGNAL_FUNC(program_dialog_setup_ui), NULL);
 
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(gebrme.ui_program.tree_view), FALSE);
-	renderer = gtk_cell_renderer_pixbuf_new();
-	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(col, 24);
-	gtk_tree_view_column_add_attribute(col, renderer, "pixbuf", MENU_STATUS);
+	renderer = gtk_cell_renderer_text_new();
+	col = gtk_tree_view_column_new_with_attributes(_("Title"), renderer, NULL);
+	gtk_tree_view_column_add_attribute(col, renderer, "text", PROGRAM_TITLE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(gebrme.ui_program.tree_view), col);
 	renderer = gtk_cell_renderer_text_new();
-	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-	gtk_tree_view_column_add_attribute(col, renderer, "text", MENU_FILENAME);
+	col = gtk_tree_view_column_new_with_attributes(_("Description"), renderer, NULL);
+	gtk_tree_view_column_add_attribute(col, renderer, "text", PROGRAM_DESCRIPTION);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(gebrme.ui_program.tree_view), col);
 
 	gebrme.ui_program.widget = scrolled_window;
@@ -148,10 +148,13 @@ program_load_menu(void)
 	GeoXmlSequence *		program;
 	GtkTreeIter			iter;
 
+	gtk_list_store_clear(gebrme.ui_program.list_store);
+
 	geoxml_flow_get_program(gebrme.menu, &program, 0);
 	for (; program != NULL; geoxml_sequence_next(&program))
 		program_append_to_ui(GEOXML_PROGRAM(program));
 
+	gebrme.program = NULL;
 	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebrme.ui_program.list_store), &iter) == TRUE)
 		program_select_iter(iter);
 }
@@ -196,12 +199,12 @@ program_remove(void)
 	geoxml_program_get_title(gebrme.program)) == FALSE)
 		return;
 
-	/* UI */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_program.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
+
 	gtk_list_store_remove(gebrme.ui_program.list_store, &iter);
-	/* XML */
 	geoxml_sequence_remove(GEOXML_SEQUENCE(gebrme.program));
+	gebrme.program = NULL;
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
@@ -226,6 +229,20 @@ program_append_to_ui(GeoXmlProgram * program)
 }
 
 static void
+program_selected(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_program.tree_view));
+	gtk_tree_selection_get_selected(selection, &model, &iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_program.list_store), &iter,
+		PROGRAM_XMLPOINTER, &gebrme.program,
+		-1);
+}
+
+static void
 program_select_iter(GtkTreeIter iter)
 {
 	GtkTreeSelection *	tree_selection;
@@ -233,9 +250,9 @@ program_select_iter(GtkTreeIter iter)
 	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_program.list_store), &iter,
 		PROGRAM_XMLPOINTER, &gebrme.program,
 		-1);
-
 	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_program.tree_view));
 	gtk_tree_selection_select_iter(tree_selection, &iter);
+
 // 	parameter_load_program();
 }
 
@@ -281,7 +298,7 @@ program_move_up(GtkMenuItem * menu_item)
 	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_program.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
 
 	gtk_list_store_move_up(gebrme.ui_program.list_store, &iter);
@@ -297,7 +314,7 @@ program_move_down(GtkMenuItem * menu_item)
 	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_program.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
 
 	gtk_list_store_move_down(gebrme.ui_program.list_store, &iter);
