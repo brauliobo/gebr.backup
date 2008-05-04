@@ -22,8 +22,6 @@ gebrme_SOURCES = \
 	callbacks.c \
 	gebrme.c \
 	menu.c \
-	summary.c \
-	category.c \
 	program.c \
 	parameters.c \
 	groupparameters.c \
@@ -37,8 +35,6 @@ noinst_HEADERS = \
 	callbacks.h \
 	gebrme.h \
 	menu.h \
-	summary.h \
-	category.h \
 	program.h \
 	parameters.h \
 	groupparameters.h \

@@ -59,7 +59,7 @@ help_subst_fields(GString * help, GeoXmlProgram * program)
 	if (program != NULL)
 		content = (gchar*)geoxml_program_get_title(program);
 	else
-		content = (gchar*)geoxml_document_get_title(GEOXML_DOC(gebrme.current));
+		content = (gchar*)geoxml_document_get_title(GEOXML_DOC(gebrme.menu));
 	if (strlen(content)) {
 		ptr = strstr(help->str, "Flow/Program Title");
 
@@ -75,7 +75,7 @@ help_subst_fields(GString * help, GeoXmlProgram * program)
 	if (program != NULL)
 		content = (gchar*)geoxml_program_get_description(program);
 	else
-		content = (gchar*)geoxml_document_get_description(GEOXML_DOC(gebrme.current));
+		content = (gchar*)geoxml_document_get_description(GEOXML_DOC(gebrme.menu));
 	if (strlen(content)) {
 		ptr = strstr(help->str, "Put here an one-line description");
 
@@ -88,11 +88,11 @@ help_subst_fields(GString * help, GeoXmlProgram * program)
 	}
 
 	/* Categories replacement */
-	if (geoxml_flow_get_categories_number(gebrme.current)) {
+	if (geoxml_flow_get_categories_number(gebrme.menu)) {
 		GeoXmlSequence *	category;
 		GString *		catstr;
 
-		geoxml_flow_get_category(gebrme.current, &category, 0);
+		geoxml_flow_get_category(gebrme.menu, &category, 0);
 		catstr = g_string_new(geoxml_value_sequence_get(GEOXML_VALUE_SEQUENCE(category)));
 		geoxml_sequence_next(&category);
 		while (category != NULL) {

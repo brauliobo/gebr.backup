@@ -41,7 +41,7 @@ struct ui_menu {
 };
 
 void
-menu_setup_ui();
+menu_setup_ui(void);
 
 void
 menu_new(void);
@@ -61,9 +61,6 @@ menu_save(const gchar * path);
 void
 menu_selected(void);
 
-/**
- * Asks for save and free memory allocated for menus
- */
 gboolean
 menu_cleanup(void);
 

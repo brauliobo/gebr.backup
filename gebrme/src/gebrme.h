@@ -25,18 +25,15 @@
 #include <misc/log.h>
 
 #include "menu.h"
+#include "program.h"
 
 extern struct gebrme gebrme;
 
-enum {
-	CATEGORY_NAME,
-	CATEGORY_XMLPOINTER,
-	CATEGORY_N_COLUMN
-};
-
 struct gebrme {
-	/* menu being edited */
-	GeoXmlFlow *		current;
+	/* current stuff being edited */
+	GeoXmlFlow *		menu;
+	GeoXmlProgram *		program;
+	GeoXmlParameter *	parameter;
 
 	/* diverse widgets */
 	GtkWidget *		window;
@@ -46,6 +43,7 @@ struct gebrme {
 	GtkAccelGroup *		accel_group;
 
 	struct ui_menu		ui_menu;
+	struct ui_menu		ui_program;
 
 	/* actions */
 	struct gebrme_actions {
@@ -59,33 +57,19 @@ struct gebrme {
 			GtkAction *		close;
 		} menu;
 		struct {
-			
+			GtkAction *		new;
+			GtkAction *		delete;
 		} program;
 		struct {
-			
+			GtkAction *		new;
+			GtkAction *		delete;
 		} parameter;
 	} actions;
-
-	/* title, description, author and email */
-	GtkWidget *		title_entry;
-	GtkWidget *		description_entry;
-	GtkWidget *		author_entry;
-	GtkWidget *		email_entry;
-
-	/* menu info: categories */
-	GtkWidget *		categories_combo;
-	GtkWidget *		categories_sequence_edit;
-
-	/* menu's programs */
-	GtkWidget *		programs_vbox;
 
         /* icons */
 	struct gebrme_pixmaps {
         	GdkPixbuf *	stock_no;
 	} pixmaps;
-
-	/* temporary files removed when GeBRME quits */
-	GSList *		tmpfiles;
 
 	/* config file */
 	struct gebrme_config {
@@ -98,6 +82,9 @@ struct gebrme {
 		GString *	htmleditor;
 		GString *	browser;
 	} config;
+
+	/* temporary files removed when GeBRME quits */
+	GSList *		tmpfiles;
 };
 
 void

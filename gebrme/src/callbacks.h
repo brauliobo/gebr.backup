@@ -42,6 +42,18 @@ void
 on_menu_close_activate(void);
 
 void
+on_program_new_activate(void);
+
+void
+on_program_delete_activate(void);
+
+void
+on_parameter_new_activate(void);
+
+void
+on_parameter_delete_activate(void);
+
+void
 on_configure_preferences_activate(void);
 
 void

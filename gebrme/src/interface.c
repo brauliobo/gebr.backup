@@ -25,8 +25,6 @@
 #include "callbacks.h"
 #include "support.h"
 #include "menu.h"
-#include "summary.h"
-#include "category.h"
 #include "program.h"
 
 /*
@@ -99,7 +97,7 @@ gebrme_create_window(void)
 	gtk_window_add_accel_group(GTK_WINDOW(gebrme.window), gebrme.accel_group);
 
 	/*
-	 * Actions
+	 * Actions: Menu
 	 */
 	/* new */
 	gebrme.actions.menu.new = gtk_action_new("menu_new",
@@ -138,6 +136,34 @@ gebrme_create_window(void)
 		(GCallback)on_menu_close_activate, NULL);
 
 	/*
+	 * Actions: Program
+	 */
+	/* new */
+	gebrme.actions.program.new = gtk_action_new("program_new",
+		NULL, NULL, GTK_STOCK_NEW);
+	g_signal_connect(gebrme.actions.program.new, "activate",
+		(GCallback)on_program_new_activate, NULL);
+	/* delete */
+	gebrme.actions.program.delete = gtk_action_new("program_delete",
+		NULL, NULL, GTK_STOCK_DELETE);
+	g_signal_connect(gebrme.actions.program.delete, "activate",
+		(GCallback)on_program_delete_activate, NULL);
+
+	/*
+	 * Actions: Parameter
+	 */
+	/* new */
+	gebrme.actions.parameter.new = gtk_action_new("parameter_new",
+		NULL, NULL, GTK_STOCK_NEW);
+	g_signal_connect(gebrme.actions.parameter.new, "activate",
+		(GCallback)on_parameter_new_activate, NULL);
+	/* delete */
+	gebrme.actions.parameter.delete = gtk_action_new("parameter_delete",
+		NULL, NULL, GTK_STOCK_DELETE);
+	g_signal_connect(gebrme.actions.parameter.delete, "activate",
+		(GCallback)on_parameter_delete_activate, NULL);
+
+	/*
 	 * Menu: Menu
 	 */
 	menu_item = gtk_menu_item_new_with_mnemonic(_("_Menu"));
@@ -169,7 +195,18 @@ gebrme_create_window(void)
 	/*
 	 * Menu: Program
 	 */
+	menu_item = gtk_menu_item_new_with_mnemonic(_("Program"));
+	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
+	menu = gtk_menu_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
 
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(gebrme.actions.program.new));
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(gebrme.actions.program.delete));
+
+// 	gtk_container_add(GTK_CONTAINER(menu), gtk_separator_menu_item_new());
+	
 	/*
 	 * Menu: Parameter
 	 */
@@ -193,6 +230,7 @@ gebrme_create_window(void)
 	 */
 
 	menu_item = gtk_menu_item_new_with_mnemonic(_("_Help"));
+	gtk_menu_item_right_justify(GTK_MENU_ITEM(menu_item));
 	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
 	menu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
@@ -234,11 +272,28 @@ gebrme_create_window(void)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 
 	menu_setup_ui();
-	gtk_box_pack_start(GTK_BOX(vbox), gebrme.ui_menu.widget, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), gebrme.ui_menu.widget, TRUE, TRUE, 0);
 
 	/*
 	 * Notebook page: Program
 	 */
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_widget_show(vbox);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(_("Program")));
+
+	toolbar = gtk_toolbar_new();
+	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_BOTH);
+
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.program.new)), -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.program.delete)), -1);
+
+	gtk_widget_show_all(toolbar);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+
+	program_setup_ui();
+	gtk_box_pack_start(GTK_BOX(vbox), gebrme.ui_program.widget, TRUE, TRUE, 0);
 
 	/*
 	 * Notebook page: Parameter

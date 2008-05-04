@@ -26,85 +26,334 @@
 #include "menu.h"
 #include "help.h"
 
-/* TODO: remove */
+/*
+ * File: program.c
+ * Construct interfaces for programs
+ */
+
+/*
+ * Declarations
+ */
+
+enum {
+        PROGRAM_TITLE,
+	PROGRAM_DESCRIPTION,
+	PROGRAM_XMLPOINTER,
+	PROGRAM_N_COLUMN
+};
+
+static GtkTreeIter
+program_append_to_ui(GeoXmlProgram * program);
+
+static void
+program_select_iter(GtkTreeIter iter);
+
+static GtkMenu *
+program_popup_menu(GtkWidget * tree_view);
+
+static void
+program_move_up(GtkMenuItem * menu_item);
+
+static void
+program_move_down(GtkMenuItem * menu_item);
+
+static void
+program_dialog_setup_ui(void);
+
+static void
+program_stdin_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program);
+
+static void
+program_stdout_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program);
+
+static void
+program_stderr_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program);
+
 static gboolean
-on_program_button_pressed(GtkWidget * widget, GdkEventButton * event, GtkExpander * expander)
+program_title_changed(GtkEntry * entry, GeoXmlProgram * program);
+
+static gboolean
+program_binary_changed(GtkEntry * entry, GeoXmlProgram * program);
+
+static gboolean
+program_description_changed(GtkEntry * entry, GeoXmlProgram * program);
+
+static void
+program_help_view(GtkButton * button, GeoXmlProgram * program);
+
+static void
+program_help_edit(GtkButton * button, GeoXmlProgram * program);
+
+static gboolean
+program_url_changed(GtkEntry * entry, GeoXmlProgram * program);
+
+/*
+ * Section: Public
+ */
+
+/*
+ * Function: program_setup_ui
+ * Set interface and its callbacks
+ */
+void
+program_setup_ui(void)
 {
-	if (event->button != 1)
-		return FALSE;
+	GtkWidget *		scrolled_window;
+	GtkTreeViewColumn *	col;
+	GtkCellRenderer *	renderer;
 
-	gtk_expander_set_expanded(expander, !gtk_expander_get_expanded(expander));
+	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_widget_show(scrolled_window);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
+		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_window), GTK_SHADOW_IN);
 
-	return TRUE;
+	gebrme.ui_program.list_store = gtk_list_store_new(PROGRAM_N_COLUMN,
+		G_TYPE_STRING,
+		G_TYPE_STRING,
+		G_TYPE_POINTER);
+	gebrme.ui_program.tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gebrme.ui_program.list_store));
+	gtk_tree_view_set_popup_callback(GTK_TREE_VIEW(gebrme.ui_program.tree_view),
+		(GtkPopupCallback)program_popup_menu, NULL);
+	gtk_widget_show(gebrme.ui_program.tree_view);
+	gtk_container_add(GTK_CONTAINER(scrolled_window), gebrme.ui_program.tree_view);
+	g_signal_connect(gebrme.ui_program.tree_view, "cursor-changed",
+		(GCallback)program_load_menu, NULL);
+	g_signal_connect(gebrme.ui_program.tree_view, "row-activated",
+		GTK_SIGNAL_FUNC(program_dialog_setup_ui), NULL);
+
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(gebrme.ui_program.tree_view), FALSE);
+	renderer = gtk_cell_renderer_pixbuf_new();
+	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
+	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_fixed_width(col, 24);
+	gtk_tree_view_column_add_attribute(col, renderer, "pixbuf", MENU_STATUS);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(gebrme.ui_program.tree_view), col);
+	renderer = gtk_cell_renderer_text_new();
+	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
+	gtk_tree_view_column_add_attribute(col, renderer, "text", MENU_FILENAME);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(gebrme.ui_program.tree_view), col);
+
+	gebrme.ui_program.widget = scrolled_window;
+	gtk_widget_show_all(gebrme.ui_program.widget);
 }
 
+/*
+ * Function: program_load_menu
+ * Load programs of the current menu into the tree view
+ */
 void
-program_create_ui(GeoXmlProgram * program, gboolean expanded)
+program_load_menu(void)
 {
-	GtkWidget *			program_expander;
-	GtkWidget *			program_label_widget;
-	GtkWidget *			program_label;
-	GtkWidget *			program_vbox;
+	GeoXmlSequence *		program;
+	GtkTreeIter			iter;
 
-	GtkWidget *			io_vbox;
-	GtkWidget *			io_depth_hbox;
-	GtkWidget *			io_label;
-	GtkWidget *			io_stdin_checkbutton;
-	GtkWidget *			io_stdout_checkbutton;
-	GtkWidget *			io_stderr_checkbutton;
+	geoxml_flow_get_program(gebrme.menu, &program, 0);
+	for (; program != NULL; geoxml_sequence_next(&program))
+		program_append_to_ui(GEOXML_PROGRAM(program));
 
-	GtkWidget *			summary_expander;
-	GtkWidget *			summary_table;
-	GtkWidget *			title_label;
-	GtkWidget *			title_entry;
-	GtkWidget *			binary_label;
-	GtkWidget *			binary_entry;
-	GtkWidget *			desc_label;
-	GtkWidget *			desc_entry;
-	GtkWidget *			help_hbox;
-	GtkWidget *			help_label;
-	GtkWidget *			help_view_button;
-	GtkWidget *			help_edit_button;
-	GtkWidget *                     url_label;
-	GtkWidget *                     url_entry;
+	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebrme.ui_program.list_store), &iter) == TRUE)
+		program_select_iter(iter);
+}
 
-	GtkWidget *			depth_hbox;
-	GtkWidget *			event_box;
-	gchar *				program_title_str;
+/*
+ * Function: program_new
+ * Append a new program and selects it
+ */
+void
+program_new(void)
+{
+	GeoXmlProgram *		program;
 
-	program_expander = gtk_expander_new("");
-	gtk_box_pack_start(GTK_BOX(gebrme.programs_vbox), program_expander, FALSE, TRUE, 0);
-	if (geoxml_flow_get_programs_number(gebrme.current) > 1)
-		gtk_expander_set_expanded(GTK_EXPANDER(program_expander), !expanded);
-	else
-		gtk_expander_set_expanded(GTK_EXPANDER(program_expander), TRUE);
-	gtk_widget_show(program_expander);
-	depth_hbox = gtk_container_add_depth_hbox(program_expander);
+	program = geoxml_flow_append_program(gebrme.menu);
+	/* default settings */
+	geoxml_program_set_title(program, _("New program"));
+	geoxml_program_set_stdin(program, TRUE);
+	geoxml_program_set_stdout(program, TRUE);
+	geoxml_program_set_stderr(program, TRUE);
 
-	/* used to prevent that popup menu will show up in expander child
-	 * and enable it on a label
+	program_select_iter(program_append_to_ui(program));
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+/*
+ * Function: program_remove
+ * Confirm action and if confirmed removed selected program from XML and UI
+ */
+void
+program_remove(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	if (gebrme.program == NULL) {
+		gebrme_message(LOG_ERROR, _("No program is selected"));
+		return;
+	}
+	if (confirm_action_dialog(_("Delete program"), _("Are you sure you want to delete program '%s'?"),
+	geoxml_program_get_title(gebrme.program)) == FALSE)
+		return;
+
+	/* UI */
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
+	gtk_tree_selection_get_selected(selection, &model, &iter);
+	gtk_list_store_remove(gebrme.ui_program.list_store, &iter);
+	/* XML */
+	geoxml_sequence_remove(GEOXML_SEQUENCE(gebrme.program));
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+/*
+ * Section: Private
+ */
+
+static GtkTreeIter
+program_append_to_ui(GeoXmlProgram * program)
+{
+	GtkTreeIter	iter;
+
+	gtk_list_store_append(gebrme.ui_program.list_store, &iter);
+	gtk_list_store_set(gebrme.ui_program.list_store, &iter,
+		PROGRAM_TITLE, geoxml_program_get_title(program),
+		PROGRAM_DESCRIPTION, geoxml_program_get_description(program),
+		PROGRAM_XMLPOINTER, program,
+		-1);
+
+	return iter;
+}
+
+static void
+program_select_iter(GtkTreeIter iter)
+{
+	GtkTreeSelection *	tree_selection;
+
+	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_program.list_store), &iter,
+		PROGRAM_XMLPOINTER, &gebrme.program,
+		-1);
+
+	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_program.tree_view));
+	gtk_tree_selection_select_iter(tree_selection, &iter);
+// 	parameter_load_program();
+}
+
+static GtkMenu *
+program_popup_menu(GtkWidget * tree_view)
+{
+	GtkWidget *	menu;
+	GtkWidget *	menu_item;
+
+	GtkTreeIter	iter;
+
+	menu = gtk_menu_new();
+
+	/* Move up */
+	if (gtk_list_store_can_move_up(gebrme.ui_program.list_store, &iter) == TRUE) {
+		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_UP, NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate",
+			(GCallback)program_move_up, NULL);
+	}
+	/* Move down */
+	if (gtk_list_store_can_move_down(gebrme.ui_program.list_store, &iter) == TRUE) {
+		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_DOWN, NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate",
+			(GCallback)program_move_down, NULL);
+	}
+	/* Remove */
+	menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REMOVE, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+	g_signal_connect(menu_item, "activate",
+		(GCallback)program_remove, NULL);
+
+	gtk_widget_show_all(menu);
+
+	return GTK_MENU(menu);
+}
+
+static void
+program_move_up(GtkMenuItem * menu_item)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
+	gtk_tree_selection_get_selected(selection, &model, &iter);
+
+	gtk_list_store_move_up(gebrme.ui_program.list_store, &iter);
+	geoxml_sequence_move_up(GEOXML_SEQUENCE(gebrme.program));
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+static void
+program_move_down(GtkMenuItem * menu_item)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
+	gtk_tree_selection_get_selected(selection, &model, &iter);
+
+	gtk_list_store_move_down(gebrme.ui_program.list_store, &iter);
+	geoxml_sequence_move_down(GEOXML_SEQUENCE(gebrme.program));
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+static void
+program_dialog_setup_ui(void)
+{
+	GtkWidget *	dialog;
+	GtkWidget *	table;
+
+	GtkWidget *	io_vbox;
+	GtkWidget *	io_depth_hbox;
+	GtkWidget *	io_label;
+	GtkWidget *	io_stdin_checkbutton;
+	GtkWidget *	io_stdout_checkbutton;
+	GtkWidget *	io_stderr_checkbutton;
+
+	GtkWidget *	title_label;
+	GtkWidget *	title_entry;
+	GtkWidget *	binary_label;
+	GtkWidget *	binary_entry;
+	GtkWidget *	description_label;
+	GtkWidget *	description_entry;
+	GtkWidget *	help_hbox;
+	GtkWidget *	help_label;
+	GtkWidget *	help_view_button;
+	GtkWidget *	help_edit_button;
+	GtkWidget *     url_label;
+	GtkWidget *     url_entry;
+
+	dialog = gtk_dialog_new_with_buttons(_("Edit menu"),
+		GTK_WINDOW(gebrme.window),
+		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+		GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+		NULL);
+	gtk_widget_set_size_request(dialog, 630, 400);
+// 	gtk_box_set_homogeneous(GTK_BOX(GTK_DIALOG(dialog)->vbox), FALSE);
+
+	table = gtk_table_new(6, 2, FALSE);
+	gtk_widget_show(table);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 5);
+	gtk_table_set_row_spacings(GTK_TABLE(table), 6);
+	gtk_table_set_col_spacings(GTK_TABLE(table), 6);
+
+	/*
+	 * IO
 	 */
-	event_box = gtk_event_box_new();
-	g_object_set(event_box, "user-data", program_expander, NULL);
-	g_signal_connect(event_box, "button-press-event",
-		(GCallback)on_program_button_pressed, program_expander);
-	gtk_widget_set_popup_callback(event_box, (GtkPopupCallback)program_popup_menu, program);
-	gtk_expander_set_label_widget(GTK_EXPANDER(program_expander), event_box);
-	gtk_widget_show(event_box);
-	program_label_widget = gtk_hbox_new(FALSE, 0);
-	gtk_container_add(GTK_CONTAINER(event_box), program_label_widget);
-	gtk_widget_show(program_label_widget);
-	program_label = gtk_label_new("");
-	gtk_widget_show(program_label);
-	gtk_box_pack_start(GTK_BOX(program_label_widget), program_label, FALSE, TRUE, 0);
-
-	program_vbox = gtk_vbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(depth_hbox), program_vbox, TRUE, TRUE, 0);
-	gtk_widget_show(program_vbox);
-
 	io_vbox = gtk_vbox_new(FALSE, 0);
 	gtk_widget_show(io_vbox);
-	gtk_box_pack_start(GTK_BOX(program_vbox), io_vbox, FALSE, TRUE, 0);
+	gtk_table_attach(GTK_TABLE(table), io_vbox, 0, 2, 0, 1,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
 
 	io_label = gtk_label_new(_("This program:"));
 	gtk_misc_set_alignment(GTK_MISC(io_label), 0, 0);
@@ -120,320 +369,167 @@ program_create_ui(GeoXmlProgram * program, gboolean expanded)
 	gtk_widget_show(io_stdin_checkbutton);
 	gtk_box_pack_start(GTK_BOX(io_vbox), io_stdin_checkbutton, FALSE, TRUE, 0);
 	g_signal_connect(io_stdin_checkbutton, "clicked",
-		GTK_SIGNAL_FUNC (program_stdin_changed), program);
-	g_object_set(G_OBJECT(io_stdin_checkbutton), "user-data", program_expander, NULL);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(io_stdin_checkbutton), geoxml_program_get_stdin(program));
+		GTK_SIGNAL_FUNC(program_stdin_changed), gebrme.program);
 
 	io_stdout_checkbutton = gtk_check_button_new_with_label(_("writes to standard output"));
 	gtk_widget_show(io_stdout_checkbutton);
 	gtk_box_pack_start(GTK_BOX(io_vbox), io_stdout_checkbutton, FALSE, TRUE, 0);
 	g_signal_connect(io_stdout_checkbutton, "clicked",
-		GTK_SIGNAL_FUNC (program_stdout_changed),
-		program);
-	g_object_set(G_OBJECT(io_stdout_checkbutton), "user-data", program_expander, NULL);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(io_stdout_checkbutton), geoxml_program_get_stdout(program));
+		GTK_SIGNAL_FUNC(program_stdout_changed), gebrme.program);
 
 	io_stderr_checkbutton = gtk_check_button_new_with_label(_("appends to standard error"));
 	gtk_widget_show(io_stderr_checkbutton);
 	gtk_box_pack_start(GTK_BOX(io_vbox), io_stderr_checkbutton, FALSE, TRUE, 0);
 	g_signal_connect(io_stderr_checkbutton, "clicked",
-		GTK_SIGNAL_FUNC (program_stderr_changed),
-		program);
-	g_object_set(G_OBJECT(io_stderr_checkbutton), "user-data", program_expander, NULL);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(io_stderr_checkbutton), geoxml_program_get_stderr(program));
+		GTK_SIGNAL_FUNC(program_stderr_changed), gebrme.program);
 
-	summary_expander = gtk_expander_new(_("Summary"));
-	gtk_expander_set_expanded(GTK_EXPANDER(summary_expander), !expanded);
-	gtk_box_pack_start(GTK_BOX(program_vbox), summary_expander, FALSE, TRUE, 0);
-	gtk_widget_show(summary_expander);
-	depth_hbox = gtk_container_add_depth_hbox(summary_expander);
-
-	summary_table = gtk_table_new (5, 2, FALSE);
-	gtk_widget_show (summary_table);
-	gtk_box_pack_start(GTK_BOX(depth_hbox), summary_table, TRUE, TRUE, 0);
-	gtk_table_set_row_spacings (GTK_TABLE (summary_table), 6);
-	gtk_table_set_col_spacings (GTK_TABLE (summary_table), 6);
-
-	title_label = gtk_label_new (_("Title:"));
-	gtk_widget_show (title_label);
-	gtk_table_attach (GTK_TABLE (summary_table), title_label, 0, 1, 0, 1,
-			(GtkAttachOptions) (GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
+	/*
+	 * Title
+	 */
+	title_label = gtk_label_new(_("Title:"));
+	gtk_widget_show(title_label);
+	gtk_table_attach(GTK_TABLE(table), title_label, 0, 1, 1, 2,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(title_label), 0, 0.5);
 
-	title_entry = gtk_entry_new ();
-	gtk_widget_show (title_entry);
-	gtk_table_attach (GTK_TABLE (summary_table), title_entry, 1, 2, 0, 1,
-			(GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
+	title_entry = gtk_entry_new();
+	gtk_widget_show(title_entry);
+	gtk_table_attach(GTK_TABLE(table), title_entry, 1, 2, 1, 2,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(title_entry, "changed",
-		(GCallback)program_summary_title_changed,
-		program);
-	g_object_set(G_OBJECT(title_entry), "user-data", program_label, NULL);
-	program_title_str = (gchar*)geoxml_program_get_title(program);
-	if (!strlen(program_title_str))
-		program_title_str = _("New program");
-	gtk_entry_set_text(GTK_ENTRY(title_entry), program_title_str);
-	gtk_label_set_text(GTK_LABEL(program_label), program_title_str);
+		(GCallback)program_title_changed, gebrme.program);
 
-	binary_label = gtk_label_new (_("Binary:"));
-	gtk_widget_show (binary_label);
-	gtk_table_attach (GTK_TABLE (summary_table), binary_label, 0, 1, 1, 2,
-			(GtkAttachOptions) (GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
+	/*
+	 * Binary
+	 */
+	binary_label = gtk_label_new(_("Binary:"));
+	gtk_widget_show(binary_label);
+	gtk_table_attach(GTK_TABLE(table), binary_label, 0, 1, 2, 3,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(binary_label), 0, 0.5);
 
-	binary_entry = gtk_entry_new ();
-	gtk_widget_show (binary_entry);
-	gtk_table_attach (GTK_TABLE (summary_table), binary_entry, 1, 2, 1, 2,
-			(GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
+	binary_entry = gtk_entry_new();
+	gtk_widget_show(binary_entry);
+	gtk_table_attach(GTK_TABLE(table), binary_entry, 1, 2, 2, 3,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(binary_entry, "changed",
-		(GCallback)program_summary_binary_changed,
-		program);
-	gtk_entry_set_text(GTK_ENTRY(binary_entry), geoxml_program_get_binary(program));
+		(GCallback)program_binary_changed, gebrme.program);
 
-	desc_label = gtk_label_new (_("Description:"));
-	gtk_widget_show (desc_label);
-	gtk_table_attach (GTK_TABLE (summary_table), desc_label, 0, 1, 2, 3,
-			(GtkAttachOptions) (GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	gtk_misc_set_alignment(GTK_MISC(desc_label), 0, 0.5);
+	/*
+	 * Description
+	 */
+	description_label = gtk_label_new(_("Description:"));
+	gtk_widget_show(description_label);
+	gtk_table_attach(GTK_TABLE(table), description_label, 0, 1, 3, 4,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(description_label), 0, 0.5);
 
-	desc_entry = gtk_entry_new ();
-	gtk_widget_show (desc_entry);
-	gtk_table_attach (GTK_TABLE (summary_table), desc_entry, 1, 2, 2, 3,
-			(GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	g_signal_connect(desc_entry, "changed",
-		(GCallback)program_summary_desc_changed,
-		program);
-	gtk_entry_set_text(GTK_ENTRY(desc_entry), geoxml_program_get_description(program));
-
-	help_label = gtk_label_new (_("Help"));
-	gtk_widget_show (help_label);
-	gtk_table_attach (GTK_TABLE (summary_table), help_label, 0, 1, 3, 4,
-			(GtkAttachOptions) (GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
+	description_entry = gtk_entry_new();
+	gtk_widget_show(description_entry);
+	gtk_table_attach(GTK_TABLE(table), description_entry, 1, 2, 3, 4,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	g_signal_connect(description_entry, "changed",
+		(GCallback)program_description_changed, gebrme.program);
+	
+	/*
+	 * Help
+	 */
+	help_label = gtk_label_new(_("Help"));
+	gtk_widget_show(help_label);
+	gtk_table_attach(GTK_TABLE(table), help_label, 0, 1, 4, 5,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(help_label), 0, 0.5);
 
 	help_hbox = gtk_hbox_new(FALSE, 0);
 	gtk_widget_show(help_hbox);
-	gtk_table_attach (GTK_TABLE (summary_table), help_hbox, 1, 2, 3, 4,
-			(GtkAttachOptions) (GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	help_view_button = gtk_button_new_from_stock (GTK_STOCK_OPEN);
-	gtk_widget_show (help_view_button);
+	gtk_table_attach(GTK_TABLE(table), help_hbox, 1, 2, 4, 5,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+
+	help_view_button = gtk_button_new_from_stock(GTK_STOCK_OPEN);
+	gtk_widget_show(help_view_button);
 	gtk_box_pack_start(GTK_BOX(help_hbox), help_view_button, FALSE, FALSE, 0);
 	g_signal_connect(help_view_button, "clicked",
-			GTK_SIGNAL_FUNC (program_summary_help_view),
-			program);
+		GTK_SIGNAL_FUNC(program_help_view), gebrme.program);
 	g_object_set(G_OBJECT(help_view_button), "relief", GTK_RELIEF_NONE, NULL);
 
-	help_edit_button = gtk_button_new_from_stock (GTK_STOCK_EDIT);
-	gtk_widget_show (help_edit_button);
+	help_edit_button = gtk_button_new_from_stock(GTK_STOCK_EDIT);
+	gtk_widget_show(help_edit_button);
 	gtk_box_pack_start(GTK_BOX(help_hbox), help_edit_button, FALSE, FALSE, 5);
 	g_signal_connect(help_edit_button, "clicked",
-			GTK_SIGNAL_FUNC (program_summary_help_edit),
-			program);
+		GTK_SIGNAL_FUNC(program_help_edit), gebrme.program);
 	g_object_set(G_OBJECT(help_edit_button), "relief", GTK_RELIEF_NONE, NULL);
 
-	url_label = gtk_label_new (_("URL:"));
-	gtk_widget_show (url_label);
-	gtk_table_attach (GTK_TABLE (summary_table), url_label, 0, 1, 4, 5,
-			(GtkAttachOptions) (GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
+	/*
+	 * URL
+	 */
+	url_label = gtk_label_new(_("URL:"));
+	gtk_widget_show(url_label);
+	gtk_table_attach(GTK_TABLE(table), url_label, 0, 1, 5, 6,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(url_label), 0, 0.5);
 
-	url_entry = gtk_entry_new ();
-	gtk_widget_show (url_entry);
-	gtk_table_attach (GTK_TABLE (summary_table), url_entry, 1, 2, 4, 5,
-			(GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
+	url_entry = gtk_entry_new();
+	gtk_widget_show(url_entry);
+	gtk_table_attach(GTK_TABLE(table), url_entry, 1, 2, 5, 6,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(url_entry, "changed",
-		(GCallback)program_summary_url_changed,
-		program);
-	gtk_entry_set_text(GTK_ENTRY(url_entry), geoxml_program_get_url(program));
+		(GCallback)program_url_changed, gebrme.program);
 
-	/* parameters */
-	gtk_box_pack_start(GTK_BOX(program_vbox),
-		parameters_create_ui(geoxml_program_get_parameters(GEOXML_PROGRAM(program)), expanded),
-		FALSE, TRUE, 0);
+	/*
+	 * Load program into UI
+	 */
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(io_stdin_checkbutton),
+		geoxml_program_get_stdin(gebrme.program));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(io_stdout_checkbutton),
+		geoxml_program_get_stdout(gebrme.program));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(io_stderr_checkbutton),
+		geoxml_program_get_stderr(gebrme.program));
+	gtk_entry_set_text(GTK_ENTRY(title_entry), geoxml_program_get_title(gebrme.program));
+	gtk_entry_set_text(GTK_ENTRY(binary_entry), geoxml_program_get_binary(gebrme.program));
+	gtk_entry_set_text(GTK_ENTRY(description_entry), geoxml_program_get_description(gebrme.program));
+	gtk_entry_set_text(GTK_ENTRY(url_entry), geoxml_program_get_url(gebrme.program));
+	
+	gtk_widget_show(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
 
-void
-program_add(void)
-{
-	GeoXmlProgram *	program;
-
-	program = geoxml_flow_append_program(gebrme.current);
-	/* default settings */
-	geoxml_program_set_stdin(program, TRUE);
-	geoxml_program_set_stdout(program, TRUE);
-	geoxml_program_set_stderr(program, TRUE);
-	/* ui */
-	program_create_ui(program, FALSE);
-
-	menu_saved_status_set(MENU_STATUS_UNSAVED);
-}
-
-void
-program_remove(GtkMenuItem * menu_item, GeoXmlProgram * program)
-{
-	GtkWidget *	expander;
-
-	if (confirm_action_dialog(_("Delete program"), _("Are you sure you want to delete program '%s'?"),
-		geoxml_program_get_title(program)) == FALSE)
-		return;
-
-	g_object_get(G_OBJECT(menu_item), "user-data", &expander, NULL);
-
-	gtk_widget_destroy(expander);
-	geoxml_sequence_remove(GEOXML_SEQUENCE(program));
-
-	menu_saved_status_set(MENU_STATUS_UNSAVED);
-}
-
-GtkMenu *
-program_popup_menu(GtkWidget * event_box, GeoXmlProgram * program)
-{
-	GtkExpander *	expander;
-	GtkWidget *	menu;
-	GtkWidget *	menu_item;
-
-	menu = gtk_menu_new();
-	g_object_get(G_OBJECT(event_box), "user-data", &expander, NULL);
-
-	/* Move up */
-	if (program_previous(expander, NULL) != NULL) {
-		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_UP, NULL);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-		g_signal_connect(menu_item, "activate",
-			(GCallback)program_move_up, program);
-		g_object_set(G_OBJECT(menu_item), "user-data", expander, NULL);
-	}
-	/* Move down */
-	if (program_next(expander, NULL) != NULL) {
-		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_DOWN, NULL);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-		g_signal_connect(menu_item, "activate",
-			(GCallback)program_move_down, program);
-		g_object_set(G_OBJECT(menu_item), "user-data", expander, NULL);
-	}
-	/* Remove */
-	menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REMOVE, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-	g_signal_connect(menu_item, "activate",
-		(GCallback)program_remove, program);
-	g_object_set(G_OBJECT(menu_item), "user-data", expander, NULL);
-
-	gtk_widget_show_all(menu);
-
-	return GTK_MENU(menu);
-}
-
-GtkExpander *
-program_previous(GtkExpander * program_expander, gint * position)
-{
-	GList *		programs_expanders;
-	GList *		this;
-	GList *		previous;
-	GtkExpander *	previous_program;
-
-	programs_expanders = gtk_container_get_children(GTK_CONTAINER(gebrme.programs_vbox));
-	this = g_list_find(programs_expanders, program_expander);
-	previous = g_list_previous(this);
-	previous_program = (previous != NULL) ? GTK_EXPANDER(previous->data) : NULL;
-	if (position != NULL)
-		*position = g_list_position(programs_expanders, this);
-
-	g_list_free(programs_expanders);
-
-	return previous_program;
-}
-
-GtkExpander *
-program_next(GtkExpander * program_expander, gint * position)
-{
-	GList *		programs_expanders;
-	GList *		this;
-	GList *		next;
-	GtkExpander *	next_program;
-
-	programs_expanders = gtk_container_get_children(GTK_CONTAINER(gebrme.programs_vbox));
-	this = g_list_find(programs_expanders, program_expander);
-	next = g_list_next(this);
-	next_program = (next != NULL) ? GTK_EXPANDER(next->data) : NULL;
-	if (position != NULL)
-		*position = g_list_position(programs_expanders, this);
-
-	g_list_free(programs_expanders);
-
-	return next_program;
-}
-
-void
-program_move_up(GtkMenuItem * menu_item, GeoXmlProgram * program)
-{
-	GtkExpander *	expander;
-	GtkExpander *	previous;
-	gint		position;
-
-	g_object_get(G_OBJECT(menu_item), "user-data", &expander, NULL);
-
-	previous = program_previous(expander, &position);
-	if (previous != NULL) {
-		gtk_box_reorder_child(GTK_BOX(gebrme.programs_vbox), GTK_WIDGET(previous), position);
-		geoxml_sequence_move_up(GEOXML_SEQUENCE(program));
-	}
-
-	menu_saved_status_set(MENU_STATUS_UNSAVED);
-}
-
-void
-program_move_down(GtkMenuItem * menu_item, GeoXmlProgram * program)
-{
-	GtkExpander *	expander;
-	GtkExpander *	next;
-	gint		position;
-
-	g_object_get(G_OBJECT(menu_item), "user-data", &expander, NULL);
-
-	next = program_next(expander, &position);
-	if (next != NULL) {
-		gtk_box_reorder_child(GTK_BOX(gebrme.programs_vbox), GTK_WIDGET(next), position);
-		geoxml_sequence_move_down(GEOXML_SEQUENCE(program));
-	}
-
-	menu_saved_status_set(MENU_STATUS_UNSAVED);
-}
-
-void
-program_stdin_changed(GtkToggleButton *togglebutton, GeoXmlProgram * program)
+static void
+program_stdin_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program)
 {
 	geoxml_program_set_stdin(program, gtk_toggle_button_get_active(togglebutton));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
-void
-program_stdout_changed(GtkToggleButton *togglebutton, GeoXmlProgram * program)
+static void
+program_stdout_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program)
 {
 	geoxml_program_set_stdout(program, gtk_toggle_button_get_active(togglebutton));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
-void
-program_stderr_changed(GtkToggleButton *togglebutton, GeoXmlProgram * program)
+static void
+program_stderr_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program)
 {
 	geoxml_program_set_stderr(program, gtk_toggle_button_get_active(togglebutton));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
-gboolean
-program_summary_title_changed(GtkEntry * entry, GeoXmlProgram * program)
+static gboolean
+program_title_changed(GtkEntry * entry, GeoXmlProgram * program)
 {
 	GtkWidget *	program_label;
 
@@ -446,8 +542,8 @@ program_summary_title_changed(GtkEntry * entry, GeoXmlProgram * program)
 	return FALSE;
 }
 
-gboolean
-program_summary_binary_changed(GtkEntry * entry, GeoXmlProgram * program)
+static gboolean
+program_binary_changed(GtkEntry * entry, GeoXmlProgram * program)
 {
 	geoxml_program_set_binary(program, gtk_entry_get_text(GTK_ENTRY(entry)));
 
@@ -455,8 +551,8 @@ program_summary_binary_changed(GtkEntry * entry, GeoXmlProgram * program)
 	return FALSE;
 }
 
-gboolean
-program_summary_desc_changed(GtkEntry * entry, GeoXmlProgram * program)
+static gboolean
+program_description_changed(GtkEntry * entry, GeoXmlProgram * program)
 {
 	geoxml_program_set_description(program, gtk_entry_get_text(GTK_ENTRY(entry)));
 
@@ -464,14 +560,14 @@ program_summary_desc_changed(GtkEntry * entry, GeoXmlProgram * program)
 	return FALSE;
 }
 
-void
-program_summary_help_view(GtkButton * button, GeoXmlProgram * program)
+static void
+program_help_view(GtkButton * button, GeoXmlProgram * program)
 {
 	help_show(geoxml_program_get_help(program));
 }
 
-void
-program_summary_help_edit(GtkButton * button, GeoXmlProgram * program)
+static void
+program_help_edit(GtkButton * button, GeoXmlProgram * program)
 {
 	GString *	help;
 
@@ -482,12 +578,11 @@ program_summary_help_edit(GtkButton * button, GeoXmlProgram * program)
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
-gboolean
-program_summary_url_changed(GtkEntry * entry, GeoXmlProgram * program)
+static gboolean
+program_url_changed(GtkEntry * entry, GeoXmlProgram * program)
 {
 	geoxml_program_set_url(program, gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 	return FALSE;
 }
-

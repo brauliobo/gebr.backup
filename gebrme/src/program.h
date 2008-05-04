@@ -21,55 +21,23 @@
 #include <gtk/gtk.h>
 #include <geoxml.h>
 
-void
-program_create_ui(GeoXmlProgram * program, gboolean expanded);
+struct ui_program {
+	GtkWidget *		widget;
+
+	GtkListStore *		list_store;
+	GtkWidget *		tree_view;
+};
 
 void
-program_add(void);
+program_setup_ui(void);
 
 void
-program_remove(GtkMenuItem * menu_item, GeoXmlProgram * program);
-
-GtkMenu *
-program_popup_menu(GtkWidget * event_box, GeoXmlProgram * program);
-
-GtkExpander *
-program_previous(GtkExpander * program_expander, gint * position);
-
-GtkExpander *
-program_next(GtkExpander * program_expander, gint * position);
+program_load_menu(void);
 
 void
-program_move_up(GtkMenuItem * menu_item, GeoXmlProgram * program);
+program_new(void);
 
 void
-program_move_down(GtkMenuItem * menu_item, GeoXmlProgram * program);
-
-void
-program_stdin_changed(GtkToggleButton *togglebutton, GeoXmlProgram * program);
-
-void
-program_stdout_changed(GtkToggleButton *togglebutton, GeoXmlProgram * program);
-
-void
-program_stderr_changed(GtkToggleButton *togglebutton, GeoXmlProgram * program);
-
-gboolean
-program_summary_title_changed(GtkEntry * entry, GeoXmlProgram * program);
-
-gboolean
-program_summary_binary_changed(GtkEntry * entry, GeoXmlProgram * program);
-
-gboolean
-program_summary_desc_changed(GtkEntry * entry, GeoXmlProgram * program);
-
-void
-program_summary_help_view(GtkButton * button, GeoXmlProgram * program);
-
-void
-program_summary_help_edit(GtkButton * button, GeoXmlProgram * program);
-
-gboolean
-program_summary_url_changed(GtkEntry * entry, GeoXmlProgram * program);
+program_remove(void);
 
 #endif //__PROGRAM_H

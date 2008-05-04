@@ -25,6 +25,7 @@
 #include "gebrme.h"
 #include "support.h"
 #include "menu.h"
+#include "program.h"
 #include "preferences.h"
 
 /*
@@ -32,12 +33,20 @@
  * General interface callbacks. See <interface.c>
  */
 
+/*
+ * Function: on_menu_new_activate
+ * Call <menu_new>
+ */
 void
 on_menu_new_activate(void)
 {
 	menu_new();
 }
 
+/*
+ * Function: on_menu_open_activate
+ * Create a open dialog and manage it to open a menu
+ */
 void
 on_menu_open_activate(void)
 {
@@ -46,11 +55,11 @@ on_menu_open_activate(void)
 	gchar *			path;
 
 	/* create file chooser */
-	chooser_dialog = gtk_file_chooser_dialog_new(	_("Open flow"), NULL,
-							GTK_FILE_CHOOSER_ACTION_OPEN,
-							GTK_STOCK_OPEN, GTK_RESPONSE_YES,
-							GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-							NULL);
+	chooser_dialog = gtk_file_chooser_dialog_new(_("Open flow"), NULL,
+		GTK_FILE_CHOOSER_ACTION_OPEN,
+		GTK_STOCK_OPEN, GTK_RESPONSE_YES,
+		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+		NULL);
 	filefilter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filefilter, _("System flow files (*.mnu)"));
 	gtk_file_filter_add_pattern(filefilter, "*.mnu");
@@ -62,13 +71,17 @@ on_menu_open_activate(void)
 		goto out;
 
 	/* open it */
-	path = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (chooser_dialog));
+	path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser_dialog));
 	menu_open(path, TRUE);
 
 	g_free(path);
 out:	gtk_widget_destroy(chooser_dialog);
 }
 
+/*
+ * Function: on_menu_save_activate
+ * Save a menu. If it doesn't have a path assigned, call <on_menu_save_as_activate>
+ */
 void
 on_menu_save_activate(void)
 {
@@ -96,6 +109,10 @@ on_menu_save_activate(void)
 	on_menu_save_as_activate();
 }
 
+/*
+ * Function: on_menu_save_as_activate
+ * Open a save dialog; get the path and save the menu at it
+ */
 void
 on_menu_save_as_activate(void)
 {
@@ -139,7 +156,7 @@ on_menu_save_as_activate(void)
 			MENU_FILENAME, filename,
 			MENU_PATH, path,
 			-1);
-	geoxml_document_set_filename(GEOXML_DOC(gebrme.current), filename);
+	geoxml_document_set_filename(GEOXML_DOC(gebrme.menu), filename);
 	menu_save(path);
 	g_free(path);
 	g_free(filename);
@@ -147,6 +164,10 @@ on_menu_save_as_activate(void)
 out:	gtk_widget_destroy(chooser_dialog);
 }
 
+/*
+ * Function: on_menu_new_activate
+ * Confirm action and if confirmed reload menu from file
+ */
 void
 on_menu_revert_activate(void)
 {
@@ -158,7 +179,7 @@ on_menu_revert_activate(void)
 	GeoXmlFlow *		menu;
 
 	if (confirm_action_dialog(_("Revert changes"), _("All unsaved changes will be lost. Are you sure you want to revert flow '%s'?"),
-	geoxml_document_get_filename(GEOXML_DOC(gebrme.current))) == FALSE)
+	geoxml_document_get_filename(GEOXML_DOC(gebrme.menu))) == FALSE)
 		return;
 
 	/* get path of selection */
@@ -179,7 +200,7 @@ on_menu_revert_activate(void)
 	if (menu == NULL)
 		return;
 	/* revert to the one in disk */
-	geoxml_document_free(GEOXML_DOC(gebrme.current));
+	geoxml_document_free(GEOXML_DOC(gebrme.menu));
 	gtk_list_store_set(gebrme.ui_menu.list_store, &iter,
 		MENU_XMLPOINTER, menu,
 		-1);
@@ -190,6 +211,10 @@ on_menu_revert_activate(void)
 	g_free(path);
 }
 
+/*
+ * Function: on_menu_new_activate
+ * Confirm action and if confirm delete it from the disk and call <on_menu_close_activate>
+ */
 void
 on_menu_delete_activate(void)
 {
@@ -200,7 +225,7 @@ on_menu_delete_activate(void)
 	gchar *			path;
 
 	if (confirm_action_dialog(_("Delete flow"), _("Are you sure you delete flow '%s'?"),
-	geoxml_document_get_filename(GEOXML_DOC(gebrme.current))) == FALSE)
+	geoxml_document_get_filename(GEOXML_DOC(gebrme.menu))) == FALSE)
 		return;
 
 	/* get path of selection */
@@ -214,10 +239,10 @@ on_menu_delete_activate(void)
 		GtkWidget *	dialog;
 
 		dialog = gtk_message_dialog_new(GTK_WINDOW(gebrme.window),
-					GTK_DIALOG_MODAL,
-					GTK_MESSAGE_ERROR,
-					GTK_BUTTONS_OK,
-					_("Could not delete flow"));
+			GTK_DIALOG_MODAL,
+			GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_OK,
+			_("Could not delete flow"));
 		gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 	} else
@@ -226,6 +251,10 @@ on_menu_delete_activate(void)
 	g_free(path);
 }
 
+/*
+ * Function: on_menu_new_activate
+ * Delete menu from the view.
+ */
 void
 on_menu_close_activate(void)
 {
@@ -261,7 +290,7 @@ on_menu_close_activate(void)
 				MENU_PATH, &path,
 				-1);
 
-			geoxml_document_save(GEOXML_DOC(gebrme.current), path);
+			geoxml_document_save(GEOXML_DOC(gebrme.menu), path);
 			break;
 		} case GTK_RESPONSE_NO:
 			break;
@@ -275,7 +304,7 @@ on_menu_close_activate(void)
 			return;
 	}
 
-	geoxml_document_free(GEOXML_DOC(gebrme.current));
+	geoxml_document_free(GEOXML_DOC(gebrme.menu));
 	gtk_list_store_remove(gebrme.ui_menu.list_store, &iter);
 
 	if (gtk_tree_model_iter_n_children(model, NULL) == 0)
@@ -289,36 +318,60 @@ on_menu_close_activate(void)
 	}
 }
 
+/*
+ * Function: on_program_new_activate
+ * Call <program_new>
+ */
 void
-on_menu_quit_activate(void)
+on_program_new_activate(void)
 {
-	gebrme_quit();
+	program_new();
 }
 
+/*
+ * Function: on_program_new_activate
+ * Call <program_remove>
+ */
 void
-on_menu_cut_activate(void)
+on_program_delete_activate(void)
 {
-
+	program_remove();
 }
 
+/*
+ * Function: on_parameter_new_activate
+ * Call <parameter_new>
+ */
 void
-on_menu_copy_activate(void)
+on_parameter_new_activate(void)
 {
-
+// 	parameter_new();
 }
 
+/*
+ * Function: on_parameter_new_activate
+ * Call <parameter_remove>
+ */
 void
-on_menu_paste_activate(void)
+on_parameter_delete_activate(void)
 {
-
+// 	parameter_remove();
 }
 
+/*
+ * Function: on_configure_preferences_activate
+ * Call <create_preferences_window>
+ */
 void
 on_configure_preferences_activate(void)
 {
 	create_preferences_window();
 }
 
+/*
+ * Function: on_help_about_activate
+ * Show gebrme.about.dialog
+ */
 void
 on_help_about_activate(void)
 {
