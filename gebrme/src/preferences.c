@@ -22,14 +22,26 @@
 #include "support.h"
 #include "menu.h"
 
-const char* browser[] = { "epiphany",
-			  "firefox",
-			  "galeon",
-			  "konqueror",
-			  "mozilla" };
+/*
+ * File: preferences.c
+ * Preferences interface and configuration stuff
+ */
 
+const gchar * browser[] = {
+	"epiphany",
+	"firefox",
+	"galeon",
+	"konqueror",
+	"mozilla"
+};
+#define NBROWSER 5
+
+/*
+ * Function: preferences_dialog_setup_ui
+ * Create and show preferences dialog. If ok, save config.
+ */
 void
-create_preferences_window(void)
+preferences_dialog_setup_ui(void)
 {
 	GtkWidget *	window;
 	GtkWidget *	table;
@@ -96,7 +108,7 @@ create_preferences_window(void)
 	label = gtk_label_new (_("Browser"));
 	gtk_misc_set_alignment( GTK_MISC(label), 0, 0);
 	browser_combo = gtk_combo_box_entry_new_text();
-	for (i=0; i < NBROWSER; i++) {
+	for (i = 0; i < NBROWSER; i++) {
 		gtk_combo_box_append_text(GTK_COMBO_BOX(browser_combo), browser[i]);
 		if (gebrme.config.browser && newbrowser) {
 			if (strcmp(browser[i], gebrme.config.browser->str) == 0){

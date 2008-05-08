@@ -51,6 +51,27 @@ gebrme_init(void)
 {
 	gebrme_config_load();
 
+	/* parameter type map */
+	g_datalist_init(&gebrme.parameter_types);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_STRING, _("string"), NULL);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_INT, _("integer"), NULL);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_FILE, _("file"), NULL);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_FLAG, _("flag"), NULL);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_FLOAT, _("real number"), NULL);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_RANGE, _("range"), NULL);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_ENUM, _("enum"), NULL);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_GROUP, _("group"), NULL);
+	g_datalist_id_set_data_full(&gebrme.parameter_types,
+		GEOXML_PARAMETERTYPE_REFERENCE, _("reference"), NULL);
+
 	/* list of temporaries files */
 	gebrme.tmpfiles = g_slist_alloc();
 
@@ -74,6 +95,7 @@ gebrme_quit(void)
 
 	gtk_widget_destroy(gebrme.about.dialog);
 	g_object_unref(gebrme.accel_group);
+	g_datalist_clear(&gebrme.parameter_types);
 
 	/* actions */
 	g_object_unref(gebrme.actions.menu.new);

@@ -15,34 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PARAMETER_H
-#define __PARAMETER_H
+#ifndef __PROGRAM_PARAMETER_H
+#define __PROGRAM_PARAMETER_H
 
 #include <gtk/gtk.h>
 
-struct ui_parameter {
-	GtkWidget *		widget;
+#include <geoxml.h>
 
-	GtkTreeStore *		tree_store;
-	GtkWidget *		tree_view;
-};
 
-void
-parameter_setup_ui(void);
-
-void
-parameter_load_program(void);
-
-void
-parameter_new(void);
-
-void
-parameter_remove(void);
-
-void
-parameter_duplicate(void);
-
-void
-parameter_change_type(void);
-
-#endif //__PARAMETER_H
+#endif //__PROGRAM_PARAMETER_H

@@ -18,11 +18,7 @@
 #ifndef __PREFERENCES_H
 #define __PREFERENCES_H
 
-/* Pre-defined browser options */
-#define NBROWSER 5
-extern const char* browser[];
-
 void
-create_preferences_window(void);
+preferences_dialog_setup_ui(void);
 
 #endif //__PREFERENCES_H

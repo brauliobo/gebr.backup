@@ -24,8 +24,6 @@
 #include "callbacks.h"
 #include "gebrme.h"
 #include "support.h"
-#include "menu.h"
-#include "program.h"
 #include "preferences.h"
 
 /*
@@ -345,27 +343,47 @@ on_program_delete_activate(void)
 void
 on_parameter_new_activate(void)
 {
-// 	parameter_new();
+	parameter_new();
 }
 
 /*
- * Function: on_parameter_new_activate
+ * Function: on_parameter_delete_activate
  * Call <parameter_remove>
  */
 void
 on_parameter_delete_activate(void)
 {
-// 	parameter_remove();
+	parameter_remove();
+}
+
+/*
+ * Function: on_parameter_duplicate_activate
+ * Call <parameter_duplicate>
+ */
+void
+on_parameter_duplicate_activate(void)
+{
+	parameter_duplicate();
+}
+
+/*
+ * Function: on_parameter_change_type_activate
+ * Call <parameter_remove>
+ */
+void
+on_parameter_change_type_activate(void)
+{
+	parameter_change_type_setup_ui();
 }
 
 /*
  * Function: on_configure_preferences_activate
- * Call <create_preferences_window>
+ * Call <preferences_dialog_setup_ui>
  */
 void
 on_configure_preferences_activate(void)
 {
-	create_preferences_window();
+	preferences_dialog_setup_ui();
 }
 
 /*

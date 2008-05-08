@@ -15,25 +15,14 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GROUP_PARAMETERS_H
-#define __GROUP_PARAMETERS_H
+#include <gui/utils.h>
 
-#include "parameters.h"
-struct parameter_data;
+#include "groupparameters.h"
+#include "support.h"
+#include "parameter.h"
+#include "menu.h"
 
-struct group_parameters_data {
-	struct parameters_data	parameters;
-
-	struct parameter_data *	parameter;
-	GtkWidget *		widget;
-
-	GList *			radio_group;
-};
-
-struct group_parameters_data *
-group_parameters_create_ui(struct parameter_data * parameter_data, gboolean expanded);
-
-void
-group_parameters_reset_exclusive(struct group_parameters_data * data);
-
-#endif //__GROUP_PARAMETERS_H
+/*
+ * File: parametergroup.c
+ * Create dialog for editing a parameter of type group
+ */

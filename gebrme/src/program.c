@@ -22,8 +22,6 @@
 #include "program.h"
 #include "gebrme.h"
 #include "support.h"
-#include "parameters.h"
-#include "menu.h"
 #include "help.h"
 
 /*
@@ -228,6 +226,10 @@ program_append_to_ui(GeoXmlProgram * program)
 	return iter;
 }
 
+/*
+ * Function: program_selected
+ * Load user selected program
+ */
 static void
 program_selected(void)
 {
@@ -240,8 +242,13 @@ program_selected(void)
 	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_program.list_store), &iter,
 		PROGRAM_XMLPOINTER, &gebrme.program,
 		-1);
+	parameter_load_program();
 }
 
+/*
+ * Function: program_select_iter
+ * Select _iter_ loading it
+ */
 static void
 program_select_iter(GtkTreeIter iter)
 {
@@ -253,7 +260,7 @@ program_select_iter(GtkTreeIter iter)
 	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_program.tree_view));
 	gtk_tree_selection_select_iter(tree_selection, &iter);
 
-// 	parameter_load_program();
+	parameter_load_program();
 }
 
 static GtkMenu *
@@ -266,6 +273,8 @@ program_popup_menu(GtkWidget * tree_view)
 
 	menu = gtk_menu_new();
 
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(gebrme.actions.program.new));
 	/* Move up */
 	if (gtk_list_store_can_move_up(gebrme.ui_program.list_store, &iter) == TRUE) {
 		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_UP, NULL);
@@ -281,10 +290,8 @@ program_popup_menu(GtkWidget * tree_view)
 			(GCallback)program_move_down, NULL);
 	}
 	/* Remove */
-	menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REMOVE, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-	g_signal_connect(menu_item, "activate",
-		(GCallback)program_remove, NULL);
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(gebrme.actions.program.delete));
 
 	gtk_widget_show_all(menu);
 
@@ -354,8 +361,7 @@ program_dialog_setup_ui(void)
 		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 		NULL);
-	gtk_widget_set_size_request(dialog, 630, 400);
-// 	gtk_box_set_homogeneous(GTK_BOX(GTK_DIALOG(dialog)->vbox), FALSE);
+	gtk_widget_set_size_request(dialog, 400, 300);
 
 	table = gtk_table_new(6, 2, FALSE);
 	gtk_widget_show(table);

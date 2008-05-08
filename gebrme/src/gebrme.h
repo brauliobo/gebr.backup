@@ -26,6 +26,7 @@
 
 #include "menu.h"
 #include "program.h"
+#include "parameter.h"
 
 extern struct gebrme gebrme;
 
@@ -41,9 +42,11 @@ struct gebrme {
 	GtkWidget *		statusbar;
 	GtkWidget *		invisible;
 	GtkAccelGroup *		accel_group;
-
 	struct ui_menu		ui_menu;
 	struct ui_menu		ui_program;
+	struct ui_menu		ui_parameter;
+
+	GData *			parameter_types;
 
 	/* actions */
 	struct gebrme_actions {
@@ -63,6 +66,8 @@ struct gebrme {
 		struct {
 			GtkAction *		new;
 			GtkAction *		delete;
+			GtkAction *		duplicate;
+			GtkAction *		change_type;
 		} parameter;
 	} actions;
 

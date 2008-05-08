@@ -162,6 +162,16 @@ gebrme_create_window(void)
 		NULL, NULL, GTK_STOCK_DELETE);
 	g_signal_connect(gebrme.actions.parameter.delete, "activate",
 		(GCallback)on_parameter_delete_activate, NULL);
+	/* duplicate */
+	gebrme.actions.parameter.duplicate = gtk_action_new("parameter_duplicate",
+		_("Duplicate"), NULL, GTK_STOCK_COPY);
+	g_signal_connect(gebrme.actions.parameter.duplicate, "activate",
+		(GCallback)on_parameter_duplicate_activate, NULL);
+	/* change type */
+	gebrme.actions.parameter.change_type = gtk_action_new("parameter_change_type",
+		_("Change type"), NULL, GTK_STOCK_CONVERT);
+	g_signal_connect(gebrme.actions.parameter.change_type, "activate",
+		(GCallback)on_parameter_change_type_activate, NULL);
 
 	/*
 	 * Menu: Menu
@@ -210,6 +220,18 @@ gebrme_create_window(void)
 	/*
 	 * Menu: Parameter
 	 */
+
+	menu_item = gtk_menu_item_new_with_mnemonic(_("Parameter"));
+	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
+	menu = gtk_menu_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
+
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(gebrme.actions.parameter.new));
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(gebrme.actions.parameter.delete));
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(gebrme.actions.parameter.change_type));
 
 	/*
 	 * Menu: Configure

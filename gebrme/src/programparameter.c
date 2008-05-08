@@ -15,24 +15,15 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PARAMETERS_H
-#define __PARAMETERS_H
+#include <gui/utils.h>
 
-#include <gtk/gtk.h>
+#include "parameters.h"
+#include "support.h"
+#include "parameter.h"
+#include "menu.h"
 
-#include <geoxml.h>
+/*
+ * File: parametergroup.c
+ * Create dialog for editing a parameter of any type except group
+ */
 
-struct parameters_data {
-	gboolean		is_group;
-	GeoXmlParameters *	parameters;
-
-	GtkWidget *		vbox;
-};
-
-GtkWidget *
-parameters_create_ui(GeoXmlParameters * parameters, gboolean expanded);
-
-void
-parameters_add(GtkButton * button, struct parameters_data * parameters_data);
-
-#endif //__PARAMETERS_H

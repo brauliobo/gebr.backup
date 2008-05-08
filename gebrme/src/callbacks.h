@@ -54,6 +54,12 @@ void
 on_parameter_delete_activate(void);
 
 void
+on_parameter_duplicate_activate(void);
+
+void
+on_parameter_change_type_activate(void);
+
+void
 on_configure_preferences_activate(void);
 
 void

@@ -147,7 +147,7 @@ menu_new(void)
 
 	/* select it */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
-	gtk_tree_selection_select_iter(selection, &iter);
+// 	gtk_tree_selection_select_iter(selection, &iter);
 	menu_selected();
 
 	/* add a new program for the user to play with */
@@ -493,8 +493,7 @@ menu_dialog_setup_ui(void)
 		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 		NULL);
-	gtk_widget_set_size_request(dialog, 630, 400);
-// 	gtk_box_set_homogeneous(GTK_BOX(GTK_DIALOG(dialog)->vbox), FALSE);
+	gtk_widget_set_size_request(dialog, 400, 300);
 
 	table = gtk_table_new(6, 2, FALSE);
 	gtk_widget_show(table);
