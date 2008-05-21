@@ -29,7 +29,6 @@
 #include "support.h"
 #include "gebrme.h"
 #include "enumoptionedit.h"
-#include "groupparameters.h"
 #include "interface.h"
 #include "menu.h"
 
@@ -53,51 +52,47 @@ static GtkTreeIter
 paramater_append_to_ui(GeoXmlParameter * parameter, GtkTreeIter * parent);
 static void
 parameter_select_iter(GtkTreeIter iter);
+static gboolean
+parameter_get_selected(GtkTreeIter * iter);
+void
+parameter_activated(void);
 
 static void
-parameter_create_ui_type_general(GtkWidget * table, struct parameter_data * data);
+parameter_required_changed(GtkToggleButton * toggle_button);
 static void
-parameter_data_free(GtkObject * expander, struct parameter_data * data);
+parameter_is_list_changed(GtkToggleButton * toggle_button);
 static void
-parameter_up(GtkButton * button, struct parameter_data * data);
+parameter_separator_changed(GtkEntry * entry);
 static void
-parameter_down(GtkButton * button, struct parameter_data * data);
+parameter_label_changed(GtkEntry * entry);
 static void
-parameter_required_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+parameter_keyword_changed(GtkEntry * entry);
 static void
-parameter_is_list_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+parameter_default_widget_changed(struct parameter_widget * widget);
 static void
-parameter_separator_changed(GtkEntry * entry, struct parameter_data * data);
+parameter_file_type_changed(GtkComboBox * combo);
 static void
-parameter_label_changed(GtkEntry * entry, struct parameter_data * data);
+parameter_range_min_changed(GtkEntry * entry);
 static void
-parameter_keyword_changed(GtkEntry * entry, struct parameter_data * data);
+parameter_range_max_changed(GtkEntry * entry);
 static void
-parameter_default_widget_changed(struct parameter_widget * widget, struct parameter_data * data);
+parameter_range_inc_changed(GtkEntry * entry);
 static void
-parameter_file_type_changed(GtkComboBox * combo, struct parameter_data * data);
+parameter_range_digits_changed(GtkEntry * entry);
 static void
-parameter_range_min_changed(GtkEntry * entry, struct parameter_data * data);
-static void
-parameter_range_max_changed(GtkEntry * entry, struct parameter_data * data);
-static void
-parameter_range_inc_changed(GtkEntry * entry, struct parameter_data * data);
-static void
-parameter_range_digits_changed(GtkEntry * entry, struct parameter_data * data);
-static void
-parameter_enum_options_changed(EnumOptionEdit * enum_option_edit, struct parameter_data * data);
+parameter_enum_options_changed(EnumOptionEdit * enum_option_edit);
 static gboolean
 parameter_is_exclusive(struct parameter_data * data);
 static void
-parameter_change_exclusive(GtkToggleButton * toggle_button, struct parameter_data * data);
+parameter_change_exclusive(GtkToggleButton * toggle_button);
 static void
-parameter_group_exclusive_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+parameter_group_exclusive_changed(GtkToggleButton * toggle_button);
 static void
-parameter_group_expanded_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+parameter_group_expanded_changed(GtkToggleButton * toggle_button);
 static void
-parameter_group_multiple_changed(GtkToggleButton * toggle_button, struct parameter_data * data);
+parameter_group_multiple_changed(GtkToggleButton * toggle_button);
 static gboolean
-parameter_group_instances_changed(GtkSpinButton * spinbutton, struct parameter_data * data);
+parameter_group_instances_changed(GtkSpinButton * spinbutton);
 static void
 parameter_uilabel_update(struct parameter_data * data);
 
@@ -134,7 +129,7 @@ parameter_setup_ui(void)
 	g_signal_connect(gebrme.ui_parameter.tree_view, "cursor-changed",
 		(GCallback)parameter_selected, NULL);
 	g_signal_connect(gebrme.ui_parameter.tree_view, "row-activated",
-		GTK_SIGNAL_FUNC(parameter_dialog_setup_ui), NULL);
+		GTK_SIGNAL_FUNC(parameter_activated), NULL);
 
 	renderer = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes(_("Label"), renderer, NULL);
@@ -200,20 +195,13 @@ parameter_new(void)
 void
 parameter_remove(void)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
-	if (gebrme.parameter == NULL) {
-		gebrme_message(LOG_ERROR, _("No parameter is selected"));
+	if (parameter_get_selected(&iter) == FALSE)
 		return;
-	}
 	if (confirm_action_dialog(_("Delete parameter"), _("Are you sure you want to delete parameter '%s'?"),
 	geoxml_parameter_get_label(gebrme.parameter)) == FALSE)
 		return;
-
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_parameter.tree_view));
-	gtk_tree_selection_get_selected(selection, &model, &iter);
 
 	gtk_tree_store_remove(gebrme.ui_parameter.tree_store, &iter);
 	geoxml_sequence_remove(GEOXML_SEQUENCE(gebrme.parameter));
@@ -241,9 +229,8 @@ parameter_duplicate(void)
  * Function: parameter_change_type
  * Open dialog to change type of current selected parameter
  */
-
 void
-parameter_change_type(void)
+parameter_change_type_setup_ui(void)
 {
 	GtkWidget *			type_label;
 	GtkWidget *			type_combo;
@@ -276,23 +263,23 @@ parameter_change_type(void)
 		(GtkAttachOptions))GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions))0), 0, 0);
 	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_get_data(gebrme.parameter_types, GEOXML_PARAMETERTYPE_STRING));
+		g_datalist_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_STRING));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_get_data(gebrme.parameter_types, GEOXML_PARAMETERTYPE_INT));
+		g_datalist_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_INT));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_get_data(gebrme.parameter_types, GEOXML_PARAMETERTYPE_FILE));
+		g_datalist_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_FILE));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_get_data(gebrme.parameter_types, GEOXML_PARAMETERTYPE_FLAG));
+		g_datalist_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_FLAG));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_get_data(gebrme.parameter_types, GEOXML_PARAMETERTYPE_FLOAT));
+		g_datalist_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_FLOAT));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_get_data(gebrme.parameter_types, GEOXML_PARAMETERTYPE_RANGE));
+		g_datalist_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_RANGE));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_get_data(gebrme.parameter_types, GEOXML_PARAMETERTYPE_ENUM));
+		g_datalist_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_ENUM));
 	/* does not allow group-in-group */
-	if (geoxml)
-	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_get_data(gebrme.parameter_types, GEOXML_PARAMETERTYPE_GROUP));
+	if (geoxml_parameter_is_in_group(gebrme.parameter))
+		gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
+			g_datalist_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_GROUP));
 	gtk_combo_box_set_active(GTK_COMBO_BOX(type_combo), type);
 	g_signal_connect(type_combo, "changed",
 		(GCallback)parameter_type_changed, data);
@@ -344,7 +331,7 @@ paramater_append_to_ui(GeoXmlParameter * parameter, GtkTreeIter * parent)
 	gtk_tree_store_append(gebrme.ui_parameter.tree_store, &iter, parent);
 	gtk_tree_store_set(gebrme.ui_parameter.tree_store, &iter,
 		PARAMETER_PARAMETER, geoxml_parameter_get_label(parameter),
-		PARAMETER_TYPE, g_datalist_get_data(gebrme.parameter_types,
+		PARAMETER_TYPE, g_datalist_get_data(&gebrme.parameter_types,
 			geoxml_parameter_get_type(parameter)),
 		PARAMETER_XMLPOINTER, parameter,
 		-1);
@@ -368,14 +355,59 @@ parameter_select_iter(GtkTreeIter iter)
 	gtk_tree_selection_select_iter(tree_selection, &iter);
 }
 
+/*
+ * Function: parameter_check_selected
+ * Returns true if there is a parameter selected. Othewise,
+ * returns false and show a message on the status bar.
+ */
+static gboolean
+parameter_check_selected(void)
+{
+	if (gebrme.parameter == NULL) {
+		gebrme_message(LOG_ERROR, _("No parameter is selected"));
+		return FALSE;
+	}
+	return TRUE;
+}
 
-GtkWidget *
-parameter_create_ui(GeoXmlParameter * parameter, struct parameters_data * parameters_data, gboolean expanded)
+/*
+ * Function: parameter_get_selected
+ * Return true if there is a parameter selected and write it to _iter_
+ */
+static gboolean
+parameter_get_selected(GtkTreeIter * iter)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+
+	if (parameter_check_selected(iter))
+		return FALSE;
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_parameter.tree_view));
+	return gtk_tree_selection_get_selected(selection, &model, &iter);
+}
+
+/*
+ * Function: parameter_activated
+ * Open a dialog to configure the parameter, according to its type.
+ */
+void
+parameter_activated(void)
+{
+	if (parameter_get_selected()
+}
+
+/*
+ * Function: parameter_dialog_setup_ui
+ * Create an dialog to configure the current selected parameter (not a group)
+ */
+void
+parameter_dialog_setup_ui(void);
 {
 	struct parameter_data *		data;
 	enum GEOXML_PARAMETERTYPE	type;
 
-	GtkWidget *			frame;
+	GtkWidget *			dialog;
+	GtkWidget *			table;
 
 	GtkWidget *			parameter_expander;
 	GtkWidget *			parameter_label_widget;
@@ -384,14 +416,25 @@ parameter_create_ui(GeoXmlParameter * parameter, struct parameters_data * parame
 	GtkWidget *			parameter_vbox;
 	GtkWidget *			parameter_table;
 
-	GtkWidget *			general_table;
-
 	GtkWidget *			button_hbox;
 	GtkWidget *			up_button;
 	GtkWidget *			down_button;
 	GtkWidget *			duplicate_button;
 	GtkWidget *			remove_button;
 	GtkWidget *			align;
+
+	dialog = gtk_dialog_new_with_buttons(_("Edit parameter"),
+		GTK_WINDOW(gebrme.window),
+		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+		GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+		NULL);
+	gtk_widget_set_size_request(dialog, 400, 300);
+
+	table = gtk_table_new(1, 2, FALSE);
+	gtk_widget_show(table);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 5);
+	gtk_table_set_row_spacings(GTK_TABLE(table), 6);
+	gtk_table_set_col_spacings(GTK_TABLE(table), 6);
 
 	type = geoxml_parameter_get_type(parameter);
 
@@ -471,54 +514,6 @@ parameter_create_ui(GeoXmlParameter * parameter, struct parameters_data * parame
 	parameter_create_ui_type_general(general_table, data);
 	parameter_uilabel_update(data);
 
-	/* finishing...
-	 * Buttons Up, Down and Remove
-	 */
-	button_hbox = gtk_hbox_new(FALSE, 0);
-	gtk_widget_show(button_hbox);
-	gtk_box_pack_end(GTK_BOX(parameter_vbox), button_hbox, TRUE, FALSE, 0);
-
-	up_button = gtk_button_new_from_stock(GTK_STOCK_GO_UP);
-	gtk_widget_show(up_button);
-	gtk_box_pack_start(GTK_BOX(button_hbox), up_button, FALSE, FALSE, 5);
-	g_signal_connect(up_button, "clicked",
-		GTK_SIGNAL_FUNC(parameter_up), data);
-	g_object_set(G_OBJECT(up_button),
-		"relief", GTK_RELIEF_NONE,
-		NULL);
-
-	down_button = gtk_button_new_from_stock(GTK_STOCK_GO_DOWN);
-	gtk_widget_show(down_button);
-	gtk_box_pack_start(GTK_BOX(button_hbox), down_button, FALSE, FALSE, 5);
-	g_signal_connect(down_button, "clicked",
-		GTK_SIGNAL_FUNC(parameter_down), data);
-	g_object_set(G_OBJECT(down_button),
-		"relief", GTK_RELIEF_NONE,
-		NULL);
-
-	duplicate_button = gtk_button_new();
-	gtk_widget_show(duplicate_button);
-	gtk_box_pack_start(GTK_BOX(button_hbox), duplicate_button, FALSE, FALSE, 5);
-	g_signal_connect(duplicate_button, "clicked",
-		GTK_SIGNAL_FUNC(parameter_duplicate), data);
-	g_object_set(G_OBJECT(duplicate_button),
-		"label", _("Duplicate"),
-		"image", gtk_image_new_from_stock(GTK_STOCK_COPY, GTK_ICON_SIZE_SMALL_TOOLBAR),
-		"relief", GTK_RELIEF_NONE,
-		NULL);
-
-	align = gtk_alignment_new(1, 0, 0, 1);
-	gtk_widget_show(align);
-	remove_button = gtk_button_new_from_stock(GTK_STOCK_DELETE);
-	gtk_widget_show(remove_button);
-	gtk_box_pack_start(GTK_BOX(button_hbox), align, TRUE, TRUE, 5);
-	gtk_container_add(GTK_CONTAINER(align), remove_button);
-	g_signal_connect(remove_button, "clicked",
-		GTK_SIGNAL_FUNC(parameter_remove), data);
-	g_object_set(G_OBJECT(remove_button),
-		"relief", GTK_RELIEF_NONE,
-		NULL);
-
 	if (data->parameters_data->is_group == TRUE) {
 		struct parameter_data *	group_data;
 		gboolean		one_instance;
@@ -536,7 +531,7 @@ parameter_create_ui(GeoXmlParameter * parameter, struct parameters_data * parame
 }
 
 void
-parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * data)
+parameter_create_ui_type_specific(GtkWidget * table)
 {
 	GtkWidget *			default_label;
 	GtkWidget *			default_widget_hbox;
@@ -548,27 +543,6 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
 
 	type = geoxml_parameter_get_type(data->parameter);
 	if (type == GEOXML_PARAMETERTYPE_GROUP) {
-		if (geoxml_parameter_group_get_can_instanciate(GEOXML_PARAMETER_GROUP(data->parameter)) == TRUE) {
-			GtkWidget *	instances_label;
-			GtkWidget *	instances_spin;
-
-			instances_label = gtk_label_new(_("Instances:"));
-			gtk_widget_show(instances_label);
-			gtk_table_attach(GTK_TABLE(table), instances_label, 0, 1, 0, 1,
-				(GtkAttachOptions)(GTK_FILL),
-				(GtkAttachOptions)(GTK_FILL), 0, 0);
-			gtk_misc_set_alignment(GTK_MISC(instances_label), 0, 0.5);
-
-			instances_spin = gtk_spin_button_new_with_range(1, 999999999, 1);
-			gtk_widget_show(instances_spin);
-			gtk_table_attach(GTK_TABLE(table), instances_spin, 1, 2, 0, 1,
-				(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-				(GtkAttachOptions)(0), 0, 0);
-			gtk_spin_button_set_value(GTK_SPIN_BUTTON(instances_spin),
-				geoxml_parameter_group_get_instances(GEOXML_PARAMETER_GROUP(data->parameter)));
-			g_signal_connect(instances_spin, "output",
-				(GCallback)parameter_group_instances_changed, data);
-		}
 
 		data->specific.group.parameters_data = group_parameters_create_ui(data, TRUE);
 		gtk_table_attach(GTK_TABLE(table), data->specific.group.parameters_data->widget, 0, 2, 1, 2,
@@ -770,7 +744,7 @@ parameter_create_ui_type_specific(GtkWidget * table, struct parameter_data * dat
  */
 
 static void
-parameter_create_ui_type_general(GtkWidget * table, struct parameter_data * data)
+parameter_create_ui_type_general(GtkWidget * table)
 {
 	GtkWidget *			specific_table;
 	enum GEOXML_PARAMETERTYPE	type;
@@ -960,13 +934,13 @@ parameter_create_ui_type_general(GtkWidget * table, struct parameter_data * data
 }
 
 static void
-parameter_data_free(GtkObject * expander, struct parameter_data * data)
+parameter_data_free(GtkObject * expander)
 {
 	g_free(data);
 }
 
 static void
-parameter_up(GtkButton * button, struct parameter_data * data)
+parameter_up(void)
 {
 	GtkWidget *	vbox;
 	GList *		parameters_frames;
@@ -987,7 +961,7 @@ parameter_up(GtkButton * button, struct parameter_data * data)
 }
 
 static void
-parameter_down(GtkButton * button, struct parameter_data * data)
+parameter_down(GtkAction * action)
 {
 	GtkWidget *	vbox;
 	GList *		parameters_frames;
@@ -1008,7 +982,7 @@ parameter_down(GtkButton * button, struct parameter_data * data)
 }
 
 static void
-parameter_required_changed(GtkToggleButton * toggle_button, struct parameter_data * data)
+parameter_required_changed(GtkToggleButton * toggle_button)
 {
 	geoxml_program_parameter_set_required(GEOXML_PROGRAM_PARAMETER(data->parameter),
 		gtk_toggle_button_get_active(toggle_button));
@@ -1017,7 +991,7 @@ parameter_required_changed(GtkToggleButton * toggle_button, struct parameter_dat
 }
 
 static void
-parameter_is_list_changed(GtkToggleButton * toggle_button, struct parameter_data * data)
+parameter_is_list_changed(GtkToggleButton * toggle_button)
 {
 	GtkWidget *	table;
 
@@ -1034,7 +1008,7 @@ parameter_is_list_changed(GtkToggleButton * toggle_button, struct parameter_data
 }
 
 static void
-parameter_separator_changed(GtkEntry * entry, struct parameter_data * data)
+parameter_separator_changed(GtkEntry * entry)
 {
 	geoxml_program_parameter_set_list_separator(GEOXML_PROGRAM_PARAMETER(data->parameter),
 		gtk_entry_get_text(GTK_ENTRY(entry)));
@@ -1047,7 +1021,7 @@ parameter_separator_changed(GtkEntry * entry, struct parameter_data * data)
 }
 
 static void
-parameter_label_changed(GtkEntry * entry, struct parameter_data * data)
+parameter_label_changed(GtkEntry * entry)
 {
 	geoxml_parameter_set_label(data->parameter, gtk_entry_get_text(GTK_ENTRY(entry)));
 
@@ -1056,7 +1030,7 @@ parameter_label_changed(GtkEntry * entry, struct parameter_data * data)
 }
 
 static void
-parameter_keyword_changed(GtkEntry * entry, struct parameter_data * data)
+parameter_keyword_changed(GtkEntry * entry)
 {
 	GtkWidget *	parameter_label;
 
@@ -1069,14 +1043,14 @@ parameter_keyword_changed(GtkEntry * entry, struct parameter_data * data)
 }
 
 static void
-parameter_default_widget_changed(struct parameter_widget * widget, struct parameter_data * data)
+parameter_default_widget_changed(struct parameter_widget * widget)
 {
 	parameter_uilabel_update(data);
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
 static void
-parameter_file_type_changed(GtkComboBox * combo, struct parameter_data * data)
+parameter_file_type_changed(GtkComboBox * combo)
 {
 	gboolean	is_directory;
 
@@ -1089,7 +1063,7 @@ parameter_file_type_changed(GtkComboBox * combo, struct parameter_data * data)
 }
 
 static void
-parameter_range_min_changed(GtkEntry * entry, struct parameter_data * data)
+parameter_range_min_changed(GtkEntry * entry)
 {
 	gchar *		min_str;
 	gchar *		max_str;
@@ -1114,7 +1088,7 @@ parameter_range_min_changed(GtkEntry * entry, struct parameter_data * data)
 }
 
 static void
-parameter_range_max_changed(GtkEntry * entry, struct parameter_data * data)
+parameter_range_max_changed(GtkEntry * entry)
 {
 	gchar *		min_str;
 	gchar *		max_str;
@@ -1139,7 +1113,7 @@ parameter_range_max_changed(GtkEntry * entry, struct parameter_data * data)
 }
 
 static void
-parameter_range_inc_changed(GtkEntry * entry, struct parameter_data * data)
+parameter_range_inc_changed(GtkEntry * entry)
 {
 	gchar *		min_str;
 	gchar *		max_str;
@@ -1163,7 +1137,7 @@ parameter_range_inc_changed(GtkEntry * entry, struct parameter_data * data)
 }
 
 static void
-parameter_range_digits_changed(GtkEntry * entry, struct parameter_data * data)
+parameter_range_digits_changed(GtkEntry * entry)
 {
 	gchar *		min_str;
 	gchar *		max_str;
@@ -1187,7 +1161,7 @@ parameter_range_digits_changed(GtkEntry * entry, struct parameter_data * data)
 }
 
 static void
-parameter_enum_options_changed(EnumOptionEdit * enum_option_edit, struct parameter_data * data)
+parameter_enum_options_changed(EnumOptionEdit * enum_option_edit)
 {
 	GtkWidget *	default_widget_hbox;
 
@@ -1218,7 +1192,7 @@ parameter_is_exclusive(struct parameter_data * data)
 }
 
 static void
-parameter_change_exclusive(GtkToggleButton * toggle_button, struct parameter_data * data)
+parameter_change_exclusive(GtkToggleButton * toggle_button)
 {
 	GeoXmlParameterGroup *	parameter_group;
 
@@ -1230,7 +1204,7 @@ parameter_change_exclusive(GtkToggleButton * toggle_button, struct parameter_dat
 }
 
 static void
-parameter_group_exclusive_changed(GtkToggleButton * toggle_button, struct parameter_data * data)
+parameter_group_exclusive_changed(GtkToggleButton * toggle_button)
 {
 	if (gtk_toggle_button_get_active(toggle_button) == TRUE)
 		geoxml_parameter_group_set_exclusive(GEOXML_PARAMETER_GROUP(data->parameter),
@@ -1248,7 +1222,7 @@ parameter_group_exclusive_changed(GtkToggleButton * toggle_button, struct parame
 }
 
 static void
-parameter_group_expanded_changed(GtkToggleButton * toggle_button, struct parameter_data * data)
+parameter_group_expanded_changed(GtkToggleButton * toggle_button)
 {
 	geoxml_parameter_group_set_expand(GEOXML_PARAMETER_GROUP(data->parameter),
 		gtk_toggle_button_get_active(toggle_button));
@@ -1257,7 +1231,7 @@ parameter_group_expanded_changed(GtkToggleButton * toggle_button, struct paramet
 }
 
 static void
-parameter_group_multiple_changed(GtkToggleButton * toggle_button, struct parameter_data * data)
+parameter_group_multiple_changed(GtkToggleButton * toggle_button)
 {
 	geoxml_parameter_group_set_can_instanciate(GEOXML_PARAMETER_GROUP(data->parameter),
 		gtk_toggle_button_get_active(toggle_button));
@@ -1270,7 +1244,7 @@ parameter_group_multiple_changed(GtkToggleButton * toggle_button, struct paramet
 }
 
 static gboolean
-parameter_group_instances_changed(GtkSpinButton * spin_button, struct parameter_data * data)
+parameter_group_instances_changed(GtkSpinButton * spin_button)
 {
 	gint	i, instanciate;
 

@@ -43,6 +43,12 @@ void
 parameter_duplicate(void);
 
 void
-parameter_change_type(void);
+parameter_up(void);
+
+void
+parameter_down(void);
+
+void
+parameter_change_type_setup_ui(void);
 
 #endif //__PARAMETER_H

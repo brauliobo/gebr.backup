@@ -24,6 +24,7 @@
 #include <misc/utils.h>
 
 #include "gebrme.h"
+#include "support.h"
 #include "menu.h"
 #include "preferences.h"
 
