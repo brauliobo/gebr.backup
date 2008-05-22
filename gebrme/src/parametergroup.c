@@ -15,12 +15,13 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <gtk/gtk.h>
+
 #include <gui/utils.h>
 
 #include "groupparameters.h"
 #include "support.h"
 #include "parameter.h"
-#include "menu.h"
 
 /*
  * File: parametergroup.c
@@ -37,11 +38,35 @@
  * Open a dialog to configure a group
  */
 void
-parameter_group_setup_ui(void)
+parameter_group_dialog_setup_ui(void)
 {
-	GtkWidget *	dialog;
-	GtkWidget *	table;;
-	
+	GtkWidget *		dialog;
+	GtkWidget *		table;
+
+	GtkWidget *		label_label;
+	GtkWidget *		label_entry;
+	GtkWidget *		instanciable_label;
+	GtkWidget *		instanciable_check_button;
+	GtkWidget *		instances_label;
+	GtkWidget *		instances_spin;
+	GtkWidget *		exclusive_label;
+	GtkWidget *		exclusive_check_button;
+	GtkWidget *		expanded_label;
+	GtkWidget *		expanded_check_button;
+
+	GtkTreeIter		iter, parent_iter;
+
+	GeoXmlParameterGroup *	parameter_group;
+
+	if (gtk_tree_store_is_ancestor(gebrme.ui_parameter.tree_store, &iter, NULL) == FALSE) {
+		gtk_tree_model_iter_parent(GTK_TREE_MODEL(gebrme.ui_parameter.tree_store),
+			&iter, &parent_iter);
+		iter = parent_iter;
+	}
+	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_parameter.tree_store), &iter,
+		PARAMETER_XMLPOINTER, &parameter_group,
+		-1);
+
 	dialog = gtk_dialog_new_with_buttons(_("Edit group"),
 		GTK_WINDOW(gebrme.window),
 		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -49,33 +74,113 @@ parameter_group_setup_ui(void)
 		NULL);
 	gtk_widget_set_size_request(dialog, 400, 300);
 
-	table = gtk_table_new(1, 2, FALSE);
+	table = gtk_table_new(10, 2, FALSE);
 	gtk_widget_show(table);
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 5);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 6);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 6);
 
-	if (geoxml_parameter_group_get_can_instanciate(GEOXML_PARAMETER_GROUP(data->parameter)) == TRUE) {
-		GtkWidget *	instances_label;
-		GtkWidget *	instances_spin;
+	/*
+	 * Label
+	 */
+	label_label = gtk_label_new(_("Label:"));
+	gtk_widget_show(label_label);
+	gtk_table_attach(GTK_TABLE(parameter_table), label_label, 0, 1, 0, 1,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(label_label), 0, 0.5);
 
-		instances_label = gtk_label_new(_("Instances:"));
-		gtk_widget_show(instances_label);
-		gtk_table_attach(GTK_TABLE(table), instances_label, 0, 1, 0, 1,
-			(GtkAttachOptions)(GTK_FILL),
-			(GtkAttachOptions)(GTK_FILL), 0, 0);
-		gtk_misc_set_alignment(GTK_MISC(instances_label), 0, 0.5);
+	label_entry = gtk_entry_new();
+	gtk_widget_show(label_entry);
+	gtk_table_attach(GTK_TABLE(parameter_table), label_entry, 0, 1, 1, 2,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	g_signal_connect(label_entry, "changed",
+		(GCallback)parameter_label_changed, data);
 
-		instances_spin = gtk_spin_button_new_with_range(1, 999999999, 1);
-		gtk_widget_show(instances_spin);
-		gtk_table_attach(GTK_TABLE(table), instances_spin, 1, 2, 0, 1,
-			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions)(0), 0, 0);
-		gtk_spin_button_set_value(GTK_SPIN_BUTTON(instances_spin),
-			geoxml_parameter_group_get_instances(GEOXML_PARAMETER_GROUP(data->parameter)));
-		g_signal_connect(instances_spin, "output",
-			(GCallback)parameter_group_instances_changed, data);
-	}
+	/*
+	 * Instanciable
+	 */
+	instanciable_label = gtk_label_new(_("Instanciable:"));
+	gtk_widget_show(instanciable_label);
+	gtk_table_attach(GTK_TABLE(table), instanciable_label, 0, 1, 1, 2,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(instanciable_label), 0, 0.5);
+
+	instanciable_check_button = gtk_check_button_new();
+	gtk_widget_show(instanciable_check_button);
+	gtk_table_attach(GTK_TABLE(table), instanciable_check_button, 1, 2, 1, 2,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	g_signal_connect(instanciable_check_button, "toggled",
+		(GCallback)parameter_group_instanciable_changed, data);
+		
+	/*
+	 * Instances
+	 */
+	instances_label = gtk_label_new(_("Instances:"));
+	gtk_widget_show(instances_label);
+	gtk_table_attach(GTK_TABLE(table), instances_label, 0, 1, 2, 3,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(GTK_FILL), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(instances_label), 0, 0.5);
+
+	instances_spin = gtk_spin_button_new_with_range(1, 999999999, 1);
+	gtk_widget_show(instances_spin);
+	gtk_table_attach(GTK_TABLE(table), instances_spin, 1, 2, 2, 3,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	g_signal_connect(instances_spin, "output",
+		(GCallback)parameter_group_instances_changed, data);
+
+	/*
+	 * Exclusive
+	 */
+	exclusive_label = gtk_label_new(_("Exclusive:"));
+	gtk_widget_show(exclusive_label);
+	gtk_table_attach(GTK_TABLE(table), exclusive_label, 0, 1, 3, 4,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(exclusive_label), 0, 0.5);
+
+	exclusive_check_button = gtk_check_button_new();
+	data->specific.group.exclusive_check_button = exclusive_check_button;
+	gtk_widget_show(exclusive_check_button);
+	gtk_table_attach(GTK_TABLE(table), exclusive_check_button, 1, 2, 3, 4,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	g_signal_connect(exclusive_check_button, "toggled",
+		(GCallback)parameter_group_exclusive_changed, data);
+
+	/*
+	 * Expanded by default
+	 */
+	expanded_label = gtk_label_new(_("Expanded by default:"));
+	gtk_widget_show(expanded_label);
+	gtk_table_attach(GTK_TABLE(table), expanded_label, 0, 1, 5, 6,
+		(GtkAttachOptions)(GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(expanded_label), 0, 0.5);
+
+	expanded_check_button = gtk_check_button_new();
+	gtk_widget_show(expanded_check_button);
+	gtk_table_attach(GTK_TABLE(table), expanded_check_button, 1, 2, 5, 6,
+		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+		(GtkAttachOptions)(0), 0, 0);
+	g_signal_connect(expanded_check_button, "toggled",
+		(GCallback)parameter_group_expanded_changed, data);
+
+	/* group data -> UI */
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(instanciable_check_button),
+		geoxml_parameter_group_get_can_instanciate(parameter_group));
+	gtk_widget_set_sensitive(instances_spin, geoxml_parameter_group_get_instanciable(parameter_group));
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(instances_spin),
+		geoxml_parameter_group_get_instances(GEOXML_PARAMETER_GROUP(parameter)));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(exclusive_check_button),
+		geoxml_parameter_group_get_exclusive(parameter_group) != NULL);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(expanded_check_button),
+		geoxml_parameter_group_get_expand(parameter_group));
 
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);

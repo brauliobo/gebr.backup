@@ -205,9 +205,9 @@ menu_open(const gchar * path, gboolean select)
 	while (valid) {
 		gchar *	ipath;
 
-		gtk_tree_model_get (GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
-				MENU_PATH, &ipath,
-				-1);
+		gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
+			MENU_PATH, &ipath,
+			-1);
 
 		if (!strcmp(ipath, path)) {
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));

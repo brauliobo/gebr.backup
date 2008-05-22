@@ -20,6 +20,13 @@
 
 #include <gtk/gtk.h>
 
+enum {
+        PARAMETER_LABEL,
+	PARAMETER_TYPE,
+	PARAMETER_XMLPOINTER,
+	PARAMETER_N_COLUMN
+};
+
 struct ui_parameter {
 	GtkWidget *		widget;
 

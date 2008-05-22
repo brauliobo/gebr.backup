@@ -162,6 +162,16 @@ gebrme_create_window(void)
 		NULL, NULL, GTK_STOCK_DELETE);
 	g_signal_connect(gebrme.actions.parameter.delete, "activate",
 		(GCallback)on_parameter_delete_activate, NULL);
+	/* up */
+	gebrme.actions.parameter.up = gtk_action_new("parameter_up",
+		NULL, NULL, GTK_STOCK_GO_UP);
+	g_signal_connect(gebrme.actions.parameter.up, "activate",
+		(GCallback)on_parameter_up_activate, NULL);
+	/* down */
+	gebrme.actions.parameter.down = gtk_action_new("parameter_down",
+		NULL, NULL, GTK_STOCK_GO_DOWN);
+	g_signal_connect(gebrme.actions.parameter.down, "activate",
+		(GCallback)on_parameter_down_activate, NULL);
 	/* duplicate */
 	gebrme.actions.parameter.duplicate = gtk_action_new("parameter_duplicate",
 		_("Duplicate"), NULL, GTK_STOCK_COPY);

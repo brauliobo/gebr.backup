@@ -67,6 +67,8 @@ struct gebrme {
 			GtkAction *		new;
 			GtkAction *		delete;
 			GtkAction *		duplicate;
+			GtkAction *		up;
+			GtkAction *		down;
 			GtkAction *		change_type;
 		} parameter;
 	} actions;

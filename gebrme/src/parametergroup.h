@@ -18,6 +18,7 @@
 #ifndef __PARAMETER_GROUP_H
 #define __PARAMETER_GROUP_H
 
-
+void
+parameter_group_dialog_setup_ui(void);
 
 #endif //__PARAMETER_GROUP_H
