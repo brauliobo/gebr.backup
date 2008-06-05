@@ -91,8 +91,6 @@
  */
 typedef struct geoxml_parameter GeoXmlParameter;
 
-#include <glib.h>
-
 /**
  * \p GEOXML_PARAMETERTYPE lists the program's parameters types
  * supported by libgeoxml. They were made to create a properly
@@ -143,6 +141,17 @@ enum GEOXML_PARAMETERTYPE {
 	 */
 	GEOXML_PARAMETERTYPE_UNKNOWN,
 };
+
+#include <glib.h>
+#include "parameters.h"
+
+/**
+ * Get GeoXmlParameters in which \p parameter is inside
+ *
+ * If \p parameter is NULL returns NULL
+ */
+GeoXmlParameters *
+geoxml_parameter_get_parameters(GeoXmlParameter * parameter);
 
 /**
  * Change \p parameter type to \p type.
@@ -199,6 +208,14 @@ geoxml_parameter_set_label(GeoXmlParameter * parameter, const gchar * label);
  */
 const gchar *
 geoxml_parameter_get_label(GeoXmlParameter * parameter);
+
+/**
+ * Return TRUE if \p parameter is part of a group
+ *
+ * If \p parameter is NULL returns FALSE.
+ */
+gboolean
+geoxml_parameter_get_is_in_group(GeoXmlParameter * parameter);
 
 /**
  * Reset \p parameter's value and default. If \p recursive, do it for groups and do recursively.

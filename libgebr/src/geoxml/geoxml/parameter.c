@@ -23,7 +23,6 @@
 #include "xml.h"
 #include "types.h"
 #include "error.h"
-#include "parameters.h"
 #include "parameters_p.h"
 #include "parameter_group.h"
 #include "parameter_group_p.h"
@@ -135,6 +134,14 @@ __geoxml_parameter_insert_type(GeoXmlParameter * parameter, enum GEOXML_PARAMETE
  * library functions.
  */
 
+GeoXmlParameters *
+geoxml_parameter_get_parameters(GeoXmlParameter * parameter)
+{
+	if (parameter == NULL)
+		return NULL;
+	return (GeoXmlParameters*)gdome_n_parentNode((GdomeNode*)parameter, &exception);
+}
+
 gboolean
 geoxml_parameter_set_type(GeoXmlParameter * parameter, enum GEOXML_PARAMETERTYPE type)
 {
@@ -205,6 +212,15 @@ geoxml_parameter_get_label(GeoXmlParameter * parameter)
 	if (parameter == NULL)
 		return NULL;
 	return __geoxml_get_tag_value((GdomeElement*)parameter, "label");
+}
+
+gboolean
+geoxml_parameter_get_is_in_group(GeoXmlParameter * parameter)
+{
+	if (parameter == NULL)
+		return FALSE;
+	return geoxml_parameters_get_is_in_group(
+		(GeoXmlParameters*)gdome_n_parentNode((GdomeNode*)parameter, &exception));
 }
 
 void

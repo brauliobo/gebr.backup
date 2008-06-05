@@ -19,8 +19,11 @@
 #define __LIBGEBR_GEOXML_PARAMETERS_P_H
 
 /**
- * If \p parameters is a group, then it could not be instantiated to be changed,
- * otherwise, return TRUE.
+ * \internal
+ * Returns TRUE if \p parameters can be changed: if this is from a program one or the master
+ * instance of a group.
+ * The first instance of a group can be said as the master and the other ones as slaves. The changes made to
+ * it is reflected on all others. The slaves can't be changed directly.
  */
 gboolean
 __geoxml_parameters_group_check(GeoXmlParameters * parameters);

@@ -74,8 +74,7 @@
  * Therefore, a line is a list of flows files. When a flow needs to be
  * read or edited you ask the line for its path (see \ref geoxml_line_get_flow_source) and then
  * load it with \ref geoxml_document_load. New flows can be added to a line using
- * \ref geoxml_line_add_flow, or removed with \ref geoxml_line_remove_flow.
- * Iteration can be done combining \ref geoxml_line_get_flow and \ref geoxml_line_next_flow.
+ * \ref geoxml_line_append_flow.
  */
 
 /**

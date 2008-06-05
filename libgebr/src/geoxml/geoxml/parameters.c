@@ -42,14 +42,12 @@ __geoxml_parameters_group_check(GeoXmlParameters * parameters)
 {
 	GdomeElement *	parent_element;
 
+	/* if this is not in a group then there is no problem */
 	parent_element = (GdomeElement*)gdome_el_parentNode((GdomeElement*)parameters, &exception);
 	if (strcmp(gdome_el_nodeName(parent_element, &exception)->str, "group") != 0)
 		return TRUE;
-	/* problem with recursive getElementsByName */
-	if (geoxml_parameter_group_get_instances_number(GEOXML_PARAMETER_GROUP(parent_element)) > 1)
-		return FALSE;
 
-	return TRUE;
+	return (gboolean)(__geoxml_get_element_index((GdomeElement*)parameters) == 1);
 }
 
 /*
@@ -229,9 +227,9 @@ geoxml_parameters_get_is_in_group(GeoXmlParameters * parameters)
 	if (parameters == NULL)
 		return FALSE;
 	return !strcmp(
-			gdome_el_tagName((GdomeElement*)gdome_el_parentNode(
-				(GdomeElement*)parameters, &exception), &exception)->str,
-		       "group") ? TRUE : FALSE;
+		gdome_el_tagName((GdomeElement*)gdome_el_parentNode(
+			(GdomeElement*)parameters, &exception), &exception)->str,
+		"group") ? TRUE : FALSE;
 }
 
 void

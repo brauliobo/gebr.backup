@@ -1,5 +1,5 @@
-/*   libgebr - G�BR Library
- *   Copyright (C) 2007 G�BR core team (http://gebr.sourceforge.net)
+/*   libgebr - GeBR Library
+ *   Copyright (C) 2007 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ geoxml_sequence_previous(GeoXmlSequence ** sequence);
  * Example:
  * \code
  * GeoXmlSequence * i;
- * geoxml_sequence_get_sequence(sequence, &sequence, 0);
+ * geoxml_[parent]_get_[sequence]([parent], &i, 0);
  * while (i != NULL) {
  * 	...
  * 	geoxml_sequence_next(&i);
@@ -122,6 +122,16 @@ int
 geoxml_sequence_next(GeoXmlSequence ** sequence);
 
 /**
+ * Clone \p sequence element and add it to the end of the sequence.
+ * Returns the cloned sequence element.
+ *
+ * If \p sequence is NULL or is not a sequence, NULL is returned.
+ *
+ */
+GeoXmlSequence *
+geoxml_sequence_append_clone(GeoXmlSequence * sequence);
+
+/**
  * Removes \p sequence from its sequence. It is not deleted and can be reinserted
  * into sequence using geoxml_sequence_prepend or geoxml_sequence_append.
  *
@@ -134,16 +144,6 @@ geoxml_sequence_next(GeoXmlSequence ** sequence);
  */
 int
 geoxml_sequence_remove(GeoXmlSequence * sequence);
-
-/**
- * Clone \p sequence element and add it to the end of the sequence.
- * Returns the cloned sequence element.
- *
- * If \p sequence is NULL or is not a sequence, NULL is returned.
- *
- */
-GeoXmlSequence *
-geoxml_sequence_append_clone(GeoXmlSequence * sequence);
 
 /**
  * Moves \p sequence to the position before \p position. If \p position is NULL then

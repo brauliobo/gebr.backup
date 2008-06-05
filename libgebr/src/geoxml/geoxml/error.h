@@ -94,14 +94,14 @@ enum GEOXML_RETV {
 	 */
 	GEOXML_RETV_PARAMETER_NOT_ENUM		= -10,
 	/**
-	 * The action could not be done because group
-	 * container of the parameter was instatiated.
-	 */
-	GEOXML_RETV_MORE_THAN_ONE_INSTANCES	= -11,
-	/**
 	 * The user tried to create a parameter that reference to itself
 	 */
 	GEOXML_RETV_REFERENCE_TO_ITSELF		= -12,
+	/**
+	 * The operation could not be made because it is not the
+	 * first instance of a group, aka the master instance.
+	 */
+	GEOXML_RETV_NOT_MASTER_INSTANCE		= -13,
 };
 
 #endif //__LIBGEBR_GEOXML_ERROR_H

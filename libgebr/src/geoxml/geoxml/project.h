@@ -70,8 +70,7 @@
  * Therefore, a project is a list of lines files. When a line needs to be
  * read or edited you ask the project for its path (see \ref geoxml_project_get_line_source) and then
  * load it with \ref geoxml_document_load. New liness can be added to a project using
- * \ref geoxml_project_add_line, or removed with \ref geoxml_project_remove_line.
- * Iteration can be done combining \ref geoxml_project_get_line and \ref geoxml_project_next_line.
+ * \ref geoxml_project_append_line.
  *
  * \see line.h
  */
