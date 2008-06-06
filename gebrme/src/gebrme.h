@@ -43,8 +43,8 @@ struct gebrme {
 	GtkWidget *		invisible;
 	GtkAccelGroup *		accel_group;
 	struct ui_menu		ui_menu;
-	struct ui_menu		ui_program;
-	struct ui_menu		ui_parameter;
+	struct ui_program	ui_program;
+	struct ui_parameter	ui_parameter;
 
 	GData *			parameter_types;
 

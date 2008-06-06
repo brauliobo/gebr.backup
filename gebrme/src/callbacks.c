@@ -367,6 +367,26 @@ on_parameter_duplicate_activate(void)
 }
 
 /*
+ * Function: on_parameter_up_activate
+ * Call <parameter_up>
+ */
+void
+on_parameter_up_activate(void)
+{
+	parameter_up();
+}
+
+/*
+ * Function: on_parameter_down_activate
+ * Call <parameter_down>
+ */
+void
+on_parameter_down_activate(void)
+{
+	parameter_down();
+}
+
+/*
  * Function: on_parameter_change_type_activate
  * Call <parameter_remove>
  */

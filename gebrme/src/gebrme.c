@@ -81,7 +81,7 @@ gebrme_init(void)
 	gebrme.pixmaps.stock_no = gtk_widget_render_icon(gebrme.invisible, GTK_STOCK_NO, GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
 
 	if (!strcmp(gebrme.config.menu_dir->str, ""))
-		create_preferences_window();
+		preferences_dialog_setup_ui();
 	else
 		menu_load_user_directory();
 	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebrme.ui_menu.list_store), NULL) == 0)

@@ -34,6 +34,13 @@ struct ui_parameter {
 	GtkWidget *		tree_view;
 };
 
+struct ui_parameter_dialog {
+	GtkWidget *		dialog;
+
+	GtkWidget *		default_widget_hbox;
+	GtkWidget *		separator_entry;
+};
+
 void
 parameter_setup_ui(void);
 

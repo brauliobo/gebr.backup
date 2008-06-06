@@ -57,6 +57,12 @@ void
 on_parameter_duplicate_activate(void);
 
 void
+on_parameter_up_activate(void);
+
+void
+on_parameter_down_activate(void);
+
+void
 on_parameter_change_type_activate(void);
 
 void

@@ -20,6 +20,7 @@
 #include <gui/utils.h>
 
 #include "groupparameters.h"
+#include "gebrme.h"
 #include "support.h"
 #include "parameter.h"
 
@@ -28,6 +29,18 @@
  * Create dialog for editing a parameter of type group
  */
 
+/*
+ * Declarations
+ */
+
+static void
+parameter_group_exclusive_changed(GtkToggleButton * toggle_button);
+static void
+parameter_group_expanded_changed(GtkToggleButton * toggle_button);
+static void
+parameter_group_multiple_changed(GtkToggleButton * toggle_button);
+static gboolean
+parameter_group_instances_changed(GtkSpinButton * spinbutton);
 
 /*
  * Section: Public
@@ -184,4 +197,83 @@ parameter_group_dialog_setup_ui(void)
 
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+}
+
+/*
+ * Section: Private
+ */
+
+static void
+parameter_group_exclusive_changed(GtkToggleButton * toggle_button)
+{
+	if (gtk_toggle_button_get_active(toggle_button) == TRUE)
+		geoxml_parameter_group_set_exclusive(GEOXML_PARAMETER_GROUP(gebrme.parameter),
+			GEOXML_PARAMETER(geoxml_parameters_get_first_parameter(
+				geoxml_parameter_group_get_parameters(GEOXML_PARAMETER_GROUP(gebrme.parameter)))));
+	else
+		geoxml_parameter_group_set_exclusive(GEOXML_PARAMETER_GROUP(gebrme.parameter), NULL);
+	((struct group_parameters_data *)gebrme.parameters_data)->radio_group = NULL;
+
+	/* rebuild parameters' widgets */
+	gtk_container_foreach(GTK_CONTAINER(data->specific_table), (GtkCallback)gtk_widget_destroy, NULL);
+	parameter_create_ui_type_specific(data->specific_table, data);
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+static void
+parameter_group_expanded_changed(GtkToggleButton * toggle_button)
+{
+	geoxml_parameter_group_set_expand(GEOXML_PARAMETER_GROUP(gebrme.parameter),
+		gtk_toggle_button_get_active(toggle_button));
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+static void
+parameter_group_multiple_changed(GtkToggleButton * toggle_button)
+{
+	geoxml_parameter_group_set_can_instanciate(GEOXML_PARAMETER_GROUP(gebrme.parameter),
+		gtk_toggle_button_get_active(toggle_button));
+
+	/* rebuild parameters' widgets */
+	gtk_container_foreach(GTK_CONTAINER(data->specific_table), (GtkCallback)gtk_widget_destroy, NULL);
+	parameter_create_ui_type_specific(data->specific_table, data);
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+static gboolean
+parameter_group_instances_changed(GtkSpinButton * spin_button)
+{
+	gint	i, instanciate;
+
+	instanciate = gtk_spin_button_get_value(spin_button) -
+	geoxml_parameter_group_get_instances(GEOXML_PARAMETER_GROUP(gebrme.parameter));
+	if (instanciate == 0)
+		return FALSE;
+
+	if (instanciate > 0)
+		for (i = 0; i < instanciate; ++i)
+			geoxml_parameter_group_instanciate(GEOXML_PARAMETER_GROUP(gebrme.parameter));
+	else {
+		GeoXmlParameter *	exclusive;
+
+		exclusive = geoxml_parameter_group_get_exclusive(GEOXML_PARAMETER_GROUP(gebrme.parameter));
+
+		for (i = instanciate; i < 0; ++i)
+			geoxml_parameter_group_deinstanciate(GEOXML_PARAMETER_GROUP(gebrme.parameter));
+
+		/* the exclusive parameter was deleted? */
+		if (exclusive != geoxml_parameter_group_get_exclusive(GEOXML_PARAMETER_GROUP(gebrme.parameter)))
+			group_parameters_reset_exclusive(data->specific.group.parameters_data);
+	}
+
+	/* rebuild parameters' widgets */
+	gtk_container_foreach(GTK_CONTAINER(data->specific_table), (GtkCallback)gtk_widget_destroy, NULL);
+	parameter_create_ui_type_specific(data->specific_table, data);
+
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+
+	return FALSE;
 }

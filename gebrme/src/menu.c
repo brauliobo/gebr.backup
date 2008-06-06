@@ -457,6 +457,16 @@ menu_saved_status_set(MenuStatus status)
 }
 
 /*
+ * Function: menu_saved_status_set_unsaved
+ * Connected to signal of components which change the menu
+ */
+void
+menu_saved_status_set_unsaved(void)
+{
+	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+/*
  * Section: Private
  */
 

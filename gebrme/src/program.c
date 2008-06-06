@@ -62,31 +62,31 @@ static void
 program_dialog_setup_ui(void);
 
 static void
-program_stdin_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program);
+program_stdin_changed(GtkToggleButton * togglebutton);
 
 static void
-program_stdout_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program);
+program_stdout_changed(GtkToggleButton * togglebutton);
 
 static void
-program_stderr_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program);
+program_stderr_changed(GtkToggleButton * togglebutton);
 
 static gboolean
-program_title_changed(GtkEntry * entry, GeoXmlProgram * program);
+program_title_changed(GtkEntry * entry);
 
 static gboolean
-program_binary_changed(GtkEntry * entry, GeoXmlProgram * program);
+program_binary_changed(GtkEntry * entry);
 
 static gboolean
-program_description_changed(GtkEntry * entry, GeoXmlProgram * program);
+program_description_changed(GtkEntry * entry);
 
 static void
-program_help_view(GtkButton * button, GeoXmlProgram * program);
+program_help_view(GtkButton * button);
 
 static void
-program_help_edit(GtkButton * button, GeoXmlProgram * program);
+program_help_edit(GtkButton * button);
 
 static gboolean
-program_url_changed(GtkEntry * entry, GeoXmlProgram * program);
+program_url_changed(GtkEntry * entry);
 
 /*
  * Section: Public
@@ -263,6 +263,10 @@ program_select_iter(GtkTreeIter iter)
 	parameter_load_program();
 }
 
+/*
+ * Function: program_popup_menu
+ * Agregate action to the popup menu and shows it.
+ */
 static GtkMenu *
 program_popup_menu(GtkWidget * tree_view)
 {
@@ -298,6 +302,10 @@ program_popup_menu(GtkWidget * tree_view)
 	return GTK_MENU(menu);
 }
 
+/*
+ * Function: program_move_up
+ * Action move up
+ */
 static void
 program_move_up(GtkMenuItem * menu_item)
 {
@@ -314,6 +322,10 @@ program_move_up(GtkMenuItem * menu_item)
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
+/*
+ * Function: program_move_down
+ * Move down current selected program
+ */
 static void
 program_move_down(GtkMenuItem * menu_item)
 {
@@ -330,6 +342,10 @@ program_move_down(GtkMenuItem * menu_item)
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
+/*
+ * Function: program_dialog_setup_ui
+ * Open dialog to configure current program
+ */
 static void
 program_dialog_setup_ui(void)
 {
@@ -527,38 +543,50 @@ program_dialog_setup_ui(void)
 	gtk_widget_destroy(dialog);
 }
 
+/*
+ * Function: program_stdin_changed
+ * Sync UI to XML
+ */
 static void
-program_stdin_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program)
+program_stdin_changed(GtkToggleButton * togglebutton)
 {
-	geoxml_program_set_stdin(program, gtk_toggle_button_get_active(togglebutton));
+	geoxml_program_set_stdin(gebrme.program, gtk_toggle_button_get_active(togglebutton));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
+/*
+ * Function: program_stdout_changed
+ * Sync UI to XML
+ */
 static void
-program_stdout_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program)
+program_stdout_changed(GtkToggleButton * togglebutton)
 {
-	geoxml_program_set_stdout(program, gtk_toggle_button_get_active(togglebutton));
+	geoxml_program_set_stdout(gebrme.program, gtk_toggle_button_get_active(togglebutton));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
+/*
+ * Function: program_stderr_changed
+ * Sync UI to XML
+ */
 static void
-program_stderr_changed(GtkToggleButton * togglebutton, GeoXmlProgram * program)
+program_stderr_changed(GtkToggleButton * togglebutton)
 {
-	geoxml_program_set_stderr(program, gtk_toggle_button_get_active(togglebutton));
+	geoxml_program_set_stderr(gebrme.program, gtk_toggle_button_get_active(togglebutton));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
 static gboolean
-program_title_changed(GtkEntry * entry, GeoXmlProgram * program)
+program_title_changed(GtkEntry * entry)
 {
 	GtkWidget *	program_label;
 
 	g_object_get(G_OBJECT(entry), "user-data", &program_label, NULL);
 
-	geoxml_program_set_title(program, gtk_entry_get_text(GTK_ENTRY(entry)));
+	geoxml_program_set_title(gebrme.program, gtk_entry_get_text(GTK_ENTRY(entry)));
 	gtk_label_set_text(GTK_LABEL(program_label), gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
@@ -566,45 +594,45 @@ program_title_changed(GtkEntry * entry, GeoXmlProgram * program)
 }
 
 static gboolean
-program_binary_changed(GtkEntry * entry, GeoXmlProgram * program)
+program_binary_changed(GtkEntry * entry)
 {
-	geoxml_program_set_binary(program, gtk_entry_get_text(GTK_ENTRY(entry)));
+	geoxml_program_set_binary(gebrme.program, gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 	return FALSE;
 }
 
 static gboolean
-program_description_changed(GtkEntry * entry, GeoXmlProgram * program)
+program_description_changed(GtkEntry * entry)
 {
-	geoxml_program_set_description(program, gtk_entry_get_text(GTK_ENTRY(entry)));
+	geoxml_program_set_description(gebrme.program, gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 	return FALSE;
 }
 
 static void
-program_help_view(GtkButton * button, GeoXmlProgram * program)
+program_help_view(GtkButton * button)
 {
-	help_show(geoxml_program_get_help(program));
+	help_show(geoxml_program_get_help(gebrme.program));
 }
 
 static void
-program_help_edit(GtkButton * button, GeoXmlProgram * program)
+program_help_edit(GtkButton * button)
 {
 	GString *	help;
 
-	help = help_edit(geoxml_program_get_help(program), program);
-	geoxml_program_set_help(program, help->str);
+	help = help_edit(geoxml_program_get_help(gebrme.program), gebrme.program);
+	geoxml_program_set_help(gebrme.program, help->str);
 	g_string_free(help, TRUE);
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
 static gboolean
-program_url_changed(GtkEntry * entry, GeoXmlProgram * program)
+program_url_changed(GtkEntry * entry)
 {
-	geoxml_program_set_url(program, gtk_entry_get_text(GTK_ENTRY(entry)));
+	geoxml_program_set_url(gebrme.program, gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 	return FALSE;

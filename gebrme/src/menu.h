@@ -20,6 +20,8 @@
 
 #include <glib.h>
 
+#include <geoxml.h>
+
 typedef enum {
         MENU_STATUS_SAVED,
         MENU_STATUS_UNSAVED
@@ -66,5 +68,8 @@ menu_cleanup(void);
 
 void
 menu_saved_status_set(MenuStatus status);
+
+void
+menu_saved_status_set_unsaved(void);
 
 #endif //__MENU_H

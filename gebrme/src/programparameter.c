@@ -17,7 +17,6 @@
 
 #include <gui/utils.h>
 
-#include "parameters.h"
 #include "support.h"
 #include "parameter.h"
 #include "menu.h"
