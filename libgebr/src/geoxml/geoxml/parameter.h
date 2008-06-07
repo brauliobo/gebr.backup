@@ -30,12 +30,12 @@
  * 	node [
  * 		color = palegreen2, style = filled
  * 		fontname = "Bitstream Vera Sans"
- *   fontsize = 9
+ * 		fontsize = 9
  * 		shape = record
  * 	]
  * 	edge [
  * 		fontname = "Bitstream Vera Sans"
- *   fontsize = 9
+ * 		fontsize = 9
  * 	]
  *
  * 	"GeoXmlDocument" [ URL = "\ref document.h" ];
@@ -100,6 +100,10 @@ typedef struct geoxml_parameter GeoXmlParameter;
  */
 enum GEOXML_PARAMETERTYPE {
 	/**
+	 * In case of error.
+	 */
+	GEOXML_PARAMETERTYPE_UNKNOWN = 0,
+	/**
 	 * A parameter able to store a string on it.
 	 */
 	GEOXML_PARAMETERTYPE_STRING,
@@ -136,10 +140,6 @@ enum GEOXML_PARAMETERTYPE {
 	 * then this parameter will only have its value as a difference.
 	 */
 	GEOXML_PARAMETERTYPE_REFERENCE,
-	/**
-	 * In case of error.
-	 */
-	GEOXML_PARAMETERTYPE_UNKNOWN,
 };
 
 #include <glib.h>

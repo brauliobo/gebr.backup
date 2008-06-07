@@ -288,7 +288,7 @@ __geoxml_document_validate_doc(GdomeDocument * document)
 
 					type = GEOXML_PARAMETERTYPE_UNKNOWN;
 					tag_name = gdome_el_tagName(old_parameter, &exception);
-					for (i = 0; i < parameter_type_to_str_len; ++i)
+					for (i = 1; i <= parameter_type_to_str_len; ++i)
 						if (!strcmp(parameter_type_to_str[i], tag_name->str)) {
 							type = (enum GEOXML_PARAMETERTYPE)i;
 							break;

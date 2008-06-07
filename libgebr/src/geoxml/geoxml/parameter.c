@@ -37,7 +37,7 @@ struct geoxml_parameter {
 	GdomeElement * element;
 };
 
-const char * parameter_type_to_str[] = {
+const char * parameter_type_to_str[] = { "",
 	"string", "int", "file",
 	"flag", "float", "range",
 	"enum", "group", "reference"
@@ -182,7 +182,7 @@ geoxml_parameter_get_type(GeoXmlParameter * parameter)
 
 	tag_name = gdome_el_tagName(__geoxml_parameter_get_type_element(parameter), &exception);
 
-	for (i = 0; i < parameter_type_to_str_len; ++i)
+	for (i = 1; i <= parameter_type_to_str_len; ++i)
 		if (!strcmp(parameter_type_to_str[i], tag_name->str))
 			return (enum GEOXML_PARAMETERTYPE)i;
 

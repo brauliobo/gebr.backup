@@ -63,17 +63,20 @@ __geoxml_sequence_check(GeoXmlSequence * sequence)
 		parameters = (GeoXmlParameters*)gdome_el_parentNode((GdomeElement*)sequence, &exception);
 		if (__geoxml_parameters_group_check(parameters) == FALSE)
 			return GEOXML_RETV_NOT_MASTER_INSTANCE;
+
+		return GEOXML_RETV_SUCCESS;
 	}
-	return (gboolean)!strcmp(name->str, "value") ||
-		(gboolean)!strcmp(name->str, "option") ||
-		((gboolean)!strcmp(name->str, "parameters") &&
-			geoxml_parameters_get_is_in_group((GeoXmlParameters*)sequence)) ||
-		(gboolean)!strcmp(name->str, "program") ||
-		(gboolean)!strcmp(name->str, "category") ||
-		(gboolean)!strcmp(name->str, "revision") ||
-		(gboolean)!strcmp(name->str, "flow") ||
-		(gboolean)!strcmp(name->str, "path") ||
-		(gboolean)!strcmp(name->str, "line");
+	/* on success, return 0 = GEOXML_RETV_SUCCESS */
+	return strcmp(name->str, "value") &&
+		strcmp(name->str, "option") &&
+		(strcmp(name->str, "parameters") &&
+			geoxml_parameters_get_is_in_group((GeoXmlParameters*)sequence)) &&
+		strcmp(name->str, "program") &&
+		strcmp(name->str, "category") &&
+		strcmp(name->str, "revision") &&
+		strcmp(name->str, "flow") &&
+		strcmp(name->str, "path") &&
+		strcmp(name->str, "line");
 }
 
 /**
@@ -152,7 +155,7 @@ __geoxml_sequence_move_after(GeoXmlSequence * sequence, GeoXmlSequence * positio
 		return exception == GDOME_NOEXCEPTION_ERR
 			? GEOXML_RETV_SUCCESS : GEOXML_RETV_DIFFERENT_SEQUENCES;
 	} else {
-		geoxml_sequence_next(&position);
+		__geoxml_sequence_next(&position);
 		gdome_n_insertBefore(gdome_el_parentNode((GdomeElement*)sequence, &exception),
 			(GdomeNode*)sequence, (GdomeNode*)position, &exception);
 
