@@ -164,23 +164,27 @@ parameter_load_program(void)
 void
 parameter_new(void)
 {
-	GeoXmlParameter *	parameter;
-	GtkTreeIter		parent;
+	GtkTreeIter		iter;
 
 	if (gebrme.parameter != NULL && geoxml_parameter_get_is_program_parameter(gebrme.parameter) == FALSE) {
 		GeoXmlSequence *	first_instance;
+		GtkTreeIter		parent;
 
 		geoxml_parameter_group_get_instance(GEOXML_PARAMETER_GROUP(gebrme.parameter), &first_instance, 0);
-		parameter = geoxml_parameters_append_parameter(GEOXML_PARAMETERS(first_instance),
-			GEOXML_PARAMETERTYPE_STRING);
 		parameter_get_selected(&parent);
+
+		iter = parameter_append_to_ui(
+			geoxml_parameters_append_parameter(GEOXML_PARAMETERS(first_instance),
+				GEOXML_PARAMETERTYPE_STRING),
+			&parent);
 	} else {
-		parameter = geoxml_parameters_append_parameter(
-			geoxml_program_get_parameters(gebrme.program),
-			GEOXML_PARAMETERTYPE_STRING);
-		parent = NULL;
+		iter = parameter_append_to_ui(
+			geoxml_parameters_append_parameter(
+				geoxml_program_get_parameters(gebrme.program),
+				GEOXML_PARAMETERTYPE_STRING),
+			NULL);
 	}
-	parameter_select_iter(parameter_append_to_ui(parameter, parent));
+	parameter_select_iter(iter);
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
@@ -548,9 +552,9 @@ parameter_dialog_setup_ui(void)
 
 	label_entry = gtk_entry_new();
 	gtk_widget_show(label_entry);
-	gtk_table_attach(GTK_TABLE(table), label_entry, 0, 1, row, ++row,
+	gtk_table_attach(GTK_TABLE(table), label_entry, 0, 1, row, row+1,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-		(GtkAttachOptions)(0), 0, 0);
+		(GtkAttachOptions)(0), 0, 0), ++row;
 	g_signal_connect(label_entry, "changed",
 		(GCallback)menu_saved_status_set_unsaved, NULL);
 
@@ -566,9 +570,9 @@ parameter_dialog_setup_ui(void)
 
 	keyword_entry = gtk_entry_new();
 	gtk_widget_show(keyword_entry);
-	gtk_table_attach(GTK_TABLE(table), keyword_entry, 1, 2, row, ++row,
+	gtk_table_attach(GTK_TABLE(table), keyword_entry, 1, 2, row, row+1,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-		(GtkAttachOptions)(0), 0, 0);
+		(GtkAttachOptions)(0), 0, 0), ++row;
 	g_signal_connect(keyword_entry, "changed",
 		(GCallback)menu_saved_status_set_unsaved, NULL);
 
@@ -587,9 +591,9 @@ parameter_dialog_setup_ui(void)
 
 	required_check_button = gtk_check_button_new();
 	gtk_widget_show(required_check_button);
-	gtk_table_attach(GTK_TABLE(table), required_check_button, 1, 2, row, ++row,
+	gtk_table_attach(GTK_TABLE(table), required_check_button, 1, 2, row, row+1,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-		(GtkAttachOptions)(0), 0, 0);
+		(GtkAttachOptions)(0), 0, 0), ++row;
 	g_signal_connect(required_check_button, "toggled",
 		(GCallback)menu_saved_status_set_unsaved, NULL);
 
@@ -605,9 +609,9 @@ parameter_dialog_setup_ui(void)
 
 	is_list_check_button = gtk_check_button_new();
 	gtk_widget_show(is_list_check_button);
-	gtk_table_attach(GTK_TABLE(table), is_list_check_button, 1, 2, row, ++row,
+	gtk_table_attach(GTK_TABLE(table), is_list_check_button, 1, 2, row, row+1,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-		(GtkAttachOptions)(0), 0, 0);
+		(GtkAttachOptions)(0), 0, 0), ++row;
 	g_signal_connect(is_list_check_button, "toggled",
 		(GCallback)parameter_is_list_changed, ui);
 
@@ -623,9 +627,9 @@ parameter_dialog_setup_ui(void)
 
 	ui->separator_entry = separator_entry = gtk_entry_new();
 	gtk_widget_show(separator_entry);
-	gtk_table_attach(GTK_TABLE(table), separator_entry, 1, 2, row, ++row,
+	gtk_table_attach(GTK_TABLE(table), separator_entry, 1, 2, row, row+1,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-		(GtkAttachOptions)(0), 0, 0);
+		(GtkAttachOptions)(0), 0, 0), ++row;
 	g_signal_connect(separator_entry, "changed",
 		(GCallback)parameter_separator_changed, NULL);
 
@@ -660,9 +664,9 @@ parameter_dialog_setup_ui(void)
 
 		type_combo = gtk_combo_box_new_text();
 		gtk_widget_show(type_combo);
-		gtk_table_attach(GTK_TABLE(table), type_combo, 1, 2, row, ++row,
+		gtk_table_attach(GTK_TABLE(table), type_combo, 1, 2, row, row+1,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions)(0), 0, 0);
+			(GtkAttachOptions)(0), 0, 0), ++row;
 		gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("File"));
 		gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("Directory"));
 		g_signal_connect(type_combo, "changed",
@@ -701,9 +705,9 @@ parameter_dialog_setup_ui(void)
 		gtk_misc_set_alignment(GTK_MISC(min_label), 0, 0.5);
 		min_entry = gtk_entry_new();
 		gtk_widget_show(min_entry);
-		gtk_table_attach(GTK_TABLE(table), min_entry, 1, 2, row, ++row,
+		gtk_table_attach(GTK_TABLE(table), min_entry, 1, 2, row, row+1,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions)(0), 0, 0);
+			(GtkAttachOptions)(0), 0, 0), ++row;
 		g_signal_connect(min_entry, "changed",
 			(GCallback)parameter_range_min_changed, parameter_widget);
 
@@ -718,9 +722,9 @@ parameter_dialog_setup_ui(void)
 		gtk_misc_set_alignment(GTK_MISC(max_label), 0, 0.5);
 		max_entry = gtk_entry_new();
 		gtk_widget_show(max_entry);
-		gtk_table_attach(GTK_TABLE(table), max_entry, 1, 2, row, ++row,
+		gtk_table_attach(GTK_TABLE(table), max_entry, 1, 2, row, row+1,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions)(0), 0, 0);
+			(GtkAttachOptions)(0), 0, 0), ++row;
 		g_signal_connect(max_entry, "changed",
 			(GCallback)parameter_range_max_changed, parameter_widget);
 
@@ -735,9 +739,9 @@ parameter_dialog_setup_ui(void)
 		gtk_misc_set_alignment(GTK_MISC(inc_label), 0, 0.5);
 		inc_entry = gtk_entry_new();
 		gtk_widget_show(inc_entry);
-		gtk_table_attach(GTK_TABLE(table), inc_entry, 1, 2, row, ++row,
+		gtk_table_attach(GTK_TABLE(table), inc_entry, 1, 2, row, row+1,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions)(0), 0, 0);
+			(GtkAttachOptions)(0), 0, 0), ++row;
 		g_signal_connect(inc_entry, "changed",
 			(GCallback)parameter_range_inc_changed, parameter_widget);
 
@@ -752,9 +756,9 @@ parameter_dialog_setup_ui(void)
 		gtk_misc_set_alignment(GTK_MISC(digits_label), 0, 0.5);
 		digits_entry = gtk_entry_new();
 		gtk_widget_show(digits_entry);
-		gtk_table_attach(GTK_TABLE(table), digits_entry, 1, 2, row, ++row,
+		gtk_table_attach(GTK_TABLE(table), digits_entry, 1, 2, row, row+1,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions)(0), 0, 0);
+			(GtkAttachOptions)(0), 0, 0), ++row;
 		g_signal_connect(digits_entry, "changed",
 			(GCallback)parameter_range_digits_changed, parameter_widget);
 
@@ -790,9 +794,9 @@ parameter_dialog_setup_ui(void)
 		enum_option_edit = enum_option_edit_new(GEOXML_ENUM_OPTION(option),
 			GEOXML_PROGRAM_PARAMETER(gebrme.parameter));
 		gtk_widget_show(enum_option_edit);
-		gtk_table_attach(GTK_TABLE(table), enum_option_edit, 1, 2, row, ++row,
+		gtk_table_attach(GTK_TABLE(table), enum_option_edit, 1, 2, row, row+1,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-			(GtkAttachOptions)(0), 0, 0);
+			(GtkAttachOptions)(0), 0, 0), ++row;
 		g_signal_connect(GTK_OBJECT(enum_option_edit), "changed",
 			GTK_SIGNAL_FUNC(parameter_enum_options_changed), ui);
 		g_object_set(G_OBJECT(enum_option_edit), "user-data", parameter_widget, NULL);
