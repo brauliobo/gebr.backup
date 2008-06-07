@@ -147,7 +147,7 @@ menu_new(void)
 
 	/* select it */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
-// 	gtk_tree_selection_select_iter(selection, &iter);
+	gtk_tree_selection_select_iter(selection, &iter);
 	menu_selected();
 
 	/* add a new program for the user to play with */

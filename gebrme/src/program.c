@@ -254,13 +254,9 @@ program_select_iter(GtkTreeIter iter)
 {
 	GtkTreeSelection *	tree_selection;
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_program.list_store), &iter,
-		PROGRAM_XMLPOINTER, &gebrme.program,
-		-1);
 	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_program.tree_view));
 	gtk_tree_selection_select_iter(tree_selection, &iter);
-
-	parameter_load_program();
+	program_selected();
 }
 
 /*

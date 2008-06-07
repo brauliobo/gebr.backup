@@ -164,7 +164,8 @@ parameter_load_program(void)
 void
 parameter_new(void)
 {
-	GeoXmlParameter *		parameter;
+	GeoXmlParameter *	parameter;
+	GtkTreeIter		parent;
 
 	if (gebrme.parameter != NULL && geoxml_parameter_get_is_program_parameter(gebrme.parameter) == FALSE) {
 		GeoXmlSequence *	first_instance;
@@ -172,12 +173,14 @@ parameter_new(void)
 		geoxml_parameter_group_get_instance(GEOXML_PARAMETER_GROUP(gebrme.parameter), &first_instance, 0);
 		parameter = geoxml_parameters_append_parameter(GEOXML_PARAMETERS(first_instance),
 			GEOXML_PARAMETERTYPE_STRING);
+		parameter_get_selected(&parent);
 	} else {
 		parameter = geoxml_parameters_append_parameter(
 			geoxml_program_get_parameters(gebrme.program),
 			GEOXML_PARAMETERTYPE_STRING);
+		parent = NULL;
 	}
-	parameter_select_iter(parameter_append_to_ui(parameter, NULL));
+	parameter_select_iter(parameter_append_to_ui(parameter, parent));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
@@ -319,9 +322,8 @@ parameter_change_type_setup_ui(void)
 	gtk_widget_show(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 
-	/* TODO: do not use combobox index directly */
-	geoxml_parameter_set_type(gebrme.parameter,
-		(enum GEOXML_PARAMETERTYPE)gtk_combo_box_get_active(GTK_COMBO_BOX(type_combo)));
+	geoxml_parameter_set_type(gebrme.parameter, (enum GEOXML_PARAMETERTYPE)
+		g_datalist_get_data(&gebrme.parameter_types, gtk_combo_box_get_active_text(GTK_COMBO_BOX(type_combo))));
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 
 	gtk_widget_destroy(dialog);
@@ -375,6 +377,7 @@ parameter_select_iter(GtkTreeIter iter)
 		-1);
 	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_parameter.tree_view));
 	gtk_tree_selection_select_iter(tree_selection, &iter);
+	parameter_selected();
 }
 
 /*
@@ -438,6 +441,9 @@ parameter_activated(void)
 		parameter_dialog_setup_ui();
 	else
 		parameter_group_dialog_setup_ui();
+
+	/* reload parameter into iter */
+	parameter_load_to_iter(gebrme.parameter, &iter);
 }
 
 /*
@@ -491,6 +497,7 @@ parameter_dialog_setup_ui(void)
 
 	GtkWidget *			dialog;
 	GtkWidget *			table;
+	int				row = 0;
 
 	GtkWidget *			label_label;
 	GtkWidget *			label_entry;
@@ -523,7 +530,7 @@ parameter_dialog_setup_ui(void)
 		NULL);
 	gtk_widget_set_size_request(dialog, 400, 300);
 
-	table = gtk_table_new(10, 2, FALSE);
+	table = gtk_table_new(15, 2, FALSE);
 	gtk_widget_show(table);
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 5);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 6);
@@ -534,14 +541,14 @@ parameter_dialog_setup_ui(void)
 	 */
 	label_label = gtk_label_new(_("Label:"));
 	gtk_widget_show(label_label);
-	gtk_table_attach(GTK_TABLE(table), label_label, 0, 1, 0, 1,
+	gtk_table_attach(GTK_TABLE(table), label_label, 0, 1, row, row+1,
 		(GtkAttachOptions)(GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(label_label), 0, 0.5);
 
 	label_entry = gtk_entry_new();
 	gtk_widget_show(label_entry);
-	gtk_table_attach(GTK_TABLE(table), label_entry, 0, 1, 1, 2,
+	gtk_table_attach(GTK_TABLE(table), label_entry, 0, 1, row, ++row,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(label_entry, "changed",
@@ -552,32 +559,35 @@ parameter_dialog_setup_ui(void)
 	 */
 	keyword_label = gtk_label_new(_("Keyword:"));
 	gtk_widget_show(keyword_label);
-	gtk_table_attach(GTK_TABLE(table), keyword_label, 0, 1, 0, 1,
+	gtk_table_attach(GTK_TABLE(table), keyword_label, 0, 1, row, row+1,
 		(GtkAttachOptions)(GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(keyword_label), 0, 0.5);
 
 	keyword_entry = gtk_entry_new();
 	gtk_widget_show(keyword_entry);
-	gtk_table_attach(GTK_TABLE(table), keyword_entry, 1, 2, 0, 1,
+	gtk_table_attach(GTK_TABLE(table), keyword_entry, 1, 2, row, ++row,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(keyword_entry, "changed",
 		(GCallback)menu_saved_status_set_unsaved, NULL);
+
+	/* skip default */
+	++row;
 
 	/*
 	 * Required
 	 */
 	required_label = gtk_label_new(_("Required:"));
 	gtk_widget_show(required_label);
-	gtk_table_attach(GTK_TABLE(table), required_label, 0, 1, 1, 2,
+	gtk_table_attach(GTK_TABLE(table), required_label, 0, 1, row, row+1,
 		(GtkAttachOptions)(GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(required_label), 0, 0.5);
 
 	required_check_button = gtk_check_button_new();
 	gtk_widget_show(required_check_button);
-	gtk_table_attach(GTK_TABLE(table), required_check_button, 1, 2, 1, 2,
+	gtk_table_attach(GTK_TABLE(table), required_check_button, 1, 2, row, ++row,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(required_check_button, "toggled",
@@ -588,14 +598,14 @@ parameter_dialog_setup_ui(void)
 	 */
 	is_list_label = gtk_label_new(_("Is list?:"));
 	gtk_widget_show(is_list_label);
-	gtk_table_attach(GTK_TABLE(table), is_list_label, 0, 1, 2, 3,
+	gtk_table_attach(GTK_TABLE(table), is_list_label, 0, 1, row, row+1,
 		(GtkAttachOptions)(GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(is_list_label), 0, 0.5);
 
 	is_list_check_button = gtk_check_button_new();
 	gtk_widget_show(is_list_check_button);
-	gtk_table_attach(GTK_TABLE(table), is_list_check_button, 1, 2, 2, 3,
+	gtk_table_attach(GTK_TABLE(table), is_list_check_button, 1, 2, row, ++row,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(is_list_check_button, "toggled",
@@ -606,14 +616,14 @@ parameter_dialog_setup_ui(void)
 	 */
 	separator_label = gtk_label_new(_("List separator:"));
 	gtk_widget_show(separator_label);
-	gtk_table_attach(GTK_TABLE(table), separator_label, 0, 1, 3, 4,
+	gtk_table_attach(GTK_TABLE(table), separator_label, 0, 1, row, row+1,
 		(GtkAttachOptions)(GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(separator_label), 0, 0.5);
 
 	ui->separator_entry = separator_entry = gtk_entry_new();
 	gtk_widget_show(separator_entry);
-	gtk_table_attach(GTK_TABLE(table), separator_entry, 1, 2, 3, 4,
+	gtk_table_attach(GTK_TABLE(table), separator_entry, 1, 2, row, ++row,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(separator_entry, "changed",
@@ -643,14 +653,14 @@ parameter_dialog_setup_ui(void)
 		 */
 		type_label = gtk_label_new(_("Type:"));
 		gtk_widget_show(type_label);
-		gtk_table_attach(GTK_TABLE(table), type_label, 0, 1, 2, 3,
+		gtk_table_attach(GTK_TABLE(table), type_label, 0, 1, row, row+1,
 			(GtkAttachOptions)(GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		gtk_misc_set_alignment(GTK_MISC(type_label), 0, 0.5);
 
 		type_combo = gtk_combo_box_new_text();
 		gtk_widget_show(type_combo);
-		gtk_table_attach(GTK_TABLE(table), type_combo, 1, 2, 2, 3,
+		gtk_table_attach(GTK_TABLE(table), type_combo, 1, 2, row, ++row,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("File"));
@@ -685,13 +695,13 @@ parameter_dialog_setup_ui(void)
 		 */
 		min_label = gtk_label_new(_("Minimum:"));
 		gtk_widget_show(min_label);
-		gtk_table_attach(GTK_TABLE(table), min_label, 0, 1, 2, 3,
+		gtk_table_attach(GTK_TABLE(table), min_label, 0, 1, row, row+1,
 			(GtkAttachOptions)(GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		gtk_misc_set_alignment(GTK_MISC(min_label), 0, 0.5);
 		min_entry = gtk_entry_new();
 		gtk_widget_show(min_entry);
-		gtk_table_attach(GTK_TABLE(table), min_entry, 1, 2, 2, 3,
+		gtk_table_attach(GTK_TABLE(table), min_entry, 1, 2, row, ++row,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		g_signal_connect(min_entry, "changed",
@@ -702,13 +712,13 @@ parameter_dialog_setup_ui(void)
 		 */
 		max_label = gtk_label_new(_("Maximum:"));
 		gtk_widget_show(max_label);
-		gtk_table_attach(GTK_TABLE(table), max_label, 0, 1, 4, 5,
+		gtk_table_attach(GTK_TABLE(table), max_label, 0, 1, row, row+1,
 			(GtkAttachOptions)(GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		gtk_misc_set_alignment(GTK_MISC(max_label), 0, 0.5);
 		max_entry = gtk_entry_new();
 		gtk_widget_show(max_entry);
-		gtk_table_attach(GTK_TABLE(table), max_entry, 1, 2, 4, 5,
+		gtk_table_attach(GTK_TABLE(table), max_entry, 1, 2, row, ++row,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		g_signal_connect(max_entry, "changed",
@@ -719,13 +729,13 @@ parameter_dialog_setup_ui(void)
 		 */
 		inc_label = gtk_label_new(_("Increment:"));
 		gtk_widget_show(inc_label);
-		gtk_table_attach(GTK_TABLE(table), inc_label, 0, 1, 5, 6,
+		gtk_table_attach(GTK_TABLE(table), inc_label, 0, 1, row, row+1,
 			(GtkAttachOptions)(GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		gtk_misc_set_alignment(GTK_MISC(inc_label), 0, 0.5);
 		inc_entry = gtk_entry_new();
 		gtk_widget_show(inc_entry);
-		gtk_table_attach(GTK_TABLE(table), inc_entry, 1, 2, 5, 6,
+		gtk_table_attach(GTK_TABLE(table), inc_entry, 1, 2, row, ++row,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		g_signal_connect(inc_entry, "changed",
@@ -736,13 +746,13 @@ parameter_dialog_setup_ui(void)
 		 */
 		digits_label = gtk_label_new(_("Digits:"));
 		gtk_widget_show(digits_label);
-		gtk_table_attach(GTK_TABLE(table), digits_label, 0, 1, 6, 7,
+		gtk_table_attach(GTK_TABLE(table), digits_label, 0, 1, row, row+1,
 			(GtkAttachOptions)(GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		gtk_misc_set_alignment(GTK_MISC(digits_label), 0, 0.5);
 		digits_entry = gtk_entry_new();
 		gtk_widget_show(digits_entry);
-		gtk_table_attach(GTK_TABLE(table), digits_entry, 1, 2, 6, 7,
+		gtk_table_attach(GTK_TABLE(table), digits_entry, 1, 2, row, ++row,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		g_signal_connect(digits_entry, "changed",
@@ -771,7 +781,7 @@ parameter_dialog_setup_ui(void)
 		vbox = gtk_vbox_new(FALSE, 0);
 		gtk_widget_show(vbox);
 		gtk_box_pack_start(GTK_BOX(vbox), options_label, FALSE, FALSE, 0);
-		gtk_table_attach(GTK_TABLE(table), vbox, 0, 1, 2, 3,
+		gtk_table_attach(GTK_TABLE(table), vbox, 0, 1, row, row+1,
 			(GtkAttachOptions)(GTK_FILL),
 			(GtkAttachOptions)(GTK_FILL), 0, 0);
 		gtk_misc_set_alignment(GTK_MISC(options_label), 0, 0.5);
@@ -780,7 +790,7 @@ parameter_dialog_setup_ui(void)
 		enum_option_edit = enum_option_edit_new(GEOXML_ENUM_OPTION(option),
 			GEOXML_PROGRAM_PARAMETER(gebrme.parameter));
 		gtk_widget_show(enum_option_edit);
-		gtk_table_attach(GTK_TABLE(table), enum_option_edit, 1, 2, 2, 3,
+		gtk_table_attach(GTK_TABLE(table), enum_option_edit, 1, 2, row, ++row,
 			(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 			(GtkAttachOptions)(0), 0, 0);
 		g_signal_connect(GTK_OBJECT(enum_option_edit), "changed",
@@ -797,9 +807,9 @@ parameter_dialog_setup_ui(void)
 	/*
 	 * Default value
 	 */
-	default_label = gtk_label_new(_("Default:"));
+	default_label = gtk_label_new(_("Default value:"));
 	gtk_widget_show(default_label);
-	gtk_table_attach(GTK_TABLE(table), default_label, 0, 1, 1, 2,
+	gtk_table_attach(GTK_TABLE(table), default_label, 0, 1, 2, 3,
 		(GtkAttachOptions)(GTK_FILL),
 		(GtkAttachOptions)(GTK_FILL), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(default_label), 0, 0.5);
@@ -811,7 +821,7 @@ parameter_dialog_setup_ui(void)
 	default_widget = parameter_widget->widget;
 	gtk_widget_show(default_widget);
 	gtk_box_pack_start(GTK_BOX(ui->default_widget_hbox), default_widget, TRUE, TRUE, 0);
-	gtk_table_attach(GTK_TABLE(table), default_widget_hbox, 1, 2, 1, 2,
+	gtk_table_attach(GTK_TABLE(table), default_widget_hbox, 1, 2, 2, 3,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
 	parameter_widget_set_auto_submit_callback(parameter_widget,

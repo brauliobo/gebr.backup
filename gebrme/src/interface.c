@@ -330,6 +330,22 @@ gebrme_create_window(void)
 	/*
 	 * Notebook page: Parameter
 	 */
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_widget_show(vbox);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(_("Parameter")));
 
+	toolbar = gtk_toolbar_new();
+	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
+
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.parameter.new)), -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.parameter.delete)), -1);
+
+	gtk_widget_show_all(toolbar);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+
+	parameter_setup_ui();
+	gtk_box_pack_start(GTK_BOX(vbox), gebrme.ui_parameter.widget, TRUE, TRUE, 0);
 
 }

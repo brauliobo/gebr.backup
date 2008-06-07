@@ -112,8 +112,7 @@ help_subst_fields(GString * help, GeoXmlProgram * program)
 	}
 
 	/* Parameter's description replacement */
-	if (program != NULL)
-	{
+	if (program != NULL) {
 		GString *      label;
 
 		parameters = geoxml_program_get_parameters(program);
@@ -125,7 +124,7 @@ help_subst_fields(GString * help, GeoXmlProgram * program)
 			g_string_append_printf(label, "              "
 					       "<li><span class=\"label\">[%s]</span>"
 					       " detailed description comes here.</li>\n\n",
-					       geoxml_program_parameter_get_label(GEOXML_PROGRAM_PARAMETER(parameter)));
+					       geoxml_parameter_get_label(GEOXML_PARAMETER(parameter)));
 			geoxml_sequence_next(&parameter);
 		}
 		if ((ptr = strstr(help->str, "              "
