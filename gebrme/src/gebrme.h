@@ -46,8 +46,6 @@ struct gebrme {
 	struct ui_program	ui_program;
 	struct ui_parameter	ui_parameter;
 
-	GData *			parameter_types;
-
 	/* actions */
 	struct gebrme_actions {
 		struct {

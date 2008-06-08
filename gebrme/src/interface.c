@@ -341,6 +341,8 @@ gebrme_create_window(void)
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.parameter.new)), -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.parameter.delete)), -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+		GTK_TOOL_ITEM(gtk_action_create_tool_item(gebrme.actions.parameter.change_type)), -1);
 
 	gtk_widget_show_all(toolbar);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);

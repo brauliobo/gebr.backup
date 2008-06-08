@@ -42,6 +42,38 @@
  * Declarations
  */
 
+/* bidirecional relation of combo box index and type enumerations */
+struct {
+	enum GEOXML_PARAMETERTYPE	type;
+	guint				index;
+	gchar *				title;
+} combo_type_map [] = {
+	{GEOXML_PARAMETERTYPE_STRING, 0, _("string")},
+	{GEOXML_PARAMETERTYPE_INT, 1, _("integer")},
+	{GEOXML_PARAMETERTYPE_FILE, 2, _("file")},
+	{GEOXML_PARAMETERTYPE_FLAG, 3, _("flag")},
+	{GEOXML_PARAMETERTYPE_FLOAT, 4, _("real number")},
+	{GEOXML_PARAMETERTYPE_RANGE, 5, _("range")},
+	{GEOXML_PARAMETERTYPE_ENUM, 6, _("enum")},
+	{GEOXML_PARAMETERTYPE_GROUP, 7, _("group")},
+};
+
+int
+combo_type_map_get_index(enum GEOXML_PARAMETERTYPE type)
+{
+	int i;
+	for (i = 0; i < 7; ++i)
+		if (combo_type_map[i].type == type)
+			return combo_type_map[i].index;
+	return -1;
+}
+
+#define combo_type_map_get_type(index) \
+	combo_type_map[index].type
+
+#define combo_type_map_get_title(type) \
+	combo_type_map[combo_type_map_get_index(type)].title
+
 static GtkTreeIter
 parameter_append_to_ui(GeoXmlParameter * parameter, GtkTreeIter * parent);
 static void
@@ -278,12 +310,16 @@ parameter_change_type_setup_ui(void)
 	GtkWidget *	type_label;
 	GtkWidget *	type_combo;
 
+	GtkTreeIter	iter;
+	if (parameter_get_selected(&iter) == FALSE)
+		return;
+
 	dialog = gtk_dialog_new_with_buttons(_("Edit menu"),
 		GTK_WINDOW(gebrme.window),
 		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 		NULL);
-	gtk_widget_set_size_request(dialog, 400, 300);
+	gtk_widget_set_size_request(dialog, 300, 100);
 
 	table = gtk_table_new(1, 2, FALSE);
 	gtk_widget_show(table);
@@ -303,31 +339,28 @@ parameter_change_type_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), type_combo, 1, 2, 0, 1,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0);
-	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_id_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_STRING));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_id_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_INT));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_id_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_FILE));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_id_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_FLAG));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_id_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_FLOAT));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_id_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_RANGE));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-		g_datalist_id_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_ENUM));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("string"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("integer"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("file"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("flag"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("real number"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("range"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("enum"));
 	/* does not allow group-in-group */
 	if (geoxml_parameter_get_is_in_group(gebrme.parameter))
-		gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo),
-			g_datalist_id_get_data(&gebrme.parameter_types, GEOXML_PARAMETERTYPE_GROUP));
-	gtk_combo_box_set_active(GTK_COMBO_BOX(type_combo), geoxml_parameter_get_type(gebrme.parameter));
+		gtk_combo_box_append_text(GTK_COMBO_BOX(type_combo), _("group"));
+	gtk_combo_box_set_active(GTK_COMBO_BOX(type_combo), combo_type_map_get_index(
+		geoxml_parameter_get_type(gebrme.parameter)));
 
 	gtk_widget_show(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 
-	geoxml_parameter_set_type(gebrme.parameter, (enum GEOXML_PARAMETERTYPE)
-		g_datalist_get_data(&gebrme.parameter_types, gtk_combo_box_get_active_text(GTK_COMBO_BOX(type_combo))));
+	geoxml_parameter_set_type(gebrme.parameter, combo_type_map_get_type(
+		gtk_combo_box_get_active(GTK_COMBO_BOX(type_combo))));
+
+	/* Update iter */
+	parameter_load_to_iter(gebrme.parameter, &iter);
+	
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 
 	gtk_widget_destroy(dialog);
@@ -361,8 +394,7 @@ parameter_load_to_iter(GeoXmlParameter * parameter, GtkTreeIter * iter)
 {
 	gtk_tree_store_set(gebrme.ui_parameter.tree_store, iter,
 		PARAMETER_LABEL, geoxml_parameter_get_label(parameter),
-		PARAMETER_TYPE, g_datalist_id_get_data(&gebrme.parameter_types,
-			geoxml_parameter_get_type(parameter)),
+		PARAMETER_TYPE, combo_type_map_get_title(geoxml_parameter_get_type(parameter)),
 		PARAMETER_XMLPOINTER, parameter,
 		-1);
 }
@@ -500,6 +532,7 @@ parameter_dialog_setup_ui(void)
 	enum GEOXML_PARAMETERTYPE	type;
 
 	GtkWidget *			dialog;
+	GtkWidget *			scrolled_window;
 	GtkWidget *			table;
 	int				row = 0;
 
@@ -534,9 +567,16 @@ parameter_dialog_setup_ui(void)
 		NULL);
 	gtk_widget_set_size_request(dialog, 400, 300);
 
+	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_widget_show(scrolled_window);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), scrolled_window, TRUE, TRUE, 5);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
+		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_window), GTK_SHADOW_IN);
+
 	table = gtk_table_new(15, 2, FALSE);
 	gtk_widget_show(table);
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 5);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), table);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 6);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 6);
 
@@ -552,7 +592,7 @@ parameter_dialog_setup_ui(void)
 
 	label_entry = gtk_entry_new();
 	gtk_widget_show(label_entry);
-	gtk_table_attach(GTK_TABLE(table), label_entry, 0, 1, row, row+1,
+	gtk_table_attach(GTK_TABLE(table), label_entry, 1, 2, row, row+1,
 		(GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
 		(GtkAttachOptions)(0), 0, 0), ++row;
 	g_signal_connect(label_entry, "changed",
@@ -820,7 +860,7 @@ parameter_dialog_setup_ui(void)
 
 	/* the hbox is used to make possible to replace the widget inside, keeping it
 	 * on the same position on the table */
-	default_widget_hbox = gtk_hbox_new(FALSE, 0);
+	ui->default_widget_hbox = default_widget_hbox = gtk_hbox_new(FALSE, 0);
 	gtk_widget_show(default_widget_hbox);
 	default_widget = parameter_widget->widget;
 	gtk_widget_show(default_widget);
@@ -839,8 +879,10 @@ parameter_dialog_setup_ui(void)
 		geoxml_program_parameter_get_required(program_parameter));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(is_list_check_button),
 		geoxml_program_parameter_get_is_list(program_parameter));
-	gtk_entry_set_text(GTK_ENTRY(separator_entry),
-		geoxml_program_parameter_get_list_separator(program_parameter));
+	gtk_widget_set_sensitive(separator_entry, geoxml_program_parameter_get_is_list(program_parameter));
+	if (geoxml_program_parameter_get_is_list(program_parameter) == TRUE)
+		gtk_entry_set_text(GTK_ENTRY(separator_entry),
+			geoxml_program_parameter_get_list_separator(program_parameter));
 
 	gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -850,6 +892,11 @@ parameter_dialog_setup_ui(void)
 		gtk_entry_get_text(GTK_ENTRY(keyword_entry)));
 	geoxml_program_parameter_set_required(GEOXML_PROGRAM_PARAMETER(gebrme.parameter),
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(required_check_button)));
+	geoxml_program_parameter_set_be_list(GEOXML_PROGRAM_PARAMETER(gebrme.parameter),
+		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(is_list_check_button)));
+	if (geoxml_program_parameter_get_is_list(program_parameter) == TRUE)
+		geoxml_program_parameter_set_list_separator(GEOXML_PROGRAM_PARAMETER(gebrme.parameter),
+			gtk_entry_get_text(GTK_ENTRY(separator_entry)));
 
 	/* frees */
 	gtk_widget_destroy(ui->dialog);

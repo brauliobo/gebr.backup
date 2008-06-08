@@ -83,7 +83,7 @@ menu_setup_ui(void)
 	GtkWidget *		scrolled_window;
 	GtkTreeViewColumn *	col;
 	GtkCellRenderer *	renderer;
-	
+
 	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_widget_show(scrolled_window);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
