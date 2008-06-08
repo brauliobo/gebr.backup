@@ -69,9 +69,13 @@ void
 assembly_interface(void)
 {
 	GtkWidget *	vboxmain;
-	GtkWidget *	mainmenu;
+	GtkWidget *	menu_bar;
 	GtkWidget *	pagetitle;
-	GClosure *      closure;
+	GClosure *	closure;
+
+	GtkWidget *	menu;
+	GtkWidget *	menu_item;
+	GtkWidget *	child_menu_item;
 
 	gebr.about = about_setup_ui("GêBR", _("A plug-and-play environment to\nseismic processing tools"));
 	gebr.ui_server_list = server_list_setup_ui();
@@ -95,43 +99,128 @@ assembly_interface(void)
 	/*
 	 * Actions
 	 */
-	/* status */
-	gebr.actions.configured = gtk_radio_action_new("configured", _("Configured"), NULL, NULL, 1<<0);
-	gebr.actions.disabled = gtk_radio_action_new("disabled", _("Disabled"), NULL, NULL, 1<<1);
-	gebr.actions.unconfigured = gtk_radio_action_new("unconfigured", _("Unconfigured"), NULL, NULL, 1<<2);
-	gtk_radio_action_set_group(gebr.actions.disabled,
-		gtk_radio_action_get_group(gebr.actions.configured));
+	/* Flow */
+	gebr.actions.flow.new = gtk_action_new("flow_new",
+		NULL, NULL, GTK_STOCK_NEW);
+	g_signal_connect(gebr.actions.flow.new, "activate",
+		(GCallback)on_flow_new_activate, NULL);
+	gebr.actions.flow.delete = gtk_action_delete("flow_delete",
+		NULL, NULL, GTK_STOCK_DELETE);
+	g_signal_connect(gebr.actions.flow.delete, "activate",
+		(GCallback)on_flow_delete_activate, NULL);
+	gebr.actions.flow.properties = gtk_action_properties("flow_properties",
+		NULL, NULL, GTK_STOCK_PROPERTIES);
+	g_signal_connect(gebr.actions.flow.properties, "activate",
+		(GCallback)on_flow_properties_activate, NULL);
+	gebr.actions.flow.io = gtk_action_io("flow_io",
+		_("Input and Output"), NULL, GTK_STOCK_JUMP_TO);
+	g_signal_connect(gebr.actions.flow.io, "activate",
+		(GCallback)on_flow_io_activate, NULL);
+	gebr.actions.flow.execute = gtk_action_execute("flow_execute",
+		NULL, NULL, GTK_STOCK_EXECUTE);
+	g_signal_connect(gebr.actions.flow.execute, "activate",
+		(GCallback)on_flow_execute_activate, NULL);
+	gebr.actions.flow.import = gtk_action_import("flow_import",
+		_("Import"), NULL, NULL);
+	g_signal_connect(gebr.actions.flow.import, "activate",
+		(GCallback)on_flow_import_activate, NULL);
+	gebr.actions.flow.export = gtk_action_export("flow_export",
+		_("Export"), NULL, GTK_STOCK_CONVERT);
+	g_signal_connect(gebr.actions.flow.export, "activate",
+		(GCallback)on_flow_export_activate, NULL);
+	gebr.actions.flow.export_as_menu = gtk_action_export_as_menu("flow_export_as_menu",
+		NULL, NULL, GTK_STOCK_NEW);
+	g_signal_connect(gebr.actions.flow.export_as_menu, "activate",
+		(GCallback)on_flow_export_as_menu_activate, NULL);
+
+	/* Flow Edition */
+	gebr.actions.flow_edition.configured = gtk_radio_action_new("configured", _("Configured"), NULL, NULL, 1<<0);
+	gebr.actions.flow_edition.disabled = gtk_radio_action_new("disabled", _("Disabled"), NULL, NULL, 1<<1);
+	gebr.actions.flow_edition.unconfigured = gtk_radio_action_new("unconfigured", _("Unconfigured"), NULL, NULL, 1<<2);
+	gtk_radio_action_set_group(gebr.actions.flow_edition.disabled,
+		gtk_radio_action_get_group(gebr.actions.flow_edition.configured));
 	gtk_radio_action_set_group(gebr.actions.unconfigured,
-		gtk_radio_action_get_group(gebr.actions.configured));
-	g_signal_connect(gebr.actions.configured, "activate",
+		gtk_radio_action_get_group(gebr.actions.flow_edition.configured));
+	g_signal_connect(gebr.actions.flow_edition.configured, "activate",
 		GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
-	g_signal_connect(gebr.actions.disabled, "activate",
+	g_signal_connect(gebr.actions.flow_edition.disabled, "activate",
 		GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
-	g_signal_connect(gebr.actions.unconfigured, "activate",
+	g_signal_connect(gebr.actions.flow_edition.unconfigured, "activate",
 		GTK_SIGNAL_FUNC(on_flow_component_status_activate), NULL);
 
 	/*
 	 * Create the main menu
 	 */
-	mainmenu = gtk_menu_bar_new();
-	gtk_box_pack_start(GTK_BOX(vboxmain), mainmenu, FALSE, FALSE, 0);
+	menu_bar = gtk_menu_bar_new();
+	gtk_box_pack_start(GTK_BOX(vboxmain), menu_bar, FALSE, FALSE, 0);
 
 	gebr.menu[MENUBAR_PROJECT] = assembly_project_menu();
-	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_PROJECT]);
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), gebr.menu[MENUBAR_PROJECT]);
+
+	menu = gtk_menu_new();
+	menu_item = gtk_menu_item_new_with_label(_("Flow"));
+	gtk_menu_item_set_child_menu_item(GTK_MENU_ITEM(menu_item), menu);
+
+	/* New entry */
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
+			GTK_SIGNAL_FUNC(on_flow_new_activate), NULL);
+	/* Import entry */
+	child_menu_item = gtk_image_menu_item_new_with_label(_("Import"));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
+			GTK_SIGNAL_FUNC(on_flow_import_activate), NULL);
+	/* Export entry */
+	child_menu_item = gtk_image_menu_item_new_with_label(_("Export"));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
+			GTK_SIGNAL_FUNC(on_flow_export_activate), NULL);
+	/* Export as Menu entry */
+	child_menu_item = gtk_image_menu_item_new_with_label(_("Export as Menu"));
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(child_menu_item), gtk_image_new_from_stock(GTK_STOCK_CONVERT, 1));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
+			 GTK_SIGNAL_FUNC(on_flow_export_as_menu_activate), NULL);
+	/* Delete entry */
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
+			GTK_SIGNAL_FUNC(on_flow_delete_activate), NULL);
+
+	/* Separation line */
+	child_menu_item = gtk_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+
+	/* Properties entry */
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
+			GTK_SIGNAL_FUNC(on_flow_properties_activate), NULL);
+	/* Input/Output entry */
+	child_menu_item = gtk_image_menu_item_new_with_label(_("Input/Output"));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
+			GTK_SIGNAL_FUNC(on_flow_io_activate), NULL);
+	/* Execute entry */
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
+			GTK_SIGNAL_FUNC(on_flow_execute_activate), NULL);
 
 	gebr.menu[MENUBAR_LINE] = assembly_line_menu();
-	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_LINE]);
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), gebr.menu[MENUBAR_LINE]);
 
 	gebr.menu[MENUBAR_FLOW] = assembly_flow_menu();
-	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_FLOW]);
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), gebr.menu[MENUBAR_FLOW]);
 
 	gebr.menu[MENUBAR_FLOW_COMPONENTS] = assembly_flow_components_menu();
-	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), gebr.menu[MENUBAR_FLOW_COMPONENTS]);
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), gebr.menu[MENUBAR_FLOW_COMPONENTS]);
 
-	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), assembly_config_menu());
-	gtk_menu_bar_append(GTK_MENU_BAR(mainmenu), assembly_help_menu());
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), assembly_config_menu());
+	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), assembly_help_menu());
 
-	gtk_widget_show_all(mainmenu);
+	gtk_widget_show_all(menu_bar);
 
 	/*
 	 * Create a notebook to hold several pages
@@ -165,7 +254,9 @@ assembly_interface(void)
 	gtk_widget_show_all(gebr.ui_log->widget);
 	gtk_box_pack_end(GTK_BOX(vboxmain), gebr.ui_log->widget, FALSE, FALSE, 0);
 
-	/* Create some hot-keys */
+	/*
+	 * Create some hot-keys
+	 */
 	gebr.accel_group = gtk_accel_group_new();
 	gtk_window_add_accel_group(GTK_WINDOW(gebr.window), gebr.accel_group);
 	/* CTRL+R - Run current flow */
@@ -184,44 +275,44 @@ assembly_interface(void)
 static GtkWidget *
 assembly_project_menu(void)
 {
-	GtkWidget *	menuitem;
+	GtkWidget *	menu_item;
 	GtkWidget *	menu;
-	GtkWidget *	submenu;
+	GtkWidget *	child_menu_item;
 
 	menu = gtk_menu_new();
 	gtk_menu_set_title(GTK_MENU(menu), _("Project menu"));
 
 	/* New entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_project_new_activate), NULL);
 	/* Delete entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_project_delete_activate), NULL);
 	/* Refresh entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_REFRESH, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REFRESH, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_project_refresh_activate), NULL);
 
 	/* Separation line */
-	submenu = gtk_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+	child_menu_item = gtk_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
 
 	/* Properties entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_project_properties_activate), NULL);
 
-	menuitem = gtk_menu_item_new_with_label(_("Project"));
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
+	menu_item = gtk_menu_item_new_with_label(_("Project"));
+	gtk_menu_item_set_child_menu_item(GTK_MENU_ITEM(menu_item), menu);
+	gtk_menu_item_right_justify(GTK_MENU_ITEM(menu_item));
 
-	return menuitem;
+	return menu_item;
 }
 
 /*
@@ -232,17 +323,17 @@ assembly_project_menu(void)
 static GtkWidget *
 assembly_line_menu(void)
 {
-	GtkWidget *	menuitem;
+	GtkWidget *	menu_item;
 	GtkWidget *	menu;
-	GtkWidget *	submenu;
+	GtkWidget *	child_menu_item;
 
 	menu = gtk_menu_new();
 	gtk_menu_set_title(GTK_MENU(menu), _("Line menu"));
 
 	/* New entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_line_new_activate), NULL);
 	/*
 	* TODO: Add entry
@@ -252,109 +343,38 @@ assembly_line_menu(void)
 	* an existent line. Would that be useful?
 	*/
 	/* TODO:
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
 	*/
 	/* Delete entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_line_delete_activate), NULL);
 
 	/* Separation line */
-	submenu = gtk_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+	child_menu_item = gtk_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
 
 	/* Paths */
-	submenu = gtk_image_menu_item_new_with_label(_("Paths"));
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(submenu), gtk_image_new_from_stock(GTK_STOCK_DIRECTORY, 1));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_with_label(_("Paths"));
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(child_menu_item), gtk_image_new_from_stock(GTK_STOCK_DIRECTORY, 1));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_line_path_activate), NULL);
 
 	/* Properties entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_line_properties_activate), NULL);
 
-	menuitem = gtk_menu_item_new_with_label(_("Line"));
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
+	menu_item = gtk_menu_item_new_with_label(_("Line"));
+	gtk_menu_item_set_child_menu_item(GTK_MENU_ITEM(menu_item), menu);
+	gtk_menu_item_right_justify(GTK_MENU_ITEM(menu_item));
 
-	return menuitem;
+	return menu_item;
 }
-
-/*
- * Function: assembly_flow_menu
- * Assembly the menu to the flow page
- *
- */
-static GtkWidget *
-assembly_flow_menu(void)
-{
-	GtkWidget *	menuitem;
-	GtkWidget *	menu;
-	GtkWidget *	submenu;
-
-	menu = gtk_menu_new();
-	gtk_menu_set_title(GTK_MENU(menu), _("Flow menu"));
-
-	/* New entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_flow_new_activate), NULL);
-	/* Import entry */
-	submenu = gtk_image_menu_item_new_with_label(_("Import"));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_flow_import_activate), NULL);
-	/* Export entry */
-	submenu = gtk_image_menu_item_new_with_label(_("Export"));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_flow_export_activate), NULL);
-	/* Export as Menu entry */
-	submenu = gtk_image_menu_item_new_with_label(_("Export as Menu"));
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(submenu), gtk_image_new_from_stock(GTK_STOCK_CONVERT, 1));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			 GTK_SIGNAL_FUNC(on_flow_export_as_menu_activate), NULL);
-	/* Delete entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_flow_delete_activate), NULL);
-
-	/* Separation line */
-	submenu = gtk_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-
-	/* Properties entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_flow_properties_activate), NULL);
-	/* Input/Output entry */
-	submenu = gtk_image_menu_item_new_with_label(_("Input/Output"));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_flow_io_activate), NULL);
-	/* Execute entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
-			GTK_SIGNAL_FUNC(on_flow_execute_activate), NULL);
-
-	menuitem = gtk_menu_item_new_with_label(_("Flow"));
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
-
-	return menuitem;
-}
-
-
 /*
  * Function: assembly_flow_components_menu
  * Assembly the menu to the flow edit page associated to flow_components
@@ -363,37 +383,37 @@ assembly_flow_menu(void)
 static GtkWidget *
 assembly_flow_components_menu(void)
 {
-	GtkWidget *	menuitem;
+	GtkWidget *	menu_item;
 	GtkWidget *	menu;
-	GtkWidget *	submenu;
+	GtkWidget *	child_menu_item;
 
 	menu = gtk_menu_new();
 	gtk_menu_set_title(GTK_MENU(menu), _("Flow component menu"));
 
 	/* Properties entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_flow_component_properties_activate), NULL);
 	/* Refresh entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_REFRESH, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REFRESH, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_flow_component_refresh_activate), NULL);
 
 	/* separator */
-	submenu = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
+	child_menu_item = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
 	/* component status items */
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_action_create_menu_item(GTK_ACTION(gebr.actions.configured)));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_action_create_menu_item(GTK_ACTION(gebr.actions.disabled)));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_action_create_menu_item(GTK_ACTION(gebr.actions.unconfigured)));
 
-	menuitem = gtk_menu_item_new_with_label(_("Flow component"));
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
+	menu_item = gtk_menu_item_new_with_label(_("Flow component"));
+	gtk_menu_item_set_child_menu_item(GTK_MENU_ITEM(menu_item), menu);
+	gtk_menu_item_right_justify(GTK_MENU_ITEM(menu_item));
 
-	return menuitem;
+	return menu_item;
 }
 
 /*
@@ -404,30 +424,30 @@ assembly_flow_components_menu(void)
 static GtkWidget *
 assembly_config_menu(void)
 {
-	GtkWidget *	menuitem;
+	GtkWidget *	menu_item;
 	GtkWidget *	menu;
-	GtkWidget *	submenu;
+	GtkWidget *	child_menu_item;
 
 	menu = gtk_menu_new();
 	gtk_menu_set_title(GTK_MENU(menu), _("Config menu"));
 
 	/* Preferences entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			G_CALLBACK(on_configure_preferences_activate), NULL);
 
 	/* Server entry */
-	submenu =  gtk_image_menu_item_new_with_mnemonic(_("_Servers"));
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(submenu), gtk_image_new_from_stock(GTK_STOCK_NETWORK, 1));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item =  gtk_image_menu_item_new_with_mnemonic(_("_Servers"));
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(child_menu_item), gtk_image_new_from_stock(GTK_STOCK_NETWORK, 1));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_configure_servers_activate), NULL);
 
-	menuitem = gtk_menu_item_new_with_label(_("Configure"));
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
+	menu_item = gtk_menu_item_new_with_label(_("Configure"));
+	gtk_menu_item_set_child_menu_item(GTK_MENU_ITEM(menu_item), menu);
 
-	return menuitem;
+	return menu_item;
 }
 
 /*
@@ -438,22 +458,22 @@ assembly_config_menu(void)
 static GtkWidget *
 assembly_help_menu(void)
 {
-	GtkWidget *	menuitem;
+	GtkWidget *	menu_item;
 	GtkWidget *	menu;
-	GtkWidget *	submenu;
+	GtkWidget *	child_menu_item;
 
 	menu = gtk_menu_new();
 	gtk_menu_set_title(GTK_MENU(menu), _("Help menu"));
 
 	/* About entry */
-	submenu = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenu);
-	g_signal_connect(GTK_OBJECT(submenu), "activate",
+	child_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), child_menu_item);
+	g_signal_connect(GTK_OBJECT(child_menu_item), "activate",
 			GTK_SIGNAL_FUNC(on_help_about_activate), NULL);
 
-	menuitem = gtk_menu_item_new_with_label(_("Help"));
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-	gtk_menu_item_right_justify(GTK_MENU_ITEM(menuitem));
+	menu_item = gtk_menu_item_new_with_label(_("Help"));
+	gtk_menu_item_set_child_menu_item(GTK_MENU_ITEM(menu_item), menu);
+	gtk_menu_item_right_justify(GTK_MENU_ITEM(menu_item));
 
-	return menuitem;
+	return menu_item;
 }

@@ -147,6 +147,8 @@ geoxml_parameter_set_type(GeoXmlParameter * parameter, enum GEOXML_PARAMETERTYPE
 {
 	if (parameter == NULL)
 		return FALSE;
+	if (type == GEOXML_PARAMETERTYPE_UNKNOWN || type == GEOXML_PARAMETERTYPE_REFERENCE)
+		return FALSE;
 
 	GdomeElement *		old_type_element;
 
@@ -175,9 +177,9 @@ enum GEOXML_PARAMETERTYPE
 geoxml_parameter_get_type(GeoXmlParameter * parameter)
 {
 	if (parameter == NULL)
-		return GEOXML_PARAMETERTYPE_STRING;
+		return GEOXML_PARAMETERTYPE_UNKNOWN;
 
-	GdomeDOMString*		tag_name;
+	GdomeDOMString *	tag_name;
 	int			i;
 
 	tag_name = gdome_el_tagName(__geoxml_parameter_get_type_element(parameter), &exception);

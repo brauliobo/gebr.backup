@@ -217,23 +217,28 @@ parameters_reset_to_default(GeoXmlParameters * parameters)
 	GeoXmlSequence *	parameter;
 
 	parameter = geoxml_parameters_get_first_parameter(parameters);
-	while (parameter != NULL) {
-		GeoXmlProgramParameter *	program_parameter;
-
+	for (; parameter != NULL; geoxml_sequence_next(&parameter)) {
 		if (geoxml_parameter_get_type(GEOXML_PARAMETER(parameter)) == GEOXML_PARAMETERTYPE_GROUP) {
-			parameters_reset_to_default(
-				geoxml_parameter_group_get_parameters(GEOXML_PARAMETER_GROUP(parameter)));
+			GeoXmlSequence *	instance;
 
-			geoxml_parameter_group_set_selected(GEOXML_PARAMETER_GROUP(parameter),
-				geoxml_parameter_group_get_exclusive(GEOXML_PARAMETER_GROUP(parameter)));
+			geoxml_parameter_group_get_instance(GEOXML_PARAMETER_GROUP(parameter), &instance, 0);
+			for (; instance != NULL; geoxml_sequence_next(&instance)) {
+				parameters_reset_to_default(GEOXML_PARAMETERS(instance));
+				geoxml_parameters_set_selected(GEOXML_PARAMETERS(instance),
+					geoxml_parameters_get_exclusive(GEOXML_PARAMETERS(instance)));
+			}
 
-			geoxml_sequence_next(&parameter);
 			continue;
 		}
-		program_parameter = GEOXML_PROGRAM_PARAMETER(parameter);
-		geoxml_program_parameter_set_value(program_parameter,			geoxml_program_parameter_get_default(program_parameter));
 
-		geoxml_sequence_next(&parameter);
+		GeoXmlProgramParameter *	program_parameter;
+		GeoXmlSequence *		property_value;
+
+		geoxml_program_parameter_get_property_value(
+			GEOXML_PROGRAM_PARAMETER(parameter), &property_value, 0);
+		for (; property_value != NULL; geoxml_sequence_next(&property_value))
+			geoxml_program_parameter_set_value(GEOXML_PROPERTY_VALUE(property_value),
+				geoxml_program_parameter_get_default_value(GEOXML_PROPERTY_VALUE(property_value)));
 	}
 }
 
@@ -321,7 +326,7 @@ parameters_load_parameter(struct ui_parameters * ui_parameters, GeoXmlParameter 
 		gtk_container_add(GTK_CONTAINER(depth_hbox), group_vbox);
 		data->specific.group.vbox = group_vbox;
 
-		if (geoxml_parameter_group_get_can_instanciate(GEOXML_PARAMETER_GROUP(parameter))) {
+		if (geoxml_parameter_group_get_is_instanciable(GEOXML_PARAMETER_GROUP(parameter))) {
 			GtkWidget *	instanciate_button;
 			GtkWidget *	deinstanciate_button;
 

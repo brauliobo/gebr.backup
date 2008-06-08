@@ -41,7 +41,13 @@ GÍBRME:
 
   * proteÁ„o de extens„o na hora de salvar
 
+  * Reestrutacao da interface:
+  Criar uma nova interface com tres abas: Menus, Programas e parametros, cada
+  uma com uma treeview com duas colunas sendo o tituto e a descricao.
+
 LibGÍBR:
+
+  * Compactar documentos
 
   * Padrao para instances, ou se nao nao È possivel restaurar selected para
   default quando o numero de instancia È menos do que no menu original

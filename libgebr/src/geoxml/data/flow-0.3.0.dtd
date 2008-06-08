@@ -82,7 +82,7 @@
 
 <!-- Types of parameters -->
 <!-- Reference (except for groups) -->
-<!ELEMENT reference (value)>
+<!ELEMENT reference (value*)>
 <!ATTLIST reference
    id IDREF #REQUIRED>
 <!-- Integer -->

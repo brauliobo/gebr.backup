@@ -174,7 +174,7 @@ geoxml_parameter_set_be_reference(GeoXmlParameter * parameter, GeoXmlParameter *
 /**
  * Returns \p parameter 's type.
  *
- * If \p parameter is NULL returns \ref GEOXML_PARAMETERTYPE_STRING.
+ * If \p parameter is NULL returns \ref GEOXML_PARAMETERTYPE_UNKNOWN.
  *
  * \see GEOXML_PARAMETERTYPE
  */
