@@ -1,4 +1,4 @@
-/*   GeBR ME - GeBR Menu Editor
+/*   DeBR - GeBR Designer
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #include <gui/utils.h>
 
 #include "parametergroup.h"
-#include "gebrme.h"
+#include "debr.h"
 #include "support.h"
 #include "parameter.h"
 
@@ -64,17 +64,17 @@ parameter_group_dialog_setup_ui(void)
 
 	GeoXmlParameterGroup *	parameter_group;
 
-	if (gtk_tree_store_is_ancestor(gebrme.ui_parameter.tree_store, &iter, NULL) == FALSE) {
-		gtk_tree_model_iter_parent(GTK_TREE_MODEL(gebrme.ui_parameter.tree_store),
+	if (gtk_tree_store_is_ancestor(debr.ui_parameter.tree_store, &iter, NULL) == FALSE) {
+		gtk_tree_model_iter_parent(GTK_TREE_MODEL(debr.ui_parameter.tree_store),
 			&iter, &parent_iter);
 		iter = parent_iter;
 	}
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_parameter.tree_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &iter,
 		PARAMETER_XMLPOINTER, &parameter_group,
 		-1);
 
 	dialog = gtk_dialog_new_with_buttons(_("Edit group"),
-		GTK_WINDOW(gebrme.window),
+		GTK_WINDOW(debr.window),
 		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 		NULL);
@@ -167,7 +167,7 @@ parameter_group_dialog_setup_ui(void)
 		(GtkAttachOptions)(0), 0, 0);
 
 	/* group data -> UI */
-	geoxml_parameter_set_label(gebrme.parameter, gtk_entry_get_text(GTK_ENTRY(label_entry)));
+	geoxml_parameter_set_label(debr.parameter, gtk_entry_get_text(GTK_ENTRY(label_entry)));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(instanciable_check_button),
 		geoxml_parameter_group_get_is_instanciable(parameter_group));
 	gtk_widget_set_sensitive(instances_spin, geoxml_parameter_group_get_is_instanciable(parameter_group));

@@ -1,4 +1,4 @@
-/*   GeBR ME - GeBR Menu Editor
+/*   DeBR - GeBR Designer
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 #include <gui/utils.h>
 
 #include "callbacks.h"
-#include "gebrme.h"
+#include "debr.h"
 #include "support.h"
 #include "preferences.h"
 
@@ -90,9 +90,9 @@ on_menu_save_activate(void)
 	gchar *			path;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebrme.ui_menu.tree_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (debr.ui_menu.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
 
@@ -125,7 +125,7 @@ on_menu_save_as_activate(void)
 	gchar *			filename;
 
 	/* run file chooser */
-	chooser_dialog = gtk_file_chooser_dialog_new(_("Choose file"), GTK_WINDOW(gebrme.window),
+	chooser_dialog = gtk_file_chooser_dialog_new(_("Choose file"), GTK_WINDOW(debr.window),
 		GTK_FILE_CHOOSER_ACTION_SAVE,
 		GTK_STOCK_SAVE, GTK_RESPONSE_YES,
 		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -136,8 +136,8 @@ on_menu_save_as_activate(void)
 	gtk_file_filter_add_pattern(filefilter, "*.mnu");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser_dialog), filefilter);
 
-	if (gebrme.config.menu_dir != NULL && strlen(gebrme.config.menu_dir->str) > 0){
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser_dialog), gebrme.config.menu_dir->str);
+	if (debr.config.menu_dir != NULL && strlen(debr.config.menu_dir->str) > 0){
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser_dialog), debr.config.menu_dir->str);
 	}
 
 	/* show file chooser */
@@ -148,13 +148,13 @@ on_menu_save_as_activate(void)
 	filename = g_path_get_basename(path);
 
 	/* get selection, change the view and save to disk */
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (gebrme.ui_menu.tree_view));
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (debr.ui_menu.tree_view));
 	gtk_tree_selection_get_selected (selection, &model, &iter);
-	gtk_list_store_set (gebrme.ui_menu.list_store, &iter,
+	gtk_list_store_set (debr.ui_menu.list_store, &iter,
 			MENU_FILENAME, filename,
 			MENU_PATH, path,
 			-1);
-	geoxml_document_set_filename(GEOXML_DOC(gebrme.menu), filename);
+	geoxml_document_set_filename(GEOXML_DOC(debr.menu), filename);
 	menu_save(path);
 	g_free(path);
 	g_free(filename);
@@ -177,19 +177,19 @@ on_menu_revert_activate(void)
 	GeoXmlFlow *		menu;
 
 	if (confirm_action_dialog(_("Revert changes"), _("All unsaved changes will be lost. Are you sure you want to revert flow '%s'?"),
-	geoxml_document_get_filename(GEOXML_DOC(gebrme.menu))) == FALSE)
+	geoxml_document_get_filename(GEOXML_DOC(debr.menu))) == FALSE)
 		return;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (gebrme.ui_menu.tree_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (debr.ui_menu.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
 
 	/* is this a new menu? */
 	if (!strlen(path)) {
-		gebrme_message(LOG_ERROR, _("Menu was not saved yet."));
+		debr_message(LOG_ERROR, _("Menu was not saved yet."));
 		g_free(path);
 		return;
 	}
@@ -198,8 +198,8 @@ on_menu_revert_activate(void)
 	if (menu == NULL)
 		return;
 	/* revert to the one in disk */
-	geoxml_document_free(GEOXML_DOC(gebrme.menu));
-	gtk_list_store_set(gebrme.ui_menu.list_store, &iter,
+	geoxml_document_free(GEOXML_DOC(debr.menu));
+	gtk_list_store_set(debr.ui_menu.list_store, &iter,
 		MENU_XMLPOINTER, menu,
 		-1);
 	menu_selected();
@@ -223,20 +223,20 @@ on_menu_delete_activate(void)
 	gchar *			path;
 
 	if (confirm_action_dialog(_("Delete flow"), _("Are you sure you delete flow '%s'?"),
-	geoxml_document_get_filename(GEOXML_DOC(gebrme.menu))) == FALSE)
+	geoxml_document_get_filename(GEOXML_DOC(debr.menu))) == FALSE)
 		return;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
 
 	if (g_unlink(path)) {
 		GtkWidget *	dialog;
 
-		dialog = gtk_message_dialog_new(GTK_WINDOW(gebrme.window),
+		dialog = gtk_message_dialog_new(GTK_WINDOW(debr.window),
 			GTK_DIALOG_MODAL,
 			GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_OK,
@@ -262,20 +262,20 @@ on_menu_close_activate(void)
 
 	GdkPixbuf *		pixbuf;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebrme.ui_menu.tree_view));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 				MENU_STATUS, &pixbuf,
 				-1);
 
-	if (pixbuf == gebrme.pixmaps.stock_no) {
+	if (pixbuf == debr.pixmaps.stock_no) {
 		GtkWidget *	dialog;
 		gboolean	cancel;
 
 		/* TODO: add cancel button */
 		cancel = FALSE;
-		dialog = gtk_message_dialog_new(GTK_WINDOW(gebrme.window),
+		dialog = gtk_message_dialog_new(GTK_WINDOW(debr.window),
 					GTK_DIALOG_MODAL,
 					GTK_MESSAGE_QUESTION,
 					GTK_BUTTONS_YES_NO,
@@ -284,11 +284,11 @@ on_menu_close_activate(void)
 		case GTK_RESPONSE_YES: {
 			gchar *	path;
 
-			gtk_tree_model_get(GTK_TREE_MODEL(gebrme.ui_menu.list_store), &iter,
+			gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 				MENU_PATH, &path,
 				-1);
 
-			geoxml_document_save(GEOXML_DOC(gebrme.menu), path);
+			geoxml_document_save(GEOXML_DOC(debr.menu), path);
 			break;
 		} case GTK_RESPONSE_NO:
 			break;
@@ -302,8 +302,8 @@ on_menu_close_activate(void)
 			return;
 	}
 
-	geoxml_document_free(GEOXML_DOC(gebrme.menu));
-	gtk_list_store_remove(gebrme.ui_menu.list_store, &iter);
+	geoxml_document_free(GEOXML_DOC(debr.menu));
+	gtk_list_store_remove(debr.ui_menu.list_store, &iter);
 
 	if (gtk_tree_model_iter_n_children(model, NULL) == 0)
 		menu_new();
@@ -408,10 +408,10 @@ on_configure_preferences_activate(void)
 
 /*
  * Function: on_help_about_activate
- * Show gebrme.about.dialog
+ * Show debr.about.dialog
  */
 void
 on_help_about_activate(void)
 {
-	gtk_widget_show(gebrme.about.dialog);
+	gtk_widget_show(debr.about.dialog);
 }

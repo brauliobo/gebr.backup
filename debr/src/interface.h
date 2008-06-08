@@ -1,4 +1,4 @@
-/*   GeBR ME - GeBR Menu Editor
+/*   DeBR - GeBR Designer
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,6 @@
 #include <gtk/gtk.h>
 
 void
-gebrme_create_window(void);
+debr_create_window(void);
 
 #endif //__INTERFACE_H

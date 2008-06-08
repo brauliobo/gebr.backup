@@ -1,4 +1,4 @@
-/*   GeBR ME - GeBR Menu Editor
+/*   DeBR - GeBR Designer
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include <misc/utils.h>
 
 #include "help.h"
-#include "gebrme.h"
+#include "debr.h"
 #include "defines.h"
 #include "support.h"
 
@@ -59,7 +59,7 @@ help_subst_fields(GString * help, GeoXmlProgram * program)
 	if (program != NULL)
 		content = (gchar*)geoxml_program_get_title(program);
 	else
-		content = (gchar*)geoxml_document_get_title(GEOXML_DOC(gebrme.menu));
+		content = (gchar*)geoxml_document_get_title(GEOXML_DOC(debr.menu));
 	if (strlen(content)) {
 		ptr = strstr(help->str, "Flow/Program Title");
 
@@ -75,7 +75,7 @@ help_subst_fields(GString * help, GeoXmlProgram * program)
 	if (program != NULL)
 		content = (gchar*)geoxml_program_get_description(program);
 	else
-		content = (gchar*)geoxml_document_get_description(GEOXML_DOC(gebrme.menu));
+		content = (gchar*)geoxml_document_get_description(GEOXML_DOC(debr.menu));
 	if (strlen(content)) {
 		ptr = strstr(help->str, "Put here an one-line description");
 
@@ -88,11 +88,11 @@ help_subst_fields(GString * help, GeoXmlProgram * program)
 	}
 
 	/* Categories replacement */
-	if (geoxml_flow_get_categories_number(gebrme.menu)) {
+	if (geoxml_flow_get_categories_number(debr.menu)) {
 		GeoXmlSequence *	category;
 		GString *		catstr;
 
-		geoxml_flow_get_category(gebrme.menu, &category, 0);
+		geoxml_flow_get_category(debr.menu, &category, 0);
 		catstr = g_string_new(geoxml_value_sequence_get(GEOXML_VALUE_SEQUENCE(category)));
 		geoxml_sequence_next(&category);
 		while (category != NULL) {
@@ -164,22 +164,22 @@ help_show(const gchar * help)
 	help_fix_css(prepared_html);
 
 	/* create temporary filename */
-	html_path = make_temp_filename("gebrme_XXXXXX.html");
+	html_path = make_temp_filename("debr_XXXXXX.html");
 
 	/* open temporary file with help from XML */
 	html_fp = fopen(html_path->str, "w");
 	if (html_fp == NULL) {
-		gebrme_message(LOG_ERROR, _("Could not create an temporary file."));
+		debr_message(LOG_ERROR, _("Could not create an temporary file."));
 		goto out;
 	}
 	fputs(prepared_html->str, html_fp);
 	fclose(html_fp);
 
 	/* Add file to list of files to be removed */
-	gebrme.tmpfiles = g_slist_append(gebrme.tmpfiles, html_path->str);
+	debr.tmpfiles = g_slist_append(debr.tmpfiles, html_path->str);
 
 	/* Launch an external browser */
-	cmdline = g_string_new (gebrme.config.browser->str);
+	cmdline = g_string_new (debr.config.browser->str);
 	g_string_append(cmdline, " file://");
 	g_string_append(cmdline, html_path->str);
 	g_string_append(cmdline, " &");
@@ -208,7 +208,7 @@ help_edit(const gchar * help, GeoXmlProgram * program)
 		/* Read back the help from file */
 		fp = fopen(GEBRME_DATA_DIR "help-template.html", "r");
 		if (fp == NULL) {
-			gebrme_message(LOG_ERROR, _("Could not open template. Please check your installation."));
+			debr_message(LOG_ERROR, _("Could not open template. Please check your installation."));
 			return prepared_html;
 		}
 
@@ -225,23 +225,23 @@ help_edit(const gchar * help, GeoXmlProgram * program)
 	help_fix_css(prepared_html);
 
 	/* load html into a temporary file */
-	html_path = make_temp_filename("gebrme_XXXXXX.html");
+	html_path = make_temp_filename("debr_XXXXXX.html");
 	fp = fopen(html_path->str, "w");
 	if (fp == NULL) {
-		gebrme_message(LOG_ERROR, _("Could not create a temporary file."));
+		debr_message(LOG_ERROR, _("Could not create a temporary file."));
 		goto err2;
 	}
 	fputs(prepared_html->str, fp);
 	fclose(fp);
 
 	/* Add file to list of files to be removed */
-	gebrme.tmpfiles = g_slist_append(gebrme.tmpfiles, html_path->str);
+	debr.tmpfiles = g_slist_append(debr.tmpfiles, html_path->str);
 
 	/* run editor */
 	cmdline = g_string_new("");
-	g_string_printf(cmdline, "%s %s", gebrme.config.htmleditor->str, html_path->str);
+	g_string_printf(cmdline, "%s %s", debr.config.htmleditor->str, html_path->str);
 	if (system(cmdline->str)) {
-		gebrme_message(LOG_ERROR, _("Could not launch editor"));
+		debr_message(LOG_ERROR, _("Could not launch editor"));
 		goto err;
 	}
 	g_string_free(cmdline, TRUE);
@@ -249,7 +249,7 @@ help_edit(const gchar * help, GeoXmlProgram * program)
 	/* read back the help from file */
 	fp = fopen(html_path->str, "r");
 	if (fp == NULL) {
-		gebrme_message(LOG_ERROR, _("Could not read created temporary file."));
+		debr_message(LOG_ERROR, _("Could not read created temporary file."));
 		goto err;
 	}
 	g_string_assign(prepared_html, "");
@@ -265,7 +265,7 @@ help_edit(const gchar * help, GeoXmlProgram * program)
 		converted = g_simple_locale_to_utf8(prepared_html->str);
 		if (converted == NULL) {
 			g_free(converted);
-			gebrme_message(LOG_ERROR, _("Please change the help encoding to UTF-8"));
+			debr_message(LOG_ERROR, _("Please change the help encoding to UTF-8"));
 			goto err;
 		}
 

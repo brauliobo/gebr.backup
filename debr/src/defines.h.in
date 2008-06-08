@@ -18,6 +18,6 @@
 #ifndef __DEFINES_H
 #define __DEFINES_H
 
-#define GEBRME_DATA_DIR		"@prefix@/share/gebrme/"
+#define GEBRME_DATA_DIR		"@prefix@/share/debr/"
 
 #endif //__DEFINES_H

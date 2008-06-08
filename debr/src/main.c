@@ -1,4 +1,4 @@
-/*   GeBR ME - GeBR Menu Editor
+/*   DeBR - GeBR Designer
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include <gtk/gtk.h>
 
 #include "interface.h"
-#include "gebrme.h"
+#include "debr.h"
 
 int
 main(int argc, char *argv[])
@@ -41,8 +41,8 @@ main(int argc, char *argv[])
 	/* temporary: necessary for representing fractional numbers only with comma */
 	setlocale(LC_NUMERIC, "C");
 
-	gebrme_create_window();
-	gtk_widget_show(gebrme.window);
+	debr_create_window();
+	gtk_widget_show(debr.window);
 	gtk_main();
 
 	return 0;

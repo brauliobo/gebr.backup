@@ -1,10 +1,10 @@
-Source: gebrme
+Source: debr
 Priority: extra
 Maintainer: Ricardo Biloti <biloti@gmail.com>
 Build-Depends: debhelper (>= 5)
 Standards-Version: 3.7.2
 
-Package: gebrme
+Package: debr
 Section: science
 Architecture: any
 Depends: ${shlibs:Depends}

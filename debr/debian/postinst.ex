@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for gebrme
+# postinst script for debr
 #
 # see: dh_installdeb(1)
 

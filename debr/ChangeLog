@@ -59,17 +59,17 @@
 
 2007-09-15 23:02  brauliobo
 
-	* src/gebrme.h, src/info.c, src/info.h, src/interface.c,
+	* src/debr.h, src/info.c, src/info.h, src/interface.c,
 	  src/menu.c: fixed set of default author/email
 
 2007-09-15 22:46  brauliobo
 
-	* src/gebrme.h, src/info.c, src/info.h, src/interface.c:
+	* src/debr.h, src/info.c, src/info.h, src/interface.c:
 	  author/email writen to xml
 
 2007-09-15 22:14  biloti
 
-	* src/gebrme.h, src/info.c, src/info.h, src/interface.c:
+	* src/debr.h, src/info.c, src/info.h, src/interface.c:
 	  author/email widgets
 
 2007-09-15 22:04  brauliobo
@@ -152,7 +152,7 @@
 
 2007-09-09 03:10  brauliobo
 
-	* src/gebrme.h, src/parameter.c, src/parameter.h: more parameters
+	* src/debr.h, src/parameter.c, src/parameter.h: more parameters
 	  (complicated) work
 
 2007-09-09 00:40  brauliobo
@@ -167,14 +167,14 @@
 
 2007-09-08 23:02  brauliobo
 
-	* src/Makefile.am, src/gebrme.h, src/info.c, src/info.h,
+	* src/Makefile.am, src/debr.h, src/info.c, src/info.h,
 	  src/interface.c, src/interface.h, src/main.c, src/menu.c,
 	  src/parameter.c, src/parameter.h, src/program.c, src/program.h:
 	  initial program support
 
 2007-09-08 18:54  brauliobo
 
-	* src/callbacks.c, src/gebrme.h, src/info.c, src/info.h,
+	* src/callbacks.c, src/debr.h, src/info.c, src/info.h,
 	  src/interface.c, src/menu.c, src/menu.h: open/save code
 
 2007-09-08 14:45  brauliobo
@@ -183,8 +183,8 @@
 
 2007-09-08 14:45  brauliobo
 
-	* src/Makefile.am, src/category.c, src/category.h, src/gebrme.c,
-	  src/gebrme.h, src/interface.c, src/menu.c, src/menu.h: title,
+	* src/Makefile.am, src/category.c, src/category.h, src/debr.c,
+	  src/debr.h, src/interface.c, src/menu.c, src/menu.h: title,
 	  description and category code
 
 2007-09-03 18:23  brauliobo
@@ -204,7 +204,7 @@
 	  po/ChangeLog, po/Makefile, po/Makefile.in, po/Makefile.in.in,
 	  po/POTFILES, po/POTFILES.in, src, src/Makefile.am,
 	  src/callbacks.c, src/callbacks.h, src/category.c, src/category.h,
-	  src/gebrme.c, src/gebrme.h, src/interface.c, src/interface.h,
+	  src/debr.c, src/debr.h, src/interface.c, src/interface.h,
 	  src/main.c, src/menu.c, src/menu.h, src/program.c, src/program.h,
 	  src/support.h: initial import
 

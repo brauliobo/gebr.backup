@@ -1,4 +1,4 @@
-/*   GeBR ME - GeBR Menu Editor
+/*   DeBR - GeBR Designer
  *   Copyright (C) 2007-2008 GeBR core team (http://gebr.sourceforge.net)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,9 @@
 #include "program.h"
 #include "parameter.h"
 
-extern struct gebrme gebrme;
+extern struct debr debr;
 
-struct gebrme {
+struct debr {
 	/* current stuff being edited */
 	GeoXmlFlow *		menu;
 	GeoXmlProgram *		program;
@@ -47,7 +47,7 @@ struct gebrme {
 	struct ui_parameter	ui_parameter;
 
 	/* actions */
-	struct gebrme_actions {
+	struct debr_actions {
 		struct {
 			GtkAction *		new;
 			GtkAction *		open;
@@ -72,12 +72,12 @@ struct gebrme {
 	} actions;
 
         /* icons */
-	struct gebrme_pixmaps {
+	struct debr_pixmaps {
         	GdkPixbuf *	stock_no;
 	} pixmaps;
 
 	/* config file */
-	struct gebrme_config {
+	struct debr_config {
 		GKeyFile *	keyfile;
 		GString *	path;
 
@@ -93,18 +93,18 @@ struct gebrme {
 };
 
 void
-gebrme_init(void);
+debr_init(void);
 
 void
-gebrme_quit(void);
+debr_quit(void);
 
 void
-gebrme_config_load(void);
+debr_config_load(void);
 
 void
-gebrme_config_save(void);
+debr_config_save(void);
 
 void
-gebrme_message(enum log_message_type type, const gchar * message, ...);
+debr_message(enum log_message_type type, const gchar * message, ...);
 
 #endif //__GEBRME_H

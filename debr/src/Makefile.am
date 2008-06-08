@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-bin_PROGRAMS = gebrme
+bin_PROGRAMS = debr
 
-gebrme_SOURCES = \
+debr_SOURCES = \
 	main.c \
 	interface.c \
 	callbacks.c \
-	gebrme.c \
+	debr.c \
 	menu.c \
 	program.c \
 	parameter.c \
@@ -33,7 +33,7 @@ gebrme_SOURCES = \
 noinst_HEADERS = \
 	interface.h \
 	callbacks.h \
-	gebrme.h \
+	debr.h \
 	menu.h \
 	program.h \
 	parameter.h \
@@ -50,4 +50,4 @@ LIBGEBR_LIBS = $(LIBGEBR_GEOXML_LIBS) $(LIBGEBR_GUI_LIBS) $(LIBGEBR_MISC_LIBS)
 INCLUDES = \
 	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\"
 AM_CFLAGS = -Wall -std=gnu99 @DEBUG_CFLAGS@ $(GTK_CFLAGS) ${LIBGEBR_CFLAGS}
-gebrme_LDADD = $(INTLLIBS) $(GTK_LIBS) $(LIBGEBR_LIBS)
+debr_LDADD = $(INTLLIBS) $(GTK_LIBS) $(LIBGEBR_LIBS)

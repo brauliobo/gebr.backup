@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-gebrmedatadir = $(datadir)/gebrme/
-gebrmedata_DATA = \
+debrdatadir = $(datadir)/debr/
+debrdata_DATA = \
 		gebr.css \
 		help-template.html
 
-EXTRA_DIST = $(gebrmedata_DATA)
+EXTRA_DIST = $(debrdata_DATA)

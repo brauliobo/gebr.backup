@@ -1,5 +1,5 @@
 #!/bin/sh
-# preinst script for gebrme
+# preinst script for debr
 #
 # see: dh_installdeb(1)
 
