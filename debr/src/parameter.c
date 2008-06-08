@@ -207,13 +207,13 @@ parameter_new(void)
 
 		iter = parameter_append_to_ui(
 			geoxml_parameters_append_parameter(GEOXML_PARAMETERS(first_instance),
-				GEOXML_PARAMETERTYPE_STRING),
+				GEOXML_PARAMETERTYPE_FLOAT),
 			&parent);
 	} else {
 		iter = parameter_append_to_ui(
 			geoxml_parameters_append_parameter(
 				geoxml_program_get_parameters(debr.program),
-				GEOXML_PARAMETERTYPE_STRING),
+				GEOXML_PARAMETERTYPE_FLOAT),
 			NULL);
 	}
 	parameter_select_iter(iter);

@@ -65,9 +65,9 @@ debr_create_window(void)
 	 */
 	gtk_window_set_default_icon(pixmaps_gebr_icon_16x16());
 	debr.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(debr.window), "GêBR ME");
+	gtk_window_set_title(GTK_WINDOW(debr.window), "DêBR");
 	gtk_widget_set_size_request(debr.window, 500, 300);
-	debr.about = about_setup_ui("GêBRME", _("Flow describer for GêBR"));
+	debr.about = about_setup_ui("DêBR", _("Flow designer for GêBR"));
 
 	g_signal_connect(debr.window, "delete_event",
 		GTK_SIGNAL_FUNC(debr_quit), NULL);
