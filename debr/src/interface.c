@@ -45,7 +45,7 @@
 
 /*
  * Function: debr_create_window
- * Create GeBR's main window
+ * Create DeBR's main window
  */
 void
 debr_create_window(void)
@@ -65,9 +65,9 @@ debr_create_window(void)
 	 */
 	gtk_window_set_default_icon(pixmaps_gebr_icon_16x16());
 	debr.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(debr.window), "DêBR");
+	gtk_window_set_title(GTK_WINDOW(debr.window), "DéBR");
 	gtk_widget_set_size_request(debr.window, 500, 300);
-	debr.about = about_setup_ui("DêBR", _("Flow designer for GêBR"));
+	debr.about = about_setup_ui("DéBR", _("Flow designer for GêBR"));
 
 	g_signal_connect(debr.window, "delete_event",
 		GTK_SIGNAL_FUNC(debr_quit), NULL);
@@ -96,6 +96,14 @@ debr_create_window(void)
 	debr.accel_group = gtk_accel_group_new();
 	gtk_window_add_accel_group(GTK_WINDOW(debr.window), debr.accel_group);
 
+
+	/*
+	 * Actions: Main
+	 */
+	debr.actions.main.quit = gtk_action_new("main_quit",
+		NULL, NULL, GTK_STOCK_QUIT);
+	g_signal_connect(debr.actions.main.quit, "activate",
+		       (GCallback)(debr_quit), NULL);
 	/*
 	 * Actions: Menu
 	 */
@@ -186,68 +194,68 @@ debr_create_window(void)
 	/*
 	 * Menu: Menu
 	 */
-	menu_item = gtk_menu_item_new_with_mnemonic(_("_Menu"));
-	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
-	menu = gtk_menu_new();
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
-
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.menu.new));
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.menu.open));
-
-	gtk_container_add(GTK_CONTAINER(menu), gtk_separator_menu_item_new());
-	
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.menu.save));
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.menu.save_as));
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.menu.revert));
-
-	gtk_container_add(GTK_CONTAINER(menu), gtk_separator_menu_item_new());
-
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.menu.delete));
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.menu.close));
-
+//	menu_item = gtk_menu_item_new_with_mnemonic(_("_Menu"));
+//	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
+//	menu = gtk_menu_new();
+//	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
+//
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.menu.new));
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.menu.open));
+//
+//	gtk_container_add(GTK_CONTAINER(menu), gtk_separator_menu_item_new());
+//	
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.menu.save));
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.menu.save_as));
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.menu.revert));
+//
+//	gtk_container_add(GTK_CONTAINER(menu), gtk_separator_menu_item_new());
+//
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.menu.delete));
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.menu.close));
+//
 	/*
 	 * Menu: Program
 	 */
-	menu_item = gtk_menu_item_new_with_mnemonic(_("Program"));
-	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
-	menu = gtk_menu_new();
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
-
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.program.new));
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.program.delete));
-
+//	menu_item = gtk_menu_item_new_with_mnemonic(_("Program"));
+//	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
+//	menu = gtk_menu_new();
+//	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
+//
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.program.new));
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.program.delete));
+//
 // 	gtk_container_add(GTK_CONTAINER(menu), gtk_separator_menu_item_new());
 	
 	/*
 	 * Menu: Parameter
 	 */
 
-	menu_item = gtk_menu_item_new_with_mnemonic(_("Parameter"));
-	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
-	menu = gtk_menu_new();
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
-
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.parameter.new));
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.parameter.delete));
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.parameter.change_type));
-
+//	menu_item = gtk_menu_item_new_with_mnemonic(_("Parameter"));
+//	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
+//	menu = gtk_menu_new();
+//	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
+//
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.parameter.new));
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.parameter.delete));
+//	gtk_container_add(GTK_CONTAINER(menu),
+//		gtk_action_create_menu_item(debr.actions.parameter.change_type));
+//
 	/*
 	 * Menu: Configure
 	 */
 
-	menu_item = gtk_menu_item_new_with_mnemonic(_("_Configure"));
+	menu_item = gtk_menu_item_new_with_mnemonic(_("_Actions"));
 	gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
 	menu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
@@ -256,7 +264,8 @@ debr_create_window(void)
 	gtk_container_add(GTK_CONTAINER(menu), child_menu_item);
 	g_signal_connect(child_menu_item, "activate",
 		(GCallback)on_configure_preferences_activate, NULL);
-
+	gtk_container_add(GTK_CONTAINER(menu),
+			  gtk_action_create_menu_item(debr.actions.main.quit));
 	/*
 	 * Menu: Help
 	 */

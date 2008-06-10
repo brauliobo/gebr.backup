@@ -49,6 +49,9 @@ struct debr {
 	/* actions */
 	struct debr_actions {
 		struct {
+			GtkAction *             quit;
+		} main;
+		struct {
 			GtkAction *		new;
 			GtkAction *		open;
 			GtkAction *		save;
