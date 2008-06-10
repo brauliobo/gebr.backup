@@ -68,6 +68,9 @@ menu_category_add(ValueSequenceEdit * sequence_edit, GtkComboBox * combo_box);
 static void
 menu_category_changed(void);
 
+static void
+menu_details_update(void);
+
 /*
  * Section: Public
  */
@@ -80,15 +83,22 @@ menu_category_changed(void);
 void
 menu_setup_ui(void)
 {
+	GtkWidget *             hpanel;
 	GtkWidget *		scrolled_window;
+	GtkWidget *             frame;
+	GtkWidget *		details;
 	GtkTreeViewColumn *	col;
 	GtkCellRenderer *	renderer;
 
+	hpanel = gtk_hpaned_new();
+	gtk_widget_show(hpanel);
+
 	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-	gtk_widget_show(scrolled_window);
+	gtk_paned_pack1(GTK_PANED(hpanel), scrolled_window, FALSE, FALSE);
+	gtk_widget_set_size_request(scrolled_window, 200, -1);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_window), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_window), GTK_SHADOW_IN);	
 
 	debr.ui_menu.list_store = gtk_list_store_new(MENU_N_COLUMN,
 		GDK_TYPE_PIXBUF,
@@ -115,7 +125,24 @@ menu_setup_ui(void)
 	gtk_tree_view_column_add_attribute(col, renderer, "text", MENU_FILENAME);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debr.ui_menu.tree_view), col);
 
-	debr.ui_menu.widget = scrolled_window;
+	frame = gtk_frame_new(_("Details"));
+	gtk_paned_pack2(GTK_PANED(hpanel), frame, TRUE, FALSE);
+	details = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), details);
+
+	debr.ui_menu.details.title_label = gtk_label_new(NULL);
+	gtk_misc_set_alignment(GTK_MISC(debr.ui_menu.details.title_label), 0, 0);
+	gtk_box_pack_start(GTK_BOX(details), debr.ui_menu.details.title_label, FALSE, TRUE, 0);
+
+	debr.ui_menu.details.description_label = gtk_label_new(NULL);
+	gtk_misc_set_alignment(GTK_MISC(debr.ui_menu.details.description_label), 0, 0);
+	gtk_box_pack_start(GTK_BOX(details), debr.ui_menu.details.description_label, FALSE, TRUE, 0);
+
+	debr.ui_menu.details.author_label = gtk_label_new(NULL);
+	gtk_misc_set_alignment(GTK_MISC(debr.ui_menu.details.author_label), 0, 0);
+	gtk_box_pack_end(GTK_BOX(details), debr.ui_menu.details.author_label, FALSE, TRUE, 0);
+
+	debr.ui_menu.widget = hpanel;
 	gtk_widget_show_all(debr.ui_menu.widget);
 }
 
@@ -333,6 +360,9 @@ menu_selected(void)
 	/* recover status set to unsaved by other functions */
 	menu_saved_status_set(
 		(icon == debr.pixmaps.stock_no) ? MENU_STATUS_UNSAVED : MENU_STATUS_SAVED);
+
+	/* update details view */
+	menu_details_update();
 }
 
 /*
@@ -673,6 +703,7 @@ menu_dialog_setup_ui(void)
 
 	gtk_widget_show(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
+	menu_details_update();
 	gtk_widget_destroy(dialog);
 }
 
@@ -776,4 +807,28 @@ static void
 menu_category_changed(void)
 {
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
+}
+
+/* Function: menu_details_update
+ * Load details of selected menu to the details view
+ */
+static void
+menu_details_update(void)
+{
+	gchar *		markup;
+	GString *       author_email;
+
+	markup = g_markup_printf_escaped("<b>%s</b>",geoxml_document_get_title(GEOXML_DOC(debr.menu)));
+	gtk_label_set_markup(debr.ui_menu.details.title_label, markup);
+
+	markup = g_markup_printf_escaped("<i>%s</i>",geoxml_document_get_description(GEOXML_DOC(debr.menu)));
+	gtk_label_set_markup(debr.ui_menu.details.description_label, markup);
+
+	author_email = g_string_new(NULL);
+	g_string_printf(author_email, "%s <%s>",
+			geoxml_document_get_author(GEOXML_DOC(debr.menu)),
+			geoxml_document_get_email(GEOXML_DOC(debr.menu)));
+	gtk_label_set_text(debr.ui_menu.details.author_label, author_email->str);
+	g_string_free(author_email, TRUE);
+			   
 }

@@ -580,10 +580,10 @@ program_title_changed(GtkEntry * entry)
 {
 	GtkWidget *	program_label;
 
-	g_object_get(G_OBJECT(entry), "user-data", &program_label, NULL);
+	//g_object_get(G_OBJECT(entry), "user-data", &program_label, NULL);
 
 	geoxml_program_set_title(debr.program, gtk_entry_get_text(GTK_ENTRY(entry)));
-	gtk_label_set_text(GTK_LABEL(program_label), gtk_entry_get_text(GTK_ENTRY(entry)));
+	//gtk_label_set_text(GTK_LABEL(program_label), gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 	return FALSE;
