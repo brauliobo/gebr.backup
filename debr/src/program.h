@@ -26,6 +26,11 @@ struct ui_program {
 
 	GtkListStore *		list_store;
 	GtkWidget *		tree_view;
+
+	struct ui_program_details {
+		GtkWidget *	title_label;
+		GtkWidget *	description_label;
+	} details;
 };
 
 void

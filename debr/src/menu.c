@@ -73,9 +73,9 @@ menu_category_changed(void);
 void
 menu_setup_ui(void)
 {
-	GtkWidget *             hpanel;
+	GtkWidget *		hpanel;
 	GtkWidget *		scrolled_window;
-	GtkWidget *             frame;
+	GtkWidget *		frame;
 	GtkWidget *		details;
 	GtkTreeViewColumn *	col;
 	GtkCellRenderer *	renderer;
@@ -741,19 +741,20 @@ menu_details_update(void)
 	gchar *		markup;
 	GString *       author_email;
 
-	markup = g_markup_printf_escaped("<b>%s</b>",geoxml_document_get_title(GEOXML_DOC(debr.menu)));
+	markup = g_markup_printf_escaped("<b>%s</b>", geoxml_document_get_title(GEOXML_DOC(debr.menu)));
 	gtk_label_set_markup(GTK_LABEL(debr.ui_menu.details.title_label), markup);
+	g_free(markup);
 
-	markup = g_markup_printf_escaped("<i>%s</i>",geoxml_document_get_description(GEOXML_DOC(debr.menu)));
+	markup = g_markup_printf_escaped("<i>%s</i>", geoxml_document_get_description(GEOXML_DOC(debr.menu)));
 	gtk_label_set_markup(GTK_LABEL(debr.ui_menu.details.description_label), markup);
+	g_free(markup);
 
 	author_email = g_string_new(NULL);
 	g_string_printf(author_email, "%s <%s>",
-			geoxml_document_get_author(GEOXML_DOC(debr.menu)),
-			geoxml_document_get_email(GEOXML_DOC(debr.menu)));
+		geoxml_document_get_author(GEOXML_DOC(debr.menu)),
+		geoxml_document_get_email(GEOXML_DOC(debr.menu)));
 	gtk_label_set_text(GTK_LABEL(debr.ui_menu.details.author_label), author_email->str);
 	g_string_free(author_email, TRUE);
-
 }
 
 /*

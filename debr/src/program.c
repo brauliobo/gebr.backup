@@ -34,12 +34,14 @@
  */
 
 enum {
+	PROGRAM_STATUS,
         PROGRAM_TITLE,
-	PROGRAM_DESCRIPTION,
 	PROGRAM_XMLPOINTER,
 	PROGRAM_N_COLUMN
 };
 
+static void
+program_details_update(void);
 static gboolean
 program_check_selected(void);
 static gboolean
@@ -87,40 +89,59 @@ program_url_changed(GtkEntry * entry);
 void
 program_setup_ui(void)
 {
+	GtkWidget *		hpanel;
 	GtkWidget *		scrolled_window;
+	GtkWidget *		frame;
+	GtkWidget *		details;
 	GtkTreeViewColumn *	col;
 	GtkCellRenderer *	renderer;
 
+	hpanel = gtk_hpaned_new();
 	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-	gtk_widget_show(scrolled_window);
+	gtk_paned_pack1(GTK_PANED(hpanel), scrolled_window, FALSE, FALSE);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_window), GTK_SHADOW_IN);
 
 	debr.ui_program.list_store = gtk_list_store_new(PROGRAM_N_COLUMN,
-		G_TYPE_STRING,
+		GDK_TYPE_PIXBUF,
 		G_TYPE_STRING,
 		G_TYPE_POINTER);
 	debr.ui_program.tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(debr.ui_program.list_store));
 	gtk_tree_view_set_popup_callback(GTK_TREE_VIEW(debr.ui_program.tree_view),
 		(GtkPopupCallback)program_popup_menu, NULL);
-	gtk_widget_show(debr.ui_program.tree_view);
 	gtk_container_add(GTK_CONTAINER(scrolled_window), debr.ui_program.tree_view);
 	g_signal_connect(debr.ui_program.tree_view, "cursor-changed",
 		(GCallback)program_selected, NULL);
 	g_signal_connect(debr.ui_program.tree_view, "row-activated",
 		GTK_SIGNAL_FUNC(program_dialog_setup_ui), NULL);
 
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(debr.ui_program.tree_view), FALSE);
+	renderer = gtk_cell_renderer_pixbuf_new();
+	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
+	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_fixed_width(col, 24);
+	gtk_tree_view_column_add_attribute(col, renderer, "pixbuf", PROGRAM_STATUS);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(debr.ui_program.tree_view), col);
 	renderer = gtk_cell_renderer_text_new();
-	col = gtk_tree_view_column_new_with_attributes(_("Title"), renderer, NULL);
+	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
 	gtk_tree_view_column_add_attribute(col, renderer, "text", PROGRAM_TITLE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debr.ui_program.tree_view), col);
-	renderer = gtk_cell_renderer_text_new();
-	col = gtk_tree_view_column_new_with_attributes(_("Description"), renderer, NULL);
-	gtk_tree_view_column_add_attribute(col, renderer, "text", PROGRAM_DESCRIPTION);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(debr.ui_program.tree_view), col);
 
-	debr.ui_program.widget = scrolled_window;
+	frame = gtk_frame_new(_("Details"));
+	gtk_paned_pack2(GTK_PANED(hpanel), frame, TRUE, FALSE);
+	details = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), details);
+
+	debr.ui_program.details.title_label = gtk_label_new(NULL);
+	gtk_misc_set_alignment(GTK_MISC(debr.ui_program.details.title_label), 0, 0);
+	gtk_box_pack_start(GTK_BOX(details), debr.ui_program.details.title_label, FALSE, TRUE, 0);
+
+	debr.ui_program.details.description_label = gtk_label_new(NULL);
+	gtk_misc_set_alignment(GTK_MISC(debr.ui_program.details.description_label), 0, 0);
+	gtk_box_pack_start(GTK_BOX(details), debr.ui_program.details.description_label, FALSE, TRUE, 0);
+
+	debr.ui_program.widget = hpanel;
 	gtk_widget_show_all(debr.ui_program.widget);
 }
 
@@ -153,6 +174,7 @@ void
 program_new(void)
 {
 	GeoXmlProgram *		program;
+	GtkTreeIter		iter;
 
 	program = geoxml_flow_append_program(debr.menu);
 	/* default settings */
@@ -161,8 +183,12 @@ program_new(void)
 	geoxml_program_set_stdout(program, TRUE);
 	geoxml_program_set_stderr(program, TRUE);
 
-	program_select_iter(program_append_to_ui(program));
+	iter = program_append_to_ui(program);
+	gtk_list_store_set(debr.ui_program.list_store, &iter,
+		PROGRAM_STATUS, debr.pixmaps.stock_no,
+		-1);
 
+	program_select_iter(iter);
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
@@ -446,6 +472,24 @@ program_dialog_setup_ui(void)
  */
 
 /*
+ * Function: program_details_update
+ * Load details of selected program to the details view
+ */
+static void
+program_details_update(void)
+{
+	gchar *		markup;
+
+	markup = g_markup_printf_escaped("<b>%s</b>", geoxml_program_get_title(debr.program));
+	gtk_label_set_markup(GTK_LABEL(debr.ui_program.details.title_label), markup);
+	g_free(markup);
+
+	markup = g_markup_printf_escaped("<i>%s</i>", geoxml_program_get_description(debr.program));
+	gtk_label_set_markup(GTK_LABEL(debr.ui_program.details.description_label), markup);
+	g_free(markup);
+}
+
+/*
  * Function: program_check_selected
  * Returns true if there is a program selected. Othewise,
  * returns false and show a message on the status bar.
@@ -490,14 +534,14 @@ program_load_iter(GeoXmlProgram * program, GtkTreeIter * iter)
 {
 	gtk_list_store_set(debr.ui_program.list_store, iter,
 		PROGRAM_TITLE, geoxml_program_get_title(program),
-		PROGRAM_DESCRIPTION, geoxml_program_get_description(program),
 		PROGRAM_XMLPOINTER, program,
 		-1);
+	program_details_update();
 }
 
 /*
  * Function: program_load_selected
- * Load selected program contents to its iter
+ * Reload selected program contents to its iter
  */
 static void
 program_load_selected(void)
@@ -506,6 +550,11 @@ program_load_selected(void)
 
 	program_get_selected(&iter);
 	program_load_iter(debr.program, &iter);
+
+	/* program is now considered as reviewed by the user */
+	gtk_list_store_set(debr.ui_program.list_store, &iter,
+		PROGRAM_STATUS, NULL,
+		-1);
 }
 
 static GtkTreeIter
@@ -536,6 +585,7 @@ program_selected(void)
 		PROGRAM_XMLPOINTER, &debr.program,
 		-1);
 	parameter_load_program();
+	program_details_update();
 }
 
 /*

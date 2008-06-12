@@ -41,10 +41,10 @@ struct ui_menu {
 	GtkListStore *		list_store;
 	GtkWidget *		tree_view;
 	
-	struct {
-		GtkWidget *     title_label;
-		GtkWidget *     description_label;
-		GtkWidget *     author_label;
+	struct ui_menu_details {
+		GtkWidget *	title_label;
+		GtkWidget *	description_label;
+		GtkWidget *	author_label;
 	} details;
 };
 
