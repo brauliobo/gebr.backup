@@ -21,6 +21,6 @@
 #include <gtk/gtk.h>
 
 void
-debr_create_window(void);
+debr_setup_ui(void);
 
 #endif //__INTERFACE_H

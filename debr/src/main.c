@@ -41,7 +41,7 @@ main(int argc, char *argv[])
 	/* temporary: necessary for representing fractional numbers only with comma */
 	setlocale(LC_NUMERIC, "C");
 
-	debr_create_window();
+	debr_setup_ui();
 	gtk_widget_show(debr.window);
 	gtk_main();
 

@@ -52,6 +52,10 @@ debr_init(void)
 {
 	debr_config_load();
 
+	debr.menu = NULL;
+	debr.program = NULL;
+	debr.parameter = NULL;
+
 	/* list of temporaries files */
 	debr.tmpfiles = g_slist_alloc();
 

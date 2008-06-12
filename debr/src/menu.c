@@ -42,34 +42,24 @@ enum {
 };
 
 static void
-menu_dialog_setup_ui(void);
+menu_details_update(void);
 
 static void
 menu_title_changed(GtkEntry * entry);
-
 static void
 menu_description_changed(GtkEntry * entry);
-
 static void
 menu_help_view(void);
-
 static void
 menu_help_edit(void);
-
 static void
 menu_author_changed(GtkEntry * entry);
-
 static void
 menu_email_changed(GtkEntry * entry);
-
 static void
 menu_category_add(ValueSequenceEdit * sequence_edit, GtkComboBox * combo_box);
-
 static void
 menu_category_changed(void);
-
-static void
-menu_details_update(void);
 
 /*
  * Section: Public
@@ -156,7 +146,6 @@ menu_new(void)
 	static int		new_count = 0;
 	GString *		new_menu_str;
 	GtkTreeIter		iter;
-	GtkTreeSelection *	selection;
 
 	new_menu_str = g_string_new(NULL);
 	g_string_printf(new_menu_str, "%s%d.mnu", _("untitled"), ++new_count);
@@ -173,9 +162,7 @@ menu_new(void)
 		-1);
 
 	/* select it */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
-	gtk_tree_selection_select_iter(selection, &iter);
-	menu_selected();
+	menu_select_iter(&iter);
 
 	/* add a new program for the user to play with */
 	program_new();
@@ -217,65 +204,13 @@ menu_load(const gchar * path)
 	return GEOXML_FLOW(menu);
 }
 
-void
-menu_open(const gchar * path, gboolean select)
-{
-	GtkTreeSelection *	selection;
-	GtkTreeIter		iter;
-	gboolean		valid;
-
-	gchar *			filename;
-	GeoXmlFlow *		menu;
-
-	/* check if it is already open */
-	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter);
-	while (valid) {
-		gchar *	ipath;
-
-		gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
-			MENU_PATH, &ipath,
-			-1);
-
-		if (!strcmp(ipath, path)) {
-			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
-			gtk_tree_selection_select_iter(selection, &iter);
-			menu_selected();
-
-			g_free(ipath);
-			return;
-		}
-		g_free(ipath);
-		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter);
-	}
-
-	menu = menu_load(path);
-	if (menu == NULL)
-		return;
-
-	/* add to the view */
-	filename = g_path_get_basename(path);
-	gtk_list_store_append(debr.ui_menu.list_store, &iter);
-	gtk_list_store_set(debr.ui_menu.list_store, &iter,
-		MENU_STATUS, NULL,
-		MENU_FILENAME, filename,
-		MENU_XMLPOINTER, menu,
-		MENU_PATH, path,
-		-1);
-
-	/* select it and load its contents into UI */
-	if (select == TRUE) {
-		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
-		gtk_tree_selection_select_iter(selection, &iter);
-		menu_selected();
-	}
-
-	g_free(filename);
-}
-
+/*
+ * Function: menu_load_user_directory
+ * Read each menu on user's menus directory.
+ */
 void
 menu_load_user_directory(void)
 {
-	GtkTreeSelection *	selection;
 	GtkTreeIter		iter;
 
 	DIR *			dir;
@@ -301,11 +236,56 @@ menu_load_user_directory(void)
 	closedir(dir);
 
 	/* select first menu */
-	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter) == TRUE) {
-		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
-		gtk_tree_selection_select_iter(selection, &iter);
-		menu_selected();
+	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter) == TRUE)
+		menu_select_iter(&iter);
+}
+
+/*
+ * Function: menu_open
+ * Load menu at _path_ and select it according to _select_
+ */
+void
+menu_open(const gchar * path, gboolean select)
+{
+	GtkTreeIter		iter;
+	gboolean		valid;
+
+	gchar *			filename;
+	GeoXmlFlow *		menu;
+
+	/* check if it is already open */
+	valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter);
+	while (valid) {
+		gchar *	ipath;
+
+		gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
+			MENU_PATH, &ipath,
+			-1);
+
+		if (!strcmp(ipath, path)) {
+			menu_select_iter(&iter);
+
+			g_free(ipath);
+			return;
+		}
+		g_free(ipath);
+		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter);
 	}
+
+	menu = menu_load(path);
+	if (menu == NULL)
+		return;
+
+	/* add to the view */
+	filename = g_path_get_basename(path);
+	gtk_list_store_append(debr.ui_menu.list_store, &iter);
+	menu_load_selected();
+
+	/* select it and load its contents into UI */
+	if (select == TRUE)
+		menu_select_iter(&iter);
+
+	g_free(filename);
 }
 
 /*
@@ -341,15 +321,12 @@ menu_save(const gchar * path)
 void
 menu_selected(void)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GtkTreeIter		menu_iter;
+	GtkTreeIter		iter;
 
 	GdkPixbuf *		icon;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (debr.ui_menu.tree_view));
-	gtk_tree_selection_get_selected(selection, &model, &menu_iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &menu_iter,
+	menu_get_selected(&iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 		MENU_STATUS, &icon,
 		MENU_XMLPOINTER, &debr.menu,
 		-1);
@@ -496,15 +473,12 @@ menu_saved_status_set_unsaved(void)
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
-/*
- * Section: Private
- */
 
 /*
  * Function: menu_dialog_setup_ui
  * Create a dialog to edit information about menu, like title, description, categories, etc
  */
-static void
+void
 menu_dialog_setup_ui(void)
 {
 	GtkWidget *		dialog;
@@ -703,8 +677,83 @@ menu_dialog_setup_ui(void)
 
 	gtk_widget_show(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
-	menu_details_update();
 	gtk_widget_destroy(dialog);
+
+	menu_load_selected();
+}
+
+/*
+ * Function: menu_get_selected
+ * Return true if there is a menu selected and write it to _iter_
+ */
+gboolean
+menu_get_selected(GtkTreeIter * iter)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
+	return gtk_tree_selection_get_selected(selection, &model, iter);
+}
+
+/*
+ * Function: menu_load_selected
+ * Reload selected menu contents to the interface
+ */
+void
+menu_load_selected(void)
+{
+	GtkTreeIter	iter;
+
+	menu_get_selected(&iter);
+	gtk_list_store_set(debr.ui_menu.list_store, &iter,
+		MENU_FILENAME, geoxml_document_get_filename(GEOXML_DOCUMENT(debr.menu)),
+		-1);
+	menu_details_update();
+}
+
+
+/*
+ * Function: menu_select_iter
+ * Select _iter_ for menu's tree view
+ */
+void
+menu_select_iter(GtkTreeIter * iter)
+{
+	GtkTreeSelection *	selection;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
+	gtk_tree_selection_select_iter(selection, iter);
+	menu_selected();
+}
+
+/*
+ * Section: Private
+ */
+
+/*
+ * Function: menu_details_update
+ * Load details of selected menu to the details view
+ */
+static void
+menu_details_update(void)
+{
+	gchar *		markup;
+	GString *       author_email;
+
+	markup = g_markup_printf_escaped("<b>%s</b>",geoxml_document_get_title(GEOXML_DOC(debr.menu)));
+	gtk_label_set_markup(GTK_LABEL(debr.ui_menu.details.title_label), markup);
+
+	markup = g_markup_printf_escaped("<i>%s</i>",geoxml_document_get_description(GEOXML_DOC(debr.menu)));
+	gtk_label_set_markup(GTK_LABEL(debr.ui_menu.details.description_label), markup);
+
+	author_email = g_string_new(NULL);
+	g_string_printf(author_email, "%s <%s>",
+			geoxml_document_get_author(GEOXML_DOC(debr.menu)),
+			geoxml_document_get_email(GEOXML_DOC(debr.menu)));
+	gtk_label_set_text(GTK_LABEL(debr.ui_menu.details.author_label), author_email->str);
+	g_string_free(author_email, TRUE);
+
 }
 
 /*
@@ -807,28 +856,4 @@ static void
 menu_category_changed(void)
 {
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
-}
-
-/* Function: menu_details_update
- * Load details of selected menu to the details view
- */
-static void
-menu_details_update(void)
-{
-	gchar *		markup;
-	GString *       author_email;
-
-	markup = g_markup_printf_escaped("<b>%s</b>",geoxml_document_get_title(GEOXML_DOC(debr.menu)));
-	gtk_label_set_markup(debr.ui_menu.details.title_label, markup);
-
-	markup = g_markup_printf_escaped("<i>%s</i>",geoxml_document_get_description(GEOXML_DOC(debr.menu)));
-	gtk_label_set_markup(debr.ui_menu.details.description_label, markup);
-
-	author_email = g_string_new(NULL);
-	g_string_printf(author_email, "%s <%s>",
-			geoxml_document_get_author(GEOXML_DOC(debr.menu)),
-			geoxml_document_get_email(GEOXML_DOC(debr.menu)));
-	gtk_label_set_text(debr.ui_menu.details.author_label, author_email->str);
-	g_string_free(author_email, TRUE);
-			   
 }

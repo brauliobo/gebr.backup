@@ -48,34 +48,36 @@ struct ui_menu {
 	} details;
 };
 
+
+
 void
 menu_setup_ui(void);
-
 void
 menu_new(void);
-
 GeoXmlFlow *
 menu_load(const gchar * path);
-
-void
-menu_open(const gchar * path, gboolean select);
-
 void
 menu_load_user_directory(void);
-
+void
+menu_open(const gchar * path, gboolean select);
 void
 menu_save(const gchar * path);
-
 void
 menu_selected(void);
-
 gboolean
 menu_cleanup(void);
-
 void
 menu_saved_status_set(MenuStatus status);
-
 void
 menu_saved_status_set_unsaved(void);
+void
+menu_dialog_setup_ui(void);
+
+gboolean
+menu_get_selected(GtkTreeIter * iter);
+void
+menu_load_selected(void);
+void
+menu_select_iter(GtkTreeIter * iter);
 
 #endif //__MENU_H

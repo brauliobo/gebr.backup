@@ -39,6 +39,9 @@ void
 on_menu_delete_activate(void);
 
 void
+on_menu_properties_activate(void);
+
+void
 on_menu_close_activate(void);
 
 void
@@ -48,6 +51,15 @@ void
 on_program_delete_activate(void);
 
 void
+on_program_properties_activate(void);
+
+void
+on_program_up_activate(void);
+
+void
+on_program_down_activate(void);
+
+void
 on_parameter_new_activate(void);
 
 void
@@ -55,6 +67,9 @@ on_parameter_delete_activate(void);
 
 void
 on_parameter_duplicate_activate(void);
+
+void
+on_parameter_properties_activate(void);
 
 void
 on_parameter_up_activate(void);

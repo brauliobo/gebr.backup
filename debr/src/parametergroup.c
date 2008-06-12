@@ -180,6 +180,8 @@ parameter_group_dialog_setup_ui(void)
 
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+
+	parameter_load_selected();
 }
 
 /*

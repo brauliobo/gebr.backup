@@ -40,4 +40,13 @@ program_new(void);
 void
 program_remove(void);
 
+void
+program_up(void);
+
+void
+program_down(void);
+
+void
+program_dialog_setup_ui(void);
+
 #endif //__PROGRAM_H

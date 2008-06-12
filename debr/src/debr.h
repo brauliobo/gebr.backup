@@ -54,6 +54,7 @@ struct debr {
 		struct {
 			GtkAction *		new;
 			GtkAction *		open;
+			GtkAction *		properties;
 			GtkAction *		save;
 			GtkAction *		save_as;
 			GtkAction *		revert;
@@ -63,11 +64,15 @@ struct debr {
 		struct {
 			GtkAction *		new;
 			GtkAction *		delete;
+			GtkAction *		properties;
+			GtkAction *		up;
+			GtkAction *		down;
 		} program;
 		struct {
 			GtkAction *		new;
 			GtkAction *		delete;
 			GtkAction *		duplicate;
+			GtkAction *		properties;
 			GtkAction *		up;
 			GtkAction *		down;
 			GtkAction *		change_type;

@@ -40,51 +40,39 @@ enum {
 	PROGRAM_N_COLUMN
 };
 
+static gboolean
+program_check_selected(void);
+static gboolean
+program_get_selected(GtkTreeIter * iter);
+static void
+program_load_iter(GeoXmlProgram * program, GtkTreeIter * iter);
+static void
+program_load_selected(void);
 static GtkTreeIter
 program_append_to_ui(GeoXmlProgram * program);
-
 static void
 program_selected(void);
-
 static void
 program_select_iter(GtkTreeIter iter);
-
 static GtkMenu *
 program_popup_menu(GtkWidget * tree_view);
 
 static void
-program_move_up(GtkMenuItem * menu_item);
-
-static void
-program_move_down(GtkMenuItem * menu_item);
-
-static void
-program_dialog_setup_ui(void);
-
-static void
 program_stdin_changed(GtkToggleButton * togglebutton);
-
 static void
 program_stdout_changed(GtkToggleButton * togglebutton);
-
 static void
 program_stderr_changed(GtkToggleButton * togglebutton);
-
 static gboolean
 program_title_changed(GtkEntry * entry);
-
 static gboolean
 program_binary_changed(GtkEntry * entry);
-
 static gboolean
 program_description_changed(GtkEntry * entry);
-
 static void
 program_help_view(GtkButton * button);
-
 static void
 program_help_edit(GtkButton * button);
-
 static gboolean
 program_url_changed(GtkEntry * entry);
 
@@ -208,102 +196,11 @@ program_remove(void)
 }
 
 /*
- * Section: Private
- */
-
-static GtkTreeIter
-program_append_to_ui(GeoXmlProgram * program)
-{
-	GtkTreeIter	iter;
-
-	gtk_list_store_append(debr.ui_program.list_store, &iter);
-	gtk_list_store_set(debr.ui_program.list_store, &iter,
-		PROGRAM_TITLE, geoxml_program_get_title(program),
-		PROGRAM_DESCRIPTION, geoxml_program_get_description(program),
-		PROGRAM_XMLPOINTER, program,
-		-1);
-
-	return iter;
-}
-
-/*
- * Function: program_selected
- * Load user selected program
- */
-static void
-program_selected(void)
-{
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-	GtkTreeIter		iter;
-
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_program.tree_view));
-	gtk_tree_selection_get_selected(selection, &model, &iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_program.list_store), &iter,
-		PROGRAM_XMLPOINTER, &debr.program,
-		-1);
-	parameter_load_program();
-}
-
-/*
- * Function: program_select_iter
- * Select _iter_ loading it
- */
-static void
-program_select_iter(GtkTreeIter iter)
-{
-	GtkTreeSelection *	tree_selection;
-
-	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_program.tree_view));
-	gtk_tree_selection_select_iter(tree_selection, &iter);
-	program_selected();
-}
-
-/*
- * Function: program_popup_menu
- * Agregate action to the popup menu and shows it.
- */
-static GtkMenu *
-program_popup_menu(GtkWidget * tree_view)
-{
-	GtkWidget *	menu;
-	GtkWidget *	menu_item;
-
-	GtkTreeIter	iter;
-
-	menu = gtk_menu_new();
-
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.program.new));
-	/* Move up */
-	if (gtk_list_store_can_move_up(debr.ui_program.list_store, &iter) == TRUE) {
-		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_UP, NULL);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-		g_signal_connect(menu_item, "activate",
-			(GCallback)program_move_up, NULL);
-	}
-	/* Move down */
-	if (gtk_list_store_can_move_down(debr.ui_program.list_store, &iter) == TRUE) {
-		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_DOWN, NULL);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-		g_signal_connect(menu_item, "activate",
-			(GCallback)program_move_down, NULL);
-	}
-	/* Remove */
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.program.delete));
-
-	gtk_widget_show_all(menu);
-
-	return GTK_MENU(menu);
-}
-
-/*
- * Function: program_move_up
+ * Function: program_up
  * Action move up
  */
-static void
-program_move_up(GtkMenuItem * menu_item)
+void
+program_up(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
@@ -319,11 +216,11 @@ program_move_up(GtkMenuItem * menu_item)
 }
 
 /*
- * Function: program_move_down
+ * Function: program_down
  * Move down current selected program
  */
-static void
-program_move_down(GtkMenuItem * menu_item)
+void
+program_down(void)
 {
 	GtkTreeSelection *	selection;
 	GtkTreeModel *		model;
@@ -342,7 +239,7 @@ program_move_down(GtkMenuItem * menu_item)
  * Function: program_dialog_setup_ui
  * Open dialog to configure current program
  */
-static void
+void
 program_dialog_setup_ui(void)
 {
 	GtkWidget *	dialog;
@@ -367,6 +264,9 @@ program_dialog_setup_ui(void)
 	GtkWidget *	help_edit_button;
 	GtkWidget *     url_label;
 	GtkWidget *     url_entry;
+
+	if (program_check_selected() == FALSE)
+		return;
 
 	dialog = gtk_dialog_new_with_buttons(_("Edit program"),
 		GTK_WINDOW(debr.window),
@@ -471,7 +371,7 @@ program_dialog_setup_ui(void)
 		(GtkAttachOptions)(0), 0, 0);
 	g_signal_connect(description_entry, "changed",
 		(GCallback)program_description_changed, debr.program);
-	
+
 	/*
 	 * Help
 	 */
@@ -533,10 +433,162 @@ program_dialog_setup_ui(void)
 	gtk_entry_set_text(GTK_ENTRY(binary_entry), geoxml_program_get_binary(debr.program));
 	gtk_entry_set_text(GTK_ENTRY(description_entry), geoxml_program_get_description(debr.program));
 	gtk_entry_set_text(GTK_ENTRY(url_entry), geoxml_program_get_url(debr.program));
-	
+
 	gtk_widget_show(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+
+	program_load_selected();
+}
+
+/*
+ * Section: Private
+ */
+
+/*
+ * Function: program_check_selected
+ * Returns true if there is a program selected. Othewise,
+ * returns false and show a message on the status bar.
+ */
+static gboolean
+program_check_selected(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_program.tree_view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+		debr_message(LOG_ERROR, _("No program is selected"));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/*
+ * Function: program_get_selected
+ * Return true if there is a program selected and write it to _iter_
+ */
+static gboolean
+program_get_selected(GtkTreeIter * iter)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+
+	if (program_check_selected() == FALSE)
+		return FALSE;
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_program.tree_view));
+	return gtk_tree_selection_get_selected(selection, &model, iter);
+}
+
+/*
+ * Function: program_load_iter
+ * Load _program_ stuff into _iter_
+ */
+static void
+program_load_iter(GeoXmlProgram * program, GtkTreeIter * iter)
+{
+	gtk_list_store_set(debr.ui_program.list_store, iter,
+		PROGRAM_TITLE, geoxml_program_get_title(program),
+		PROGRAM_DESCRIPTION, geoxml_program_get_description(program),
+		PROGRAM_XMLPOINTER, program,
+		-1);
+}
+
+/*
+ * Function: program_load_selected
+ * Load selected program contents to its iter
+ */
+static void
+program_load_selected(void)
+{
+	GtkTreeIter	iter;
+
+	program_get_selected(&iter);
+	program_load_iter(debr.program, &iter);
+}
+
+static GtkTreeIter
+program_append_to_ui(GeoXmlProgram * program)
+{
+	GtkTreeIter	iter;
+
+	gtk_list_store_append(debr.ui_program.list_store, &iter);
+	program_load_iter(program, &iter);
+
+	return iter;
+}
+
+/*
+ * Function: program_selected
+ * Load user selected program
+ */
+static void
+program_selected(void)
+{
+	GtkTreeIter		iter;
+
+	if (program_get_selected(&iter) == FALSE) {
+		debr.program = NULL;
+		return;
+	}
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_program.list_store), &iter,
+		PROGRAM_XMLPOINTER, &debr.program,
+		-1);
+	parameter_load_program();
+}
+
+/*
+ * Function: program_select_iter
+ * Select _iter_ loading it
+ */
+static void
+program_select_iter(GtkTreeIter iter)
+{
+	GtkTreeSelection *	tree_selection;
+
+	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_program.tree_view));
+	gtk_tree_selection_select_iter(tree_selection, &iter);
+	program_selected();
+}
+
+/*
+ * Function: program_popup_menu
+ * Agregate action to the popup menu and shows it.
+ */
+static GtkMenu *
+program_popup_menu(GtkWidget * tree_view)
+{
+	GtkWidget *	menu;
+	GtkWidget *	menu_item;
+
+	GtkTreeIter	iter;
+
+	menu = gtk_menu_new();
+
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(debr.actions.program.new));
+	/* Move up */
+	if (gtk_list_store_can_move_up(debr.ui_program.list_store, &iter) == TRUE) {
+		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_UP, NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate",
+			(GCallback)program_up, NULL);
+	}
+	/* Move down */
+	if (gtk_list_store_can_move_down(debr.ui_program.list_store, &iter) == TRUE) {
+		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_DOWN, NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate",
+			(GCallback)program_down, NULL);
+	}
+	/* Remove */
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(debr.actions.program.delete));
+
+	gtk_widget_show_all(menu);
+
+	return GTK_MENU(menu);
 }
 
 /*
@@ -578,12 +630,7 @@ program_stderr_changed(GtkToggleButton * togglebutton)
 static gboolean
 program_title_changed(GtkEntry * entry)
 {
-	GtkWidget *	program_label;
-
-	//g_object_get(G_OBJECT(entry), "user-data", &program_label, NULL);
-
 	geoxml_program_set_title(debr.program, gtk_entry_get_text(GTK_ENTRY(entry)));
-	//gtk_label_set_text(GTK_LABEL(program_label), gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 	return FALSE;

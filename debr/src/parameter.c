@@ -77,9 +77,11 @@ combo_type_map_get_index(enum GEOXML_PARAMETERTYPE type)
 static GtkTreeIter
 parameter_append_to_ui(GeoXmlParameter * parameter, GtkTreeIter * parent);
 static void
-parameter_load_to_iter(GeoXmlParameter * parameter, GtkTreeIter * iter);
+parameter_load_iter(GeoXmlParameter * parameter, GtkTreeIter * iter);
 static void
 parameter_select_iter(GtkTreeIter iter);
+static gboolean
+parameter_check_selected(void);
 static gboolean
 parameter_get_selected(GtkTreeIter * iter);
 static void
@@ -89,8 +91,6 @@ parameter_activated(void);
 static GtkMenu *
 parameter_popup_menu(GtkWidget * tree_view);
 
-static void
-parameter_dialog_setup_ui(void);
 static void
 parameter_default_widget_changed(struct parameter_widget * widget);
 static void
@@ -187,6 +187,19 @@ parameter_load_program(void)
 	}
 
 	debr.parameter = NULL;
+}
+
+/*
+ * Function: parameter_load_selected
+ * Load selected parameter contents to its iter
+ */
+void
+parameter_load_selected(void)
+{
+	GtkTreeIter	iter;
+
+	parameter_get_selected(&iter);
+	parameter_load_iter(debr.parameter, &iter);
 }
 
 /*
@@ -358,167 +371,10 @@ parameter_change_type_setup_ui(void)
 	geoxml_parameter_set_type(debr.parameter, combo_type_map_get_type(
 		gtk_combo_box_get_active(GTK_COMBO_BOX(type_combo))));
 
-	/* Update iter */
-	parameter_load_to_iter(debr.parameter, &iter);
-
+	parameter_load_selected();
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 
 	gtk_widget_destroy(dialog);
-}
-
-/*
- * Section: Private
- */
-
-/*
- * Function: parameter_append_to_ui
- * Create an item for _parameter_ on parameter tree view
- */
-static GtkTreeIter
-parameter_append_to_ui(GeoXmlParameter * parameter, GtkTreeIter * parent)
-{
-	GtkTreeIter	iter;
-
-	gtk_tree_store_append(debr.ui_parameter.tree_store, &iter, parent);
-	parameter_load_to_iter(parameter, &iter);
-
-	return iter;
-}
-
-/*
- * Function: parameter_load_to_iter
- * Load _parameter_ stuff into _iter_
- */
-static void
-parameter_load_to_iter(GeoXmlParameter * parameter, GtkTreeIter * iter)
-{
-	gtk_tree_store_set(debr.ui_parameter.tree_store, iter,
-		PARAMETER_LABEL, geoxml_parameter_get_label(parameter),
-		PARAMETER_TYPE, combo_type_map_get_title(geoxml_parameter_get_type(parameter)),
-		PARAMETER_XMLPOINTER, parameter,
-		-1);
-}
-
-/*
- * Function: parameter_select_iter
- * Select _iter_ loading its pointer
- */
-static void
-parameter_select_iter(GtkTreeIter iter)
-{
-	GtkTreeSelection *	tree_selection;
-
-	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &iter,
-		PARAMETER_XMLPOINTER, &debr.parameter,
-		-1);
-	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_parameter.tree_view));
-	gtk_tree_selection_select_iter(tree_selection, &iter);
-	parameter_selected();
-}
-
-/*
- * Function: parameter_check_selected
- * Returns true if there is a parameter selected. Othewise,
- * returns false and show a message on the status bar.
- */
-static gboolean
-parameter_check_selected(void)
-{
-	if (debr.parameter == NULL) {
-		debr_message(LOG_ERROR, _("No parameter is selected"));
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/*
- * Function: parameter_get_selected
- * Return true if there is a parameter selected and write it to _iter_
- */
-static gboolean
-parameter_get_selected(GtkTreeIter * iter)
-{
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
-
-	if (parameter_check_selected() == FALSE)
-		return FALSE;
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_parameter.tree_view));
-	return gtk_tree_selection_get_selected(selection, &model, iter);
-}
-
-/*
- * Function: parameter_selected
- * Set debr.parameter to the current selected parameter
- */
-static void
-parameter_selected(void)
-{
-	GtkTreeIter	iter;
-
-	parameter_get_selected(&iter);
-	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &iter,
-		PARAMETER_XMLPOINTER, &debr.parameter,
-		-1);
-}
-
-/*
- * Function: parameter_activated
- * Open a dialog to configure the parameter, according to its type.
- */
-static void
-parameter_activated(void)
-{
-	GtkTreeIter	iter;
-
-	if (parameter_get_selected(&iter) == FALSE)
-		return;
-	if (geoxml_parameter_get_is_program_parameter(debr.parameter) == TRUE)
-		parameter_dialog_setup_ui();
-	else
-		parameter_group_dialog_setup_ui();
-
-	/* reload parameter into iter */
-	parameter_load_to_iter(debr.parameter, &iter);
-}
-
-/*
- * Funcion: parameter_popup_menu
- * Show a popup menu for parameter actions
- */
-static GtkMenu *
-parameter_popup_menu(GtkWidget * tree_view)
-{
-	GtkWidget *	menu;
-	GtkWidget *	menu_item;
-
-	GtkTreeIter	iter;
-
-	menu = gtk_menu_new();
-
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.parameter.new));
-	/* Move up */
-	if (gtk_tree_store_can_move_up(debr.ui_parameter.tree_store, &iter) == TRUE) {
-		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_UP, NULL);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-		g_signal_connect(menu_item, "activate",
-			(GCallback)parameter_up, NULL);
-	}
-	/* Move down */
-	if (gtk_tree_store_can_move_down(debr.ui_parameter.tree_store, &iter) == TRUE) {
-		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_DOWN, NULL);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-		g_signal_connect(menu_item, "activate",
-			(GCallback)parameter_down, NULL);
-	}
-	/* Remove */
-	gtk_container_add(GTK_CONTAINER(menu),
-		gtk_action_create_menu_item(debr.actions.parameter.delete));
-
-	gtk_widget_show_all(menu);
-
-	return GTK_MENU(menu);
 }
 
 /*
@@ -552,6 +408,9 @@ parameter_dialog_setup_ui(void)
 
 	GeoXmlProgramParameter *	program_parameter;
 	struct parameter_widget *	parameter_widget;
+
+	if (parameter_check_selected() == FALSE)
+		return;
 
 	program_parameter = GEOXML_PROGRAM_PARAMETER(debr.parameter);
 	type = geoxml_parameter_get_type(debr.parameter);
@@ -898,9 +757,168 @@ parameter_dialog_setup_ui(void)
 		geoxml_program_parameter_set_list_separator(GEOXML_PROGRAM_PARAMETER(debr.parameter),
 			gtk_entry_get_text(GTK_ENTRY(separator_entry)));
 
+	parameter_load_selected();
+
 	/* frees */
 	gtk_widget_destroy(ui->dialog);
 	g_free(ui);
+}
+
+/*
+ * Section: Private
+ */
+
+/*
+ * Function: parameter_append_to_ui
+ * Create an item for _parameter_ on parameter tree view
+ */
+static GtkTreeIter
+parameter_append_to_ui(GeoXmlParameter * parameter, GtkTreeIter * parent)
+{
+	GtkTreeIter	iter;
+
+	gtk_tree_store_append(debr.ui_parameter.tree_store, &iter, parent);
+	parameter_load_iter(parameter, &iter);
+
+	return iter;
+}
+
+/*
+ * Function: parameter_load_iter
+ * Load _parameter_ stuff into _iter_
+ */
+static void
+parameter_load_iter(GeoXmlParameter * parameter, GtkTreeIter * iter)
+{
+	gtk_tree_store_set(debr.ui_parameter.tree_store, iter,
+		PARAMETER_LABEL, geoxml_parameter_get_label(parameter),
+		PARAMETER_TYPE, combo_type_map_get_title(geoxml_parameter_get_type(parameter)),
+		PARAMETER_XMLPOINTER, parameter,
+		-1);
+}
+
+/*
+ * Function: parameter_select_iter
+ * Select _iter_ loading its pointer
+ */
+static void
+parameter_select_iter(GtkTreeIter iter)
+{
+	GtkTreeSelection *	tree_selection;
+
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &iter,
+		PARAMETER_XMLPOINTER, &debr.parameter,
+		-1);
+	tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_parameter.tree_view));
+	gtk_tree_selection_select_iter(tree_selection, &iter);
+	parameter_selected();
+}
+
+/*
+ * Function: parameter_check_selected
+ * Returns true if there is a parameter selected. Othewise,
+ * returns false and show a message on the status bar.
+ */
+static gboolean
+parameter_check_selected(void)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+	GtkTreeIter		iter;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_parameter.tree_view));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE) {
+		debr_message(LOG_ERROR, _("No parameter is selected"));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/*
+ * Function: parameter_get_selected
+ * Return true if there is a parameter selected and write it to _iter_
+ */
+static gboolean
+parameter_get_selected(GtkTreeIter * iter)
+{
+	GtkTreeSelection *	selection;
+	GtkTreeModel *		model;
+
+	if (parameter_check_selected() == FALSE)
+		return FALSE;
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_parameter.tree_view));
+	return gtk_tree_selection_get_selected(selection, &model, iter);
+}
+
+/*
+ * Function: parameter_selected
+ * Set debr.parameter to the current selected parameter
+ */
+static void
+parameter_selected(void)
+{
+	GtkTreeIter	iter;
+
+	parameter_get_selected(&iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &iter,
+		PARAMETER_XMLPOINTER, &debr.parameter,
+		-1);
+}
+
+/*
+ * Function: parameter_activated
+ * Open a dialog to configure the parameter, according to its type.
+ */
+static void
+parameter_activated(void)
+{
+	GtkTreeIter	iter;
+
+	if (parameter_get_selected(&iter) == FALSE)
+		return;
+	if (geoxml_parameter_get_is_program_parameter(debr.parameter) == TRUE)
+		parameter_dialog_setup_ui();
+	else
+		parameter_group_dialog_setup_ui();
+}
+
+/*
+ * Funcion: parameter_popup_menu
+ * Show a popup menu for parameter actions
+ */
+static GtkMenu *
+parameter_popup_menu(GtkWidget * tree_view)
+{
+	GtkWidget *	menu;
+	GtkWidget *	menu_item;
+
+	GtkTreeIter	iter;
+
+	menu = gtk_menu_new();
+
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(debr.actions.parameter.new));
+	/* Move up */
+	if (gtk_tree_store_can_move_up(debr.ui_parameter.tree_store, &iter) == TRUE) {
+		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_UP, NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate",
+			(GCallback)parameter_up, NULL);
+	}
+	/* Move down */
+	if (gtk_tree_store_can_move_down(debr.ui_parameter.tree_store, &iter) == TRUE) {
+		menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_GO_DOWN, NULL);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate",
+			(GCallback)parameter_down, NULL);
+	}
+	/* Remove */
+	gtk_container_add(GTK_CONTAINER(menu),
+		gtk_action_create_menu_item(debr.actions.parameter.delete));
+
+	gtk_widget_show_all(menu);
+
+	return GTK_MENU(menu);
 }
 
 static void

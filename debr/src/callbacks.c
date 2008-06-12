@@ -83,15 +83,12 @@ out:	gtk_widget_destroy(chooser_dialog);
 void
 on_menu_save_activate(void)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
 	gchar *			path;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (debr.ui_menu.tree_view));
-	gtk_tree_selection_get_selected(selection, &model, &iter);
+	menu_get_selected(&iter);
 	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
@@ -114,8 +111,6 @@ on_menu_save_activate(void)
 void
 on_menu_save_as_activate(void)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
 	GtkWidget *		chooser_dialog;
@@ -148,12 +143,11 @@ on_menu_save_as_activate(void)
 	filename = g_path_get_basename(path);
 
 	/* get selection, change the view and save to disk */
-	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (debr.ui_menu.tree_view));
-	gtk_tree_selection_get_selected (selection, &model, &iter);
-	gtk_list_store_set (debr.ui_menu.list_store, &iter,
-			MENU_FILENAME, filename,
-			MENU_PATH, path,
-			-1);
+	menu_get_selected(&iter);
+	gtk_list_store_set(debr.ui_menu.list_store, &iter,
+		MENU_FILENAME, filename,
+		MENU_PATH, path,
+		-1);
 	geoxml_document_set_filename(GEOXML_DOC(debr.menu), filename);
 	menu_save(path);
 	g_free(path);
@@ -169,8 +163,6 @@ out:	gtk_widget_destroy(chooser_dialog);
 void
 on_menu_revert_activate(void)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
 	gchar *			path;
@@ -181,8 +173,7 @@ on_menu_revert_activate(void)
 		return;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW (debr.ui_menu.tree_view));
-	gtk_tree_selection_get_selected(selection, &model, &iter);
+	menu_get_selected(&iter);
 	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
@@ -216,8 +207,6 @@ on_menu_revert_activate(void)
 void
 on_menu_delete_activate(void)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
 	gchar *			path;
@@ -227,8 +216,7 @@ on_menu_delete_activate(void)
 		return;
 
 	/* get path of selection */
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
-	gtk_tree_selection_get_selected(selection, &model, &iter);
+	menu_get_selected(&iter);
 	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
 		MENU_PATH, &path,
 		-1);
@@ -251,23 +239,29 @@ on_menu_delete_activate(void)
 
 /*
  * Function: on_menu_new_activate
+ * Call <menu_remove>
+ */
+void
+on_menu_properties_activate(void)
+{
+	menu_dialog_setup_ui();
+}
+
+/*
+ * Function: on_menu_new_activate
  * Delete menu from the view.
  */
 void
 on_menu_close_activate(void)
 {
-	GtkTreeSelection *	selection;
-	GtkTreeModel *		model;
 	GtkTreeIter		iter;
 
 	GdkPixbuf *		pixbuf;
 
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(debr.ui_menu.tree_view));
-	gtk_tree_selection_get_selected(selection, &model, &iter);
-
+	menu_get_selected(&iter);
 	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
-				MENU_STATUS, &pixbuf,
-				-1);
+		MENU_STATUS, &pixbuf,
+		-1);
 
 	if (pixbuf == debr.pixmaps.stock_no) {
 		GtkWidget *	dialog;
@@ -305,14 +299,13 @@ on_menu_close_activate(void)
 	geoxml_document_free(GEOXML_DOC(debr.menu));
 	gtk_list_store_remove(debr.ui_menu.list_store, &iter);
 
-	if (gtk_tree_model_iter_n_children(model, NULL) == 0)
+	if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(debr.ui_menu.list_store), NULL) == 0)
 		menu_new();
 	else {
 		GtkTreeIter	first_iter;
 
-		gtk_tree_model_iter_nth_child(model, &first_iter, NULL, 0);
-		gtk_tree_selection_select_iter(selection, &first_iter);
-		menu_selected();
+		gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(debr.ui_menu.list_store), &first_iter, NULL, 0);
+		menu_select_iter(&first_iter);
 	}
 }
 
@@ -334,6 +327,36 @@ void
 on_program_delete_activate(void)
 {
 	program_remove();
+}
+
+/*
+ * Function: on_program_new_activate
+ * Call <program_remove>
+ */
+void
+on_program_properties_activate(void)
+{
+	program_dialog_setup_ui();
+}
+
+/*
+ * Function: on_program_up_activate
+ * Call <program_up>
+ */
+void
+on_program_up_activate(void)
+{
+	program_up();
+}
+
+/*
+ * Function: on_program_down_activate
+ * Call <program_down>
+ */
+void
+on_program_down_activate(void)
+{
+	program_down();
 }
 
 /*
@@ -364,6 +387,16 @@ void
 on_parameter_duplicate_activate(void)
 {
 	parameter_duplicate();
+}
+
+/*
+ * Function: on_parameter_new_activate
+ * Call <parameter_remove>
+ */
+void
+on_parameter_properties_activate(void)
+{
+	parameter_dialog_setup_ui();
 }
 
 /*

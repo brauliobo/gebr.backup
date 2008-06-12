@@ -48,6 +48,9 @@ void
 parameter_load_program(void);
 
 void
+parameter_load_selected(void);
+
+void
 parameter_new(void);
 
 void
@@ -64,5 +67,8 @@ parameter_down(void);
 
 void
 parameter_change_type_setup_ui(void);
+
+void
+parameter_dialog_setup_ui(void);
 
 #endif //__PARAMETER_H

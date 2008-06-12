@@ -29,26 +29,24 @@
 
 /*
  * File: interface.c
- * Interface creation: mainwindow, actions and callbacks.
+ * Interface creation: mainwindow, actions and callbacks assignmment.
  * See also <callbacks.c>
  */
 
 /*
- * Prototypes
+ * Declarations
  */
-
-
 
 /*
  * Section: Public
  */
 
 /*
- * Function: debr_create_window
- * Create DeBR's main window
+ * Function: debr_setup_ui
+ * Create DeBR's main window and its childs
  */
 void
-debr_create_window(void)
+debr_setup_ui(void)
 {
 	GtkWidget *		menu_bar;
 	GtkWidget *		notebook;
@@ -137,6 +135,11 @@ debr_create_window(void)
 		NULL, NULL, GTK_STOCK_DELETE);
 	g_signal_connect(debr.actions.menu.delete, "activate",
 		(GCallback)on_menu_delete_activate, NULL);
+	/* properties */
+	debr.actions.menu.properties = gtk_action_new("menu_properties",
+		NULL, NULL, GTK_STOCK_PROPERTIES);
+	g_signal_connect(debr.actions.menu.properties, "activate",
+		(GCallback)on_menu_properties_activate, NULL);
 	/* close */
 	debr.actions.menu.close = gtk_action_new("menu_close",
 		NULL, NULL, GTK_STOCK_CLOSE);
@@ -156,6 +159,21 @@ debr_create_window(void)
 		NULL, NULL, GTK_STOCK_DELETE);
 	g_signal_connect(debr.actions.program.delete, "activate",
 		(GCallback)on_program_delete_activate, NULL);
+	/* properties */
+	debr.actions.program.properties = gtk_action_new("program_properties",
+		NULL, NULL, GTK_STOCK_PROPERTIES);
+	g_signal_connect(debr.actions.program.properties, "activate",
+		(GCallback)on_program_properties_activate, NULL);
+	/* up */
+	debr.actions.program.up = gtk_action_new("program_up",
+		NULL, NULL, GTK_STOCK_GO_UP);
+	g_signal_connect(debr.actions.program.up, "activate",
+		(GCallback)on_program_up_activate, NULL);
+	/* down */
+	debr.actions.program.down = gtk_action_new("program_down",
+		NULL, NULL, GTK_STOCK_GO_DOWN);
+	g_signal_connect(debr.actions.program.down, "activate",
+		(GCallback)on_program_down_activate, NULL);
 
 	/*
 	 * Actions: Parameter
@@ -170,6 +188,11 @@ debr_create_window(void)
 		NULL, NULL, GTK_STOCK_DELETE);
 	g_signal_connect(debr.actions.parameter.delete, "activate",
 		(GCallback)on_parameter_delete_activate, NULL);
+	/* properties */
+	debr.actions.parameter.properties = gtk_action_new("parameter_properties",
+		NULL, NULL, GTK_STOCK_PROPERTIES);
+	g_signal_connect(debr.actions.parameter.properties, "activate",
+		(GCallback)on_parameter_properties_activate, NULL);
 	/* up */
 	debr.actions.parameter.up = gtk_action_new("parameter_up",
 		NULL, NULL, GTK_STOCK_GO_UP);
@@ -307,6 +330,8 @@ debr_create_window(void)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.menu.delete)), -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.menu.properties)), -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.menu.close)), -1);
 
 	gtk_widget_show_all(toolbar);
@@ -329,6 +354,8 @@ debr_create_window(void)
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.program.new)), -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.program.delete)), -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.program.properties)), -1);
 
 	gtk_widget_show_all(toolbar);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
@@ -351,6 +378,8 @@ debr_create_window(void)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.parameter.delete)), -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.parameter.properties)), -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 		GTK_TOOL_ITEM(gtk_action_create_tool_item(debr.actions.parameter.change_type)), -1);
 
 	gtk_widget_show_all(toolbar);
@@ -360,3 +389,7 @@ debr_create_window(void)
 	gtk_box_pack_start(GTK_BOX(vbox), debr.ui_parameter.widget, TRUE, TRUE, 0);
 
 }
+
+/*
+ * Section: Private
+ */
