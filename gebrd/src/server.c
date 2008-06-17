@@ -55,7 +55,6 @@ server_init(void)
 	log_filename = g_string_new(NULL);
 	run_filename = g_string_new(NULL);
 	client_ip = g_string_new("");
-	/* local address used for listening */
 	host_address = g_host_address_new();
 	g_host_address_set_ipv4_string(host_address, "127.0.0.1");
 

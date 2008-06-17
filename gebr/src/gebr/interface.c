@@ -89,7 +89,7 @@ assembly_interface(void)
 
 	/* Signals */
 	g_signal_connect(GTK_OBJECT(gebr.window), "delete_event",
-			GTK_SIGNAL_FUNC(gebr_quit), NULL);
+		GTK_SIGNAL_FUNC(gebr_quit), NULL);
 
 	/* Create the main vbox to hold menu, notebook and status bar */
 	vboxmain = gtk_vbox_new(FALSE, 1);
