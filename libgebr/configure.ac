@@ -92,8 +92,7 @@ AC_SUBST(GDOME2_LIBS)
 AC_SUBST(GDOME2_CFLAGS)
 
 AC_OUTPUT([
-debian/changelog
-rpm/libgebr.fedora.spec rpm/libgebr.opensuse.spec rpm/libgebr.mandriva.spec
+packages/debian/changelog packages/rpm/libgebr.fedora.spec packages/rpm/libgebr.opensuse.spec packages/rpm/libgebr.mandriva.spec
 Makefile src/gebr.pc src/Makefile src/defines.h
 src/geoxml/Makefile src/geoxml/gebr-geoxml.pc src/geoxml/geoxml/Makefile src/geoxml/geoxml/defines.h src/geoxml/data/Makefile src/geoxml/validate/Makefile src/geoxml/upgrade/Makefile src/geoxml/doc/Makefile src/geoxml/test/Makefile
 src/comm/Makefile src/comm/gebr-comm.pc src/comm/comm/Makefile
