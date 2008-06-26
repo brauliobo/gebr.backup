@@ -14,22 +14,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT(configure.ac)
+SUBDIRS=menus
 
-PACKAGE=gebr-menus-su
-VERSION=0.1.0
-AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
+EXTRA_DIST=
+	rpm/gebr.fedora.spec \
+	rpm/gebr.opensuse.spec \
+	rpm/gebr.mandriva.spec
 
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
-PACKAGE_NAME=$PACKAGE
-PACKAGE_VERSION=$VERSION
+packages: deb-package rpm-packages
+rpm-packages: fedora-package opensuse-package mandriva-package
 
-AC_PROG_INSTALL
-AC_PROG_CC
+deb-package:
+	dpkg-buildpackage -kA594D681 -tc -rfakeroot
 
-AC_OUTPUT([
-Makefile
-menus/Makefile packages/Makefile
-packages/debian/changelog packages/rpm/gebr-menus-su.fedora.spec packages/rpm/gebr-menus-su.opensuse.spec packages/rpm/gebr-menus-su.mandriva.spec
-])
+rpm-structure: dist
+	mkdir -p rpm/BUILD rpm/RPMS rpm/SRPMS rpm/SOURCES && cp @PACKAGE@-@VERSION@.tar.gz rpm/SOURCES
+
+fedora-package: rpm-structure
+	rpmbuild -ba rpm/gebr-menus-su.fedora.spec
+
+opensuse-package: rpm-structure
+	rpmbuild -ba rpm/gebr-menus-su.opensuse.spec
+
+mandriva-package: rpm-structure
+	rpmbuild -ba rpm/gebr-menus-su.mandriva.spec
+
+PHONY: doc deb-package rpm-structure fedora-package opensuse-package mandriva-package
