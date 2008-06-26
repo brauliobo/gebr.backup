@@ -31,5 +31,5 @@ AC_PROG_CC
 AC_OUTPUT([
 Makefile
 menus/Makefile packages/Makefile
-packages/debian/changelog packages/rpm/gebr-menus-su.fedora.spec packages/rpm/gebr-menus-su.opensuse.spec packages/rpm/gebr-menus-su.mandriva.spec
+packages/rpm/gebr-menus-su.fedora.spec packages/rpm/gebr-menus-su.opensuse.spec packages/rpm/gebr-menus-su.mandriva.spec
 ])
