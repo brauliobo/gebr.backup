@@ -25,7 +25,7 @@ packages: deb-package rpm-packages
 rpm-packages: fedora-package opensuse-package mandriva-package
 
 deb-package:
-	dpkg-buildpackage -kA594D681 -tc -rfakeroot
+	cd ..; dpkg-buildpackage -kA594D681 -tc -rfakeroot; cd -
 
 rpm-structure:
 	cd ..; make dist; cd -

@@ -31,10 +31,11 @@ packages: deb-package rpm-packages
 rpm-packages: fedora-package opensuse-package mandriva-package
 
 deb-package:
-	dpkg-buildpackage -kA594D681 -tc -rfakeroot
+	cd ..; dpkg-buildpackage -kA594D681 -tc -rfakeroot; cd -
 
-rpm-structure: dist
-	mkdir -p rpm/BUILD rpm/RPMS rpm/SRPMS rpm/SOURCES && cp @PACKAGE@-@VERSION@.tar.gz rpm/SOURCES
+rpm-structure:
+	cd ..; make dist; cd -
+	mkdir -p rpm/BUILD rpm/RPMS rpm/SRPMS rpm/SOURCES && cp ../@PACKAGE@-@VERSION@.tar.gz rpm/SOURCES
 
 fedora-package: rpm-structure
 	rpmbuild -ba rpm/libgebr.fedora.spec
