@@ -234,7 +234,7 @@ geoxml_sequence_append_clone(GeoXmlSequence * sequence)
 		GdomeElement *	reference_element;
 
 		/* append reference to clone for each group instance */
-		__geoxml_foreach_xpath_result(reference_element,
+		__geoxml_foreach_element(reference_element,
 		__geoxml_get_elements_by_idref((GdomeElement*)sequence, __geoxml_get_attr_value((GdomeElement*)sequence, "id")))
 			__geoxml_sequence_append_clone((GeoXmlSequence*)gdome_el_parentNode(reference_element, &exception));
 	}
@@ -254,7 +254,7 @@ geoxml_sequence_remove(GeoXmlSequence * sequence)
 	if (__geoxml_sequence_is_parameter(sequence) && geoxml_parameter_get_is_in_group((GeoXmlParameter*)sequence)) {
 		GdomeElement *	reference_element;
 
-		__geoxml_foreach_xpath_result(reference_element,
+		__geoxml_foreach_element(reference_element,
 		__geoxml_get_elements_by_idref((GdomeElement*)sequence, __geoxml_get_attr_value((GdomeElement*)sequence, "id")))
 			__geoxml_sequence_remove((GeoXmlSequence*)gdome_el_parentNode(reference_element, &exception));
 	}
@@ -300,7 +300,7 @@ geoxml_sequence_move_up(GeoXmlSequence * sequence)
 	if (__geoxml_sequence_is_parameter(sequence) && geoxml_parameter_get_is_in_group((GeoXmlParameter*)sequence)) {
 		GdomeElement *	reference_element;
 
-		__geoxml_foreach_xpath_result(reference_element,
+		__geoxml_foreach_element(reference_element,
 		__geoxml_get_elements_by_idref((GdomeElement*)sequence, __geoxml_get_attr_value((GdomeElement*)sequence, "id")))
 			__geoxml_sequence_move_up((GeoXmlSequence*)gdome_el_parentNode(reference_element, &exception));
 	}
@@ -317,7 +317,7 @@ geoxml_sequence_move_down(GeoXmlSequence * sequence)
 	if (__geoxml_sequence_is_parameter(sequence) && geoxml_parameter_get_is_in_group((GeoXmlParameter*)sequence)) {
 		GdomeElement *	reference_element;
 
-		__geoxml_foreach_xpath_result(reference_element,
+		__geoxml_foreach_element(reference_element,
 		__geoxml_get_elements_by_idref((GdomeElement*)sequence, __geoxml_get_attr_value((GdomeElement*)sequence, "id")))
 			__geoxml_sequence_move_down((GeoXmlSequence*)gdome_el_parentNode(reference_element, &exception));
 	}

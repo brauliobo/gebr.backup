@@ -84,7 +84,7 @@ __geoxml_get_element_by_id(GdomeElement * base, const gchar * id);
  * \internal
  *
  */
-GdomeXPathResult *
+GSList *
 __geoxml_get_elements_by_idref(GdomeElement * base, const gchar * idref);
 
 /**
@@ -218,5 +218,19 @@ __geoxml_xpath_evaluate(GdomeElement * context, const gchar * expression);
 		for (element = (GdomeElement*)gdome_xpresult_singleNodeValue(xpath_result, &exception); \
 		element != NULL || (gdome_xpresult_unref(xpath_result, &exception), 0); \
 		element = (GdomeElement*)gdome_xpresult_iterateNext(xpath_result, &exception))
+
+/**
+ * \internal
+ * Iterates elements of a GSList at \p list
+ * This macro will auto free \p list and you can use it
+ * as __geoxml_foreach_element(element, __geoxml_get_elements_by_idref(base, id)).
+ * If you use 'break' then you have to free it yourself.
+ */
+#define __geoxml_foreach_element(element, list) \
+	GSList * i = g_slist_last(list); \
+	if (i != NULL || (g_slist_free(list), 0)) \
+		for (element = (GdomeElement*)i->data; \
+		(i != NULL && (element = (GdomeElement*)i->data, 1)) || (g_slist_free(list), 0); \
+		i = g_slist_next(i))
 
 #endif //__LIBGEBR_GEOXML_XML_H

@@ -160,30 +160,64 @@ __geoxml_get_element_by_id(GdomeElement * base, const gchar * id)
 	return element;
 }
 
-GdomeXPathResult *
+GSList *
 __geoxml_get_elements_by_idref(GdomeElement * base, const gchar * idref)
 {
-	GString *		expression;
-	GdomeXPathResult *	xpath_result;
+	GSList *		idref_list;
 	GdomeElement *		document_element;
+	GdomeDOMString *	string, * id_string;
+	GdomeNodeList *		node_list;
+	gint			i;
 
-	expression = g_string_new(NULL);
+	idref_list = g_slist_alloc();
 	document_element = gdome_doc_documentElement(gdome_el_ownerDocument(base, &exception), &exception);
+	string = gdome_str_mkref("reference");
+	id_string = gdome_str_mkref("id");
+	node_list = gdome_el_getElementsByTagName(document_element, string, &exception);
 
-	g_string_printf(expression, "idref(('%s'))", idref);
-	xpath_result = __geoxml_xpath_evaluate(document_element, expression->str);
+	/* get the list of elements with this tag_name. */
+	for (i = 0; i < gdome_nl_length(node_list, &exception); ++i) {
+		GdomeElement *	element;
 
-	/* the result may contain document's element because of lastid attribute
-	 * if so, ignore it */
-	if ((GdomeElement*)gdome_xpresult_singleNodeValue(xpath_result, &exception) == document_element) {
-		puts("idref at document element");
-		gdome_xpresult_iterateNext(xpath_result, &exception);
+		element = (GdomeElement*)gdome_nl_item(node_list, i, &exception);
+		if (strcmp(gdome_el_getAttribute(element, id_string, &exception)->str, idref) == 0)
+			idref_list = g_slist_prepend(idref_list, element);
 	}
 
-	g_string_free(expression, TRUE);
+	gdome_str_unref(string);
+	gdome_str_unref(id_string);
+	gdome_nl_unref(node_list, &exception);
 
-	return xpath_result;
+	idref_list = g_slist_reverse(idref_list);
+
+	return idref_list;
 }
+
+/* XPath 2.0 support waiting version */
+// GdomeXPathResult *
+// __geoxml_get_elements_by_idref(GdomeElement * base, const gchar * idref)
+// {
+// 	GString *		expression;
+// 	GdomeXPathResult *	xpath_result;
+// 	GdomeElement *		document_element;
+// 
+// 	expression = g_string_new(NULL);
+// 	document_element = gdome_doc_documentElement(gdome_el_ownerDocument(base, &exception), &exception);
+// 
+// 	g_string_printf(expression, "idref(('%s'))", idref);
+// 	xpath_result = __geoxml_xpath_evaluate(document_element, expression->str);
+// 
+// 	/* the result may contain document's element because of lastid attribute
+// 	 * if so, ignore it */
+// 	if ((GdomeElement*)gdome_xpresult_singleNodeValue(xpath_result, &exception) == document_element) {
+// 		puts("idref at document element");
+// 		gdome_xpresult_iterateNext(xpath_result, &exception);
+// 	}
+// 
+// 	g_string_free(expression, TRUE);
+// 
+// 	return xpath_result;
+// }
 
 glong
 __geoxml_get_element_index(GdomeElement * element)
@@ -389,9 +423,9 @@ __geoxml_element_assign_new_id(GdomeElement * element)
 	lastid_str = g_strdup_printf("n%lu", lastid);
 
 	/* change referenced elements */
-// 	__geoxml_foreach_xpath_result(reference_element,
-// 	__geoxml_get_elements_by_idref(element, __geoxml_get_attr_value(element, "id")))
-// 		__geoxml_set_attr_value(reference_element, "id", lastid_str);
+	__geoxml_foreach_element(reference_element,
+	__geoxml_get_elements_by_idref(element, __geoxml_get_attr_value(element, "id")))
+		__geoxml_set_attr_value(reference_element, "id", lastid_str);
 
 	__geoxml_set_attr_value(document_element, "lastid", lastid_str);
 	__geoxml_set_attr_value(element, "id", lastid_str);
