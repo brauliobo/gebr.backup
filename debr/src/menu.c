@@ -179,24 +179,8 @@ menu_load(const gchar * path)
 	int			ret;
 
 	if ((ret = geoxml_document_load(&menu, path))) {
-		/* TODO: */
-		switch (ret) {
-		case GEOXML_RETV_DTD_SPECIFIED:
-
-		break;
-		case GEOXML_RETV_INVALID_DOCUMENT:
-
-		break;
-		case GEOXML_RETV_CANT_ACCESS_FILE:
-
-		break;
-		case GEOXML_RETV_CANT_ACCESS_DTD:
-
-		break;
-		default:
-
-		break;
-		}
+		debr_message(LOG_ERROR, _("Could not load menu at '%s': %s"), path,
+			"unknown error"/*geoxml_error_string((enum GEOXML_RETV)ret)*/);
 
 		return NULL;
 	}
@@ -279,11 +263,17 @@ menu_open(const gchar * path, gboolean select)
 	/* add to the view */
 	filename = g_path_get_basename(path);
 	gtk_list_store_append(debr.ui_menu.list_store, &iter);
-	menu_load_selected();
+	gtk_list_store_set(debr.ui_menu.list_store, &iter,
+		MENU_FILENAME, filename,
+		MENU_PATH, path,
+		MENU_XMLPOINTER, menu,
+		-1);
 
 	/* select it and load its contents into UI */
-	if (select == TRUE)
+	if (select == TRUE) {
 		menu_select_iter(&iter);
+		menu_load_selected();
+	}
 
 	g_free(filename);
 }
@@ -366,8 +356,8 @@ menu_cleanup(void)
 		GdkPixbuf *	pixbuf;
 
 		gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.list_store), &iter,
-				MENU_STATUS, &pixbuf,
-				-1);
+			MENU_STATUS, &pixbuf,
+			-1);
 		if (pixbuf == debr.pixmaps.stock_no) {
 			GtkTreeIter *	iter_pointer;
 
@@ -711,7 +701,6 @@ menu_load_selected(void)
 		-1);
 	menu_details_update();
 }
-
 
 /*
  * Function: menu_select_iter
