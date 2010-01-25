@@ -53,7 +53,7 @@ AM_GLIB_GNU_GETTEXT
 AM_GNU_GETTEXT_VERSION([0.11])
 
 dnl check for GTK
-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0,,AC_MSG_ERROR([Could not find gtk+-2.0 >= 2.0.0]))
+PKG_CHECK_MODULES(GTK, gtkmm-2.4 >= 2.0.0,,AC_MSG_ERROR([Could not find gtkmm >= 2.0.0]))
 AC_SUBST(GTK_LIBS)
 AC_SUBST(GTK_CFLAGS)
 
