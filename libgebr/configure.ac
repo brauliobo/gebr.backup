@@ -87,7 +87,7 @@ AM_GLIB_GNU_GETTEXT
 AM_GNU_GETTEXT_VERSION([0.11])
 
 dnl check for GLIB >= 2.8.0 (needed for g_access)
-PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.8.0],,AC_MSG_ERROR([Could not find glib >= 2.8.0]))
+PKG_CHECK_MODULES(GLIB, [glibmm-2.4 >= 2.8.0],,AC_MSG_ERROR([Could not find glibmm >= 2.8.0]))
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 dnl check for JSON-GLIB
@@ -113,7 +113,7 @@ AC_SUBST(GDOME2_LIBS)
 AC_SUBST(GDOME2_CFLAGS)
 dnl check for GTK
 if test "$enable_gui" = "yes"; then
-	PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0,,AC_MSG_ERROR([Could not find gtk+-2.0 >= 2.0.0]))
+	PKG_CHECK_MODULES(GTK, gtkmm-2.4 >= 2.0.0,,AC_MSG_ERROR([Could not find gtkmm >= 2.0.0]))
 	AC_SUBST(GTK_LIBS)
 	AC_SUBST(GTK_CFLAGS)
 fi
