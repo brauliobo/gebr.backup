@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 bin_PROGRAMS = gebr-geoxml-menu-diff
-gebr_geoxml_menu_diff_SOURCES = menu-diff.c
+gebr_geoxml_menu_diff_SOURCES = menu-diff.cc
 
 INCLUDES = -I.. -I../.. \
 	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\"

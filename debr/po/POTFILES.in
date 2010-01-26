@@ -1,13 +1,13 @@
 # List of source files containing translatable strings.
-src/callbacks.c
-src/debr.c
-src/enumoptionedit.c
-src/help.c
-src/interface.c
-src/main.c
-src/menu.c
-src/parameter.c
-src/parametergroup.c
-src/preferences.c
-src/program.c
-src/validate.c
+src/callbacks.cc
+src/debr.cc
+src/enumoptionedit.cc
+src/help.cc
+src/interface.cc
+src/main.cc
+src/menu.cc
+src/parameter.cc
+src/parametergroup.cc
+src/preferences.cc
+src/program.cc
+src/validate.cc

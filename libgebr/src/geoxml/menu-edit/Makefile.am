@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 bin_PROGRAMS = gebr-geoxml-menu-edit
-gebr_geoxml_menu_edit_SOURCES = menu-edit.c
+gebr_geoxml_menu_edit_SOURCES = menu-edit.cc
 
 INCLUDES = -I.. \
 	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\"

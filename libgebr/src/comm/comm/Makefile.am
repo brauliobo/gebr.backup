@@ -18,10 +18,10 @@ SUBDIRS = @JSONGLIB_SUBDIR@
 
 lib_LTLIBRARIES = libgebr_comm.la
 libgebr_comm_la_SOURCES = \
-	socketaddress.c hostinfo.c socket.c \
-	streamsocket.c listensocket.c channelsocket.c \
-	process.c terminalprocess.c \
-	protocol.c server.c
+	socketaddress.cc hostinfo.cc socket.cc \
+	streamsocket.cc listensocket.cc channelsocket.cc \
+	process.cc terminalprocess.cc \
+	protocol.cc server.cc
 
 libgebr_commsubincludedir = $(includedir)/libgebr/comm
 libgebr_commsubinclude_HEADERS = \

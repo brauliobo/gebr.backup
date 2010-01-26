@@ -241,7 +241,7 @@ void program_preview(void)
 	if (!program_get_selected(NULL, TRUE))
 		return;
 
-	data = g_malloc(sizeof(struct program_preview_data));
+	data = g_new(struct program_preview_data, 1);
 	data->program = debr.program;
 	dialog = gtk_dialog_new_with_buttons(_("Parameter's dialog preview"),
 					     GTK_WINDOW(NULL),
@@ -404,7 +404,7 @@ void program_dialog_setup_ui(void)
 
 	dialog = gtk_dialog_new_with_buttons(_("Edit program"),
 					     GTK_WINDOW(debr.window),
-					     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+					     (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 					     GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
 	gtk_widget_set_size_request(dialog, 400, 350);
 
@@ -630,7 +630,7 @@ static void program_details_update(void)
 		     (strlen(gebr_geoxml_program_get_url(debr.program)) > 0) ? TRUE : FALSE, NULL);
 
 	g_signal_handlers_disconnect_matched(G_OBJECT(debr.ui_program.details.help_button),
-					     G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(program_help_view), NULL);
+					     G_SIGNAL_MATCH_FUNC, 0, 0, NULL, (gpointer)program_help_view, NULL);
 	g_signal_connect(GTK_OBJECT(debr.ui_program.details.help_button), "clicked",
 			 G_CALLBACK(program_help_view), debr.program);
 	g_object_set(G_OBJECT(debr.ui_program.details.help_button),

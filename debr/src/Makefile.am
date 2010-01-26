@@ -17,18 +17,18 @@
 bin_PROGRAMS = debr
 
 debr_SOURCES = \
-	main.c \
-	interface.c \
-	callbacks.c \
-	debr.c \
-	menu.c \
-	program.c \
-	parameter.c \
-	parametergroup.c \
-	enumoptionedit.c \
-	validate.c \
-	help.c \
-	preferences.c
+	main.cc \
+	interface.cc \
+	callbacks.cc \
+	debr.cc \
+	menu.cc \
+	program.cc \
+	parameter.cc \
+	parametergroup.cc \
+	enumoptionedit.cc \
+	validate.cc \
+	help.cc \
+	preferences.cc
 noinst_HEADERS = \
 	interface.h \
 	callbacks.h \
@@ -44,7 +44,7 @@ noinst_HEADERS = \
 EXTRA_DIST = $(noinst_HEADERS)
 
 INCLUDES = -DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\" $(WEBKIT_ENABLED)
-AM_CPPFLAGS = -Wall -std=gnu99 @DEBUG_CFLAGS@ $(GTK_CFLAGS) \
+AM_CXXFLAGS = -Wall @DEBUG_CFLAGS@ $(GTK_CFLAGS) \
 	$(GEBR_CFLAGS) $(GEBR_GEOXML_CFLAGS) $(GEBR_GUI_CFLAGS)
 debr_LDADD = $(INTLLIBS) $(GTK_LIBS) \
 	$(GEBR_LIBS) $(GEBR_GEOXML_LIBS) $(GEBR_GUI_LIBS)

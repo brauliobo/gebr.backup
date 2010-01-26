@@ -56,14 +56,12 @@ struct {
 	GEBR_GEOXML_PARAMETER_TYPE_STRING, 4, N_("text")}, {
 	GEBR_GEOXML_PARAMETER_TYPE_ENUM, 5, N_("enum")}, {
 	GEBR_GEOXML_PARAMETER_TYPE_FILE, 6, N_("file")}, {
-GEBR_GEOXML_PARAMETER_TYPE_GROUP, 7, N_("group")},};
+		GEBR_GEOXML_PARAMETER_TYPE_GROUP, 7, N_("group")},};
 
-const gsize combo_type_map_size = 8;
 
 int combo_type_map_get_index(enum GEBR_GEOXML_PARAMETER_TYPE type)
 {
-	int i;
-	for (i = 0; i < combo_type_map_size; ++i)
+	for (gsize i = 0; i < combo_type_map_size; ++i)
 		if (combo_type_map[i].type == type)
 			return combo_type_map[i].index;
 	return -1;
@@ -75,17 +73,6 @@ int combo_type_map_get_index(enum GEBR_GEOXML_PARAMETER_TYPE type)
 #define combo_type_map_get_title(type) \
 	combo_type_map[combo_type_map_get_index(type)].title
 
-/* same order as combo_box_map */
-const GtkRadioActionEntry parameter_type_radio_actions_entries[] = {
-	{"parameter_type_real", NULL, N_("real"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FLOAT},
-	{"parameter_type_integer", NULL, N_("integer"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_INT},
-	{"parameter_type_range", NULL, N_("range"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_RANGE},
-	{"parameter_type_flag", NULL, N_("flag"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FLAG},
-	{"parameter_type_text", NULL, N_("text"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_STRING},
-	{"parameter_type_enum", NULL, N_("enum"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_ENUM},
-	{"parameter_type_file", NULL, N_("file"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FILE},
-	{"parameter_type_group", NULL, N_("group"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_GROUP},
-};
 
 static void parameter_dialog_setup_ui(void);
 static GtkTreeIter parameter_append_to_ui(GebrGeoXmlParameter * parameter, GtkTreeIter * parent);
