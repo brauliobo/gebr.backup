@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_INIT(configure.ac)
+AC_CONFIG_SRCDIR(src/main.cc)
 
 PACKAGE=debr
 VERSION="SVN "`svnversion`
@@ -29,7 +30,6 @@ AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 PACKAGE_NAME=$PACKAGE
 PACKAGE_VERSION=$VERSION
 
-# AC_PATH_PROG(GCONFTOOL, gconftool-2)
 IT_PROG_INTLTOOL
 
 AC_PROG_CXX

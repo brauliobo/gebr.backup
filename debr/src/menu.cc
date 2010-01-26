@@ -469,8 +469,8 @@ void menu_install(void)
 
 		if (status == MENU_STATUS_UNSAVED) {
 			gint response;
-			dialog = gtk_message_dialog_new(GTK_WINDOW(debr.window),
-							GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			dialog = gtk_message_dialog_new(GTK_WINDOW(debr.window), (GtkDialogFlags)(GTK_DIALOG_MODAL |
+												  GTK_DIALOG_DESTROY_WITH_PARENT),
 							GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
 							_("Menu %s is unsaved. This means that "
 							  "you are installing an older state of it. "
@@ -482,7 +482,8 @@ void menu_install(void)
 		}
 
 		g_string_printf(cmd_line, "gebr %s -I %s", overwrite_all ? "-f" : "", menu_path);
-		switch ((char)WEXITSTATUS(system(cmd_line->str))) {
+		int sysStatus = system(cmd_line->str);
+		switch ((char)WEXITSTATUS(sysStatus)) {
 		case 0:
 			break;
 		case -1:
@@ -497,7 +498,8 @@ void menu_install(void)
 				gint response;
 
 				dialog = gtk_message_dialog_new(GTK_WINDOW(debr.window),
-								GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+								(GtkDialogFlags)(GTK_DIALOG_MODAL |
+										 GTK_DIALOG_DESTROY_WITH_PARENT),
 								GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
 								_
 								("Menu '%s' already exists. Do you want to overwrite it?"),
@@ -507,16 +509,17 @@ void menu_install(void)
 				gtk_dialog_add_button(GTK_DIALOG(dialog), _("Overwrite all"), GTK_RESPONSE_OK);
 				switch ((response = gtk_dialog_run(GTK_DIALOG(dialog)))) {
 				case GTK_RESPONSE_YES:
-				case GTK_RESPONSE_OK:
+				case GTK_RESPONSE_OK: {
 					g_string_printf(cmd_line, "gebr -f -I %s", menu_path);
-					if ((char)WEXITSTATUS(system(cmd_line->str)))
+					int sysStatus = system(cmd_line->str);
+					if ((char)WEXITSTATUS(sysStatus))
 						gebr_gui_message_dialog(GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, NULL,
 									_("Failed to install menu '%s'"),
 									menu_filename);
 					if (response == GTK_RESPONSE_OK)
 						overwrite_all = TRUE;
 					break;
-				default:
+				} default:
 					break;
 				}
 
@@ -573,8 +576,9 @@ gboolean menu_cleanup(void)
 		return TRUE;
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(debr.window),
-					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-					GTK_BUTTONS_NONE, _("There are menus unsaved. Do you want to save them?"));
+					(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+					GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, _("There are menus unsaved. Do you want" \
+										  "to save them?"));
 	button = gtk_dialog_add_button(GTK_DIALOG(dialog), _("Don't save"), GTK_RESPONSE_NO);
 	g_object_set(G_OBJECT(button), "image", gtk_image_new_from_stock(GTK_STOCK_NO, GTK_ICON_SIZE_BUTTON), NULL);
 	gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
@@ -683,7 +687,7 @@ void menu_dialog_setup_ui(void)
 
 	dialog = gtk_dialog_new_with_buttons(_("Edit menu"),
 					     GTK_WINDOW(debr.window),
-					     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+					     (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 					     GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
 	gtk_widget_set_size_request(dialog, 400, 350);
 
@@ -972,7 +976,7 @@ void menu_details_update(void)
 	gtk_label_set_text(GTK_LABEL(debr.ui_menu.details.author_label), text->str);
 	g_string_free(text, TRUE);
 
-	gchar *names[] = {
+	char *names[] = {
 		"menu_properties",
 		"menu_validate",
 		"menu_install",

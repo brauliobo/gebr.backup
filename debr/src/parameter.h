@@ -21,10 +21,21 @@
 #include <gtk/gtk.h>
 #include <libgebr/geoxml.h>
 
+#include <libgebr/intl.h>
 #include <libgebr/gui/parameter.h>
 
-extern const GtkRadioActionEntry parameter_type_radio_actions_entries[];
-extern const gsize combo_type_map_size;
+/* same order as combo_box_map */
+const GtkRadioActionEntry parameter_type_radio_actions_entries[] = {
+	{"parameter_type_real", NULL, N_("real"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FLOAT},
+	{"parameter_type_integer", NULL, N_("integer"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_INT},
+	{"parameter_type_range", NULL, N_("range"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_RANGE},
+	{"parameter_type_flag", NULL, N_("flag"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FLAG},
+	{"parameter_type_text", NULL, N_("text"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_STRING},
+	{"parameter_type_enum", NULL, N_("enum"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_ENUM},
+	{"parameter_type_file", NULL, N_("file"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FILE},
+	{"parameter_type_group", NULL, N_("group"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_GROUP},
+};
+const gsize combo_type_map_size = 8;
 
 enum {
 	PARAMETER_TYPE,

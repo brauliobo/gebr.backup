@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 bin_PROGRAMS = gebr-geoxml-upgrade
-gebr_geoxml_upgrade_SOURCES = upgrade.c
+gebr_geoxml_upgrade_SOURCES = upgrade.cc
 
 INCLUDES = -I.. \
 	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\"

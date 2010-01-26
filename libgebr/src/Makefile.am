@@ -21,7 +21,7 @@ pkgconfig_DATA = gebr.pc
 
 lib_LTLIBRARIES = libgebr.la
 libgebr_la_SOURCES = libgebr.c \
-	date.c log.c utils.c
+	date.cc log.cc utils.cc
 
 libgebrincludedir = $(includedir)/libgebr
 libgebrinclude_HEADERS = libgebr.h \

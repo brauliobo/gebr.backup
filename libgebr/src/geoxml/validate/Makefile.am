@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 bin_PROGRAMS = gebr-geoxml-validate
-gebr_geoxml_validate_SOURCES = validate.c
+gebr_geoxml_validate_SOURCES = validate.cc
 
 INCLUDES = -I.. \
 	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\"
