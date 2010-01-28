@@ -51,7 +51,7 @@ enum_option_edit_set_property(EnumOptionEdit * enum_option_edit, guint property_
 			GebrGeoXmlSequence *enum_option;
 
 			gtk_list_store_clear(GEBR_GUI_GTK_SEQUENCE_EDIT(enum_option_edit)->list_store);
-			enum_option_edit->enum_option = g_value_get_pointer(value);
+			enum_option_edit->enum_option = (GebrGeoXmlEnumOption*)g_value_get_pointer(value);
 			enum_option = (GebrGeoXmlSequence *) enum_option_edit->enum_option;
 			for (; enum_option != NULL; gebr_geoxml_sequence_next(&enum_option))
 				__enum_option_edit_add(enum_option_edit, GEBR_GEOXML_ENUM_OPTION(enum_option));
@@ -80,14 +80,14 @@ enum_option_edit_get_property(EnumOptionEdit * enum_option_edit, guint property_
 	}
 }
 
-static void enum_option_edit_class_init(EnumOptionEditClass * class)
+static void enum_option_edit_class_init(EnumOptionEditClass * _class)
 {
 	GtkSequenceEditClass *enum_option_edit_class;
 	GObjectClass *gobject_class;
 	GParamSpec *param_spec;
 
 	/* virtual */
-	enum_option_edit_class = GEBR_GUI_GTK_SEQUENCE_EDIT_CLASS(class);
+	enum_option_edit_class = GEBR_GUI_GTK_SEQUENCE_EDIT_CLASS(_class);
 	enum_option_edit_class->remove = (typeof(enum_option_edit_class->remove)) __enum_option_edit_remove;
 	enum_option_edit_class->move = (typeof(enum_option_edit_class->move)) __enum_option_edit_move;
 	enum_option_edit_class->move_top = (typeof(enum_option_edit_class->move_top)) __enum_option_edit_move_top;
@@ -96,12 +96,13 @@ static void enum_option_edit_class_init(EnumOptionEditClass * class)
 	enum_option_edit_class->create_tree_view =
 	    (typeof(enum_option_edit_class->create_tree_view)) __enum_option_edit_create_tree_view;
 
-	gobject_class = G_OBJECT_CLASS(class);
+	gobject_class = G_OBJECT_CLASS(_class);
 	gobject_class->set_property = (typeof(gobject_class->set_property)) enum_option_edit_set_property;
 	gobject_class->get_property = (typeof(gobject_class->get_property)) enum_option_edit_get_property;
 
 	param_spec = g_param_spec_pointer("enum-option",
-					  "Enum Option", "GebrGeoXml's enum option source of data", G_PARAM_READWRITE);
+					  "Enum Option", "GebrGeoXml's enum option source of data",
+					  (GParamFlags)G_PARAM_READWRITE);
 	g_object_class_install_property(gobject_class, ENUM_OPTION, param_spec);
 }
 
@@ -293,7 +294,7 @@ GtkWidget *enum_option_edit_new(GebrGeoXmlEnumOption * enum_option, GebrGeoXmlPr
 	gtk_box_pack_start(GTK_BOX(hbox), label_entry, TRUE, TRUE, 2);
 	gtk_widget_show_all(hbox);
 
-	enum_option_edit = g_object_new(TYPE_ENUM_OPTION_EDIT,
+	enum_option_edit = (EnumOptionEdit*)g_object_new(TYPE_ENUM_OPTION_EDIT,
 					"value-widget", hbox,
 					"list-store", list_store, "enum-option", enum_option, NULL);
 
@@ -305,4 +306,6 @@ GtkWidget *enum_option_edit_new(GebrGeoXmlEnumOption * enum_option, GebrGeoXmlPr
 	gtk_widget_set_size_request(GTK_WIDGET(enum_option_edit), -1, 150);
 
 	return (GtkWidget *) enum_option_edit;
+}
+
 }

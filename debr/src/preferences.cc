@@ -77,8 +77,8 @@ void preferences_dialog_setup_ui(void)
 	name_entry = gtk_entry_new();
 	gtk_tooltips_set_tip(tips, name_entry, _("You should know your name"), "");
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 3, 3);
-	gtk_table_attach(GTK_TABLE(table), name_entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 3, 3);
-	gtk_entry_set_text(GTK_ENTRY(name_entry), debr.config.name->str);
+	gtk_table_attach(GTK_TABLE(table), name_entry, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), GTK_FILL,
+			 3, 3); gtk_entry_set_text(GTK_ENTRY(name_entry), debr.config.name->str);
 
 	/* Email */
 	label = gtk_label_new(_("Email"));
@@ -88,7 +88,7 @@ void preferences_dialog_setup_ui(void)
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_table_attach(GTK_TABLE(table), email_entry, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 3, 3);
 	gtk_entry_set_text(GTK_ENTRY(email_entry), debr.config.email->str);
-
+	
 	/* Menus dir */
 	label = gtk_label_new(_("Menus directory"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);

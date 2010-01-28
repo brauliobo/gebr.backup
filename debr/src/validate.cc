@@ -136,9 +136,12 @@ void validate_menu(GtkTreeIter * iter, GebrGeoXmlFlow * menu)
 	g_object_set(G_OBJECT(text_view), "editable", FALSE, "cursor-visible", FALSE, NULL);
 
 	gtk_list_store_insert_after(debr.ui_validate.list_store, iter, NULL);
-	validate = g_malloc(sizeof(struct validate));
-	*validate = (struct validate) {
-	.widget = scrolled_window,.text_view = text_view,.text_buffer = text_buffer,.iter = *iter,.menu = menu};
+	validate = g_new(struct validate, 1);
+	validate->widget = scrolled_window;
+	validate->text_view = text_view;
+	validate->text_buffer = text_buffer;
+	validate->iter = *iter;
+	validate->menu = menu;
 
 	{
 		PangoFontDescription *font;

@@ -18,6 +18,8 @@
 #ifndef __PARAMETER_GROUP_H
 #define __PARAMETER_GROUP_H
 
+#include <gtk/gtk.h>
+
 #include <libgebr/geoxml.h>
 
 struct ui_parameter_group_dialog {

@@ -75,11 +75,12 @@ void parameter_group_dialog_setup_ui(void)
 
 	struct ui_parameter_group_dialog *ui;
 
-	ui = g_malloc(sizeof(struct ui_parameter_group_dialog));
+	ui = g_new(struct ui_parameter_group_dialog, 1);
 	ui->parameter_group = parameter_group = GEBR_GEOXML_PARAMETER_GROUP(debr.parameter);
 	ui->dialog = dialog = gtk_dialog_new_with_buttons(_("Edit group"),
 							  GTK_WINDOW(debr.window),
-							  GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+							  (GtkDialogFlags)(GTK_DIALOG_MODAL |
+									   GTK_DIALOG_DESTROY_WITH_PARENT),
 							  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
 	gtk_widget_set_size_request(dialog, 400, 500);
 

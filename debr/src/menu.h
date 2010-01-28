@@ -1,8 +1,3 @@
-/**
- * @file menu.h DeBR Menu API
- * @ingroup debr
- */
-
 /*   DeBR - GeBR Designer
  *   Copyright (C) 2007-2009 GeBR core team (http://www.gebrproject.com/)
  *
@@ -26,6 +21,11 @@
 #include <glib.h>
 
 #include <libgebr/geoxml.h>
+
+/**
+ * @file menu.h DeBR Menu API
+ * @ingroup debr
+ */
 
 /**
  * Indicates the status of a menu.
