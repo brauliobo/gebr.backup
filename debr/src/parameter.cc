@@ -34,11 +34,6 @@
 #include "parametergroup.h"
 
 /*
- * File: parameter.c
- * Construct interfaces for parameter
- */
-
-/*
  * Declarations
  */
 
@@ -68,10 +63,10 @@ int combo_type_map_get_index(enum GEBR_GEOXML_PARAMETER_TYPE type)
 }
 
 #define combo_type_map_get_type(index) \
-	combo_type_map[index].type
+	(combo_type_map[index].type)
 
 #define combo_type_map_get_title(type) \
-	combo_type_map[combo_type_map_get_index(type)].title
+	(combo_type_map[combo_type_map_get_index(type)].title)
 
 
 static void parameter_dialog_setup_ui(void);
@@ -330,7 +325,7 @@ gboolean parameter_change_type_setup_ui(void)
 
 	dialog = gtk_dialog_new_with_buttons(_("Parameter's type"),
 					     GTK_WINDOW(debr.window),
-					     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+					     (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 					     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 					     GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	gtk_widget_set_size_request(dialog, 300, 100);
@@ -492,7 +487,7 @@ static void parameter_dialog_setup_ui(void)
 	if (parameter_get_selected(NULL, TRUE) == FALSE)
 		return;
 
-	ui = g_malloc(sizeof(struct ui_parameter_dialog));
+	ui = g_new(struct ui_parameter_dialog, 1);
 	ui->parameter = debr.parameter;
 	program_parameter = GEBR_GEOXML_PROGRAM_PARAMETER(ui->parameter);
 	type = gebr_geoxml_parameter_get_type(ui->parameter);
@@ -502,7 +497,7 @@ static void parameter_dialog_setup_ui(void)
 	 */
 	ui->dialog = dialog = gtk_dialog_new_with_buttons(_("Edit parameter"),
 							  GTK_WINDOW(debr.window),
-							  GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+							  (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 							  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
 	gtk_widget_set_size_request(dialog, 530, 400);
 
@@ -1078,7 +1073,7 @@ static void parameter_selected(void)
 							   "parameter_type_group"),
 			       !gebr_geoxml_parameter_get_is_in_group(debr.parameter));
 	g_signal_handlers_block_matched(G_OBJECT(gtk_action_group_get_action(debr.action_group, "parameter_type_real")),
-					G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(on_parameter_type_activate), NULL);
+					G_SIGNAL_MATCH_FUNC, 0, 0, NULL, (gpointer)on_parameter_type_activate, NULL);
 	gtk_toggle_action_set_active(GTK_TOGGLE_ACTION
 				     (gtk_action_group_get_action
 				      (debr.action_group,
@@ -1087,7 +1082,7 @@ static void parameter_selected(void)
 									     (debr.parameter))].name)), TRUE);
 	g_signal_handlers_unblock_matched(G_OBJECT
 					  (gtk_action_group_get_action(debr.action_group, "parameter_type_real")),
-					  G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(on_parameter_type_activate),
+					  G_SIGNAL_MATCH_FUNC, 0, 0, NULL, (gpointer)on_parameter_type_activate,
 					  NULL);
 }
 
@@ -1178,7 +1173,7 @@ parameter_reorder(GtkTreeView * tree_view, GtkTreeIter * iter, GtkTreeIter * pos
 	GebrGeoXmlParameter *position_parameter;
 	GtkTreeIter parent;
 	GtkTreeIter position_parent;
-	GtkTreeIter new;
+	GtkTreeIter new_iter;
 
 	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_parameter.tree_store), iter, PARAMETER_XMLPOINTER, &parameter, -1);
 	gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_parameter.tree_store), position,
@@ -1191,8 +1186,8 @@ parameter_reorder(GtkTreeView * tree_view, GtkTreeIter * iter, GtkTreeIter * pos
 		gebr_geoxml_sequence_move_into_group(GEBR_GEOXML_SEQUENCE(parameter),
 						     GEBR_GEOXML_PARAMETER_GROUP(position_parameter));
 
-		gtk_tree_store_append(debr.ui_parameter.tree_store, &new, position);
-		gebr_gui_gtk_tree_model_iter_copy_values(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &new, iter);
+		gtk_tree_store_append(debr.ui_parameter.tree_store, &new_iter, position);
+		gebr_gui_gtk_tree_model_iter_copy_values(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &new_iter, iter);
 		gtk_tree_store_remove(debr.ui_parameter.tree_store, iter);
 
 		parameter_load_iter(position, FALSE);
@@ -1205,17 +1200,17 @@ parameter_reorder(GtkTreeView * tree_view, GtkTreeIter * iter, GtkTreeIter * pos
 							 GEBR_GEOXML_SEQUENCE(position_parameter));
 
 		if (gebr_gui_gtk_tree_iter_equal_to(&parent, &position_parent)) {
-			new = *iter;
+			new_iter = *iter;
 			if (drop_position == GTK_TREE_VIEW_DROP_AFTER)
 				gtk_tree_store_move_after(debr.ui_parameter.tree_store, iter, position);
 			else
 				gtk_tree_store_move_before(debr.ui_parameter.tree_store, iter, position);
 		} else {
 			if (drop_position == GTK_TREE_VIEW_DROP_AFTER)
-				gtk_tree_store_insert_after(debr.ui_parameter.tree_store, &new, NULL, position);
+				gtk_tree_store_insert_after(debr.ui_parameter.tree_store, &new_iter, NULL, position);
 			else
-				gtk_tree_store_insert_before(debr.ui_parameter.tree_store, &new, NULL, position);
-			gebr_gui_gtk_tree_model_iter_copy_values(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &new,
+				gtk_tree_store_insert_before(debr.ui_parameter.tree_store, &new_iter, NULL, position);
+			gebr_gui_gtk_tree_model_iter_copy_values(GTK_TREE_MODEL(debr.ui_parameter.tree_store), &new_iter,
 								 iter);
 			gtk_tree_store_remove(debr.ui_parameter.tree_store, iter);
 		}
@@ -1226,7 +1221,7 @@ parameter_reorder(GtkTreeView * tree_view, GtkTreeIter * iter, GtkTreeIter * pos
 	if (gebr_gui_gtk_tree_model_iter_is_valid(&parent))
 		parameter_load_iter(&parent, FALSE);
 
-	parameter_select_iter(new);
+	parameter_select_iter(new_iter);
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 
 	return TRUE;
@@ -1461,3 +1456,7 @@ static void parameter_enum_options_changed(EnumOptionEdit * enum_option_edit, st
 	parameter_reconfigure_default_widget(ui);
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
+
+//why is so? just g++ could tell...
+}
+

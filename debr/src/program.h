@@ -19,6 +19,7 @@
 #define __PROGRAM_H
 
 #include <gtk/gtk.h>
+
 #include <libgebr/geoxml.h>
 
 enum {

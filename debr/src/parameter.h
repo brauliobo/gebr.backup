@@ -18,6 +18,10 @@
 #ifndef __PARAMETER_H
 #define __PARAMETER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <gtk/gtk.h>
 #include <libgebr/geoxml.h>
 
@@ -91,5 +95,9 @@ void parameter_paste(void);
 void parameter_change_type(enum GEBR_GEOXML_PARAMETER_TYPE type);
 
 void parameter_properties(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif				//__PARAMETER_H
