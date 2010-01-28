@@ -28,8 +28,7 @@ PACKAGE_VERSION=$VERSION
 
 IT_PROG_INTLTOOL
 
-AC_PROG_CC
-AM_PROG_CC_STDC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_HEADER_STDC
 
@@ -54,7 +53,12 @@ AM_GLIB_GNU_GETTEXT
 AM_GNU_GETTEXT_VERSION([0.11])
 
 dnl check for GLIB >= 2.8 (which is thread safe)
-PKG_CHECK_MODULES(GLIB, [glibmm-2.4 >= 2.8],,AC_MSG_ERROR([Could not find glibmm >= 2.8]))
+PKG_CHECK_MODULES(GLIBMM, [glibmm-2.4 >= 2.8],,AC_MSG_ERROR([Could not find glibmm >= 2.8]))
+AC_SUBST(GLIBMM_LIBS)
+AC_SUBST(GLIBMM_CFLAGS)
+
+dnl check for GLIB >= 2.8 (which is thread safe)
+PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.8],,AC_MSG_ERROR([Could not find glib >= 2.8]))
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 

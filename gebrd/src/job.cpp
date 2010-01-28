@@ -216,7 +216,7 @@ static void job_process_finished(GebrCommProcess * process, struct job *job)
 		struct client *client;
 
 		client = (struct client *)link->data;
-		gebr_comm_protocol_send_data(client->protocol, client->stream_socket, gebr_comm_protocol_defs.fin_def,
+		gebr_comm_protocol_send_data(client->protocol, client->stream_socket, gebr_comm_protocol_defs.sta_def,
 					     3, job->jid->str, job->status->str, job->finish_date->str);
 
 		link = g_list_next(link);
@@ -274,12 +274,21 @@ gboolean job_new(struct job ** _job, struct client * client, GString * xml)
 
 	/* initialization */
 	issue_number = 0;
-	job = g_malloc(sizeof(struct job));
-	*job = (struct job) {
-	.process = gebr_comm_process_new(),.flow = NULL,.user_finished = FALSE,.hostname =
-		    g_string_new(""),.status = g_string_new(""),.jid = job_generate_id(),.title =
-		    g_string_new(""),.start_date = g_string_new(""),.finish_date = g_string_new(""),.issues =
-		    g_string_new(""),.cmd_line = g_string_new(""),.output = g_string_new(""),};
+	job = g_new(struct job, 1);
+
+	job->process = gebr_comm_process_new();
+	job->flow = NULL;
+	job->user_finished = FALSE;
+	job->hostname = g_string_new("");
+	job->status = g_string_new("");
+	job->jid = job_generate_id();
+	job->title = g_string_new("");
+	job->start_date = g_string_new("");
+	job->finish_date = g_string_new("");
+	job->issues = g_string_new("");
+	job->cmd_line = g_string_new("");
+	job->output = g_string_new("");
+
 	*_job = job;
 
 	int ret;
@@ -500,7 +509,7 @@ void job_free(struct job *job)
 	g_free(job);
 }
 
-void job_run_flow(struct job *job, struct client *client, GString * account, GString * class)
+void job_run_flow(struct job *job, struct client *client, GString * account, GString * queue)
 {
 	GString *cmd_line, *to_quote;
 	GebrGeoXmlSequence *program;
@@ -541,8 +550,8 @@ void job_run_flow(struct job *job, struct client *client, GString * account, GSt
 		GString * moab_script;
 		script = g_shell_quote(cmd_line->str);
 		moab_script = g_string_new(NULL);
-		/* TODO: verify if account and class need escaping*/
-		g_string_printf(moab_script, "echo %s | msub -A %s -q %s", script, account->str, class->str);
+		/* TODO: verify if account and queue need escaping*/
+		g_string_printf(moab_script, "echo %s | msub -A %s -q %s", script, account->str, queue->str);
 		moab_quoted = g_shell_quote(moab_script->str);
 		g_string_printf(cmd_line, "bash -l -c %s", moab_quoted);
 		g_free(moab_quoted);
