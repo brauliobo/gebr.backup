@@ -16,11 +16,11 @@
 
 bin_PROGRAMS = gebrd
 gebrd_SOURCES = \
-	main.c \
-	gebrd.c \
-	server.c \
-	client.c \
-	job.c
+	main.cpp \
+	gebrd.cpp \
+	server.cpp \
+	client.cpp \
+	job.cpp
 noinst_HEADERS = \
 	gebrd.h \
 	server.h \
@@ -31,7 +31,7 @@ EXTRA_DIST = $(noinst_HEADERS)
 
 INCLUDES = \
 	-DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\"
-AM_CFLAGS = -Wall -std=gnu99 @DEBUG_CFLAGS@ $(GLIB_CFLAGS) \
+AM_CXXFLAGS = -Wall @DEBUG_CFLAGS@ $(GLIB_CFLAGS) $(GLIBMM_CFLAGS) \
 	$(GEBR_CFLAGS) $(GEBR_GEOXML_CFLAGS) $(GEBR_COMM_CFLAGS)
 gebrd_LDADD = $(INTLLIBS) $(GLIB_LIBS) \
 	$(GEBR_LIBS) $(GEBR_GEOXML_LIBS) $(GEBR_COMM_LIBS)

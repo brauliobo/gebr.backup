@@ -47,7 +47,7 @@
  * Private functions
  */
 
-static void server_moab_read_credentials(GString *accounts, GString *classes);
+static void server_moab_read_credentials(GString *accounts, GString *queue_list);
 
 
 /*
@@ -75,7 +75,7 @@ gboolean server_init(void)
 	gethostname(gebrd.hostname, 255);
 	gebrd.run_filename = g_string_new(NULL);
 	g_string_printf(gebrd.run_filename, "%s/.gebr/run/gebrd-%s.run", getenv("HOME"), gebrd.hostname);
-	if (g_file_test(gebrd.run_filename->str, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR) == TRUE) {
+	if (g_file_test(gebrd.run_filename->str, (GFileTest)(G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) == TRUE) {
 		/* check if server crashed by trying connecting to it
 		 * if the connection is refused, the it *probably* did
 		 */
@@ -199,20 +199,20 @@ gboolean server_parse_client_messages(struct client *client)
 			GString *version, *hostname, *place, *x11;
 			GString *display_port;
 			GString *accounts_list;
-			GString *classes_list;
+			GString *queue_list;
 			gchar *server_type;
 
 			display_port = g_string_new("");
 			accounts_list = g_string_new("");
-			classes_list = g_string_new("");
+			queue_list = g_string_new("");
 
 			/* organize message data */
 			if ((arguments = gebr_comm_protocol_split_new(message->argument, 4)) == NULL)
 				goto err;
-			version = g_list_nth_data(arguments, 0);
-			hostname = g_list_nth_data(arguments, 1);
-			place = g_list_nth_data(arguments, 2);
-			x11 = g_list_nth_data(arguments, 3);
+			version = (GString *)g_list_nth_data(arguments, 0);
+			hostname = (GString *)g_list_nth_data(arguments, 1);
+			place = (GString *)g_list_nth_data(arguments, 2);
+			x11 = (GString *)g_list_nth_data(arguments, 3);
 
 			if (strcmp(version->str, PROTOCOL_VERSION)) {
 				gebr_comm_protocol_send_data(client->protocol, client->stream_socket,
@@ -259,7 +259,7 @@ gboolean server_parse_client_messages(struct client *client)
 			if (gebrd_get_server_type() == GEBR_COMM_SERVER_TYPE_MOAB) {
 				/* Get info from the MOAB cluster */
 				server_type = "moab";
-				server_moab_read_credentials(accounts_list, classes_list);
+				server_moab_read_credentials(accounts_list, queue_list);
 			} else {
 				server_type = "regular";
 			}
@@ -268,13 +268,13 @@ gboolean server_parse_client_messages(struct client *client)
 			gebr_comm_protocol_send_data(client->protocol, client->stream_socket,
 						     gebr_comm_protocol_defs.ret_def, 5,
 						     gebrd.hostname, display_port->str,
-						     accounts_list->str, classes_list->str, server_type);
+						     accounts_list->str, queue_list->str, server_type);
 
 			/* frees */
 			gebr_comm_protocol_split_free(arguments);
 			g_string_free(display_port, TRUE);
 			g_string_free(accounts_list, TRUE);
-			g_string_free(classes_list, TRUE);
+			g_string_free(queue_list, TRUE);
 
 		} else if (client->protocol->logged == FALSE) {
 			/* not logged! */
@@ -290,18 +290,18 @@ gboolean server_parse_client_messages(struct client *client)
 			GString *xml;
 			struct job *job;
 			gboolean success;
-			GString *account, *class; 
+			GString *account, *queue; 
 
 			/* organize message data */
 			if ((arguments = gebr_comm_protocol_split_new(message->argument, 3)) == NULL)
 				goto err;
-			xml = g_list_nth_data(arguments, 0);
-			account = g_list_nth_data(arguments, 1);
-			class = g_list_nth_data(arguments, 2);
+			xml = (GString *)g_list_nth_data(arguments, 0);
+			account = (GString *)g_list_nth_data(arguments, 1);
+			queue = (GString *)g_list_nth_data(arguments, 2);
 
 			/* try to run and send return */
 			if ((success = job_new(&job, client, xml)) == TRUE)
-				job_run_flow(job, client, account, class);
+				job_run_flow(job, client, account, queue);
 			gebr_comm_protocol_send_data(client->protocol, client->stream_socket,
 						     gebr_comm_protocol_defs.ret_def, 7, job->jid->str,
 						     job->status->str, job->title->str, job->start_date->str,
@@ -326,7 +326,7 @@ gboolean server_parse_client_messages(struct client *client)
 			/* organize message data */
 			if ((arguments = gebr_comm_protocol_split_new(message->argument, 1)) == NULL)
 				goto err;
-			jid = g_list_nth_data(arguments, 0);
+			jid = (GString *)g_list_nth_data(arguments, 0);
 
 			/* try to run and send return */
 			job = job_find(jid);
@@ -344,7 +344,7 @@ gboolean server_parse_client_messages(struct client *client)
 			/* organize message data */
 			if ((arguments = gebr_comm_protocol_split_new(message->argument, 1)) == NULL)
 				goto err;
-			jid = g_list_nth_data(arguments, 0);
+			jid = (GString *)g_list_nth_data(arguments, 0);
 
 			/* try to run and send return */
 			job = job_find(jid);
@@ -362,7 +362,7 @@ gboolean server_parse_client_messages(struct client *client)
 			/* organize message data */
 			if ((arguments = gebr_comm_protocol_split_new(message->argument, 1)) == NULL)
 				goto err;
-			jid = g_list_nth_data(arguments, 0);
+			jid = (GString *)g_list_nth_data(arguments, 0);
 
 			/* try to run and send return */
 			job = job_find(jid);
@@ -389,10 +389,10 @@ gboolean server_parse_client_messages(struct client *client)
 
 
 /**
- * Reads the list of accounts and the list of classes returned by the MOAB cluster
- * "mcredctl" command and places them on \p accounts and \p classes, respectively.
+ * Reads the list of accounts and the list of queue_list returned by the MOAB cluster
+ * "mcredctl" command and places them on \p accounts and \p queue_list, respectively.
  */
-static void server_moab_read_credentials(GString *accounts, GString *classes)
+static void server_moab_read_credentials(GString *accounts, GString *queue_list)
 {
 	GString *cmd_line = NULL;
 	gchar *std_out = NULL;
@@ -435,7 +435,7 @@ static void server_moab_read_credentials(GString *accounts, GString *classes)
 	gdome_str_unref(attribute_name);
 
 	attribute_name = gdome_str_mkref("CList");
-	g_string_assign(classes, (gdome_el_getAttribute(element, attribute_name, &exception))->str);
+	g_string_assign(queue_list, (gdome_el_getAttribute(element, attribute_name, &exception))->str);
 	gdome_str_unref(attribute_name);
 
 	gdome_doc_unref(doc, &exception);

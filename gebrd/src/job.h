@@ -45,7 +45,7 @@ gboolean job_new(struct job **_job, struct client *client, GString * xml);
 
 void job_free(struct job *job);
 
-void job_run_flow(struct job *job, struct client *client, GString * account, GString * class);
+void job_run_flow(struct job *job, struct client *client, GString * account, GString * queue);
 
 struct job *job_find(GString * jid);
 
