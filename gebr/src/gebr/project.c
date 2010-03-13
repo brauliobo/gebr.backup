@@ -142,8 +142,7 @@ void project_list_populate(void)
 		if (fnmatch("*.prj", filename, 1))
 			continue;
 
-		project = GEBR_GEOXML_PROJECT(document_load(filename));
-		if (project == NULL)
+		if (document_load((GebrGeoXmlDocument**)(&project), filename))
 			continue;
 		project_iter = project_append_iter(project);
 
@@ -153,8 +152,8 @@ void project_list_populate(void)
 			const gchar *line_source;
 
 			line_source = gebr_geoxml_project_get_line_source(GEBR_GEOXML_PROJECT_LINE(project_line));
-			line = GEBR_GEOXML_LINE(document_load(line_source));
-			if (line == NULL) {
+			int ret = document_load((GebrGeoXmlDocument**)(&line), line_source);
+			if (ret == GEBR_GEOXML_RETV_CANT_ACCESS_FILE) {
 				GebrGeoXmlSequence * sequence;
 				
 				sequence = project_line;
@@ -163,7 +162,8 @@ void project_list_populate(void)
 				document_save(GEBR_GEOXML_DOCUMENT(project), FALSE);
 
 				continue;
-			}
+			} else if (ret)
+				continue;
 			project_append_line_iter(&project_iter, line);
 			gebr_geoxml_document_free(GEBR_GEOXML_DOC(line));
 
