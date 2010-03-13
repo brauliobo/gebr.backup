@@ -424,8 +424,7 @@ void project_line_import(void)
 			GebrGeoXmlProject *project;
 			GebrGeoXmlSequence *project_line;
 
-			project = GEBR_GEOXML_PROJECT(document_load_at(files[i], tmp_dir->str));
-			if (project == NULL)
+			if (document_load_at((GebrGeoXmlDocument**)(&project), files[i], tmp_dir->str))
 				continue;
 			document_import(GEBR_GEOXML_DOCUMENT(project));
 			iter = project_append_iter(project);
@@ -434,10 +433,10 @@ void project_line_import(void)
 			while (project_line != NULL) {
 				GebrGeoXmlLine *line;
 
-				line =
-				    line_import(gebr_geoxml_project_get_line_source
+				int ret =
+				    line_import(&line, gebr_geoxml_project_get_line_source
 						(GEBR_GEOXML_PROJECT_LINE(project_line)), tmp_dir->str);
-				if (line == NULL) {
+				if (ret == GEBR_GEOXML_RETV_CANT_ACCESS_FILE) {
 					GebrGeoXmlSequence * sequence;
 
 					sequence = project_line;
@@ -446,7 +445,8 @@ void project_line_import(void)
 					document_save(GEBR_GEOXML_DOCUMENT(project), FALSE);
 
 					continue;
-				}
+				} else if (ret)
+					continue;
 				gebr_geoxml_project_set_line_source(GEBR_GEOXML_PROJECT_LINE(project_line),
 								    gebr_geoxml_document_get_filename
 								    (GEBR_GEOXML_DOCUMENT(line)));
@@ -463,7 +463,7 @@ void project_line_import(void)
 			GebrGeoXmlLine *line;
 			GtkTreeIter parent;
 
-			line = line_import(files[i], tmp_dir->str);
+			line_import(&line, files[i], tmp_dir->str);
 			if (line == NULL)
 				continue;
 			gebr_geoxml_project_append_line(gebr.project,
@@ -571,8 +571,7 @@ void project_line_export(void)
 			GebrGeoXmlFlow *flow;
 
 			flow_filename = gebr_geoxml_line_get_flow_source(GEBR_GEOXML_LINE_FLOW(j));
-			flow = GEBR_GEOXML_FLOW(document_load(flow_filename));
-			if (flow == NULL)
+			if (document_load((GebrGeoXmlDocument**)(&flow), flow_filename))
 				continue;
 
 			flow_set_paths_to(flow,	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_box)));
@@ -595,8 +594,8 @@ void project_line_export(void)
 		for (; i != NULL; gebr_geoxml_sequence_next(&i)) {
 			GebrGeoXmlLine *line;
 
-			line = GEBR_GEOXML_LINE(document_load(gebr_geoxml_project_get_line_source(GEBR_GEOXML_PROJECT_LINE(i))));
-			if (line == NULL)
+			if (document_load((GebrGeoXmlDocument**)(&line),
+					  gebr_geoxml_project_get_line_source(GEBR_GEOXML_PROJECT_LINE(i))))
 				continue;
 
 			parse_line(line);
@@ -702,12 +701,10 @@ static void project_line_load(void)
 				   PL_FILENAME, &project_filename, -1);
 	}
 
-	gebr.project = GEBR_GEOXML_PROJECT(document_load(project_filename));
-	if (gebr.project == NULL)
+	if (document_load((GebrGeoXmlDocument**)(&gebr.project), project_filename))
 		goto out;
 	if (is_line == TRUE) {
-		gebr.line = GEBR_GEOXML_LINE(document_load(line_filename));
-		if (gebr.line == NULL)
+		if (document_load((GebrGeoXmlDocument**)(&gebr.line), line_filename))
 			goto out;
 
 		gebr.project_line = GEBR_GEOXML_DOC(gebr.line);
@@ -721,7 +718,7 @@ static void project_line_load(void)
 
 	project_line_info_update();
 
- out:	gtk_tree_path_free(path);
+out:	gtk_tree_path_free(path);
 	g_free(project_filename);
 	if (is_line == TRUE)
 		g_free(line_filename);
