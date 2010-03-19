@@ -44,11 +44,7 @@ void project_new(void)
 	gebr_geoxml_document_set_title(project, _("New project"));
 	gebr_geoxml_document_set_author(project, gebr.config.username->str);
 	gebr_geoxml_document_set_email(project, gebr.config.email->str);
-
-	gtk_tree_store_append(gebr.ui_project_line->store, &iter, NULL);
-	gtk_tree_store_set(gebr.ui_project_line->store, &iter,
-			   PL_TITLE, gebr_geoxml_document_get_title(project),
-			   PL_FILENAME, gebr_geoxml_document_get_filename(project), -1);
+	project_append_iter(GEBR_GEOXML_PROJECT(project));
 	document_save(project, TRUE);
 	gebr_geoxml_document_free(project);
 
@@ -106,7 +102,8 @@ GtkTreeIter project_append_iter(GebrGeoXmlProject * project)
 	gtk_tree_store_append(gebr.ui_project_line->store, &iter, NULL);
 	gtk_tree_store_set(gebr.ui_project_line->store, &iter,
 			   PL_TITLE, gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(project)),
-			   PL_FILENAME, gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(project)), -1);
+			   PL_FILENAME, gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(project)),
+			   PL_XMLPOINTER, project, -1);
 
 	return iter;
 }
@@ -118,9 +115,40 @@ GtkTreeIter project_append_line_iter(GtkTreeIter * project_iter, GebrGeoXmlLine 
 	gtk_tree_store_append(gebr.ui_project_line->store, &iter, project_iter);
 	gtk_tree_store_set(gebr.ui_project_line->store, &iter,
 			   PL_TITLE, gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(line)),
-			   PL_FILENAME, gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(line)), -1);
+			   PL_FILENAME, gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(line)),
+			   PL_XMLPOINTER, line, -1);
 
 	return iter;
+}
+
+GtkTreeIter project_load_with_lines(GebrGeoXmlProject *project)
+{
+	GtkTreeIter project_iter;
+	GebrGeoXmlSequence *project_line;
+
+	project_iter = project_append_iter(project);
+
+	gebr_geoxml_project_get_line(project, &project_line, 0);
+	while (project_line != NULL) {
+		GebrGeoXmlLine *line;
+		const gchar *line_source;
+
+		GebrGeoXmlSequence * next = project_line;
+		gebr_geoxml_sequence_next(&next);
+
+		line_source = gebr_geoxml_project_get_line_source(GEBR_GEOXML_PROJECT_LINE(project_line));
+		int ret = document_load_with_parent((GebrGeoXmlDocument**)(&line), line_source, &project_iter);
+		if (ret) {
+			project_line = next;
+			continue;
+		}
+		project_append_line_iter(&project_iter, line);
+		gebr_geoxml_document_free(GEBR_GEOXML_DOC(line));
+
+		project_line = next;
+	}
+
+	return project_iter;
 }
 
 void project_list_populate(void)
@@ -135,42 +163,14 @@ void project_list_populate(void)
 	flow_free();
 
 	gebr_directory_foreach_file(filename, gebr.config.data->str) {
-		GtkTreeIter project_iter;
-
-		GebrGeoXmlProject *project;
-		GebrGeoXmlSequence *project_line;
-
 		if (fnmatch("*.prj", filename, 1))
 			continue;
 
-		project = GEBR_GEOXML_PROJECT(document_load(filename));
-		if (project == NULL)
+		GebrGeoXmlProject *project;
+		if (document_load((GebrGeoXmlDocument**)(&project), filename))
 			continue;
-		project_iter = project_append_iter(project);
 
-		gebr_geoxml_project_get_line(project, &project_line, 0);
-		while (project_line != NULL) {
-			GebrGeoXmlLine *line;
-			const gchar *line_source;
-
-			line_source = gebr_geoxml_project_get_line_source(GEBR_GEOXML_PROJECT_LINE(project_line));
-			line = GEBR_GEOXML_LINE(document_load(line_source));
-			if (line == NULL) {
-				GebrGeoXmlSequence * sequence;
-				
-				sequence = project_line;
-				gebr_geoxml_sequence_next(&project_line);
-				gebr_geoxml_sequence_remove(sequence);
-				document_save(GEBR_GEOXML_DOCUMENT(project), FALSE);
-
-				continue;
-			}
-			project_append_line_iter(&project_iter, line);
-			gebr_geoxml_document_free(GEBR_GEOXML_DOC(line));
-
-			gebr_geoxml_sequence_next(&project_line);
-		}
-
+		project_load_with_lines(project);
 		gebr_geoxml_document_free(GEBR_GEOXML_DOC(project));
 	}
 
@@ -186,13 +186,13 @@ void project_line_move(const gchar * src_project, const gchar * src_line,
 	GebrGeoXmlProjectLine * dst_lne;
 	GebrGeoXmlProjectLine * clone;
 	
-	src_prj = GEBR_GEOXML_PROJECT(document_load(src_project));
+	document_load((GebrGeoXmlDocument**)&src_prj, src_project);
 
 	if (strcmp(src_project, dst_project) == 0)
 		/* The line movement is inside the same project. */
 		dst_prj = src_prj;
 	else
-		dst_prj = GEBR_GEOXML_PROJECT(document_load(dst_project));
+		document_load((GebrGeoXmlDocument**)&dst_prj, dst_project);
 	
 	src_lne = gebr_geoxml_project_get_line_from_source(src_prj, src_line);
 	clone = gebr_geoxml_project_append_line(dst_prj, src_line);
