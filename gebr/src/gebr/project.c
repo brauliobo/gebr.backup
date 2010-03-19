@@ -186,13 +186,13 @@ void project_line_move(const gchar * src_project, const gchar * src_line,
 	GebrGeoXmlProjectLine * dst_lne;
 	GebrGeoXmlProjectLine * clone;
 	
-	src_prj = GEBR_GEOXML_PROJECT(document_load(src_project));
+	document_load((GebrGeoXmlDocument**)&src_prj, src_project);
 
 	if (strcmp(src_project, dst_project) == 0)
 		/* The line movement is inside the same project. */
 		dst_prj = src_prj;
 	else
-		dst_prj = GEBR_GEOXML_PROJECT(document_load(dst_project));
+		document_load((GebrGeoXmlDocument**)&dst_prj, dst_project);
 	
 	src_lne = gebr_geoxml_project_get_line_from_source(src_prj, src_line);
 	clone = gebr_geoxml_project_append_line(dst_prj, src_line);
