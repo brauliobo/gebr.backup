@@ -141,45 +141,6 @@ gboolean line_delete(gboolean confirm)
 	return TRUE;
 }
 
-GebrGeoXmlLine *line_import(const gchar * line_filename, const gchar * at_dir)
-{
-	GebrGeoXmlLine *line;
-	GebrGeoXmlSequence *i;
-
-	line = GEBR_GEOXML_LINE(document_load_at(line_filename, at_dir));
-	if (line == NULL)
-		return NULL;
-	document_import(GEBR_GEOXML_DOCUMENT(line));
-
-	gebr_geoxml_line_get_flow(line, &i, 0);
-	while (i != NULL) {
-		GebrGeoXmlFlow *flow;
-
-		flow = GEBR_GEOXML_FLOW(document_load_at(gebr_geoxml_line_get_flow_source(GEBR_GEOXML_LINE_FLOW(i)),
-							 at_dir));
-		if (flow == NULL) {
-			GebrGeoXmlSequence * sequence;
-
-			sequence = i;
-			gebr_geoxml_sequence_next(&i);
-			gebr_geoxml_sequence_remove(sequence);
-			document_save(GEBR_GEOXML_DOCUMENT(line), FALSE);
-
-			continue;
-		}
-		document_import(GEBR_GEOXML_DOCUMENT(flow));
-		gebr_geoxml_line_set_flow_source(GEBR_GEOXML_LINE_FLOW(i),
-						 gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(flow)));
-		document_save(GEBR_GEOXML_DOCUMENT(flow), FALSE);
-		gebr_geoxml_document_free(GEBR_GEOXML_DOCUMENT(flow));
-
-		gebr_geoxml_sequence_next(&i);
-	}
-	document_save(GEBR_GEOXML_DOCUMENT(line), FALSE);
-
-	return line;
-}
-
 void line_set_paths_to(GebrGeoXmlLine * line, gboolean relative)
 {
 	GebrGeoXmlSequence *line_path;
@@ -217,32 +178,35 @@ void line_load_flows(void)
 {
 	GebrGeoXmlSequence *line_flow;
 	GtkTreeIter iter;
+	gboolean error = FALSE;
 
 	flow_free();
+	project_line_get_selected(&iter, DontWarnUnselection);
 
 	/* iterate over its flows */
 	gebr_geoxml_line_get_flow(gebr.line, &line_flow, 0);
 	while (line_flow != NULL) {
 		GebrGeoXmlFlow *flow;
 
-		flow = GEBR_GEOXML_FLOW(document_load(gebr_geoxml_line_get_flow_source(GEBR_GEOXML_LINE_FLOW(line_flow))));
-		if (flow == NULL) {
-			GebrGeoXmlSequence * sequence;
+		GebrGeoXmlSequence * next = line_flow;
+		gebr_geoxml_sequence_next(&next);
 
-			sequence = line_flow;
-			gebr_geoxml_sequence_next(&line_flow);
-			gebr_geoxml_sequence_remove(sequence);
-			document_save(GEBR_GEOXML_DOCUMENT(gebr.line), FALSE);
-
+		int ret = document_load_with_parent((GebrGeoXmlDocument**)(&flow),
+						    gebr_geoxml_line_get_flow_source(GEBR_GEOXML_LINE_FLOW(line_flow)),
+						    &iter);
+		if (ret) {
+			line_flow = next;
+			error = TRUE;
 			continue;
 		}
 
 		line_append_flow_iter(flow, GEBR_GEOXML_LINE_FLOW(line_flow));
 
-		gebr_geoxml_sequence_next(&line_flow);
+		line_flow = next;
 	}
 
-	gebr_message(GEBR_LOG_INFO, TRUE, FALSE, _("Flows loaded."));
+	if (!error)
+		gebr_message(GEBR_LOG_INFO, TRUE, FALSE, _("Flows loaded."));
 
 	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(gebr.ui_flow_browse->store), &iter) == TRUE)
 		flow_browse_select_iter(&iter);
