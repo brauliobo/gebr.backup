@@ -275,32 +275,6 @@ static gboolean gebr_gui_message_dialog_vararg(GtkMessageType type, GtkButtonsTy
 	return confirmed;
 }
 
-void g_object_free_list_add(GObject * object, gpointer data)
-{
-	GSList *free_list;
-	GWeakNotify weak_notify;
-
-	/**
-	 * \internal
-	 */
-	void g_object_free_list_weak_ref(gpointer data, GObject *object)
-	{
-		GSList *free_list;
-
-		free_list = g_object_get_data(object, "__g_object_free_list");
-		g_slist_foreach(free_list, (GFunc)g_free, NULL);
-		g_slist_free(free_list);
-	}
-
-	free_list = g_object_get_data(object, "__g_object_free_list");
-	free_list = g_slist_prepend(free_list, data);
-	g_object_set_data(object, "__g_object_free_list", free_list);
-
-	weak_notify = g_object_get_data(object, "__g_object_free_list_weak_notify");
-	if (weak_notify == NULL)
-		g_object_weak_ref(object, g_object_free_list_weak_ref, NULL);
-}
-
 void gebr_gui_gtk_dialog_set_response_on_widget_return(GtkDialog * dialog, gint response, GtkWidget * widget)
 {
 	g_object_set_data(G_OBJECT(widget), "__widget_return_dialog_response", GINT_TO_POINTER(response));
@@ -719,33 +693,52 @@ void gebr_gui_gtk_tree_model_foreach_recursive(GtkTreeModel *tree_model, GtkTree
 	}
 }
 
-GtkTextTag *gebr_gui_gtk_text_view_insert_link(GtkTextView * text_view, GtkTextIter * iter, const gchar
-					      * text, const gchar * url, GebrGuiGtkTextViewLinkClickCallback callback)
+GtkTextTag *gebr_gui_gtk_text_buffer_create_link_tag(GtkTextBuffer * text_buffer, const gchar * url,
+						     GebrGuiGtkTextViewLinkClickCallback callback, gpointer user_data)
 {
 	/**
 	 * \internal
 	 */
-	gboolean on_tag_event(GtkTextTag *tag, GObject *object, GdkEvent *event, GtkTextIter *iter, GebrGuiGtkTextViewLinkClickCallback callback)
+	gboolean on_tag_event(GtkTextTag *text_tag, GObject *object, GdkEvent *event, GtkTextIter *iter)
 	{
-		if (event->type == GDK_BUTTON_PRESS && event->button.button == 0)
-			callback(GTK_TEXT_VIEW(object), tag, g_object_get_data(G_OBJECT(tag), "url"));
+		if (!(event->type == GDK_BUTTON_PRESS && event->button.button == 1))
+			return FALSE;
+
+		GebrGuiGtkTextViewLinkClickCallback callback;
+		gpointer user_data;
+		callback = (GebrGuiGtkTextViewLinkClickCallback)g_object_get_data(G_OBJECT(text_tag), "__gebr_gui_gtk_text_buffer_create_link_tag_callback");
+		user_data = g_object_get_data(G_OBJECT(text_tag), "__gebr_gui_gtk_text_buffer_create_link_tag_user_data");
+		callback(GTK_TEXT_VIEW(object), text_tag, g_object_get_data(G_OBJECT(text_tag), "url"), user_data);
 
 		return FALSE;
 	}
 
-	GtkTextBuffer * buffer = gtk_text_view_get_buffer(text_view);
-	GtkTextTag *text_tag = gtk_text_buffer_create_tag(buffer, NULL, NULL);
+	GtkTextTag *text_tag = gtk_text_buffer_create_tag(text_buffer, NULL, NULL);
 
 	url = (const gchar*)g_strdup(url);
-	g_object_free_list_add(G_OBJECT(text_view), (gpointer)url);
+	gebr_gui_g_object_set_free_parent(text_tag, (gpointer)url);
 	g_object_set_data(G_OBJECT(text_tag), "url", (gpointer)url);
 
 	/* set appereance */ 
 	g_object_set(G_OBJECT(text_tag), "underline", PANGO_UNDERLINE_SINGLE, "foreground", "blue", NULL);
 
-	g_signal_connect(text_tag, "event", G_CALLBACK(on_tag_event), callback);
+	g_object_set_data(G_OBJECT(text_tag), "__gebr_gui_gtk_text_buffer_create_link_tag_callback", callback);
+	g_object_set_data(G_OBJECT(text_tag), "__gebr_gui_gtk_text_buffer_create_link_tag_user_data", user_data);
+	g_signal_connect(text_tag, "event", G_CALLBACK(on_tag_event), NULL);
 
 	return text_tag;
+}
+
+GtkTextMark *gebr_gui_gtk_text_buffer_create_mark_before_last_char(GtkTextBuffer * text_buffer)
+{
+	GtkTextMark *end_mark;
+	GtkTextIter iter;
+
+	gtk_text_buffer_get_end_iter(text_buffer, &iter);
+	gtk_text_buffer_get_iter_at_offset(text_buffer, &iter, gtk_text_iter_get_offset(&iter));
+	end_mark = gtk_text_buffer_create_mark(text_buffer, NULL, &iter, TRUE);
+	
+	return end_mark;
 }
 
 void gebr_gui_gtk_text_view_set_range_tooltip(GtkTextView * text_view, GtkTextIter * ini, GtkTextIter * end, const gchar
@@ -790,7 +783,7 @@ void gebr_gui_gtk_text_view_set_range_tooltip(GtkTextView * text_view, GtkTextIt
 	g_string_free(tag_name, TRUE);
 
 	tooltip = (const gchar*)g_strdup(tooltip);
-	g_object_free_list_add(G_OBJECT(text_view), (gpointer)tooltip);
+	gebr_gui_g_object_set_free_parent(text_tag, (gpointer)tooltip);
 	g_object_set_data(G_OBJECT(text_tag), "tooltip", (gpointer)tooltip);
 	gtk_text_buffer_apply_tag(buffer, text_tag, ini, end);
 
