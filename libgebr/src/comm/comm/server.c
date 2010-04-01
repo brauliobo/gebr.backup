@@ -284,8 +284,8 @@ void gebr_comm_server_run_flow(struct gebr_comm_server *server, GebrCommServerRu
 	gebr_comm_protocol_send_data(server->protocol, server->stream_socket,
 				     gebr_comm_protocol_defs.run_def, 4, xml,
 				     config->account ? config->account : "",
-				     config->class ? config->class : "",
-				     "4");
+				     config->queue ? config->queue : "",
+				     config->num_processes);
 	/* frees */
 	g_free(xml);
 	gebr_geoxml_document_free(GEBR_GEOXML_DOC(flow_wnh));
