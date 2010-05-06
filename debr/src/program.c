@@ -49,7 +49,7 @@ static const gint mpi_xml_to_index(GebrGeoXmlProgram * program)
 }
 
 struct program_preview_data {
-	struct gebr_gui_program_edit *program_edit;
+	GebrGuiProgramEdit *program_edit;
 	GebrGeoXmlProgram *program;
 	GtkWidget *title_label;
 	GtkWidget *hbox;
@@ -980,13 +980,13 @@ static void program_preview_on_response(GtkWidget * dialog, gint response, struc
 {
 	switch (response) {
 	case RESPONSE_REFRESH:
-		gebr_gui_gebr_gui_program_edit_reload(data->program_edit,
-						      GEBR_GEOXML_PROGRAM(gebr_geoxml_object_copy
-									  (GEBR_GEOXML_OBJECT(data->program))));
+		gebr_gui_program_edit_reload(data->program_edit,
+					     GEBR_GEOXML_PROGRAM(gebr_geoxml_object_copy
+								 (GEBR_GEOXML_OBJECT(data->program))));
 		break;
 	case GTK_RESPONSE_CLOSE:
 	default:
-		gebr_gui_gebr_gui_program_edit_destroy(data->program_edit);
+		gebr_gui_program_edit_destroy(data->program_edit);
 		gtk_widget_destroy(dialog);
 		g_free(data);
 		break;

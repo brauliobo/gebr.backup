@@ -26,40 +26,47 @@
  */
 
 static GtkWidget *
-gebr_gui_program_edit_load(struct gebr_gui_program_edit *program_edit, GebrGeoXmlParameters * parameters);
+gebr_gui_program_edit_load(GebrGuiProgramEdit *program_edit, GebrGeoXmlParameters * parameters);
 
 static GtkWidget *
-gebr_gui_program_edit_load_parameter(struct gebr_gui_program_edit *program_edit, GebrGeoXmlParameter * parameter, GSList ** radio_group);
+gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *program_edit, GebrGeoXmlParameter * parameter, GSList ** radio_group);
 
 static void
 gebr_gui_program_edit_change_selected(GtkToggleButton * toggle_button, struct gebr_gui_parameter_widget *widget);
 
 static void
-gebr_gui_program_edit_instanciate(GtkButton * button, struct gebr_gui_program_edit *program_edit);
+gebr_gui_program_edit_instanciate(GtkButton * button, GebrGuiProgramEdit *program_edit);
 
 static void
-gebr_gui_program_edit_deinstanciate(GtkButton * button, struct gebr_gui_program_edit *program_edit);
+gebr_gui_program_edit_deinstanciate(GtkButton * button, GebrGuiProgramEdit *program_edit);
 
-static gboolean on_group_expander_mnemonic_activate(GtkExpander * expander, gboolean cycle, struct gebr_gui_program_edit *program_edit);
+static gboolean on_group_expander_mnemonic_activate(GtkExpander * expander, gboolean cycle, GebrGuiProgramEdit *program_edit);
 
-static void on_arrow_up_clicked(GtkWidget *button, gpointer data);
+static void on_arrow_up_clicked(GtkWidget *button, GebrGeoXmlParameterGroup * parameter_group);
 
-static void on_arrow_down_clicked(GtkWidget *button, gpointer data);
+static void on_arrow_down_clicked(GtkWidget *button, GebrGeoXmlParameterGroup * parameter_group);
+
+static void on_delete_clicked(GtkWidget *button, GebrGeoXmlParameters * sequence);
+
+typedef struct {
+	GtkBox * group_vbox;
+	GList * instances_list;
+} GebrGroupReorderData;
 
 /*
  * Public functions.
  */
 
-struct gebr_gui_program_edit *
+GebrGuiProgramEdit *
 gebr_gui_program_edit_setup_ui(GebrGeoXmlProgram * program, gpointer parameter_widget_data, gboolean use_default)
 {
-	struct gebr_gui_program_edit *program_edit;
+	GebrGuiProgramEdit *program_edit;
 	GtkWidget *vbox;
 	GtkWidget *title_label;
 	GtkWidget *hbox;
 	GtkWidget *scrolled_window;
 
-	program_edit = g_new(struct gebr_gui_program_edit, 1);
+	program_edit = g_new(GebrGuiProgramEdit, 1);
 	program_edit->program = program;
 	program_edit->parameter_widget_data = parameter_widget_data;
 	program_edit->use_default = use_default;
@@ -82,18 +89,18 @@ gebr_gui_program_edit_setup_ui(GebrGeoXmlProgram * program, gpointer parameter_w
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
 				       GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-	gebr_gui_gebr_gui_program_edit_reload(program_edit, NULL);
+	gebr_gui_program_edit_reload(program_edit, NULL);
 
 	return program_edit;
 }
 
-void gebr_gui_gebr_gui_program_edit_destroy(struct gebr_gui_program_edit *program_edit)
+void gebr_gui_program_edit_destroy(GebrGuiProgramEdit *program_edit)
 {
 	gtk_widget_destroy(program_edit->widget);
 	g_free(program_edit);
 }
 
-void gebr_gui_gebr_gui_program_edit_reload(struct gebr_gui_program_edit *program_edit, GebrGeoXmlProgram * program)
+void gebr_gui_program_edit_reload(GebrGuiProgramEdit *program_edit, GebrGeoXmlProgram * program)
 {
 	GtkWidget *label;
 	GtkWidget *widget;
@@ -148,7 +155,7 @@ void gebr_gui_gebr_gui_program_edit_reload(struct gebr_gui_program_edit *program
  * \internal
  */
 static GtkWidget *
-gebr_gui_program_edit_load(struct gebr_gui_program_edit *program_edit, GebrGeoXmlParameters * parameters)
+gebr_gui_program_edit_load(GebrGuiProgramEdit *program_edit, GebrGeoXmlParameters * parameters)
 {
 	GtkWidget *frame;
 	GtkWidget *vbox;
@@ -166,20 +173,37 @@ gebr_gui_program_edit_load(struct gebr_gui_program_edit *program_edit, GebrGeoXm
 		GtkWidget *hbox;
 		GtkWidget *button;
 
-		if (!gebr_geoxml_parameter_group_get_is_instanciable(parameter_group))
-			gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
-
 		hbox = gtk_hbox_new(FALSE, 0);
 
 		button = gtk_button_new();
+		g_object_set_data(G_OBJECT(button), "frame", frame);
 		gtk_container_add(GTK_CONTAINER(button), gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE));
 		gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
-		g_signal_connect(button, "clicked", G_CALLBACK(on_arrow_down_clicked), NULL);
+		gtk_widget_set_sensitive(button, gebr_geoxml_sequence_get_index(GEBR_GEOXML_SEQUENCE(parameters)) != 1);
+		g_signal_connect(button, "clicked", G_CALLBACK(on_arrow_down_clicked), parameter_group);
+		g_object_set_data(G_OBJECT(frame), "arrow-down", button);
 
 		button = gtk_button_new();
+		g_object_set_data(G_OBJECT(button), "frame", frame);
 		gtk_container_add(GTK_CONTAINER(button), gtk_arrow_new(GTK_ARROW_UP, GTK_SHADOW_NONE));
 		gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
-		g_signal_connect(button, "clicked", G_CALLBACK(on_arrow_up_clicked), NULL);
+		parameter = GEBR_GEOXML_SEQUENCE(parameters);
+		gebr_geoxml_sequence_next(&parameter);
+		gtk_widget_set_sensitive(button, parameter != NULL);
+		g_signal_connect(button, "clicked", G_CALLBACK(on_arrow_up_clicked), parameter_group);
+		g_object_set_data(G_OBJECT(frame), "arrow-up", button);
+
+		if (!gebr_geoxml_parameter_group_get_is_instanciable(parameter_group))
+			gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
+		else {
+			button = gtk_button_new();
+			g_object_set_data(G_OBJECT(button), "frame", frame);
+			gtk_container_add(GTK_CONTAINER(button),
+					  gtk_image_new_from_stock(GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
+			gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+			g_signal_connect(button, "clicked", G_CALLBACK(on_delete_clicked), parameter_group);
+			g_object_set_data(G_OBJECT(frame), "delete", button);
+		}
 
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	}
@@ -208,10 +232,10 @@ gebr_gui_program_edit_load(struct gebr_gui_program_edit *program_edit, GebrGeoXm
 /**
  * \internal
  */
-static GtkWidget *gebr_gui_program_edit_load_parameter(struct gebr_gui_program_edit *program_edit,
+static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *program_edit,
 						       GebrGeoXmlParameter * parameter, GSList ** radio_group)
 {
-	enum GEBR_GEOXML_PARAMETER_TYPE type;
+	GebrGeoXmlParameterType type;
 
 	type = gebr_geoxml_parameter_get_type(parameter);
 	if (type == GEBR_GEOXML_PARAMETER_TYPE_GROUP) {
@@ -294,14 +318,17 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(struct gebr_gui_program_e
 		gtk_widget_show(group_vbox);
 		gtk_container_add(GTK_CONTAINER(depth_hbox), group_vbox);
 
-		gebr_geoxml_object_set_user_data(GEBR_GEOXML_OBJECT(parameter_group), group_vbox);
+		GebrGroupReorderData * data = g_new0(GebrGroupReorderData, 1);
+		data->group_vbox = GTK_BOX(group_vbox);
+		gebr_geoxml_object_set_user_data(GEBR_GEOXML_OBJECT(parameter_group), data);
 		g_object_set(G_OBJECT(group_vbox), "user-data", deinstanciate_button, NULL);
 
 		gebr_geoxml_parameter_group_get_instance(parameter_group, &instance, 0);
-		for (gboolean first_instance = TRUE; instance != NULL; gebr_geoxml_sequence_next(&instance)) {
+		for (gboolean first_instance = TRUE, i = 0; instance != NULL; gebr_geoxml_sequence_next(&instance)) {
 			GtkWidget *widget;
-
 			widget = gebr_gui_program_edit_load(program_edit, GEBR_GEOXML_PARAMETERS(instance));
+			data->instances_list = g_list_prepend(data->instances_list, GUINT_TO_POINTER(i++));
+			g_object_set_data(G_OBJECT(widget), "list-node", data->instances_list);
 			if (first_instance) {
 				g_signal_connect(expander, "mnemonic-activate",
 						 G_CALLBACK(on_group_expander_mnemonic_activate), program_edit);
@@ -311,6 +338,7 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(struct gebr_gui_program_e
 			gebr_geoxml_object_set_user_data(GEBR_GEOXML_OBJECT(instance), widget);
 			gtk_box_pack_start(GTK_BOX(group_vbox), widget, FALSE, TRUE, 0);
 		}
+		data->instances_list = g_list_reverse(data->instances_list);
 
 		return expander;
 	} else {
@@ -403,22 +431,22 @@ gebr_gui_program_edit_change_selected(GtkToggleButton * toggle_button, struct ge
 /**
  * \internal
  */
-static void gebr_gui_program_edit_instanciate(GtkButton * button, struct gebr_gui_program_edit *program_edit)
+static void gebr_gui_program_edit_instanciate(GtkButton * button, GebrGuiProgramEdit *program_edit)
 {
 	GebrGeoXmlParameterGroup *parameter_group;
 	GebrGeoXmlParameters *instance;
-	GtkWidget *group_vbox;
+	GebrGroupReorderData *data;
 	GtkWidget *deinstanciate_button;
 	GtkWidget *widget;
 
 	g_object_get(button, "user-data", &parameter_group, NULL);
-	group_vbox = gebr_geoxml_object_get_user_data(GEBR_GEOXML_OBJECT(parameter_group));
-	g_object_get(group_vbox, "user-data", &deinstanciate_button, NULL);
+	data = gebr_geoxml_object_get_user_data(GEBR_GEOXML_OBJECT(parameter_group));
+	g_object_get(data->group_vbox, "user-data", &deinstanciate_button, NULL);
 
 	instance = gebr_geoxml_parameter_group_instanciate(parameter_group);
 	widget = gebr_gui_program_edit_load(program_edit, GEBR_GEOXML_PARAMETERS(instance));
 	gebr_geoxml_object_set_user_data(GEBR_GEOXML_OBJECT(instance), widget);
-	gtk_box_pack_start(GTK_BOX(group_vbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(data->group_vbox, widget, FALSE, TRUE, 0);
 
 	gtk_widget_set_sensitive(deinstanciate_button, TRUE);
 }
@@ -427,7 +455,7 @@ static void gebr_gui_program_edit_instanciate(GtkButton * button, struct gebr_gu
  * \internal
  * Group deinstanciation button callback.
  */
-static void gebr_gui_program_edit_deinstanciate(GtkButton * button, struct gebr_gui_program_edit *program_edit)
+static void gebr_gui_program_edit_deinstanciate(GtkButton * button, GebrGuiProgramEdit *program_edit)
 {
 	GebrGeoXmlParameterGroup *parameter_group;
 	GebrGeoXmlSequence *last_instance;
@@ -448,7 +476,7 @@ static void gebr_gui_program_edit_deinstanciate(GtkButton * button, struct gebr_
 /**
  * \internal
  */
-static gboolean on_group_expander_mnemonic_activate(GtkExpander * expander, gboolean cycle, struct gebr_gui_program_edit *program_edit)
+static gboolean on_group_expander_mnemonic_activate(GtkExpander * expander, gboolean cycle, GebrGuiProgramEdit *program_edit)
 {
 	if (!gtk_expander_get_expanded(expander)) {
 		GtkWidget *first_instance_widget;
@@ -469,13 +497,84 @@ static gboolean on_group_expander_mnemonic_activate(GtkExpander * expander, gboo
 /**
  * \internal
  */
-static void on_arrow_up_clicked(GtkWidget *button, gpointer data)
+static void on_arrow_up_clicked(GtkWidget *button, GebrGeoXmlParameterGroup * parameter_group)
 {
+	GList * node;
+	GtkWidget * frame;
+
+	frame = GTK_WIDGET(g_object_get_data(G_OBJECT(button), "frame"));
+	node = (GList*)(g_object_get_data(G_OBJECT(frame), "list-node"));
+
+	if (!g_list_previous(node))
+		return;
+
+	GList * prev;
+	GList * next;
+	GebrGroupReorderData *data;
+
+	data = gebr_geoxml_object_get_user_data(GEBR_GEOXML_OBJECT(parameter_group));
+	prev = node->prev;
+	next = node->next;
+
+	/*
+	 * Swap nodes.
+	 * TODO Make utility functions?
+	 */
+	node->prev = prev->prev;
+	prev->prev = node;
+	node->next = prev;
+	prev->next = next;
+	next->prev = prev;
+
+	prev->data = GUINT_TO_POINTER(GPOINTER_TO_UINT(prev->data) + 1);
+	node->data = GUINT_TO_POINTER(GPOINTER_TO_UINT(node->data) - 1);
+
+	gtk_box_reorder_child(data->group_vbox, frame, GPOINTER_TO_UINT(node->data));
+	gtk_widget_set_sensitive(button, node->prev != NULL);
 }
 
 /**
  * \internal
  */
-static void on_arrow_down_clicked(GtkWidget *button, gpointer data)
+static void on_arrow_down_clicked(GtkWidget *button, GebrGeoXmlParameterGroup * parameter_group)
+{
+	GList * node;
+	GtkWidget * frame;
+
+	frame = GTK_WIDGET(g_object_get_data(G_OBJECT(button), "frame"));
+	node = (GList*)(g_object_get_data(G_OBJECT(frame), "list-node"));
+
+	if (!g_list_next(node))
+		return;
+
+	GList * prev;
+	GList * next;
+	GebrGroupReorderData *data;
+
+	data = gebr_geoxml_object_get_user_data(GEBR_GEOXML_OBJECT(parameter_group));
+	prev = node->prev;
+	next = node->next;
+
+	/*
+	 * Swap nodes.
+	 * TODO Make utility functions?
+	 */
+	node->next = next->next;
+	next->next = node;
+	node->prev = next;
+	next->prev = prev;
+	prev->next = next;
+
+	prev->data = GUINT_TO_POINTER(GPOINTER_TO_UINT(prev->data) - 1);
+	node->data = GUINT_TO_POINTER(GPOINTER_TO_UINT(node->data) + 1);
+
+	gtk_box_reorder_child(data->group_vbox, frame, GPOINTER_TO_UINT(node->data));
+	gtk_widget_set_sensitive(button, node->next != NULL);
+}
+
+/**
+ * \internal
+ */
+static void on_delete_clicked(GtkWidget *button, GebrGeoXmlParameters * sequence)
 {
 }
