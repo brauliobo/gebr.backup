@@ -1,0 +1,906 @@
+2010-03-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* gebrd: check if the queue exists before removing a job
+
+2010-03-08  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Changelogs updated for 0.9.16 release.
+
+2010-03-08  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation updated
+
+2010-03-07  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* adjust buffer size
+	* fix daemon port printing
+	* include all gebrd sources in libgebrd.a
+
+2010-03-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixes job clearing at daemon and gebr
+	  - don't clear queued jobs
+	  - some documentation fixes
+
+2010-03-05  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - Portuguese translation update
+	  - Programs' version validated at DeBR
+	  - Programs' version query and/or edited through command-line
+	  tools
+
+2010-03-02  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Created getter/setter for version attribute in 'program' tag;
+	  Interface done.
+
+2010-03-02  abaaklini
+
+	* Resolved some comments at issues 201 and 197
+
+2010-03-01  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Depends in automake to build in lenny and intrepid. (Reverted
+	  from 0.9.16)
+
+2010-02-27  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed job_notify_status
+	* - fixed server_free_foreach_job
+	  - don't show "Queue:" in queue anymore
+
+2010-02-26  fabiosazevedo
+
+	* - added rnq message (rename queue) to client/server protocol
+	  - new status message (requeued) to notify queue renaming
+	  - no more empty queue names strings on gebrd, it gives an empty
+	  queue name a new name formatted as 'j<jobid>'
+	  - dialog for typing name of queue in the case the user executes
+	  after <job>
+	  - gebr prefixes user queues with 'q' to differentiate them from
+	  'j' prefixed queues
+	  - support for empty queues
+	  - added some documentation
+
+2010-02-25  abaaklini
+
+	* Removes job from daemon queue. (Fixes issue 210)
+
+2010-02-24  abaaklini
+
+	* Jobs that was waiting for execution on MOAB cluster, has status
+	  updated to queued. (Fixes issue 209)
+	* Update issue 209
+	  Implements the hide of 'kill' button when queued jobs was
+	  selected
+	  Update issue 210
+	  Implements the remove of a queued job
+
+2010-02-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 182
+	  requires glib of version at least 2.12 and only enable tests
+	  (with
+	  gtester) for glib 2.16+
+
+2010-02-20  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation even more updated
+
+2010-02-19  abaaklini
+
+	* Email changed to project name and some internationalization
+	* Bug fix due internationalization
+	* Internationalization for gebrd and debr
+
+2010-02-18  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* requires at least glib 2.16 (Fixes issue 182)
+	* - fix potencial count in debr's validation
+	  - fix validation of hotkeys in groups
+	  - fix hotkeys for flags
+	  - focus first parameter for group hotkey activation
+
+2010-02-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed autogen.sh script to copy instead of making links
+
+2010-02-18  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Commiting copys in subproject to easy the process, updates must
+	  be made into root and propagated with autogen.sh.
+	* Workaround to fix broken links in make dist, please use
+	  autogen.sh to copy *.decl into subprojects.
+
+2010-02-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Changed icon for unconfigured programs in GeBR; Program status is
+	  now an enumeration.
+
+2010-02-18  abaaklini
+
+	* - check libgebr version
+	  - fix ordering of libgebr and other libs linkage
+
+2010-02-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - require at least gtk 2.12
+	  - do not use svn/git version for libgebr
+
+2010-02-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - added configure.ac.decl for commom configure.ac's code
+	  - only use intall -C if available
+
+2010-02-05  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* added install -C script option automatically
+
+2010-02-05  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Added suport to git version in about.
+
+2010-02-02  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Integrated Ckeditor inside GeBR.
+	  Implemented test framework in libgebr.
+
+2010-01-31  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added unit test support. Primary tests on gebrd/tests.
+
+2010-01-28  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a segfault when deleting multiple parameters in DeBR (Fixes
+	  issue 145)
+
+2010-01-27  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a segfault when client disconnect; Added queue 'Immediatly'
+
+2010-01-27  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* added default queue behaviour (run immediatly)
+	* less agressive tail
+	* fix msub error checking
+	* fix error check for moab
+	* better checks for moab job id
+	* check for msub failures
+	* Don't use gebrd queueing system for moab servers
+
+2010-01-27  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Don't use g_hash_table_get_keys for backward compatibility
+	* Queues implemented
+
+2010-01-26  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* run msub syncronously to avoid run condition
+	* delete message from list upon fail
+	* fixed run on a local server
+	* fixed typo compiling errors
+	* for moab servers pool status using checkjob command
+
+2010-01-26  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Queues from Moab and/or Gebr are now stored in ListStore's, in
+	  GeBR
+
+2010-01-26  abaaklini
+
+	* Arguments moab_jid and queue passed from daemon to client
+
+2010-01-25  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fetching Moab output is now possible
+
+2010-01-25  abaaklini
+
+	* At the end of flow execution, daemon are signalized
+
+2010-01-25  fabiosazevedo
+
+	* It's now possible to get the job's id and output on Moab servers.
+
+2010-01-22  abaaklini
+
+	* Program parameters are now correctly escaped
+	* Fixed escapings when building command line on GeBRd
+
+2010-01-22  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Reverting build system fixes from 0.9.15.
+
+2010-01-22  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* gebr report server errors to the user
+	* more robust protocol checks
+
+2010-01-22  abaaklini
+
+	* Memory leak problem and export display on MOAB cluster, resolved
+
+2010-01-22  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Minor changes to get compliant with autoreconf,
+	  after a checkout use "AUTOPOINT=intltoolize autoreconf -i" to
+	  setup.
+
+2010-01-21  abaaklini
+
+	* Fixed escaping in Moab command construction
+	* GeBRd now supports MOAB cluster
+
+2010-01-21  fabiosazevedo
+
+	* Added code to get MOAB cluster user credentials.
+
+2010-01-21  abaaklini
+
+	* Added function to obtain server type
+
+2010-01-20  abaaklini
+
+	* All necessary informations to run a flow on Netuno are now passed
+	  to GeBRd
+
+2010-01-20  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* changed fake glib filenames in libgebr_comm
+
+2010-01-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* apply coding style police
+	  (http://code.google.com/p/gebr/wiki/CodingStyle)
+
+2009-12-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* changelog for deb packages updated
+	* changelog's update and version set to 0.9.15 for tag
+
+2009-12-12  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Added autotools chain to build process, there is alternative
+	  versions depending on distribuition.
+
+2009-12-11  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Fixed build dependencies to build from scratch in chroots.
+
+2009-12-01  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - removed minor warnings
+	  - refactored LOG enums names and server IO
+	  - fixed local server addess
+
+2009-11-18  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* libgebr name refactoring
+	* fixed wrong renaming
+	* libgebr_comm name refactored
+
+2009-11-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Changed the mapping from DTD 0.3.0 to 0.3.1 (Fixes issue 88)
+
+2009-11-14  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - Fixed a critical bug in geoxml/document.c
+
+2009-11-14  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* libgebr_gui name refactored
+	* geoxml name refactoring
+
+2009-10-24  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* compilation and rpm building fixes backported from tag 0.9.14.
+
+2009-10-17  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - Renamed most of the comm library classes
+
+2009-10-16  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - Refactored GSocket class to conform with the new GLib 2.22
+
+2009-10-07  Ricardo Biloti <biloti@gebrproject.com>
+
+	* version inferred from svn
+
+2009-09-29  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* improments for dictionary
+
+2009-08-13  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed rpm files
+
+2009-08-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fix bug: separator wasn't set on list reenable (Fixes issue 54)
+	  - set sensitive properly for exclusive instances
+
+2009-08-11  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Tag 0.9.14 updates backported to trunk
+
+2009-08-10  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation updated and small fix in POTFILES.in for
+	  libgebr
+
+2009-08-04  Ricardo Biloti <biloti@gebrproject.com>
+
+	* GeBR Project site update
+
+2009-06-20  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - removal of libgebr_misc which were moved to libgebr
+	  - final removal of support.h
+	  - libgebr refactored
+	  - minor cleanups
+
+2009-06-19  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Makefile.in.in deleted since they are generated by intltoolize
+	  (really?)
+	* backported to trunk changes from tag 0.9.13
+
+2009-06-17  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixes to webkit help viewer
+	  - internationalize geoxml-{upgrade,validate}
+
+2009-06-17  Ricardo Biloti <biloti@gebrproject.com>
+
+	* set locale even independently of GTK
+
+2009-06-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation update
+
+2009-06-10  Ricardo Biloti <biloti@gebrproject.com>
+
+	* webkit enabled by default
+
+2009-05-27  Ricardo Biloti <biloti@gebrproject.com>
+
+	* check for existence and permissions of in/out/error files
+
+2009-05-20  Ricardo Biloti <biloti@gebrproject.com>
+
+	* fix escaped command-line string conflict with localed filenames
+	  fixed
+
+2009-05-13  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - gebrd internationalization
+	  - killall for local servers
+	  - Portuguese translation fixes
+
+2009-05-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - replaced support.h to libgebrintl.h
+	  - libgebr is now and independent library
+	  - option to build libgebr with no GUI linkage
+	  - fixed libgebr internacionalization with the introduction of
+	  libgebr_init
+
+2009-05-08  Ricardo Biloti <biloti@gebrproject.com>
+
+	* version matches enhancenments
+	* desktop menus added to gebr and debr
+	* fix file enconding
+
+2009-04-09  Ricardo Biloti <biloti@gebrproject.com>
+
+	* configure.ac backported to trunk
+
+2009-04-08  Ricardo Biloti <biloti@gebrproject.com>
+
+	* changelogs backported to trunk
+
+2009-04-03  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fix errors reported by clang
+	  - fix menu close on debr
+	  - fix select_sibling function
+	* fix jid generation
+
+2009-04-02  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixed write in gsocket
+	  - more robust protocol error handling using a hash table for
+	  commands
+
+2009-03-25  Ricardo Biloti <biloti@gebrproject.com>
+
+	* update Changelogs and configure.ac's
+
+2009-03-21  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* debian changelog readded to trunk
+
+2009-03-13  Ricardo Biloti <biloti@gebrproject.com>
+
+	* debian control files updated
+
+2009-03-02  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - removed changelog.in from debian packages
+	  - fixed VERSION in configure.ac's
+
+2009-01-29  Ricardo Biloti <biloti@gebrproject.com>
+
+	* ChangeLogs updated
+
+2009-01-27  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - various bugfixes to handle reference parameters
+	  - geoxml_parameter_get_type resolve references
+	  - a lot of fixes to geoxmlsequence functions
+	  - rewritten dran n' drop API
+	  - full drag n' drop support in debr's parameter page
+
+2009-01-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - debr: if we don't have any parameter in the group we cannot
+	  instaciate
+	  - gebr: update flow title on flow_browse_load (fix bug of loading
+	  a revision with diferent title)
+	* fix parse of "reference" parameter type in gebrd
+
+2009-01-20  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* general refactoring in libgebr_comm to really support unix
+	  sockets
+
+2009-01-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixes to rpm creation
+
+2009-01-15  Ricardo Biloti <biloti@gebrproject.com>
+
+	* preparation for release 0.9.7
+
+2009-01-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - Copyright messages updated
+	  - accents suppressed
+
+2009-01-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed debug flag usage
+	* removed mkinstalldirs (also generated)
+
+2009-01-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* delete automatically generated files
+	* - Copyright messages updated
+	  - accents suppressed
+	* package version fixed
+
+2009-01-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* use --disable-debug to build packages
+
+2008-12-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* initial work to support client/server version check
+
+2008-11-29  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - tons of code for group implementation in debr (not yet working
+	  :)
+	  - save all button in debr
+
+2008-11-25  Ricardo Biloti <biloti@gebrproject.com>
+
+	* version updated to 0.9.6-pre
+
+2008-11-24  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* more compilation due to old installation with old headers
+
+2008-11-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* the saga of list parameters ended!
+	  - changed DTD to make value and default values independets
+	  - refactoring of GeoXmlProgramParameter functions
+	  - general refacte on parameter_widget function:
+	  - every change is auto submited
+	  - ability to auto rebuild the ui to match new parameter
+	  properties
+	  - adapted to the in each element value list parameter
+	  - a lot of conversion to flow 0.3.0 fixes
+
+2008-11-22  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* adapted gebrd to compile with flow0.3 and libgebr_comm
+	  modifications
+
+2008-06-26  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* final merge operations
+	* branches packages_reorganization merged with trunk
+	* - created tag 0.9.5 for release, and changed trunk pre versions
+	  - created branch packages_reorganitazation
+
+2008-06-18  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed typo
+	* fix display export on job run for remote servers
+	* fix argument index at INI
+	* protocol change: local clients now sends display
+	* minor fixes/cleanups
+	* more robust display port discovery
+
+2008-06-17  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* change x11 forward architecture (with protocol implications)
+
+2008-06-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* more too debug messages
+	* outputs to stderr and message is an error
+	* message for when gebrd cannot run in interactive mode
+	* removed duplicated new line feed
+	* - defines.h away from gebr makefile
+	  - gebr client now send it its IP (again)
+	  - server use its hostname for lock/log files
+
+2008-06-14  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* some gebr-client progress achieved
+
+2008-06-13  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - added version commandline option to gebr and gebrd
+	  - gebrd: added defines.h and change foreground option name to
+	  interactive
+	* fix ini receive message
+	* - foreground mode
+	  - in daemon mode, server returns the port
+
+2008-06-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - gebrd lock file is gebrd-<server_ip>.run
+	  - name resolution is done through gethostbyname
+
+2008-04-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* removed type group from gebrme and from 0.2 DTDs. it will be
+	  refacted and readded at flow 0.3
+
+2008-04-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* flow to command genereration:
+	  - support for exclusive group
+	  - more reliable error handling
+
+2008-04-09  Ricardo Biloti <biloti@gebrproject.com>
+
+	* file's header updated and changed to plain ascii
+
+2008-04-05  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - groups functional on gebr and gebrme
+	  - debug flags thought --enable-debug
+
+2008-03-15  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixed string comparison to consider case
+	  - gebr: make accel_group a global variable
+
+2008-03-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - fix a case insensitive string comparison
+	  - escape command line string
+
+2008-03-07  Ricardo Biloti <biloti@gebrproject.com>
+
+	* revert wrong deb package rule
+
+2008-03-06  Ricardo Biloti <biloti@gebrproject.com>
+
+	* enhancements in package generation
+
+2008-03-05  Ricardo Biloti <biloti@gebrproject.com>
+
+	* new rule packages
+	* - new package gebr-menus-su created
+	  - all SU menus moved from gebr to gebr-menus-su
+
+2008-02-29  Ricardo Biloti <biloti@gebrproject.com>
+
+	* TODO and Copyright note updated
+
+2008-02-21  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed generation of commandline for list parameters
+	* - fixed icon of gtkfileentry and gtksequenceedit
+	  - merged enum-impl and improved show on combo box
+	  - quote each value when parameter accepts a list of parameters
+	  - fixed revert to default value on parameters dialog
+
+2008-02-10  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - close stdin for programs that do not use it (in gebrd)
+	  - fixed crash when clearing jobs from disconnected servers
+
+2008-02-09  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - improved no error file reporting
+	  - minor code and pontuation cleanups
+	* - added define.h in libgebr for static mode support
+	  - changed names of enum log_message_type
+	  - ported server infrastruture to libgebr-comm for further use in
+	  gebr-run
+
+2008-02-08  Ricardo Biloti <biloti@gebrproject.com>
+
+	* global TODO file and small program remove fix to gebrme
+	* enum support to gebrd (again)
+
+2008-02-04  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed EINPROGRESS in GSocket
+	* - improved client/server archtecture (still unstable)
+	  - general fixes
+
+2008-02-01  Ricardo Biloti <biloti@gebrproject.com>
+
+	* enun support added to gebrd
+
+2008-01-28  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - use LIBGEBR_{CFLAGS, LIBS} in gebrd and gebrme
+	  - disable file overwrite confirmation on gtkfileentry
+
+2008-01-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - changed use of -D in favor of a defines.h
+	  - minor changes
+	* fixed headers' encoding
+	* removed test (old and unused stuff)
+	* ported to iso_date from libgebr
+	* - fix header encoding problems and copyright
+	  - moved date, tooltip and confirm_action_dialog to libgebr
+	  - added g_simple_locale_to_utf8 to libgebr
+	  - improved set_tooltip
+
+2008-01-07  Ricardo Biloti <biloti@gebrproject.com>
+
+	* do not interrupt by lacking output file
+
+2008-01-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* minor changes
+
+2008-01-05  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - better random algorithm
+	  - trap SIGINT (CTRL+C)
+
+2008-01-05  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Fix changelogs
+
+2007-12-13  Ricardo Biloti <biloti@gebrproject.com>
+
+	* tooltips fixed and some other minor bugs
+
+2007-12-13  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixed used of uninitialized varible
+	  - localize date in jobs
+	  - minor cleanups
+
+2007-12-13  Ricardo Biloti <biloti@gebrproject.com>
+
+	* several bug fixes
+	* DTD versions fixed
+
+2007-12-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - merged branch code-reorganization into trunk
+	  - fixed syntax error on flow DTD
+
+2007-11-28  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed trunk subdir tree
+	* recovered trunk
+
+2007-11-24  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* undo last commit
+	* run xauth on every command execution
+	* fixed DISPLAY for remote command execution
+	* - added protocol version in INI
+	  - added finish date in FIN
+	  - append output instead of regenerate all job info buffer
+	  - run bash -l
+
+2007-11-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* 0.9.3 will be a tag and 0.9 is a brach
+	* created the first branch, 0.9.3
+
+2007-11-23  Ricardo Biloti <biloti@gebrproject.com>
+
+	* x support through xauth (broken)
+	* gprocess fixed, add localhost to prevent empty server lists
+	* down button fixed
+
+2007-11-20  Ricardo Biloti <biloti@gebrproject.com>
+
+	* many congress fixes
+
+2007-11-17  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* change ssh functions names
+
+2007-11-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed gtcpserver
+	* server welcome message
+	* - pid -> jid
+	  - a lot of fixes
+	* more fixes. now it is able to executed non-graphical flows
+	* more work... II
+
+2007-11-15  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* gebrd: process -> job
+	* more work...
+	* some work...
+	* - fix peer_address in gtcpsocket
+	  - fix X11 forwarding
+	* - fill job info
+	  - prevent run when there is no flow selected
+	  - gebrd: more issues info
+	* - show flows that could not be run into jobs view
+	  - protocol fixes
+	* added protocol support for sizing each argument of a message
+
+2007-11-14  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix the last fix
+	* fix deletion of lock file on wrong time
+	* show error or warnings when assemblying flow command line
+	* - fixed sockets behaviour on libgebr_misc
+	  - more run stuff
+
+2007-11-13  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix compile
+	* more process job support on server
+	* server auth and protocol fixes
+	* fix compile errors
+	* some protocol_send changes
+	* fixes...
+
+2007-11-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixes on GProcess
+	  - more ssh work on gebr
+	  - fixes command QUT on gebrd
+	* some process work
+
+2007-11-11  Ricardo Biloti <biloti@gebrproject.com>
+
+	* fixing debian package construction
+	* removing gebrme metions
+
+2007-11-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - gprocess work
+	  - initial code for ssh execution for port discovery
+	  - protocol ifs on gebr and gebrd
+	  - removed info on debian package
+	  - fixed build error on libgebr
+
+2007-11-10  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - change name of gnetwork to misc (part II)
+	  - moved gprocess to libgebr_misc
+	* - initial server support on gebr
+	  - minor changes in libgebr
+	  - partially fiz quit on gebrd
+	* server running on a random port
+
+2007-11-09  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - moved protocol messaging to libgebr_gnetwork
+	  - client/server files on gebr
+	* gprocess work
+	* packages fixes
+	* gprocess
+
+2007-11-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* initial process code
+	* use libgebr
+
+2007-11-07  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* initial protocol support implementation
+	* updated gnetwork
+
+2007-11-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed new connection on gnetwork
+	* fixed server crash on client connect
+	* still buggy; just keep changes on repository
+
+2007-11-05  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* get fid of the most anoying infinite loop
+
+2007-10-26  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* separated test client from server
+
+2007-10-22  Ricardo Biloti <biloti@gebrproject.com>
+
+	* version fixed (again)
+
+2007-10-21  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - get rid of threads (for now)
+	  - ported to nonblocking sockets
+
+2007-10-19  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* parallel build in rpms
+
+2007-10-19  Ricardo Biloti <biloti@gebrproject.com>
+
+	* version macro fixed
+
+2007-10-19  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - changed debian stuff to enabled automatic build
+	  - relicenced gebr under GPLv3
+
+2007-10-19  Ricardo Biloti <biloti@gebrproject.com>
+
+	* spec.in fixed
+
+2007-10-19  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - more work on gnetwork (still confused by glib's io channel)
+	  - initial protocol implementation
+
+2007-10-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - server class
+	  - client_info struct
+	  - fake_client stuff created for testing
+
+2007-10-13  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixed reception of new connections on gtcpserver
+	  - added some source files
+
+2007-10-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - grouped network classes in a module called gnetwork
+	  - various works on gnetwork
+	* added new-connection signal to gtcpserver and made it a gobject
+	* changed rpm dependency from libgeoxml0 to libgeoxml
+
+2007-10-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* check for gthread
+
+2007-10-10  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - added classes to forge a glib socket library
+	  - work on GTcpServer and GHostAddress
+
+2007-10-09  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* created daemon source structure
+
