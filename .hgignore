@@ -1,5 +1,6 @@
 syntax: glob
 
+*.orig
 *.Plo
 *.a
 *.gmo
@@ -56,16 +57,21 @@ install-sh
 intltool-*.in
 libgebr/docs/reference/*/gebr-*
 libgebr/docs/reference/*/html
+libgebr/docs/reference/*/tmpl
 libgebr/docs/reference/*/xml
 libgebr/gtk-doc.make
 libgebr/m4
 libgebr/packages/rpm/libgebr.fedora.spec
 libgebr/packages/rpm/libgebr.mandriva.spec
 libgebr/packages/rpm/libgebr.opensuse.spec
+libgebr/src/comm/comm/json-glib/json-enum-types.c
+libgebr/src/comm/comm/json-glib/json-enum-types.h
 libgebr/src/comm/comm/json-glib/stamp-json-enum-types.h
 libgebr/src/comm/comm/json-glib/stamp-json-marshal.h
 libgebr/src/comm/gebr-comm.pc
+libgebr/src/comm/socketchannel/gebr-comm-socketchannel
 libgebr/src/comm/tests/test-protocol
+libgebr/src/comm/tests/test-socket
 libgebr/src/defines.h
 libgebr/src/gebr.pc
 libgebr/src/geoxml/gebr-geoxml.pc
