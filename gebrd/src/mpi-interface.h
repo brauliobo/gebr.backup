@@ -24,10 +24,12 @@ G_BEGIN_DECLS
 
 typedef struct {
 	GString * name;		/**< The name of the Mpi implementation */
+	GString * mpirun;
 	GString * libpath;
 	GString * binpath;
-	GString * init_script;
-	GString * end_script;
+	GString * host;
+	GString * init_cmd;
+	GString * end_cmd;
 } GebrdMpiConfig;
 
 void gebrd_mpi_config_free(GebrdMpiConfig * self);
