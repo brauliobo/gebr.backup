@@ -1,0 +1,1724 @@
+2010-07-16  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Saving a menu on top of another validated menu, removes that
+	validation
+	* Fixed a bug when validating & saving a newly created menu
+
+2010-07-15  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Fixed maintainers email and docbook-utils build dependency.
+	* Expands author's email address.
+
+2010-07-13  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* I18n files updated
+
+2010-07-13  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Help validation icon is updated when the help is saved (Fixes issue
+	423)
+
+2010-07-08  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Deleting a program clears the 'Parameters' tab (Fixes issue 439)
+
+2010-07-06  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Saving an untitled menu, the menu loses the selection
+
+2010-07-05  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* On deleting an untitled menu, the message don't show the path to the
+	filename
+
+2010-07-01  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* "Parameter edition" window title, was changed to include the
+	parameter type that was being edited
+	* Changed title for group instance from "Instance #" to "Defaults for
+	instance #" at DéBR
+
+2010-06-30  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Move GeBR/DeBR icons to Science menu
+
+2010-06-28  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* 'New' is disabled when no Program is selected in DeBR (Fixes issue
+	439)
+
+2010-06-22  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Fixed warning icon at debr's menu validation.
+
+2010-06-21  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* File libgebr/src/geoxml/geoxml/validate.c added to pot files for
+	internationalization
+
+2010-06-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a bug where the list widget was being shown from the start
+	(Fixes issue 440)
+	* Removed the scrolled window from parameters dialog
+	* Parameter edition dialog does not scroll horizontally (Fixes issue
+	438)
+	* All categories are reported on DeBR's detail view (Fixes issue 435)
+
+2010-06-18 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 434
+
+2010-06-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Groups can be created even if a group is selected (Fixes issue 433)
+	* Fixed segfault when canceling the menu properties dialog (Fixes
+	issue 425)
+	* Changed signature of 'program_new(gboolean)' to 'program_new(void)'
+
+2010-06-16  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added validation to the author field in menu properties dialog
+	(Fixes issue 421)
+	* 'Remove folder' is now disabled on 'Other' folder, in DeBR (Fixes
+	issue 424)
+
+2010-06-16 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 416
+
+2010-06-01  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed autogen script to call `gtkdocize' in libgebr folder
+
+2010-06-02 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* add unit tests infrastructure to gebr
+
+2010-05-25  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Freeze preparing to release 0.9.17.
+
+2010-05-21 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 377
+
+2010-05-17 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 380
+
+2010-05-20  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Custom Editor selected with its entry box empty, causes Permission
+	Denied on help edit at DéBR. Update issue 375
+
+2010-05-17 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 285
+	* copied navigation stuff in css to links
+
+2010-05-15 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 285
+
+2010-05-14  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Included Locale header file
+
+2010-05-11  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added internationalization to the glade interface file
+
+2010-05-11  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* updated translations and fixed a mistaken string replace.
+
+2010-05-11 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* BUG: check first run for DeBR depending wheter the config file could
+	be loaded
+
+2010-05-10  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed several places where the first instance was being treated as
+	template
+
+2010-05-06  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a segfault when canceling a parameter edition
+	* Renamed 'gebr_gui_gebr_gui_program_edit_destroy' to
+	'gebr_gui_program_edit_destroy'
+	* Renamed 'enum GEBR_GEOXML_PARAMETER_TYPE' to
+	'GebrGeoXmlParameterType'
+
+2010-05-03  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation updated
+
+2010-05-05  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added hotkeys for DeBR's save dialog
+
+2010-04-30  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation updated
+
+2010-05-05  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Changed 'struct gebr_gui_program_edit to 'GebrGuiProgramEdit'
+
+2010-05-04  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a bug in conversion of 0.3.4 flows to 0.3.5
+
+2010-05-01 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* avoid struct assigments
+	* use GtkAttachOptions cast
+	* do not use c++ reserved name 'new'
+	* use GParamFlags cast
+	* do not use reserved c++ name 'class'
+	* Cast GtkDialogFlags parameter
+	* Fixed and added G_BEGIN_DECLS/G_END_DECLS
+	* replaced g_malloc with g_new
+	* Update issue 355
+
+2010-04-30  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Adding the 'Up' and 'Down' buttons to group intances
+	* Fixed a bug when propagating changes in template
+	* First changes for adopting the new strategy for group instances
+
+2010-04-30  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed some minor interfaces bugs in DeBR's save dialog
+
+2010-04-28  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Month strings in DeBR menu's help is now locale independent.
+
+2010-04-29  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Removed browser configuration from DeBR
+
+2010-04-27  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Fixed reversed order of filenames list to save in DéBR.
+
+2010-04-30 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 354
+
+2010-04-26  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Default saving folder in DeBR is $HOME
+
+2010-04-27 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* changed validation text
+
+2010-04-26 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 318
+
+2010-04-26  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixes issue 304
+
+2010-04-23  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Implemented a context menu for the menus' save dialog in DeBR.
+
+2010-04-23 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* use and absolute path for install-sh script
+	* Fix empty help for DeBR (Fixes issue 342)
+
+2010-04-23  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Fixed a bug when closing a folder
+	* Fixes issue 341
+
+2010-04-23  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Update issue 341
+
+2010-04-22  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Fallback to autotools install-sh if system don't have -C option.
+
+2010-04-20 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 338
+
+2010-04-19  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a bug where clicking in a category fix, changed the wrong
+	category
+
+2010-04-18 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 333
+	* Update issue 333
+
+2010-04-17 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 336
+
+2010-04-16 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* validate empty list of categories (Fixes issue 332)
+
+2010-04-20  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixes issue 324
+
+2010-04-16  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* DeBR's preferences dialog has a default response
+	* Parameters label are now fixable
+
+2010-04-16  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* GUI to insert/remove folders directly in DéBR menus treeview.
+
+2010-04-16  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Changed menu_count_unsaved to work with single folders
+	* Fixed a bug where 'Save All' feature was not working
+
+2010-04-15  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Update issue 335
+
+2010-04-16 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 333
+
+2010-04-15  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed HTML editor choice in DeBR
+
+2010-04-14  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixes issue 272
+
+2010-04-14  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Opening and closing folders directly into DeBR's treeview.
+
+2010-04-13 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 331
+	* Update issue 331
+
+2010-04-12 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 284
+	* Update issue 284
+	* Update issue 284
+	* Update issue 284
+
+2010-04-10 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 284
+
+2010-04-09  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Changed "parallelization" to "mpi".
+
+2010-04-06  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Attribute 'instanciable' is now set to FALSE in XML when creating a
+	parameter group.
+	* Reverted "instantiable" to "instanciable" in GeoXml
+	parameter_group.c.
+	* Changed "instanciable" to "instantiable" in some UI texts.
+
+2010-04-05  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* First 'on demand' validation implementation in DeBR
+
+2010-04-01 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix menu_close_folder
+
+2010-04-01  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed default value for gebrd configuration
+
+2010-04-01 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* added debr interface for configuring parallelization implementation
+	in a program
+
+2010-03-31 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix hand cursor for links
+
+2010-03-30 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - recover scroll position after validation update
+
+2010-03-29 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* keep syncronized menu and validate tab
+
+2010-03-28 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix validate's edit to show dialog correctly
+	* added validatation interface in libgebr_geoxml and use it for menu-
+	query and DeBR
+
+2010-03-25 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* implemented testing Fix feature
+
+2010-03-24 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* added Fix link after validation errors
+
+2010-03-25  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Included functions for single directory manipulation in DéBR
+	* Added infrastructure for DéBR unit-testing
+
+2010-03-23  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Modification associated with issue 225. On "permission denied" error
+	accessing files, the error dialog and the message on status bar will
+	be shown.
+	* "Warning: invalid cast from `GtkRadioButton' to `GtkMisc'" fixed
+	when exclusive radio button is set
+	* Some misspelled words fixed
+	* "expanded by default" and "instantiable" radio buttons, preserves it
+	state during execution
+
+2010-03-23  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed atk warnings in GeBR and DeBR
+
+2010-03-22  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* On 'save' button activate with no permission at chosen folder,
+	change the error message to be like as the others 'save' places.
+
+2010-03-22  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Inserted current file name in dialog when Exporting/Saving
+
+2010-03-18  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Fixes issue 277
+
+2010-03-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Changed "Save on Exit" behavior
+	* Fixing some save as bugs
+
+2010-03-15 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* replaced GEBR_GEOXML_RETV_CANT_ACCESS_FILE
+
+2010-03-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a bug in 'Save as' feature when permition was denied.
+
+2010-03-12  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Replaced the save dialog for DeBR menus tab
+
+2010-03-11 Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix compilation errors for new gebr_geoxml_document_load
+
+2010-03-11  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* More from "Implemented at DéBR, save on protected folder report
+	error message."
+
+2010-03-10  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Implemented at DéBR, save on protected folder report error message.
+
+2010-03-10  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* menu_selected() now handles ITER_FOLDER and ITER_NONE explicitly.
+	menu_folder_details_update() now always shows the details widgets
+	when a folder is selected.
+
+2010-03-09  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed absolute path in gebr and debr desktop launchers
+
+2010-03-08  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Added call to do_navigation_bar_update() in program_load_iter()
+	(Fixes issue 237).
+
+2010-03-08  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Changelogs updated for 0.9.16 release.
+	* Changelogs updated for 0.9.16 release.
+
+2010-03-08  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation updated
+
+2010-03-07  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a bug where 'Save All' didn't work when menus were sorted
+	  by modified date.
+	* Fixed a bug where categories weren't updated on 'Refresh'
+	* Pressing 'Cancel' button when asked to save menus in Preferences
+	  dialog returns to the dialog.
+	* Rewritten 'save as' function, now working properly
+
+2010-03-07  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixes compilation in debr
+	  - debr and gebr sources files compiled in a lib (for future test
+	  framework)
+
+2010-03-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixes job clearing at daemon and gebr
+	  - don't clear queued jobs
+	  - some documentation fixes
+
+2010-03-06  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a bug where DeBR didn't do anything when trying to save an
+	  extensionless menu
+	* In DeBR:
+	  - It is now impossible to change any parameter into a group;
+	  - Groups can not have its type changed.
+	* Changed default values for group options in DeBR
+	* Fixed menu install in DeBR
+
+2010-03-05  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Option "Save as" overwrite menus without confirmation.
+	  (abaaklini) (Fixes issue 240)
+	  
+	  New issue
+	  Summary: Review "Save as" overwrite confirmation behavior.
+	  Labels: Type-Defect
+	  
+	  The issue 240 fixed by this commit may happen all around gebr and
+	  debr.
+	  See this commit diff for quick workaround.
+	  See gimp for possible better solution.
+
+2010-03-05  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Menu changes lost on preferences save. (Updates issue 245)
+
+2010-03-05  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added program-parameters count in Libgebr/DeBR
+
+2010-03-05  Ricardo Biloti <biloti@gebrproject.com>
+
+	* program's version displayed also at details view
+	* - Portuguese translation update
+	  - Programs' version validated at DeBR
+	  - Programs' version query and/or edited through command-line
+	  tools
+
+2010-03-05  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* When the built-in option was selected, a default editor (gedit)
+	  overwrite it on program load
+
+2010-03-04  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added protection for when 'dtd' or 'ver' marks wheren't present
+	  in help-template.
+
+2010-03-04  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Option for custom editor implemented at GeBR and some updates at
+	  Debr
+	* Options for legacy editor implemented on DeBR
+
+2010-03-03  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed DTD substitution in help edition; Added 'version' after
+	  DTD.
+	* Added 'version' attribute in flow DTD; Fixed transition from
+	  0.3.2 to 0.3.3.
+
+2010-03-02  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Created getter/setter for version attribute in 'program' tag;
+	  Interface done.
+	* Fixed other cases where a 'Group' option was improperly available
+	* Removed 'Group' item from 'New' menu when a group is selected
+	* Refactored the drop-down feature to libgebr
+
+2010-03-01  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Depends in automake to build in lenny and intrepid. (Reverted
+	  from 0.9.16)
+
+2010-02-27  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed job_notify_status
+
+2010-02-26  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* GeBR and DeBR properties dialogs now have default responses
+
+2010-02-26  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* do not use gtk_widget_get_window for compatibility with old gtk
+
+2010-02-26  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* On DeBR properties dialog:
+	  - Removed 'Open' and 'Refresh' buttons;
+	  - Standard way of activating the Ok button from GtkEntrie's.
+
+2010-02-25  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added a toolbar in Help Edition dialog; Removed old code from
+	  past fetching of help's html.
+
+2010-02-23  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Plenty of documentation updated
+
+2010-02-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* backported tag 0.9.16 changes to trunk
+
+2010-02-23  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* New method to create parameters in DeBR;
+	  More documentation ported to Doxygen.
+
+2010-02-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* Update issue 182
+	  requires glib of version at least 2.12 and only enable tests
+	  (with
+	  gtester) for glib 2.16+
+
+2010-02-22  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - added experimental qtcreator project files
+	  - fix regressions on save (help enconding and others)
+	  - added title to styles combo (H1)
+	  - added parameter style
+	  - fix parameter type
+
+2010-02-20  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation even more updated
+
+2010-02-19  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Email changed to project name and some internationalization
+	* Bug fix due internationalization
+	* Internationalization for gebrd and debr
+
+2010-02-19  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed another bug in 'Save as' in DeBR, where the same xml
+	  pointer was being used by two menus
+
+2010-02-19  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Some memory leak solved.
+
+2010-02-19  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed 'Save As' feature in DeBR
+
+2010-02-19  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* better handling of __ and _ for hotkey validation
+	  Update issue 184
+
+2010-02-18  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* ignore __ when validating hotkeys
+	* reshow hotkey in parameter validation
+	* - fix potencial count in debr's validation
+	  - fix validation of hotkeys in groups
+	  - fix hotkeys for flags
+	  - focus first parameter for group hotkey activation
+
+2010-02-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed autogen.sh script to copy instead of making links
+	* Fixed the 'Link' button in program edition. Previously, it was
+	  opening the programs help, not URL.
+
+2010-02-18  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Added code to prevent pasting a group inside another group.
+
+2010-02-18  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Commiting copys in subproject to easy the process, updates must
+	  be made into root and propagated with autogen.sh.
+	* Workaround to fix broken links in make dist, please use
+	  autogen.sh to copy *.decl into subprojects.
+
+2010-02-18  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Field name changed on parameter dialog
+	* - check libgebr version
+	  - fix ordering of libgebr and other libs linkage
+
+2010-02-18  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* When saving a menu in DeBR, the first directory is choosen.
+	* Commit to test 'Search' feature in Jaunty.
+
+2010-02-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed parameter new selection handling
+	* selection behaviour changes
+
+2010-02-12  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* commit for data interchange
+
+2010-02-12  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* The "menu save all" button remains sensitive even when no menu
+	  was unsaved
+
+2010-02-12  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Hotkeys in DeBR are now validated
+
+2010-02-12  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Some bugs fixed at the menu save behavior.
+	  The buttons "save all", "delete" and "open" are
+	  removed due some usability problems and the "validate"
+	  button was added to all tabs.
+
+2010-02-11  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Save from any tab, implemented. (Fixes issue 189)
+
+2010-02-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - require at least gtk 2.12
+	  - do not use svn/git version for libgebr
+
+2010-02-10  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Some fixes on "List-item Separator", (Fixes issue 39)
+
+2010-02-09  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Menu status icon, corrected to represent the real menu status
+	  (Fixes issue 188)
+
+2010-02-09  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed selection bug in DeBR when saving a never saved menu
+
+2010-02-09  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* added gebr_gui_gtk_tree_view_select_iter
+	* fix last commit for debr and gebr
+
+2010-02-08  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added 'collapse all' and 'expand all' in GeBR and DeBR.
+
+2010-02-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed help-contents window title
+
+2010-02-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - added configure.ac.decl for commom configure.ac's code
+	  - only use intall -C if available
+
+2010-02-05  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* added install -C script option automatically
+
+2010-02-05  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Added suport to git version in about.
+
+2010-02-05  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Some minors bug fixes
+
+2010-02-05  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Added code to escape invalid HTML tags and characters in menu
+	  helps. (Fixes issue 125.)
+
+2010-02-05  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Separator between list items. (Fixes issue 39)
+
+2010-02-05  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed compilation problem
+
+2010-02-05  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - changed callback to reported HTML edition each time it happens,
+	  saving XML in gebr
+	  - esc on ckeditor cancel changes
+	  - added documentation
+	  - fix compatibility for version without webkit
+
+2010-02-04  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Better search for gebr and debr. See
+	  gebr_gui_gtk_tree_view_fancy_search. (Fixes issue 41)
+
+2010-02-04  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Now, new parameters are created in more appropriate places in
+	  DéBR. (Fixes issue 162)
+
+2010-02-03  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added shortcut paths in DeBR's save dialog.
+
+2010-02-03  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* Save from any DéBR tabs (Fixes issue 161)
+
+2010-02-02  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* On "parameter_new" function, only the selection of "menu" was
+	  checked. (Fixes issue 173)
+	* DéBR's dialogs with Cancel/OK implemented. (Fixes issue 129)
+
+2010-02-01  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* open webkit to edit help
+
+2010-02-01  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Added 'cut' option for menu parameters in DeBR.
+
+2010-01-31  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added unit test support. Primary tests on gebrd/tests.
+
+2010-01-28  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a segfault when deleting multiple parameters in DeBR (Fixes
+	  issue 145)
+
+2010-01-28  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* ignore selection of parameters whose container group is selected
+	  (Fixes issue 144) (Fixes issue 145)
+
+2010-01-25  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fetching Moab output is now possible
+
+2010-01-22  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Reverting build system fixes from 0.9.15.
+
+2010-01-22  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* DeBR api documentation in progress; menu.h module done.
+
+2010-01-22  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Minor changes to get compliant with autoreconf,
+	  after a checkout use "AUTOPOINT=intltoolize autoreconf -i" to
+	  setup.
+
+2010-01-14  Alexandre Baaklini Gomes Coelho <abaaklini@gebrproject.com>
+
+	* added flow 0.3.2 with no reference to menus in programs
+
+2010-01-11  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a bug where saving a never saved menu wasn't possible in
+	  DeBR
+
+2010-01-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* apply coding style police
+	  (http://code.google.com/p/gebr/wiki/CodingStyle)
+
+2010-01-07  Fabio de Souza Azevedo <fabioaz@gebrproject.com>
+
+	* Added tooltips on DeBR folders.
+
+2010-01-04  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed parameter_number_min_on_activate (Fixes issue 102)
+
+2009-12-31  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - added gebr_gui_gtk_dialog_set_response_on_widget_return
+	  - document properties dialog in gebr and debr now close on user
+	  return key press
+
+2009-12-17  Ricardo Biloti <biloti@gebrproject.com>
+
+	* min and max values shown for numerical parameters
+	* portuguese translantion updated
+
+2009-12-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* changelog for deb packages updated
+	* changelog's update and version set to 0.9.15 for tag
+
+2009-12-12  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Added autotools chain to build process, there is alternative
+	  versions depending on distribuition.
+
+2009-12-11  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* Fixed build dependencies to build from scratch in chroots.
+
+2009-12-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed selection again
+	* accept NULL iter in menu_get_selected_type
+	* fixed gebr_gui_gtk_tree_view_get_selected
+
+2009-12-10  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Sorting options for DeBR menu are now saved into configuration
+	  file
+
+2009-12-09  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixes selection issues in debr
+	  - minimal size for column "Type" in parameters' dictionary
+	  - tooltip for "New" in parameters' dictionary
+
+2009-12-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* use G_CALLBACK instead of GCallback cast
+
+2009-12-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - new flag parameter with value 'off'
+	  - validate on/off value for a flag parameter
+
+2009-12-05  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* check for empty list separators in debr
+
+2009-12-04  Ricardo Biloti <biloti@gebrproject.com>
+
+	* checks for missing entries' separators
+
+2009-12-03  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixes list separator lost (Fixes issue 96)
+
+2009-12-01  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - removed minor warnings
+	  - refactored LOG enums names and server IO
+	  - fixed local server addess
+
+2009-11-26  Ricardo Biloti <biloti@gebrproject.com>
+
+	* portuguese translation update
+
+2009-11-22  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Inserted an IO button to Flow edition tab
+	  Replaced all GTK_SIGNAL_FUNC to G_CALLBACK
+
+2009-11-18  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* libgebr name refactoring
+	* fixed wrong renaming
+	* libgebr_comm name refactored
+
+2009-11-14  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* libgebr_gui name refactored
+	* geoxml name refactoring
+
+2009-10-31  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* make possible to maximize parameters' window
+
+2009-10-24  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - for gtkfileentry put browse button inside entry
+	  - parameter file filtering
+
+2009-10-24  Fabrício Matheus Gonçalvez <fmatheus@gebrproject.com>
+
+	* compilation and rpm building fixes backported from tag 0.9.14.
+
+2009-10-21  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - Now "Information" button is disabled when a folder is selected
+	  on DeBR.
+
+2009-10-20  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Desabling info button for folders (Fixes issue 87)
+
+2009-10-20  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* call the right call on parameter properties button click (Fixes
+	  issue 85)
+
+2009-10-18  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix int/float limits application in debr
+	* fixes to parameter editing (Fixes issue 84) (Fixes issue 85)
+	* - build user documentation on install
+	  - added Help/Contents menu
+
+2009-10-16  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - Refactored libgebr/gui/utils
+
+2009-10-16  Ricardo Biloti <biloti@gebrproject.com>
+
+	* fix wrong insertion whenever no tag was found
+	* Help refresh button added
+
+2009-10-15  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* automake docbook and html document generation
+
+2009-10-15  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - It is now possible to 'select' non-existing files in server io
+	  dialog
+	  - Removed folder path in debr's menu list
+
+2009-10-14  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Reedition of help with parameters list append
+
+2009-10-13  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* support minimum and maximum limits for int and float parameters
+
+2009-10-12  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - New menus are created on the selected folder in debr
+	  - Fixed a bug where a menu was set unsaved by just opening its
+	  edition dialog
+	  - Changed some information texts displayed in debr
+	  - Added a context menu in gebr's server io dialog for deleting
+	  entries
+	  - Added an icon folder in text views to browse for a file in
+	  server io dialog
+
+2009-10-08  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Fixes issue 51.
+
+2009-10-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix no menu/program/parameter selection on debr
+
+2009-10-07  Ricardo Biloti <biloti@gebrproject.com>
+
+	* version inferred from svn
+
+2009-10-06  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - information is correctly set when selecting a folder in debr
+	  - double-clicking a folder in debr opens it instead of producing
+	  fatal warnings
+	* - installing an unsaved menu on debr now asks for user
+	  confirmation
+
+2009-10-05  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* - select the last ran server on gebr
+	  - fixed the segmentation fault when saving a folder on debr
+	  - fixed the unsaved counter on debr
+
+2009-10-02  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fix set_locale use
+	  - parameters' dictionary now with project/line/flow view
+
+2009-09-24  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* More memory leaks resolved
+
+2009-09-20  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed some warnings with GtkTreeIters
+
+2009-09-19  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* preliminar dictionary support
+
+2009-09-17  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Corrigido algumas falhas de memória
+
+2009-09-16  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed many bugs relating to debr treestore
+
+2009-09-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix group parameter paste
+
+2009-09-10  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* move parameters' dictionary to project/line and flow toolbars
+
+2009-09-10  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Multiple directories!
+
+2009-09-08  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* more work on dict editing
+	* - fix invalid new document (flow, project and line) creation
+	  - parameters' dictionary edit on the way
+
+2009-09-04  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Fixed a bug on DeBR that when creating a new menu, the previous
+	  selected menu was made UNSAVED instead of the new one
+	* Gradually changing DeBR to TreeStore
+
+2009-08-14  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Changed debr.ui_menu.list_store to debr.ui_menu.model.
+	  This is the start for the new menu TreeView scheme.
+
+2009-08-13  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Added suport for multiple directories without changing the debr
+	  menu TreeView.
+	  It only scans all folders for menu files and open them.
+
+2009-08-13  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed rpm files
+	* - fix program help view from details view
+	  - clean enum options label/value after add
+
+2009-08-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fix bug: separator wasn't set on list reenable (Fixes issue 54)
+	  - set sensitive properly for exclusive instances
+	* update program after parameters edition (Fixes issue 56)
+	* fix several bugs in debr program preview (Fixes issue 47)
+
+2009-08-12  Ian Liu Rodrigues <ian.liu@gebrproject.com>
+
+	* Changed the tree view column to a more standard way
+
+2009-08-11  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Tag 0.9.14 updates backported to trunk
+	* Fixes issue 53
+
+2009-08-10  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation updated and small fix in POTFILES.in for
+	  libgebr
+	* Fixes issue 40
+
+2009-08-07  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fix save all action in debr
+	  - fix parameter paste
+
+2009-08-06  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Fixes issue 42
+	* Fixes issue 43
+	* help template cleanup
+
+2009-08-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* small fixes to program preview
+
+2009-08-05  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* parameters preview improved and moved to 'parameter' tab
+	* - functions of utils at libgebr_gui prefixed
+	  - feature preview program edition in debr
+	* - less intrusive multiple to single selection (Fixes issue 45)
+	  - added libgebr_gtk_tree_view_turn_to_single_selection
+
+2009-08-04  Ricardo Biloti <biloti@gebrproject.com>
+
+	* GeBR Project site update
+
+2009-08-04  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* adjust multiple selection to single selection in debr properties
+	  actions
+	* flags can't be list anymore in debr (Fixes issue 38)
+	* - added libgebr_directory_foreach_file
+	  - support for new system menu filename (Fixes issue 33)
+
+2009-07-30  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* category sorting
+	* debr category list with reference count (Fixes issue 14)
+	* - signals renamed and removed added to gtksequenceedit
+	  - added libgebr_gtk_tree_model_foreach
+	* gebr config directory structure organized
+
+2009-07-30  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation update
+
+2009-07-29  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Display default values by keywords in DéBR
+
+2009-07-28  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Template generation for program's help was fixed to accomplish
+	  group parameters. Besides, two new classes were added to format
+	  required parameters and group parameters. (Fixes issue 3)
+
+2009-07-28  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* categories exchangeable between menus in debr
+	* - label with default check button for flags in debr
+	  - don't show required for flags in debr
+
+2009-07-27  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Fixes issus 35
+
+2009-07-20  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation update
+	* Fixes issue 34
+
+2009-07-17  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - copy/paste for gebr
+	  - fixes edition of flow properties in gebr
+	  - more robust project/line selection
+	  - minor cleanups
+
+2009-07-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* refactored copy/pasted in debr, supporting multiple selection
+	  copies/pastes
+	* multiple selection for revert to saved in debr
+	* support for settings status with multiple selection in gebr
+
+2009-07-15  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - save only modified (not new) menus in action save all
+	  - scroll to iter for new menus
+	* - cancel ignored for parameter new action
+	  - data dir in preferences is not necessary
+	  - new position for install menu
+
+2009-07-14  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - Fix test for already-installed menus
+	  - Fix string enconde
+	  - Update Portuguese translation
+
+2009-07-14  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* install menu feature in debr (issue 32)
+
+2009-07-03  Ricardo Biloti <biloti@gebrproject.com>
+
+	* update navigation bar whenever a new parameter is created
+
+2009-06-26  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixes to multiple selection in debr
+	  - do not show manual list value edit for enums lists
+
+2009-06-25  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - multiple selection for flow browse (gebr)
+	  - various small clenups/fixes
+	* multiple selection for parameters in debr
+
+2009-06-24  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* multiple selection for programs in debr
+
+2009-06-20  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - removal of libgebr_misc which were moved to libgebr
+	  - final removal of support.h
+	  - libgebr refactored
+	  - minor cleanups
+
+2009-06-19  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* missing stuff from tag 0.9.13 to trunk
+
+2009-06-19  Ricardo Biloti <biloti@gebrproject.com>
+
+	* backported to trunk changes from tag 0.9.13
+
+2009-06-17  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - open in a new window feature for newer webkitgtk versions
+
+2009-06-17  Ricardo Biloti <biloti@gebrproject.com>
+
+	* set locale even independently of GTK
+
+2009-06-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Portuguese translation update
+
+2009-06-10  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixed use of newer webkit
+	  - use tmp folder inside home dir
+
+2009-06-10  Ricardo Biloti <biloti@gebrproject.com>
+
+	* webkit enabled by default
+
+2009-06-03  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed help_show when webkit is not used
+	* use libgebr_gui_help_show
+
+2009-06-03  Ricardo Biloti <biloti@gebrproject.com>
+
+	* window group to contain help windows from webkit
+
+2009-05-29  Ricardo Biloti <biloti@gebrproject.com>
+
+	* webkit usage controlled by configure option
+	* First step toward an HTML viewer for gebr and debr
+
+2009-05-27  Ricardo Biloti <biloti@gebrproject.com>
+
+	* parameters which accept list of values are explicitated
+
+2009-05-22  Ricardo Biloti <biloti@gebrproject.com>
+
+	* menus with unknown modified data are treated as arbitrarily old
+	* ascending and descending orders for menu sorting and icon
+	  indicating actual sort order
+
+2009-05-20  Ricardo Biloti <biloti@gebrproject.com>
+
+	* sorting refurbished
+
+2009-05-13  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - gebrd internationalization
+	  - killall for local servers
+	  - Portuguese translation fixes
+
+2009-05-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - replaced support.h to libgebrintl.h
+	  - libgebr is now and independent library
+	  - option to build libgebr with no GUI linkage
+	  - fixed libgebr internacionalization with the introduction of
+	  libgebr_init
+
+2009-05-08  Ricardo Biloti <biloti@gebrproject.com>
+
+	* version matches enhancenments
+	* desktop menu fix and intltool version dependency relaxed
+	* desktop menus added to gebr and debr
+
+2009-05-06  Ricardo Biloti <biloti@gebrproject.com>
+
+	* minor fixes to Portuguese translation
+	* fix last commit
+
+2009-05-06  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* debr validation traslated to pt_BR
+
+2009-05-04  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - validation log messages tagged to be translated
+	  - more Portuguese translation fixes
+	* fix Portuguese translation
+
+2009-05-04  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - updated pt_BR.po of debr
+	  - fix translation within action groups
+
+2009-04-30  Ricardo Biloti <biloti@gebrproject.com>
+
+	* internationalization support
+
+2009-04-09  Ricardo Biloti <biloti@gebrproject.com>
+
+	* configure.ac backported to trunk
+
+2009-04-08  Ricardo Biloti <biloti@gebrproject.com>
+
+	* checks whether a menu is selected at all
+	* changelogs backported to trunk
+
+2009-04-03  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fix errors reported by clang
+	  - fix menu close on debr
+	  - fix select_sibling function
+
+2009-04-03  Ricardo Biloti <biloti@gebrproject.com>
+
+	* monospace font instead of courier for job and validate views
+
+2009-03-25  Ricardo Biloti <biloti@gebrproject.com>
+
+	* update Changelogs and configure.ac's
+
+2009-03-25  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - reapply missed commit 1035
+	  - strip flow to send to server
+
+2009-03-24  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixed accelerators activation
+	  - enabled new/copy/paste accelerators on debr
+
+2009-03-24  Ricardo Biloti <biloti@gebrproject.com>
+
+	* GString in place of gchar* fixed]
+
+2009-03-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* removed unecessary and buggy parameter duplicate (debr)
+
+2009-03-22  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* do not use gtkcellrendererspin
+
+2009-03-21  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* debian changelog readded to trunk
+	* one more trick
+	* fix sort by modified date
+	* sort by name and date in debr
+
+2009-03-21  Ricardo Biloti <biloti@gebrproject.com>
+
+	* top/bottom mess in enumoptionedit
+
+2009-03-21  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - validate scrolling fixed
+	  - refactored selection in gebr
+	* do not use debr.para for parameter_dialog_setup_ui
+	* no manual editing and value is hidden for list of enum value
+	  parameter
+	* fix errors in last commit
+	* use libgebr_gtk_tree_view_scroll_to_iter_cell
+	* silly bug! debr parameters in a group were writing to value
+	  instead of default value
+	* fix filename tag bugs
+	* multiselection support for menus, with actions
+	  validate/close/delete working
+	* - close/clear actions for validate (debr)
+	  - functions to handle multiple selection in libgebr_gui
+
+2009-03-21  Ricardo Biloti <biloti@gebrproject.com>
+
+	* validate add to popup menu too
+	* beautify DeBR's validate log
+
+2009-03-20  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* initial validation support for debr
+
+2009-03-20  Ricardo Biloti <biloti@gebrproject.com>
+
+	* fix suggestion tag
+
+2009-03-13  Ricardo Biloti <biloti@gebrproject.com>
+
+	* copy/paste added to toolbar
+	* debian control files updated
+
+2009-03-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - preliminary copy/paste support for programs
+	  - more robust selection error handling in programs
+
+2009-03-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* fix url-view regression
+
+2009-03-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* first "trashy" copy/paste support for parameter
+
+2009-03-11  Ricardo Biloti <biloti@gebrproject.com>
+
+	* url button in program's detail view
+	* decrease unsaved counter whenever an unsaved menu is removed from
+	  the list
+
+2009-03-04  Ricardo Biloti <biloti@gebrproject.com>
+
+	* debr saves created/modified dates
+	* tooltip and description in about fixed
+
+2009-03-02  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - removed changelog.in from debian packages
+	  - fixed VERSION in configure.ac's
+	* debr: select iter on group drag n' drop
+	* debr: fix new parameter on group colapse
+
+2009-01-29  Ricardo Biloti <biloti@gebrproject.com>
+
+	* ChangeLogs updated
+
+2009-01-29  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - do not allow list rename for enums
+	  - code cleanups
+	* fixed parameter_required_toggled
+	* - reconfigure parameter widget if required changed (needed for
+	  enum parameter)
+	  - really fix the problem with list parameter (now for all types)
+	* - valuesequenceedit refactored
+	  - fix parameter_widget's on_edit_list_toggled
+
+2009-01-28  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - more details to DeBR a la GeBR
+	  - space highlight at end of parameters
+
+2009-01-28  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fix drag n' drop on gtksequenceedit and devivates
+	  - fix save on exit dialog on debr
+	* ¡commit 1000! several UI tweaks
+
+2009-01-28  Ricardo Biloti <biloti@gebrproject.com>
+
+	* more details to menu view
+
+2009-01-28  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* added labels/tooltips to debr's actions
+
+2009-01-27  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fix geoxmlparametergroup
+	  - fix move into a empty group (debr)
+	  - fix help edit in debr: a empty file can be a file with a return
+	  char. (length 1)
+	* - various bugfixes to handle reference parameters
+	  - geoxml_parameter_get_type resolve references
+	  - a lot of fixes to geoxmlsequence functions
+	  - rewritten dran n' drop API
+	  - full drag n' drop support in debr's parameter page
+
+2009-01-26  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix use of gtk_tree_view_select_sibling
+	* - initial buggy code to support drag n' drop from/to/inside a
+	  group (debr)
+	* fix creation of the first parameter in a group (debr)
+
+2009-01-24  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed parameter group creation and deletion (debr)
+	* - fix __geoxml_sequence_move_before with position NULL
+	  - fixes to top/bottom at gtksequenceedit and derivatives
+
+2009-01-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - debr: if we don't have any parameter in the group we cannot
+	  instaciate
+	  - gebr: update flow title on flow_browse_load (fix bug of loading
+	  a revision with diferent title)
+
+2009-01-22  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* keyword preserved on parameter type change at debr
+	* support for moving with drag n' drop on gktsequenceedit
+
+2009-01-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixes to rpm creation
+
+2009-01-15  Ricardo Biloti <biloti@gebrproject.com>
+
+	* preparation for release 0.9.7
+
+2009-01-14  Ricardo Biloti <biloti@gebrproject.com>
+
+	* fix string enconde
+
+2009-01-14  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - updated TODO
+	  - fixed enum option add and get functions
+	  - fixed program_parameter documentation
+	  - fixed bug in type change on selection (debr)
+
+2009-01-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - Copyright messages updated
+	  - accents suppressed
+
+2009-01-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fixed debug flag usage
+
+2009-01-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* Copyright messages updated
+	* small fix to previous mega sed
+
+2009-01-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* select next or previous iter after delete actions
+
+2009-01-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* delete automatically generated files
+	* delete automatically generated files
+	* - Copyright messages updated
+	  - accents suppressed
+
+2009-01-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* removed debian/changelog from debr
+
+2009-01-12  Ricardo Biloti <biloti@gebrproject.com>
+
+	* package version fixed
+
+2009-01-12  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* use --disable-debug to build packages
+	* removid debian and rpm dirs from debr
+	* fixing problem with git-svn II
+	* fixing problem with git-svn
+	* packages folder for debr
+
+2009-01-11  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* popup menu for parameter type change in debr
+
+2009-01-10  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* debr gained navigation bar
+	* converted debr to gtkactiongroup usage
+
+2008-12-24  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - move by drag n' drop refactored
+	  - input/ouput items in flow edition view
+
+2008-12-20  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* final fixes to group impl. in debr
+	* fixes to group implementation
+	* - some work for group implementation on debr
+	  - updated TODO
+
+2008-12-19  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - add some scrolled windows
+	  - minor fixes
+	* fix parameter_{top,bottom}
+
+2008-12-18  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - drag n' drop for debr
+	  - top/bottom actions for debr
+	  - duplicate parameter for debr :P
+
+2008-12-16  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* ported gengetopt in gebr to gkeyfile, keeping backwards
+	  compatibility
+
+2008-12-15  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* add proper extension if needed on save actions
+
+2008-11-29  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* a bunch of fixes to parameter group in debr implementation
+	* - tons of code for group implementation in debr (not yet working
+	  :)
+	  - save all button in debr
+
+2008-11-28  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* fix libgebr's libtool
+
+2008-11-27  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* to satisfy git-svn
+
+2008-11-27  Ricardo Biloti <biloti@gebrproject.com>
+
+	* - minor fix against possible gtk bug
+	  - popup parameter edit dialog as soon as a new parameter is
+	  created
+
+2008-11-26  Ricardo Biloti <biloti@gebrproject.com>
+
+	* minor bug concerning delete of unsaved menus
+	* parameters notebook with keyword column
+	* quit menu entry for gebr and configure rename to actions
+
+2008-11-25  Ricardo Biloti <biloti@gebrproject.com>
+
+	* version updated to 0.9.6-pre
+
+2008-11-24  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - fixed geoxml's new parameter and program creation
+	  - minor fixes to gebr and debr creation
+
+2008-11-23  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* the saga of list parameters ended!
+	  - changed DTD to make value and default values independets
+	  - refactoring of GeoXmlProgramParameter functions
+	  - general refacte on parameter_widget function:
+	  - every change is auto submited
+	  - ability to auto rebuild the ui to match new parameter
+	  properties
+	  - adapted to the in each element value list parameter
+	  - a lot of conversion to flow 0.3.0 fixes
+
+2008-11-22  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* - initial working debr version
+	  - fixes in geoxml
+	  - removal of gebrme
+
+2008-11-21  Braulio Barros de Oliveira <brauliobo@gebrproject.com>
+
+	* last commit with git commit's -a option
+	* merged flow0.3 into trunk
+
