@@ -62,7 +62,7 @@ void help_show(GebrGeoXmlObject * object, gboolean menu, const gchar * title)
 
 	gebr_gui_html_viewer_window_show_html(GEBR_GUI_HTML_VIEWER_WINDOW(window), html);
 
-	gtk_widget_show(window);
+	gtk_dialog_run(GTK_DIALOG(window));
 }
 
 void help_show_callback(GtkButton * button, GebrGeoXmlDocument * document)
