@@ -24,9 +24,10 @@
 #include <libgebr/date.h>
 #include <libgebr/gui/utils.h>
 
-#include "validate.h"
+#include "debr-validate.h"
 #include "debr.h"
 #include "callbacks.h"
+#include <help.h>
 
 static void validate_free(struct validate *validate);
 static gboolean validate_get_selected(GtkTreeIter * iter, gboolean warn_unselected);
@@ -85,7 +86,7 @@ void validate_setup_ui(void)
 static void validate_append_text(struct validate *validate, const gchar * format, ...);
 static void validate_append_text_emph(struct validate *validate, const gchar * format, ...);
 static void validate_append_text_error(struct validate *validate, gint failed_flags, const gchar *program_path,
-				       const gchar *parameter_path, const gchar * format, ...);
+				       const gchar *parameter_path, GebrValidateCaseName, const gchar * format, ...);
 void validate_menu(GtkTreeIter * iter)
 {
 	struct validate *validate;
@@ -126,7 +127,7 @@ void validate_menu(GtkTreeIter * iter)
 	operations.append_text = (void(*)(gpointer,const gchar*,...))validate_append_text;
 	operations.append_text_emph = (void(*)(gpointer,const gchar*,...))validate_append_text_emph;
 	operations.append_text_error = NULL;
-	operations.append_text_error_with_paths = (void(*)(gpointer, gint, const gchar *, const gchar *, const gchar *,
+	operations.append_text_error_with_paths = (void(*)(gpointer, gint, const gchar *, const gchar *, GebrValidateCaseName, const gchar *,
 							   ...))validate_append_text_error;
 	GebrGeoXmlValidateOptions options;
 	options.all = TRUE;
@@ -324,9 +325,13 @@ static void validate_append_text_with_tag(struct validate *validate, GtkTextTag 
 /**
  * \internal
  */
-static void validate_parse_link_click_callback(GtkTextView * text_view, GtkTextTag * link_tag, const gchar * url, struct validate *validate)
+static void validate_parse_link_click_callback(GtkTextView * text_view, GtkTextTag * link_tag, const gchar * url,
+					       struct validate *validate)
 {
 	GtkTreeIter menu_iter;
+	gint validate_case;
+
+	validate_case = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(link_tag), "validate_case"));
 
 	if (!menu_get_selected(&menu_iter, FALSE) ||
 	    !gebr_gui_gtk_tree_model_iter_equal_to(GTK_TREE_MODEL(debr.ui_menu.model), &menu_iter,
@@ -335,15 +340,21 @@ static void validate_parse_link_click_callback(GtkTextView * text_view, GtkTextT
 
 	gchar *program_path = g_object_get_data(G_OBJECT(link_tag), "program_path_string");
 	gchar *parameter_path = g_object_get_data(G_OBJECT(link_tag), "parameter_path_string");
-	gboolean ret;
+	gboolean ret = FALSE;
 	if (program_path != NULL) {
 		menu_select_program_and_paramater(program_path, parameter_path);
 		if (parameter_path != NULL)
 			ret = on_parameter_properties_activate();
 		else
-			ret = on_program_properties_activate();	
+			if (validate_case == GEBR_VALIDATE_CASE_HELP)
+				debr_help_edit(GEBR_GEOXML_OBJECT(debr.program));
+			else
+				ret = on_program_properties_activate();	
 	} else 
-		ret = on_menu_properties_activate();
+			if (validate_case == GEBR_VALIDATE_CASE_HELP)
+				debr_help_edit(GEBR_GEOXML_OBJECT(debr.menu));
+			else
+				ret = on_menu_properties_activate();
 
 	if (ret)
 		validate_menu(&validate->menu_iter);
@@ -358,7 +369,8 @@ validate_append_link(struct validate *validate, const gchar *text, const gchar *
 {
 	GtkTextTag *tag;
 
-	tag = gebr_gui_gtk_text_view_create_link_tag(GTK_TEXT_VIEW(validate->text_view), url, (GebrGuiGtkTextViewLinkClickCallback)validate_parse_link_click_callback, validate);
+	tag = gebr_gui_gtk_text_view_create_link_tag(GTK_TEXT_VIEW(validate->text_view), url,
+						     (GebrGuiGtkTextViewLinkClickCallback)validate_parse_link_click_callback, validate);
 	validate_append_text_with_tag(validate, tag, text);
 
 	return tag;
@@ -429,7 +441,7 @@ static void validate_append_text(struct validate *validate, const gchar * format
  * If \p edit_id is non-zero the add an edit link after text.
  */
 static void validate_append_text_error(struct validate *validate, gint failed_flags, const gchar *program_path,
-				       const gchar *parameter_path, const gchar * format, ...)
+				       const gchar *parameter_path, GebrValidateCaseName validate_case, const gchar * format, ...)
 {
 	GtkTextTag *text_tag;
 	gchar *string;
@@ -452,6 +464,7 @@ static void validate_append_text_error(struct validate *validate, gint failed_fl
 
 	gchar *tmp = g_strdup(program_path);
 	g_object_set_data(G_OBJECT(link_tag), "program_path_string", tmp);
+	g_object_set_data(G_OBJECT(link_tag), "validate_case", GINT_TO_POINTER(validate_case));
 	gebr_gui_g_object_set_free_parent(link_tag, tmp);
 
 	tmp = g_strdup(parameter_path);
