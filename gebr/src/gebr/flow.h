@@ -23,6 +23,7 @@
 #define __FLOW_H
 
 #include "server.h"
+#include <libgebr/gui/gebr-gui-html-viewer-widget.h>
 
 G_BEGIN_DECLS
 
@@ -90,10 +91,33 @@ void flow_paste(void);
  * Copy selected(s) program(s) to clipboard.
  */
 void flow_program_copy(void);
+
 /** 
  * Paste program(s) from clipboard.
  */
 void flow_program_paste(void);
+
+/**
+ * gebr_flow_generate_parameter_value_table:
+ * @flow: a #GebrGeoXmlFlow
+ *
+ * Creates a string containing a HTML table for the programs of @flow.
+ *
+ * Returns: a newly allocated string containing HTML markup.
+ */
+gchar * gebr_flow_generate_parameter_value_table(GebrGeoXmlFlow * flow);
+
+/**
+ * gebr_flow_generate_header:
+ * @flow: a #GebrGeoXmlFlow
+ *
+ * Creates a string containing a HTML description of @flow.
+ *
+ * Returns: a newly allocated string containing HTML markup.
+ */
+gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow);
+
+GtkWidget * gebr_flow_print_dialog_custom_tab(GebrGuiHtmlViewerWidget *widget);
 
 G_END_DECLS
 #endif				//__FLOW_H

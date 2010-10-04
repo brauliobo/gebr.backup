@@ -18,7 +18,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include <libgebr/gui/gebr-gui-utils.h>
+#include <libgebr/gui.h>
 #include <libgebr/intl.h>
 
 #include "callbacks.h"
@@ -314,12 +314,30 @@ void navigation_bar_update(void)
 	g_string_free(markup, TRUE);
 }
 
-void on_flow_browse_show_help(void){
+void on_flow_browse_show_help(void) {
     flow_browse_show_help();
 }
 
-void on_flow_browse_edit_help(void){
+void on_flow_browse_edit_help(void) {
     flow_browse_edit_help();
+}
+
+void on_detailed_report_activate() {
+	gchar * table_str;
+	gchar * header_str;
+	gchar * final_str;
+	GtkWidget * window;
+
+	header_str = gebr_flow_generate_header(gebr.flow);
+	table_str = gebr_flow_generate_parameter_value_table(gebr.flow);
+	final_str = gebr_generate_report(gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(gebr.flow)),
+					 "<link rel=\"stylesheet\" type=\"text/css\" href=\"gebr.css\" />",
+					 header_str, table_str);
+
+	window = gebr_gui_html_viewer_window_new();
+	gebr_gui_html_viewer_window_show_html(GEBR_GUI_HTML_VIEWER_WINDOW(window), final_str);
+	gtk_widget_show(window);
+	g_free(final_str);
 }
 
 /**
@@ -332,3 +350,9 @@ void on_project_line_edit_help(void){
     project_line_edit_help();
 }
 
+void on_check_button_param_toggled(GtkToggleButton *togglebutton, gpointer user_data){
+	gebr.config.print_option_check_button_param = gtk_toggle_button_get_active(togglebutton);
+}
+void on_check_button_css_toggled(GtkToggleButton *togglebutton, gpointer user_data){
+	gebr.config.print_option_check_button_css = gtk_toggle_button_get_active(togglebutton);
+}

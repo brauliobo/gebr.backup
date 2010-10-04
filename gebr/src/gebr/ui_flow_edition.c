@@ -312,7 +312,6 @@ gboolean flow_edition_component_key_pressed(GtkWidget *view, GdkEventKey *key)
 	const gchar		* icon;
 	gboolean		  has_configured;
 	gboolean		  is_homogeneous = TRUE;
-	gboolean		  required_unfilled;
 
 	if (key->keyval != GDK_space)
 		return FALSE;
@@ -376,11 +375,11 @@ gboolean flow_edition_component_key_pressed(GtkWidget *view, GdkEventKey *key)
 				    FSEQ_GEBR_GEOXML_POINTER, &program,
 				    -1);
 
+		status = gebr_geoxml_program_get_status (program);
+		has_configured |= (status == GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED);
+
 		// Ignore not-configured programs because a required parameter is unfilled.
 		if (!parameters_check_has_required_unfilled_for_iter (&iter)) {
-			status = gebr_geoxml_program_get_status (program);
-			has_configured |= (status == GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED);
-
 			if (status != last_status) {
 				is_homogeneous = FALSE;
 				break;
@@ -394,10 +393,6 @@ gboolean flow_edition_component_key_pressed(GtkWidget *view, GdkEventKey *key)
 	/* Now we have all the information needed for updating the selected program statuses: has_configured and
 	 * is_homogeneous.
 	 */
-
-	g_message ("is_homogeneous = %s, has_configured = %s",
-		   is_homogeneous ? "Yes":"No",
-		   has_configured ? "Yes":"No");
 
 	listiter = paths;
 	while (listiter) {
