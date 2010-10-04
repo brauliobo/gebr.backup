@@ -183,5 +183,16 @@ void on_project_line_show_help(void);
 
 void on_project_line_edit_help(void);
 
+/**
+ * on_detailed_report_activate:
+ * Called when the user presses the Detailed report button in Flow's tab.
+ * This function creates a #GebrGuiHtmlViewerWindow to show the detailed
+ * report.
+ */
+void on_detailed_report_activate(void);
+
+void on_check_button_param_toggled(GtkToggleButton *togglebutton, gpointer user_data);
+
+void on_check_button_css_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 G_END_DECLS
 #endif				//__CALLBACKS_H

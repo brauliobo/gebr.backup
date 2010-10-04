@@ -622,3 +622,144 @@ void flow_program_paste(void)
 	flow_add_program_sequence_to_view(GEBR_GEOXML_SEQUENCE(pasted), TRUE);
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE);
 }
+
+static void append_parameter_row(GebrGeoXmlParameter * parameter, GString * dump)
+{
+	gint i, n_instances;
+	GebrGeoXmlSequence * param;
+	GebrGeoXmlSequence * instance;
+	GebrGeoXmlParameters * parameters;
+
+	if (gebr_geoxml_parameter_get_is_program_parameter(parameter)) {
+		GString * str_value;
+		GebrGeoXmlProgramParameter * program;
+
+		program = GEBR_GEOXML_PROGRAM_PARAMETER(parameter);
+		str_value = gebr_geoxml_program_parameter_get_string_value(program, FALSE);
+		g_string_append_printf(dump, "<tr><td>%s</td><td>%s</td></tr>",
+				       gebr_geoxml_parameter_get_label(parameter),
+				       str_value->str);
+		g_string_free(str_value, TRUE);
+	} else {
+		g_string_append_printf(dump, "<tr class='parameter-group'><td colspan='2'>%s</td></tr>",
+				       gebr_geoxml_parameter_get_label(parameter));
+
+		gebr_geoxml_parameter_group_get_instance(GEBR_GEOXML_PARAMETER_GROUP(parameter), &instance, 0);
+		n_instances = gebr_geoxml_parameter_group_get_instances_number(GEBR_GEOXML_PARAMETER_GROUP(parameter));
+
+		i = 1;
+		while (instance) {
+			if (n_instances > 1)
+				g_string_append_printf(dump, "<tr class='group-instance'><td colspan='2'>%s %d</td></tr>",
+						       _("Instance"), i++);
+			parameters = GEBR_GEOXML_PARAMETERS(instance);
+			gebr_geoxml_parameters_get_parameter(parameters, &param, 0);
+			while (param) {
+				append_parameter_row(GEBR_GEOXML_PARAMETER(param), dump);
+				gebr_geoxml_sequence_next(&param);
+			}
+
+			gebr_geoxml_sequence_next(&instance);
+		}
+	}
+}
+
+gchar * gebr_flow_generate_parameter_value_table(GebrGeoXmlFlow * flow)
+{
+	GString * dump;
+	GebrGeoXmlSequence * program;
+	GebrGeoXmlSequence * parameter;
+	GebrGeoXmlParameters * parameters;
+
+	dump = g_string_new(NULL);
+	g_string_append_printf(dump, _("<p>Input %s</p>"), gebr_geoxml_flow_io_get_input(gebr.flow)); 
+	g_string_append_printf(dump,
+			       "<table id='parameter-value'>"
+			       "<thead>"
+			       "<tr><td>%s</td><td>%s</td></tr>"
+			       "</thead>"
+			       "<tbody>", _("Parameter label"), _("Value"));
+
+
+	gebr_geoxml_flow_get_program(flow, &program, 0);
+	while (program) {
+		parameters = gebr_geoxml_program_get_parameters(GEBR_GEOXML_PROGRAM(program));
+
+		gebr_geoxml_parameters_get_parameter(parameters, &parameter, 0);
+		while (parameter) {
+			append_parameter_row(GEBR_GEOXML_PARAMETER(parameter), dump);
+			gebr_geoxml_sequence_next(&parameter);
+		}
+		gebr_geoxml_sequence_next(&program);
+	}
+
+	g_string_append(dump, "</tbody></table>");
+	g_string_append_printf(dump, _("<br><p>Output %s</p>"), gebr_geoxml_flow_io_get_output(gebr.flow)); 
+	g_string_append_printf(dump, _("<br><p>Error %s</p>"), gebr_geoxml_flow_io_get_error(gebr.flow)); 
+	return g_string_free(dump, FALSE);
+}
+
+gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow)
+{
+	GString * dump;
+
+	dump = g_string_new(NULL);
+	g_string_printf(dump,
+			"<p><h1> %s </h1></p>"
+			"<p>%s</p>",
+			gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(gebr.flow)),
+			gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(gebr.flow))
+		       );
+
+	g_string_append_printf(dump, _("<p>By %s &lt;%s&gt;, %s</p>"),
+			gebr_geoxml_document_get_author(GEBR_GEOXML_DOC(gebr.flow)),
+			gebr_geoxml_document_get_email(GEBR_GEOXML_DOC(gebr.flow)),
+			gebr_localized_date(gebr_iso_date())
+			);
+			
+	g_string_append_printf(dump, 
+			_("<p>Flow with %ld program(s)</p>"),
+			gebr_geoxml_flow_get_programs_number(gebr.flow)
+		       );
+
+	return g_string_free(dump, FALSE);
+}
+
+GtkWidget * gebr_flow_print_dialog_custom_tab(GebrGuiHtmlViewerWidget *widget){
+
+	GtkWidget *check_button_param;
+	GtkWidget *check_button_css;
+	GtkWidget *vbox;
+	GtkWidget *frame;
+	GtkWidget *label_markup;
+	GtkWidget * alignment;
+	gchar *label;
+
+	check_button_css = gtk_check_button_new_with_label(_("Use gebr style sheet"));
+	check_button_param =  gtk_check_button_new_with_label(_("Generate detailed flow reports"));
+
+	g_signal_connect(check_button_param, "toggled", G_CALLBACK(on_check_button_param_toggled), NULL);
+	g_signal_connect(check_button_css, "toggled", G_CALLBACK(on_check_button_css_toggled), NULL);
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_param), gebr.config.print_option_check_button_param);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_css), gebr.config.print_option_check_button_css);
+
+	label = g_strdup_printf("<b>%s</b>", _("Detailed Report"));
+	frame = gtk_frame_new(label);
+	label_markup = gtk_frame_get_label_widget(GTK_FRAME(frame));
+	gtk_label_set_use_markup(GTK_LABEL(label_markup), TRUE);
+	g_free(label);
+
+	alignment = gtk_alignment_new(0, 0, 1, 1);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 10, 0);
+	gtk_container_add(GTK_CONTAINER(frame), alignment);
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(alignment), vbox);
+	gtk_box_pack_start(GTK_BOX(vbox), check_button_param, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), check_button_css, FALSE, TRUE, 0);
+
+
+	gtk_widget_show_all(frame);
+	return frame;
+}
