@@ -33,6 +33,7 @@
 
 enum {
 	TITLE_READY,
+	PRINT_REQUESTED,
 	LAST_SIGNAL
 };
 
@@ -43,6 +44,8 @@ typedef struct _GebrGuiHtmlViewerWidgetPrivate GebrGuiHtmlViewerWidgetPrivate;
 struct _GebrGuiHtmlViewerWidgetPrivate {
 	GtkWidget * web_view;
 	GebrGeoXmlObject *object;
+	GebrGuiHtmlViewerCustomTab callback;
+	gchar * label;
 };
 
 #define GEBR_GUI_HTML_VIEWER_WIDGET_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE((o), GEBR_GUI_TYPE_HTML_VIEWER_WIDGET, GebrGuiHtmlViewerWidgetPrivate))
@@ -56,6 +59,8 @@ static void on_load_finished(WebKitWebView * web_view, WebKitWebFrame * frame, G
 static WebKitNavigationResponse on_navigation_requested(WebKitWebView * web_view, WebKitWebFrame *frame,
 							WebKitNetworkRequest *request, GebrGuiHtmlViewerWidget *self);
 
+static void gebr_gui_html_viewer_widget_finalize(GObject *object);
+
 G_DEFINE_TYPE(GebrGuiHtmlViewerWidget, gebr_gui_html_viewer_widget, GTK_TYPE_VBOX);
 
 //==============================================================================
@@ -64,6 +69,10 @@ G_DEFINE_TYPE(GebrGuiHtmlViewerWidget, gebr_gui_html_viewer_widget, GTK_TYPE_VBO
 
 static void gebr_gui_html_viewer_widget_class_init(GebrGuiHtmlViewerWidgetClass * klass)
 {
+	GObjectClass * gobject_class;
+	gobject_class = G_OBJECT_CLASS(klass);
+	gobject_class->finalize = gebr_gui_html_viewer_widget_finalize;
+
 	/**
 	 * GebrGuiHtmlViewerWidget::title-ready:
 	 * @widget: This #GebrGuiHtmlViewerWidget
@@ -84,6 +93,19 @@ static void gebr_gui_html_viewer_widget_class_init(GebrGuiHtmlViewerWidgetClass 
 			     1,
 			     G_TYPE_STRING);
 
+	/**
+	 * GebrGuiHtmlViewerWidget::print-requested:
+	 * Emitted when the user requests a print job.
+	 */
+	signals[ PRINT_REQUESTED ] =
+		g_signal_new("print-requested",
+			     GEBR_GUI_TYPE_HTML_VIEWER_WIDGET,
+			     G_SIGNAL_RUN_LAST,
+			     G_STRUCT_OFFSET(GebrGuiHtmlViewerWidgetClass, print_requested),
+			     NULL, NULL,
+			     g_cclosure_marshal_VOID__VOID,
+			     G_TYPE_NONE, 0);
+
 	g_type_class_add_private(klass, sizeof(GebrGuiHtmlViewerWidgetPrivate));
 }
 
@@ -95,6 +117,7 @@ static void gebr_gui_html_viewer_widget_init(GebrGuiHtmlViewerWidget * self)
 	priv = GEBR_GUI_HTML_VIEWER_WIDGET_GET_PRIVATE(self);
 	priv->object = NULL;
 	priv->web_view = webkit_web_view_new();
+	priv->callback = NULL;
 
 	g_signal_connect(priv->web_view, "navigation-requested", G_CALLBACK(on_navigation_requested), self);
 	g_signal_connect(priv->web_view, "load-finished", G_CALLBACK(on_load_finished), self);
@@ -103,6 +126,14 @@ static void gebr_gui_html_viewer_widget_init(GebrGuiHtmlViewerWidget * self)
 	gtk_container_add(GTK_CONTAINER(scrolled_window), priv->web_view);
 	gtk_box_pack_start(GTK_BOX(self), scrolled_window, TRUE, TRUE, 0);
 	gtk_widget_show_all(scrolled_window);
+}
+
+static void gebr_gui_html_viewer_widget_finalize(GObject *object)
+{
+	GebrGuiHtmlViewerWidgetPrivate * priv;
+	priv = GEBR_GUI_HTML_VIEWER_WIDGET_GET_PRIVATE(object);
+	
+	g_free(priv->label);
 }
 
 //==============================================================================
@@ -280,6 +311,22 @@ void pre_process_html(GebrGuiHtmlViewerWidgetPrivate * priv, GString *html)
 	}
 }
 
+static GtkWidget * on_create_custom_widget(GtkPrintOperation * print_op, GebrGuiHtmlViewerWidget *self)
+{
+	GebrGuiHtmlViewerWidgetPrivate * priv;
+	priv = GEBR_GUI_HTML_VIEWER_WIDGET_GET_PRIVATE(self);
+
+	if (priv->callback)
+		return priv->callback(self); 
+
+	return NULL;
+}
+
+static void on_apply_custom_widget(GtkPrintOperation * print_op, GtkWidget * widget, GebrGuiHtmlViewerWidget * self)
+{
+	g_signal_emit(self, signals[ PRINT_REQUESTED ], 0);
+}
+
 //==============================================================================
 // PUBLIC FUNCTIONS							       =
 //==============================================================================
@@ -291,11 +338,28 @@ GtkWidget *gebr_gui_html_viewer_widget_new(void)
 
 void gebr_gui_html_viewer_widget_print(GebrGuiHtmlViewerWidget * self)
 {
+	WebKitWebFrame * frame;
+	GtkPrintOperation * print_op;
+	GebrGuiHtmlViewerWidgetPrivate * priv;
+	GError * error = NULL;
+
 	g_return_if_fail(GEBR_GUI_IS_HTML_VIEWER_WIDGET(self));
 
-	GebrGuiHtmlViewerWidgetPrivate * priv = GEBR_GUI_HTML_VIEWER_WIDGET_GET_PRIVATE(self);
-	WebKitWebFrame * frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(priv->web_view));
-	webkit_web_frame_print(frame);
+	priv = GEBR_GUI_HTML_VIEWER_WIDGET_GET_PRIVATE(self);
+
+	print_op = gtk_print_operation_new();
+	g_signal_connect(print_op, "create-custom-widget", G_CALLBACK(on_create_custom_widget), self);
+	g_signal_connect(print_op, "custom-widget-apply", G_CALLBACK(on_apply_custom_widget), self);
+	gtk_print_operation_set_custom_tab_label(print_op, priv->label);
+
+	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(priv->web_view));
+	webkit_web_frame_print_full(frame, print_op, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, &error);
+
+	if (error) {
+		g_warning("%s", error->message);
+		g_clear_error(&error);
+	}
+	g_object_unref(print_op);
 }
 
 void gebr_gui_html_viewer_widget_show_html(GebrGuiHtmlViewerWidget * self, const gchar * content)
@@ -334,4 +398,13 @@ void gebr_gui_html_viewer_widget_generate_links(GebrGuiHtmlViewerWidget *self, G
 
 	GebrGuiHtmlViewerWidgetPrivate * priv = GEBR_GUI_HTML_VIEWER_WIDGET_GET_PRIVATE(self);
 	priv->object = object;
+}
+
+void gebr_gui_html_viewer_widget_set_custom_tab(GebrGuiHtmlViewerWidget * self, const gchar * label, GebrGuiHtmlViewerCustomTab callback)
+{
+	g_return_if_fail(GEBR_GUI_IS_HTML_VIEWER_WIDGET(self));
+
+	GebrGuiHtmlViewerWidgetPrivate * priv = GEBR_GUI_HTML_VIEWER_WIDGET_GET_PRIVATE(self);
+	priv->callback = callback;
+	priv->label = g_strdup(label);
 }
