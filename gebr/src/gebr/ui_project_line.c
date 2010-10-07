@@ -977,3 +977,121 @@ void project_line_edit_help(void)
 	gebr_help_edit_document(GEBR_GEOXML_DOC(gebr.project_line));
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.project_line), TRUE, FALSE);
 }
+
+static void on_use_gebr_css_toggled(GtkToggleButton * button)
+{
+	gboolean toggled;
+	toggled = gtk_toggle_button_get_active(button);
+	gebr.config.print_option_line_use_gebr_css = toggled;
+}
+
+static void on_include_flows_toggled(GtkToggleButton * button)
+{
+	gboolean toggled;
+	toggled = gtk_toggle_button_get_active(button);
+	gebr.config.print_option_line_include_flows = toggled;
+}
+
+static void on_detailed_report_toggled(GtkToggleButton * button, GtkWidget * widget)
+{
+	gboolean toggled;
+	toggled = gtk_toggle_button_get_active(button);
+	gtk_widget_set_sensitive(widget, toggled);
+	gebr.config.print_option_line_detailed_report = toggled;
+}
+
+GtkWidget *
+gebr_project_line_print_dialog_custom_tab(GebrGuiHtmlViewerWidget * widget)
+{
+	gchar * tab_label;
+	GtkWidget * hbox;
+	GtkWidget * vbox;
+	GtkWidget * hbox_below;
+	GtkWidget * frame;
+	GtkWidget * label;
+	GtkWidget * alignment;
+	GtkWidget * use_gebr_css_cb;
+	GtkWidget * include_flows_cb;
+	GtkWidget * detailed_report_cb;
+
+	use_gebr_css_cb = gtk_check_button_new_with_label(_("Use gebr style sheet"));
+	include_flows_cb = gtk_check_button_new_with_label(_("Include flow reports"));
+	detailed_report_cb = gtk_check_button_new_with_label(_("Generate detailed report"));
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(use_gebr_css_cb), gebr.config.print_option_line_use_gebr_css);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(include_flows_cb), gebr.config.print_option_line_include_flows);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(detailed_report_cb), gebr.config.print_option_line_detailed_report);
+
+	tab_label = g_strdup_printf("<b>%s</b>", _("Detailed Report"));
+	frame = gtk_frame_new(tab_label);
+	label = gtk_frame_get_label_widget(GTK_FRAME(frame));
+	gtk_container_set_border_width(GTK_CONTAINER(frame), 10);
+	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
+	gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
+	g_free(tab_label);
+
+	vbox = gtk_vbox_new(FALSE, 0);
+
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), detailed_report_cb, FALSE, TRUE, 0);
+
+	hbox_below = gtk_vbox_new(FALSE, 0);
+	alignment = gtk_alignment_new(0, 0, 1, 1);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 10, 0);
+	gtk_box_pack_start(GTK_BOX(hbox_below), use_gebr_css_cb, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox_below), include_flows_cb, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(alignment), hbox_below);
+	gtk_widget_set_sensitive(hbox_below, gebr.config.print_option_line_detailed_report);
+
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), alignment, FALSE, TRUE, 0);
+
+	gtk_container_add(GTK_CONTAINER(frame),vbox);
+
+	g_signal_connect(use_gebr_css_cb, "toggled", G_CALLBACK(on_use_gebr_css_toggled), NULL);
+	g_signal_connect(include_flows_cb, "toggled", G_CALLBACK(on_include_flows_toggled), NULL);
+	g_signal_connect(detailed_report_cb, "toggled", G_CALLBACK(on_detailed_report_toggled), hbox_below);
+
+	gtk_widget_show_all(frame);
+
+	return frame;
+}
+
+gchar * gebr_line_generate_header(GebrGeoXmlDocument * document)
+{
+	GString * dump;
+
+	dump = g_string_new(NULL);
+	g_string_printf(dump,
+			"<p><h1> %s </h1></p>"
+			"<p>%s</p>",
+			gebr_geoxml_document_get_title(document),
+			gebr_geoxml_document_get_description(document)
+		       );
+
+	g_string_append_printf(dump, _("<p>By %s &lt;%s&gt;, %s</p>"),
+			gebr_geoxml_document_get_author(document),
+			gebr_geoxml_document_get_email(document),
+			gebr_localized_date(gebr_iso_date())
+			);
+			
+	if (gebr_geoxml_object_get_type(GEBR_GEOXML_OBJECT(document)) == GEBR_GEOXML_OBJECT_TYPE_LINE &&
+	    (gebr_geoxml_line_get_paths_number(GEBR_GEOXML_LINE(document)) > 0)){
+
+		GebrGeoXmlSequence *line_path;
+		GString *dump_line;
+
+		dump_line = g_string_new(_("<p>Line Path:</p>"));
+
+		gebr_geoxml_line_get_path(GEBR_GEOXML_LINE(document), &line_path, 0);
+		for (; line_path != NULL; gebr_geoxml_sequence_next(&line_path)) {
+			g_string_append_printf(dump_line,
+					       "<p>%s</p>",
+					       gebr_geoxml_value_sequence_get(GEBR_GEOXML_VALUE_SEQUENCE(line_path)));
+		}
+		g_string_append(dump, dump_line->str);
+		g_string_free(dump_line, TRUE);
+	}
+
+	return g_string_free(dump, FALSE);
+}
