@@ -553,3 +553,88 @@ void document_delete(const gchar * filename)
 
 	g_string_free(path, TRUE);
 }
+
+static GList *
+generate_list_from_match_info(GMatchInfo * match)
+{
+	GList * list = NULL;
+	while (g_match_info_matches(match)) {
+		list = g_list_prepend(list, g_match_info_fetch(match, 0));
+		g_match_info_next(match, NULL);
+	}
+	return g_list_reverse(list);
+}
+
+GList * gebr_document_report_get_styles(const gchar * report)
+{
+	GList * list;
+	GRegex * links;
+	GRegex * styles;
+	GMatchInfo * match;
+
+	links = g_regex_new("<\\s*link\\s+rel\\s*=\\s*\"stylesheet\"[^>]*>",
+			    G_REGEX_DOTALL, 0, NULL);
+
+	styles = g_regex_new("<style[^>]*>.*?<\\/style>",
+			     G_REGEX_DOTALL, 0, NULL);
+
+	g_regex_match(links, report, 0, &match);
+	list = generate_list_from_match_info(match);
+	g_match_info_free(match);
+
+	g_regex_match(styles, report, 0, &match);
+	list = g_list_concat(list, generate_list_from_match_info(match));
+	g_match_info_free(match);
+
+	g_regex_unref(links);
+	g_regex_unref(styles);
+
+	return list;
+}
+
+gchar * gebr_document_report_get_styles_string(const gchar * report)
+{
+	GList * list, * i;
+	GString * string;
+
+	list = gebr_document_report_get_styles(report);
+
+	if (list)
+		string = g_string_new(list->data);
+	else
+		return NULL;
+
+	i = list->next;
+	while (i) {
+		g_string_append_c(string, '\n');
+		g_string_append(string, i->data);
+		i = i->next;
+	}
+
+	g_list_foreach(list, (GFunc)g_free, NULL);
+	g_list_free(list);
+
+	return g_string_free(string, FALSE);
+}
+
+gchar * gebr_document_report_get_inner_body(const gchar * report)
+{
+	GRegex * body;
+	gchar * inner_body;
+	GMatchInfo * match;
+
+	body = g_regex_new("<body[^>]*>(.*?)<\\/body>",
+			   G_REGEX_DOTALL, 0, NULL);
+
+	if (!g_regex_match(body, report, 0, &match)) {
+		g_regex_unref(body);
+		return NULL;
+	}
+
+	inner_body = g_match_info_fetch(match, 1);
+
+	g_match_info_free(match);
+	g_regex_unref(body);
+
+	return inner_body;
+}
