@@ -35,6 +35,7 @@ G_BEGIN_DECLS
 
 typedef struct _GebrGuiHtmlViewerWidget GebrGuiHtmlViewerWidget;
 typedef struct _GebrGuiHtmlViewerWidgetClass GebrGuiHtmlViewerWidgetClass;
+typedef GtkWidget * (* GebrGuiHtmlViewerCustomTab)(GebrGuiHtmlViewerWidget *self);
 
 struct _GebrGuiHtmlViewerWidget {
 	GtkVBox parent;
@@ -45,6 +46,7 @@ struct _GebrGuiHtmlViewerWidgetClass {
 
 	/* Signals */
 	void (*title_ready) (GebrGuiHtmlViewerWidget * self, const gchar * title);
+	void (*print_requested) (GebrGuiHtmlViewerWidget * self);
 };
 
 GType gebr_gui_html_viewer_widget_get_type(void) G_GNUC_CONST;
@@ -78,6 +80,28 @@ void gebr_gui_html_viewer_widget_show_html(GebrGuiHtmlViewerWidget * self, const
  * Generate links for @object.
  */
 void gebr_gui_html_viewer_widget_generate_links(GebrGuiHtmlViewerWidget *self, GebrGeoXmlObject * object);
+
+/**
+ * gebr_gui_html_viewer_widget_set_custom_tab:
+ * @widget: an html viewer widget
+ * @label: Name the new custom tab
+ * @widget: The widget to attach to the print dialog, as the only custom tab
+ *
+ * Create the custom print tab
+ */
+void gebr_gui_html_viewer_widget_set_custom_tab(GebrGuiHtmlViewerWidget * self, const gchar * label,
+					       	GebrGuiHtmlViewerCustomTab callback);
+
+/**
+ * gebr_gui_html_viewer_widget_get_html:
+ * @widget: an html viewer widget
+ *
+ * Retrieves the content shown by this HTML viewer widget. Notice that this may not be the same HTML set with
+ * gebr_gui_html_viewer_widget_show_html(), since the string is processed before shown.
+ *
+ * Returns: the HTML content shown by this widget. The string is owned by GêBR and should not be modified or freed.
+ */
+const gchar * gebr_gui_html_viewer_widget_get_html (GebrGuiHtmlViewerWidget *self);
 
 G_END_DECLS
 
