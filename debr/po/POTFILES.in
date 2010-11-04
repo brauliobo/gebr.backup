@@ -1,0 +1,15 @@
+# List of source files containing translatable strings.
+src/callbacks.c
+src/debr.c
+src/enumoptionedit.c
+src/categoryedit.c
+src/help.c
+src/interface.c
+src/main.c
+src/menu.c
+src/parameter.c
+src/parametergroup.c
+src/preferences.c
+src/program.c
+src/debr-validate.c
+src/menu-dialog-save-ui.glade
