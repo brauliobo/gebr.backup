@@ -38,11 +38,11 @@ typedef struct _GebrGuiHtmlViewerWindow GebrGuiHtmlViewerWindow;
 typedef struct _GebrGuiHtmlViewerWindowClass GebrGuiHtmlViewerWindowClass;
 
 struct _GebrGuiHtmlViewerWindow {
-	GtkDialog parent;
+	GtkWindow parent;
 };
 
 struct _GebrGuiHtmlViewerWindowClass {
-	GtkDialogClass parent_class;
+	GtkWindowClass parent_class;
 };
 
 GType gebr_gui_html_viewer_window_get_type(void) G_GNUC_CONST;
@@ -67,6 +67,17 @@ void gebr_gui_html_viewer_window_show_html(GebrGuiHtmlViewerWindow * self, const
  * Get widget
  */
 GebrGuiHtmlViewerWidget* gebr_gui_html_viewer_window_get_widget(GebrGuiHtmlViewerWindow * self);
+
+/**
+ * gebr_gui_html_viewer_window_set_custom_tab:
+ * @label: Name the new custom tab
+ * @widget: The widget to attach to the print dialog, as the only custom tab
+ *
+ * a proxy to create the custom print tab
+ */
+void gebr_gui_html_viewer_window_set_custom_tab (GebrGuiHtmlViewerWindow * self,
+						 const gchar * label,
+						 GebrGuiHtmlViewerCustomTab callback);
 
 G_END_DECLS
 

@@ -36,7 +36,9 @@ static void __category_edit_move(CategoryEdit * category_edit, GtkTreeIter * ite
 static void __category_edit_move_top(CategoryEdit * category_edit, GtkTreeIter * iter);
 static void __category_edit_move_bottom(CategoryEdit * category_edit, GtkTreeIter * iter);
 static GtkWidget *__category_edit_create_tree_view(CategoryEdit * category_edit);
-
+static void category_edit_add_request(CategoryEdit * category_edit, GtkWidget *combo);
+static gboolean check_duplicate (GebrGuiSequenceEdit * sequence_edit, const gchar * category);
+	
 /*
  * gobject stuff
  */
@@ -133,6 +135,12 @@ G_DEFINE_TYPE(CategoryEdit, category_edit, GEBR_GUI_GTK_TYPE_SEQUENCE_EDIT);
  * Internal functions
  */
 
+static void on_combo_box_entry_activate (GtkWidget *entry, CategoryEdit *self)
+{
+	category_edit_add_request(self, gtk_widget_get_parent (entry));
+	gtk_editable_select_region (GTK_EDITABLE (entry), 0, -1);
+}
+
 /**
  * \internal
  */
@@ -141,7 +149,8 @@ static void category_edit_add_request(CategoryEdit * category_edit, GtkWidget *c
 	gchar *name;
 
 	name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(combo));
-	if (__category_edit_check_text(name)) {
+	if (check_duplicate(GEBR_GUI_SEQUENCE_EDIT(category_edit), name) ||
+	    __category_edit_check_text(name)) {
 		g_free(name);
 		return;
 	}
@@ -166,14 +175,21 @@ __category_edit_on_value_edited(GtkCellRendererText * cell, gchar * path_string,
 	GtkTreeSelection *selection;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
+	gchar * old_text;
 
 	GebrGeoXmlCategory *category;
 
-	if (__category_edit_check_text(new_text))
-		return;
-
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(sequence_edit->tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(sequence_edit->list_store), &iter, 0, &old_text, -1);
+
+	if (!strcmp(old_text, new_text))
+		return;
+
+	if (check_duplicate (sequence_edit, new_text) ||
+	    __category_edit_check_text(new_text))
+		return;
+
 	gtk_tree_model_get(GTK_TREE_MODEL(sequence_edit->list_store), &iter, 2, &category, -1);
 
 	gtk_list_store_set(sequence_edit->list_store, &iter, 0, new_text, -1);
@@ -469,7 +485,45 @@ GtkWidget *category_edit_new(GebrGeoXmlFlow * menu, gboolean new_menu)
 	category_edit->menu = menu;
 	if (!new_menu)
 		validate_image_set_check_category_list(category_edit->validate_image, category_edit->menu);
-	g_signal_connect(GTK_OBJECT(category_edit), "add-request", G_CALLBACK(category_edit_add_request), categories_combo);
+
+	g_signal_connect (gtk_bin_get_child (GTK_BIN (categories_combo)), "activate",
+			  G_CALLBACK (on_combo_box_entry_activate), category_edit);
+	g_signal_connect (category_edit, "add-request",
+			  G_CALLBACK (category_edit_add_request), categories_combo);
 
 	return (GtkWidget *) category_edit;
+}
+
+static gboolean check_duplicate (GebrGuiSequenceEdit * sequence_edit, const gchar * category)
+{
+	gboolean retval = FALSE;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	g_object_get(G_OBJECT(sequence_edit), "list-store", &model, NULL);
+
+	gebr_gui_gtk_tree_model_foreach(iter, model) {
+		gchar *i_categ;
+		gtk_tree_model_get(model, &iter, 0, &i_categ, -1);
+
+		gchar * category_first_up = gebr_validate_change_first_to_upper(category);
+		gchar * i_categ_first_up = gebr_validate_change_first_to_upper(i_categ);
+
+		if (!g_utf8_collate(i_categ_first_up, category_first_up)) {
+			gebr_gui_gtk_tree_view_select_iter(GTK_TREE_VIEW(sequence_edit->tree_view), &iter);
+			retval = TRUE;
+		}
+		g_free(i_categ);
+		g_free(i_categ_first_up);
+		g_free(category_first_up);
+	}
+
+	if (retval) {
+		gebr_gui_message_dialog (GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+					 _("Category already exists"),
+					 _("The category <i>%s</i> already exists in the list, the operation will be cancelled."),
+					 category);
+	}
+
+	return retval;
 }

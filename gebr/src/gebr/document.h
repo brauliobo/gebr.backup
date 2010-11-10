@@ -30,7 +30,7 @@ G_BEGIN_DECLS
  * Create a new document in the user's data diretory
  * with _type_ and set its filename.
  */
-GebrGeoXmlDocument *document_new(enum GEBR_GEOXML_DOCUMENT_TYPE type);
+GebrGeoXmlDocument *document_new(GebrGeoXmlDocumentType type);
 
 /**
  * Return TRUE if \p path is inside GeBR's data dir.
@@ -130,6 +130,40 @@ GString *document_get_path(const gchar * filename);
  * Delete document with _filename_ from data directory.
  */
 void document_delete(const gchar * filename);
+
+/**
+ * gebr_document_report_get_styles:
+ * @report: an html markup
+ *
+ * Returns: a list of strings containing all styles inside @report. It may return complete <style> tags and <link
+ * rel='stylesheet' ... > tags. You must free all strings and the list itself.
+ */
+GList * gebr_document_report_get_styles(const gchar * report);
+
+/**
+ * gebr_document_report_get_styles_string:
+ * See gebr_document_report_get_styles().
+ * Returns: a newly allocated string containing the styles concatenated with line breaks.
+ */
+gchar * gebr_document_report_get_styles_string(const gchar * report);
+
+/**
+ * gebr_document_report_get_inner_body:
+ * @report: an html markup
+ *
+ * Returns: a newly allocated string containing the inner
+ * html of the body tag from @report.
+ */
+gchar * gebr_document_report_get_inner_body(const gchar * report);
+
+/**
+ * gebr_document_generate_report:
+ * @document:
+ *
+ * Returns: a newly allocated string containing the detailed report for document based on the GêBR configuration
+ * structure #gebr.config.
+ */
+gchar * gebr_document_generate_report (GebrGeoXmlDocument *document);
 
 G_END_DECLS
 #endif				//__DOCUMENT_H

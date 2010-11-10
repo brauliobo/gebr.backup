@@ -41,6 +41,7 @@
 #include "ui_document.h"
 #include "ui_flow_browse.h"
 #include "ui_flow_edition.h"
+#include "../defines.h"
 
 static void on_properties_response(gboolean accept)
 {
@@ -48,7 +49,7 @@ static void on_properties_response(gboolean accept)
 		flow_delete(FALSE);
 }
 
-void flow_new(void)
+void flow_new (void)
 {
 	GtkTreeIter iter;
 
@@ -504,6 +505,7 @@ gboolean flow_revision_save(void)
 		revision = gebr_geoxml_flow_append_revision(gebr.flow, gtk_entry_get_text(GTK_ENTRY(entry)));
 		document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
 		flow_browse_load_revision(revision, TRUE);
+		flow_browse_info_update();
 		ret = TRUE;
 	}
 
@@ -628,4 +630,309 @@ void flow_program_paste(void)
 
 	flow_add_program_sequence_to_view(GEBR_GEOXML_SEQUENCE(pasted), TRUE);
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
+}
+
+static void append_parameter_row(GebrGeoXmlParameter * parameter, GString * dump, gboolean in_group)
+{
+	gint i, n_instances;
+	GebrGeoXmlSequence * param;
+	GebrGeoXmlSequence * instance;
+	GebrGeoXmlParameters * parameters;
+
+	if (gebr_geoxml_parameter_get_is_program_parameter(parameter)) {
+		GString * str_value;
+		GebrGeoXmlProgramParameter * program;
+
+		program = GEBR_GEOXML_PROGRAM_PARAMETER(parameter);
+		str_value = gebr_geoxml_program_parameter_get_string_value(program, FALSE);
+		g_string_append_printf(dump, "<tr>\n  <td class=\"%slabel\">%s</td>\n  <td class=\"value\">%s</td>\n</tr>\n",
+                                       (in_group?"group-":""),
+				       gebr_geoxml_parameter_get_label(parameter),
+				       str_value->str);
+		g_string_free(str_value, TRUE);
+	} else {
+		g_string_append_printf(dump, "<tr class='parameter-group'>\n  <td colspan='2'>%s</td>\n</tr>\n",
+				       gebr_geoxml_parameter_get_label(parameter));
+
+		gebr_geoxml_parameter_group_get_instance(GEBR_GEOXML_PARAMETER_GROUP(parameter), &instance, 0);
+		n_instances = gebr_geoxml_parameter_group_get_instances_number(GEBR_GEOXML_PARAMETER_GROUP(parameter));
+
+		i = 1;
+		while (instance) {
+			if (n_instances > 1)
+				g_string_append_printf(dump, "<tr class='group-instance'>\n  <td colspan='2'>%s %d</td>\n</tr>\n",
+						       _("Instance"), i++);
+			parameters = GEBR_GEOXML_PARAMETERS(instance);
+			gebr_geoxml_parameters_get_parameter(parameters, &param, 0);
+			while (param) {
+				append_parameter_row(GEBR_GEOXML_PARAMETER(param), dump, TRUE);
+				gebr_geoxml_sequence_next(&param);
+			}
+
+			gebr_geoxml_sequence_next(&instance);
+		}
+	}
+}
+
+static gchar * gebr_program_generate_parameter_value_table (GebrGeoXmlProgram * program)
+{
+	GString * table;
+	GebrGeoXmlParameters * parameters;
+	GebrGeoXmlSequence * sequence;
+
+	table = g_string_new ("");
+	parameters = gebr_geoxml_program_get_parameters (program);
+	gebr_geoxml_parameters_get_parameter (parameters, &sequence, 0);
+	
+	if (sequence == NULL)
+	{
+		g_string_append_printf(table,
+					_("<table class=\"gebr-parameter-table\" summary=\"Parameter table\">\n"
+					  "<caption>Parameters for %s program</caption>\n"
+					  "<tbody>\n"
+					  "<tr><td>This program does not have parameters.</td></tr>\n"),
+					gebr_geoxml_program_get_title (program));
+	}
+	else
+	{
+		g_string_append_printf (table,
+					_("<table class=\"gebr-parameter-table\" summary=\"Parameter table\">\n"
+					  "<caption>Parameters for %s program</caption>\n"
+					  "<thead>\n<tr>\n"
+					  "  <td>%s</td><td>%s</td>\n"
+					  "</tr>\n</thead>\n"
+					  "<tbody>\n"),
+					gebr_geoxml_program_get_title (program),
+					_("Parameter"), _("Value"));
+
+		while (sequence) {
+			append_parameter_row(GEBR_GEOXML_PARAMETER(sequence), table, FALSE);
+			gebr_geoxml_sequence_next (&sequence);
+		}
+
+	}
+
+	g_string_append_printf (table, "</tbody>\n</table>\n");
+	return g_string_free (table, FALSE);
+}
+
+gchar * gebr_flow_generate_parameter_value_table(GebrGeoXmlFlow * flow)
+{
+	GString * dump;
+	const gchar * input;
+	const gchar * output;
+	const gchar * error;
+	GebrGeoXmlSequence * sequence;
+
+	input = gebr_geoxml_flow_server_io_get_input (gebr.flow_server);
+	output = gebr_geoxml_flow_server_io_get_output (gebr.flow_server);
+	error = gebr_geoxml_flow_server_io_get_error (gebr.flow_server);
+
+	dump = g_string_new(NULL);
+
+	g_string_append_printf(dump,
+			       "<div class=\"gebr-flow-dump\">\n"
+			       "<table class=\"gebr-io-table\" summary=\"I/O table\">\n"
+                               "<caption>%s</caption>\n"
+			       "<tr><td>%s</td><td>%s</td></tr>\n"
+			       "<tr><td>%s</td><td>%s</td></tr>\n"
+			       "<tr><td>%s</td><td>%s</td></tr>\n"
+			       "</table>\n",
+                               _("I/O table"),
+			       _("Input"), strlen (input) > 0? input : _("(none)"),
+			       _("Output"), strlen (output) > 0? output : _("(none)"),
+			       _("Error"), strlen (error) > 0? error : _("(none)")); 
+
+	gebr_geoxml_flow_get_program(flow, &sequence, 0);
+	while (sequence) {
+		GebrGeoXmlProgram * prog;
+		GebrGeoXmlProgramStatus status;
+
+		prog = GEBR_GEOXML_PROGRAM (sequence);
+		status = gebr_geoxml_program_get_status (prog);
+
+		if (status == GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED) {
+			gchar * table;
+			table = gebr_program_generate_parameter_value_table (prog);
+			g_string_append (dump, table);
+			g_free (table);
+		}
+		gebr_geoxml_sequence_next(&sequence);
+	}
+
+	g_string_append (dump, "</div>\n");
+	return g_string_free(dump, FALSE);
+}
+
+gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date)
+{
+	gchar *date;
+	GString *dump;
+	GebrGeoXmlSequence * program;
+
+	dump = g_string_new(NULL);
+	g_string_printf(dump,
+			"<h1>%s</h1>\n"
+			"<h2>%s</h2>\n",
+			gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(flow)),
+			gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(flow)));
+
+	if (include_date)
+		date = g_strdup_printf (", <span class=\"gebr-date\">%s</span>",
+					gebr_localized_date(gebr_iso_date()));
+	else
+		date = NULL;
+
+	g_string_append_printf (dump,
+				"<p class=\"credits\">%s <span class=\"gebr-author\">%s</span>"
+				" <span class=\"gebr-email\">%s</span>%s</p>\n",
+				_("By"),
+				gebr_geoxml_document_get_author(GEBR_GEOXML_DOC(flow)),
+				gebr_geoxml_document_get_email(GEBR_GEOXML_DOC(flow)),
+				date ? date : "");
+	g_free (date);
+
+	g_string_append_printf (dump, "<p>%s</p>\n", _("Flow with program(s):"));
+	g_string_append_printf (dump, "<ul>\n");
+	gebr_geoxml_flow_get_program (flow, &program, 0);
+	while (program) {
+		GebrGeoXmlProgram * prog;
+		GebrGeoXmlProgramStatus status;
+
+		prog = GEBR_GEOXML_PROGRAM (program);
+		status = gebr_geoxml_program_get_status (prog);
+
+		if (status == GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED)
+			g_string_append_printf (dump, "  <li>%s</li>\n",
+						gebr_geoxml_program_get_title (prog));
+
+		gebr_geoxml_sequence_next (&program);
+	}
+	g_string_append_printf (dump, "</ul>\n");
+
+	return g_string_free(dump, FALSE);
+}
+
+static void on_detailed_flow_css_changed (GtkComboBox * combobox)
+{
+	gchar * css;
+
+	css = gtk_combo_box_get_active_text (combobox);
+	if (gtk_combo_box_get_active (combobox) == 0) {
+		g_string_assign (gebr.config.detailed_flow_css, "");
+	} else {
+		g_string_assign (gebr.config.detailed_flow_css, css);
+	}
+
+	g_free (css);
+}
+
+static void on_detailed_flow_include_report_toggled (GtkToggleButton * button)
+{
+	gebr.config.detailed_flow_include_report = gtk_toggle_button_get_active (button);
+}
+
+static void on_detailed_flow_include_params_toggled (GtkToggleButton * button)
+{
+	gebr.config.detailed_flow_include_params = gtk_toggle_button_get_active (button);
+}
+
+gchar * gebr_flow_get_detailed_report (GebrGeoXmlFlow * flow, gboolean include_table, gboolean include_date)
+{
+	gchar * table;
+	gchar * inner;
+	gchar * report;
+	gchar * header;
+	const gchar * help;
+
+	help = gebr_geoxml_document_get_help (GEBR_GEOXML_DOCUMENT (flow));
+	inner = gebr_document_report_get_inner_body (help);
+	
+	if (inner == NULL)
+		inner = g_strdup_printf("");
+
+	table = include_table ? gebr_flow_generate_parameter_value_table (flow) : "";
+	header = gebr_flow_generate_header (flow, include_date);
+	report = g_strdup_printf ("<div class='gebr-geoxml-flow'>%s%s%s</div>\n", header, inner, table);
+
+	if (include_table)
+		g_free (table);
+	g_free (inner);
+	g_free (header);
+
+	return report;
+}
+
+GtkWidget * gebr_flow_print_dialog_custom_tab()
+{
+	GtkWidget * hbox_combo;
+	GtkWidget * vbox;
+	GtkWidget * frame;
+	GtkWidget * alignment;
+	GtkWidget * detailed_flow_css;
+	GtkWidget * detailed_flow_include_report;
+	GtkWidget * detailed_flow_include_params;
+	GtkWidget * css_combo_label;
+	GDir * directory;
+	GError * error = NULL;
+	const gchar * filename = NULL;
+	gint active = 0, i = 0;
+
+	css_combo_label = gtk_label_new(_("Style"));
+	gtk_widget_show(css_combo_label);
+	detailed_flow_css = gtk_combo_box_new_text();
+
+	directory = g_dir_open(GEBR_STYLES_DIR, 0, &error);
+	if (error != NULL) {
+		gebr_message(GEBR_LOG_ERROR, TRUE, TRUE, _("Unable to read file: %s"), error->message);
+		g_clear_error (&error);
+		return NULL;
+	}
+
+	gtk_combo_box_append_text (GTK_COMBO_BOX (detailed_flow_css), _("Report style"));
+	filename = g_dir_read_name(directory);
+	while (filename != NULL) {
+		if (fnmatch ("*.css", filename, 1) == 0) {
+			gtk_combo_box_append_text (GTK_COMBO_BOX (detailed_flow_css), filename);
+			if (strcmp (filename, gebr.config.detailed_flow_css->str) == 0)
+				// We must sum 1 to active to skip the first entry
+				active = i + 1;
+			i++;
+		}
+		filename = g_dir_read_name(directory);
+	}
+	gtk_widget_show(detailed_flow_css);
+
+	detailed_flow_include_report = gtk_check_button_new_with_label(_("Include user's report"));
+	detailed_flow_include_params = gtk_check_button_new_with_label(_("Include parameter/value table"));
+
+	g_signal_connect(detailed_flow_css, "changed", G_CALLBACK(on_detailed_flow_css_changed), NULL);
+	g_signal_connect(detailed_flow_include_report, "toggled", G_CALLBACK(on_detailed_flow_include_report_toggled), NULL);
+	g_signal_connect(detailed_flow_include_params, "toggled", G_CALLBACK(on_detailed_flow_include_params_toggled), NULL);
+
+	gtk_combo_box_set_active(GTK_COMBO_BOX(detailed_flow_css), active);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(detailed_flow_include_report), gebr.config.detailed_flow_include_report);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(detailed_flow_include_params), gebr.config.detailed_flow_include_params); 
+
+	frame = gtk_frame_new(NULL);
+	gtk_container_set_border_width(GTK_CONTAINER(frame), 10);
+	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	hbox_combo = gtk_hbox_new(FALSE, 0);
+
+	alignment = gtk_alignment_new(0, 0, 1, 1);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 10, 0);
+
+	gtk_box_pack_start(GTK_BOX(hbox_combo), css_combo_label, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox_combo), detailed_flow_css, TRUE, TRUE, 0);
+
+	gtk_box_pack_start(GTK_BOX(vbox), detailed_flow_include_report, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), detailed_flow_include_params, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox_combo, FALSE, TRUE, 0);
+
+	gtk_container_add(GTK_CONTAINER(frame),vbox);
+
+	gtk_widget_show_all(frame);
+	return frame;
 }

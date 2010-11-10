@@ -38,6 +38,8 @@
 #include "document.h"
 #include "../defines.h"
 #include "menu.h"
+#include "flow.h"
+#include "ui_project_line.h"
 
 //==============================================================================
 // PROTOTYPES AND STATIC VARIABLES					       =
@@ -200,22 +202,32 @@ void gebr_help_show(GebrGeoXmlObject * object, gboolean menu, const gchar * titl
 	GebrGuiHtmlViewerWidget * html_viewer_widget;
 
 	window = gebr_gui_html_viewer_window_new(); 
+	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
+
 	html_viewer_widget = gebr_gui_html_viewer_window_get_widget(GEBR_GUI_HTML_VIEWER_WINDOW(window));
 
 	g_object_set_data (G_OBJECT (html_viewer_widget), "geoxml-object", object);
 	g_signal_connect (html_viewer_widget, "title-ready", G_CALLBACK (on_title_ready), window);
 
-	if (menu)
+	if (menu) {
 		gebr_gui_html_viewer_widget_generate_links(html_viewer_widget, object);
-
-	if (gebr_geoxml_object_get_type(object) == GEBR_GEOXML_OBJECT_TYPE_PROGRAM)
-		html = gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(object));
-	else
 		html = gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(object));
-
+	}
+	else switch (gebr_geoxml_object_get_type(object)) {
+	case GEBR_GEOXML_OBJECT_TYPE_FLOW:
+		html = gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(object));
+		break;
+	case GEBR_GEOXML_OBJECT_TYPE_LINE:
+		html = gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(object));
+		break;
+	case GEBR_GEOXML_OBJECT_TYPE_PROGRAM:
+		html = gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(object));
+		break;
+	default:
+		break;
+	}
 	gebr_gui_html_viewer_window_show_html(GEBR_GUI_HTML_VIEWER_WINDOW(window), html);
-
-	gtk_dialog_run(GTK_DIALOG(window));
+	gtk_widget_show (window);
 }
 
 void gebr_help_edit_document(GebrGeoXmlDocument * document)
@@ -290,4 +302,27 @@ void gebr_help_set_on_xml(GebrGeoXmlDocument *document, const gchar *help)
 static void on_save_activate(GtkAction * action, GebrGuiHelpEditWidget * self)
 {
 	gebr_gui_help_edit_widget_commit_changes(self);
+}
+
+gchar * gebr_generate_report(const gchar * title,
+			     const gchar * styles,
+			     const gchar * header,
+			     const gchar * table)
+{
+	static gchar * html = ""
+		"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
+		"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
+		"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+		"<head>\n"
+		"  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n"
+		"  <title>%s</title>\n"
+		"  %s\n"
+		"</head>\n"
+		"<body>\n"
+		"<div class=\"header\">%s</div>\n"
+		"%s\n"
+		"</body>\n"
+		"</html>";
+
+	return g_strdup_printf(html, title, styles, header, table);
 }
