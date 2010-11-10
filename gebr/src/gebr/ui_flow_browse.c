@@ -199,6 +199,17 @@ struct ui_flow_browse *flow_browse_setup_ui(GtkWidget * revisions_menu)
 	ui_flow_browse->info.error = gtk_label_new("");
 	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.error), 0, 0);
 	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.error, 1, 2, row, row + 1, (GtkAttachOptions)GTK_FILL,
+			 (GtkAttachOptions)GTK_FILL, 3, 3),
+	    row++;
+
+	ui_flow_browse->info.rev_num_label = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.rev_num_label), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.rev_num_label, 0, 1, row, row + 1,
+			 (GtkAttachOptions)GTK_FILL, (GtkAttachOptions)GTK_FILL, 3,
+			 3);
+	ui_flow_browse->info.rev_num = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(ui_flow_browse->info.rev_num), 0, 0);
+	gtk_table_attach(GTK_TABLE(table), ui_flow_browse->info.rev_num, 1, 2, row, row + 1, (GtkAttachOptions)GTK_FILL,
 			 (GtkAttachOptions)GTK_FILL, 3, 3);
 
 	/* Help */
@@ -245,9 +256,13 @@ void flow_browse_info_update(void)
 		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.modified_label), "");
 		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.lastrun), "");
 		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.lastrun_label), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.rev_num), "");
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.rev_num_label), "");
 
 		g_object_set(gebr.ui_flow_browse->info.help_view, "sensitive", FALSE, NULL);
 		g_object_set(gebr.ui_flow_browse->info.help_edit, "sensitive", FALSE, NULL);
+		gtk_action_set_sensitive(gtk_action_group_get_action(gebr.action_group, "flow_dump"), FALSE);
+
 		navigation_bar_update();
 		return;
 	}
@@ -293,6 +308,9 @@ void flow_browse_info_update(void)
 	markup = g_markup_printf_escaped("<b>%s</b>", _("Error log:"));
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.error_label), markup);
 	g_free(markup);
+	markup = g_markup_printf_escaped("<b>%s</b>", _("Flow State Number:"));
+	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.rev_num_label), markup);
+	g_free(markup);
 	/* Server */
 //      if (gebr.flow_server != NULL)
 	gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.server),
@@ -318,6 +336,17 @@ void flow_browse_info_update(void)
 	else
 		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.error), _("(none)"));
 
+	/* Revision number */
+
+	if (gebr_geoxml_flow_get_revisions_number(gebr.flow) > 0){
+		char * str_tmp = g_strdup_printf("%ld", gebr_geoxml_flow_get_revisions_number(gebr.flow));
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.rev_num), str_tmp);
+		g_free(str_tmp);
+	}
+       	else {
+		gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.rev_num), _("(none)"));
+	}
+
 	/* Author and email */
 	text = g_string_new(NULL);
 	g_string_printf(text, "%s <%s>",
@@ -327,13 +356,15 @@ void flow_browse_info_update(void)
 	g_string_free(text, TRUE);
 
 	/* Info button */
-    gboolean help_exists = gebr.flow != NULL && (strlen(gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(gebr.flow))) ? TRUE : FALSE);
+	gboolean help_exists = gebr.flow != NULL && (strlen(gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(gebr.flow))) ? TRUE : FALSE);
 
 	g_object_set(gebr.ui_flow_browse->info.help_view, "sensitive", help_exists, NULL);
 
-    gtk_action_set_sensitive(gtk_action_group_get_action(gebr.action_group, "flow_view"), help_exists);
+	gtk_action_set_sensitive(gtk_action_group_get_action(gebr.action_group, "flow_view"), help_exists);
 
 	g_object_set(gebr.ui_flow_browse->info.help_edit, "sensitive", TRUE, NULL);
+
+	gtk_action_set_sensitive(gtk_action_group_get_action(gebr.action_group, "flow_dump"), TRUE);
 
 	navigation_bar_update();
 }
@@ -581,16 +612,21 @@ static void flow_browse_on_revision_revert_activate(GtkMenuItem * menu_item, Geb
 
 	gchar *date;
 	gchar *comment;
+	gboolean report_merged = FALSE;
 
 	gebr_geoxml_flow_get_revision_data(revision, NULL, &date, &comment);
-	if (!gebr_geoxml_flow_change_to_revision(gebr.flow, revision)) {
+	if (!gebr_geoxml_flow_change_to_revision(gebr.flow, revision, &report_merged)) {
 		document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
 		gebr_message(GEBR_LOG_ERROR, TRUE, FALSE, _("Could not revert to state '%s' ('%s')."), comment, date);
 		return;
 	}
+
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
 
-	gebr_message(GEBR_LOG_INFO, TRUE, FALSE, _("Reverted to state '%s' ('%s')."), comment, date);
+	if (report_merged)
+		gebr_message(GEBR_LOG_INFO, TRUE, TRUE, _("Reverted to state '%s' ('%s'), and merged report to current"), comment, date);
+	else
+		gebr_message(GEBR_LOG_INFO, TRUE, TRUE, _("Reverted to state '%s' ('%s')."), comment, date);
 	flow_browse_load();
 }
 
@@ -608,6 +644,7 @@ static void flow_browse_on_revision_delete_activate(GtkWidget * widget, GebrGeoX
 		document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
 		menu_item = g_object_get_data(G_OBJECT(widget), "menu-item-to-be-removed");
 		gtk_widget_destroy(GTK_WIDGET(menu_item));
+		flow_browse_info_update();
 	}
 }
 

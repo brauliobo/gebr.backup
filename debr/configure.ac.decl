@@ -1,5 +1,5 @@
 VERSION=0.9.19
-NANOVERSION=`hg parent --template '+{latesttagdistance}-{node|short}\n' 2> /dev/null || date ++%H%M`
+NANOVERSION=`hg parent --template '+{latesttagdistance}-{node|short}' 2> /dev/null || date ++%H%M`
 AC_SUBST(VERSION)
 
 PACKAGE_PREFIX_DIR=`echo ${prefix}`

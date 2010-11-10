@@ -77,6 +77,8 @@ void gebr_init(void)
 		exit(-1);
 	}
 
+	gebr.config.detailed_flow_css = g_string_new (NULL);
+	gebr.config.detailed_line_css = g_string_new (NULL);
 	gebr.config.path = g_string_new(NULL);
 	g_string_printf(gebr.config.path, "%s/.gebr/gebr/gebr.conf", g_get_home_dir());
 
@@ -159,6 +161,8 @@ gboolean gebr_quit(void)
 	g_string_free(gebr.config.data, TRUE);
 	g_string_free(gebr.config.project_line_string, TRUE);
 	g_string_free(gebr.config.flow_string, TRUE);
+	g_string_free(gebr.config.detailed_flow_css, TRUE);
+	g_string_free(gebr.config.detailed_line_css, TRUE);
 
 	/* remove temporaries files */
 	g_slist_foreach(gebr.tmpfiles, (GFunc) g_unlink, NULL);
@@ -264,6 +268,17 @@ gint gebr_config_load()
 		gebr.config.flow_string =
 		    gebr_g_key_file_load_string_key(gebr.config.key_file, "general", "flow_string", "");
 
+		g_string_assign (gebr.config.detailed_flow_css,
+				 gebr_g_key_file_load_string_key(gebr.config.key_file, "general", "detailed_flow_css", "")->str);
+		gebr.config.detailed_flow_include_report = gebr_g_key_file_load_boolean_key(gebr.config.key_file, "general", "detailed_flow_include_report", FALSE);
+		gebr.config.detailed_flow_include_params = gebr_g_key_file_load_boolean_key(gebr.config.key_file, "general", "detailed_flow_include_params", FALSE);
+
+		g_string_assign (gebr.config.detailed_line_css,
+				 gebr_g_key_file_load_string_key(gebr.config.key_file, "general", "detailed_line_css", "")->str);
+		gebr.config.detailed_line_include_report = gebr_g_key_file_load_boolean_key(gebr.config.key_file, "general", "detailed_line_include_report", FALSE);
+		gebr.config.detailed_line_include_flow_report = gebr_g_key_file_load_boolean_key(gebr.config.key_file, "general", "detailed_line_include_flow_report", FALSE);
+		gebr.config.detailed_line_include_flow_params = gebr_g_key_file_load_boolean_key(gebr.config.key_file, "general", "detailed_line_include_flow_params", FALSE);
+
 		g_string_free(data_dir, TRUE);
 	}
 
@@ -365,6 +380,15 @@ void gebr_config_save(gboolean verbose)
 	g_key_file_set_boolean(gebr.config.key_file, "general", "job_log_auto_scroll", gebr.config.job_log_auto_scroll);
 	g_key_file_set_integer(gebr.config.key_file, "general", "notebook", gtk_notebook_get_current_page(GTK_NOTEBOOK(gebr.notebook)));
 
+	g_key_file_set_string(gebr.config.key_file, "general", "detailed_flow_css", gebr.config.detailed_flow_css->str);
+	g_key_file_set_boolean(gebr.config.key_file, "general", "detailed_flow_include_report", gebr.config.detailed_flow_include_report);
+	g_key_file_set_boolean(gebr.config.key_file, "general", "detailed_flow_include_params", gebr.config.detailed_flow_include_params);
+
+	g_key_file_set_string(gebr.config.key_file, "general", "detailed_line_css", gebr.config.detailed_line_css->str);
+	g_key_file_set_boolean(gebr.config.key_file, "general", "detailed_line_include_report", gebr.config.detailed_line_include_report);
+	g_key_file_set_boolean(gebr.config.key_file, "general", "detailed_line_include_flow_report", gebr.config.detailed_line_include_flow_report);
+	g_key_file_set_boolean(gebr.config.key_file, "general", "detailed_line_include_flow_params", gebr.config.detailed_line_include_flow_params);
+
 	/* Save list of servers */
 	gebr_gui_gtk_tree_model_foreach(iter, GTK_TREE_MODEL(gebr.ui_server_list->common.store)) {
 		struct server *server;
@@ -383,7 +407,7 @@ void gebr_config_save(gboolean verbose)
 	}
 	
 	/* Save selected document*/
-	if (project_line_get_selected(&iter, DontWarnUnselection)){
+	if (project_line_get_selected(&iter, DontWarnUnselection)) {
 		gebr.config.project_line_string->str = gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(gebr.ui_project_line->store), &iter);
 		g_key_file_set_string(gebr.config.key_file, "general", "project_line_string", gebr.config.project_line_string->str);
 
@@ -394,7 +418,7 @@ void gebr_config_save(gboolean verbose)
 	}
 
 	error = NULL;
-	string = g_key_file_to_data(gebr.config.key_file, &length, &error);
+	string = g_key_file_to_data(gebr.config.key_file, &length, NULL);
 	configfp = fopen(gebr.config.path->str, "w");
 	if (configfp == NULL) {
 		gebr_message(GEBR_LOG_ERROR, TRUE, TRUE, _("Could not save configuration."));

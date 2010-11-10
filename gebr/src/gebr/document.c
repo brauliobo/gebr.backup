@@ -25,6 +25,7 @@
 #include <libgebr/intl.h>
 #include <libgebr/utils.h>
 #include <libgebr/date.h>
+#include <libgebr/defines.h>
 #include <libgebr/gui/gebr-gui-save-dialog.h>
 
 #include "document.h"
@@ -33,6 +34,7 @@
 #include "line.h"
 #include "flow.h"
 #include "menu.h"
+#include "ui_help.h"
 
 static GebrGeoXmlDocument *document_cache_check(const gchar *path)
 {
@@ -44,7 +46,7 @@ static void document_cache_add(const gchar *path, GebrGeoXmlDocument * document)
 	g_hash_table_insert(gebr.xmls_by_filename, g_strdup(path), document);
 }
 
-GebrGeoXmlDocument *document_new(enum GEBR_GEOXML_DOCUMENT_TYPE type)
+GebrGeoXmlDocument *document_new(GebrGeoXmlDocumentType type)
 {
 	gchar *extension;
 	GString *filename;
@@ -176,7 +178,7 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 	void remove_parent_ref(GebrGeoXmlDocument *parent_document, const gchar *path)
 	{
 		GebrGeoXmlSequence * sequence;
-		enum GEBR_GEOXML_DOCUMENT_TYPE type;
+		GebrGeoXmlDocumentType type;
 
 		gchar *basename;
 		basename = g_path_get_basename(path);
@@ -557,4 +559,167 @@ void document_delete(const gchar * filename)
 	g_unlink(path->str);
 
 	g_string_free(path, TRUE);
+}
+
+static GList *
+generate_list_from_match_info(GMatchInfo * match)
+{
+	GList * list = NULL;
+	while (g_match_info_matches(match)) {
+		list = g_list_prepend(list, g_match_info_fetch(match, 0));
+		g_match_info_next(match, NULL);
+	}
+	return g_list_reverse(list);
+}
+
+GList * gebr_document_report_get_styles(const gchar * report)
+{
+	GList * list;
+	GRegex * links;
+	GRegex * styles;
+	GMatchInfo * match;
+
+	links = g_regex_new("<\\s*link\\s+rel\\s*=\\s*\"stylesheet\"[^>]*>",
+			    G_REGEX_DOTALL, 0, NULL);
+
+	styles = g_regex_new("<style[^>]*>.*?<\\/style>",
+			     G_REGEX_DOTALL, 0, NULL);
+
+	g_regex_match(links, report, 0, &match);
+	list = generate_list_from_match_info(match);
+	g_match_info_free(match);
+
+	g_regex_match(styles, report, 0, &match);
+	list = g_list_concat(list, generate_list_from_match_info(match));
+	g_match_info_free(match);
+
+	g_regex_unref(links);
+	g_regex_unref(styles);
+
+	return list;
+}
+
+gchar * gebr_document_report_get_styles_string(const gchar * report)
+{
+	GList * list, * i;
+	GString * string;
+
+	list = gebr_document_report_get_styles(report);
+
+	if (list)
+		string = g_string_new(list->data);
+	else
+		return NULL;
+
+	i = list->next;
+	while (i) {
+		g_string_append_c(string, '\n');
+		g_string_append(string, i->data);
+		i = i->next;
+	}
+
+	g_list_foreach(list, (GFunc)g_free, NULL);
+	g_list_free(list);
+
+	return g_string_free(string, FALSE);
+}
+
+gchar * gebr_document_report_get_inner_body(const gchar * report)
+{
+	GRegex * body;
+	gchar * inner_body;
+	GMatchInfo * match;
+
+	body = g_regex_new("<body[^>]*>(.*?)<\\/body>",
+			   G_REGEX_DOTALL, 0, NULL);
+
+	if (!g_regex_match(body, report, 0, &match)) {
+		g_regex_unref(body);
+		return NULL;
+	}
+
+	inner_body = g_match_info_fetch(match, 1);
+
+	g_match_info_free(match);
+	g_regex_unref(body);
+	return inner_body;
+}
+
+gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
+{
+	GebrGeoXmlSequence *line_flow;
+	GebrGeoXmlObjectType type;
+	const gchar * title;
+	const gchar * report;
+	gchar * detailed_html = NULL;
+	gchar * inner_body = NULL;
+	gchar * styles = NULL;
+	gchar * header = NULL;
+	GString * content;
+
+	content = g_string_new (NULL);
+
+	type = gebr_geoxml_object_get_type(GEBR_GEOXML_OBJECT(document));
+	if (type == GEBR_GEOXML_OBJECT_TYPE_PROGRAM) 
+		return NULL;
+
+	title = gebr_geoxml_document_get_title(document);
+	report = gebr_geoxml_document_get_help(document);
+	inner_body = gebr_document_report_get_inner_body(report);
+
+	if (type == GEBR_GEOXML_OBJECT_TYPE_LINE) {
+		if (gebr.config.detailed_line_css->len != 0)
+			styles = g_strdup_printf ("<link rel=\"stylesheet\" type=\"text/css\" href=\"file://%s/%s\" />",
+						  LIBGEBR_STYLES_DIR, gebr.config.detailed_line_css->str);
+		else
+			styles = gebr_document_report_get_styles_string(report);
+
+		header = gebr_line_generate_header(document);
+
+		if (gebr.config.detailed_line_include_report)
+			g_string_append (content, inner_body);
+
+		if (gebr.config.detailed_line_include_flow_report) {
+			gebr_geoxml_line_get_flow(GEBR_GEOXML_LINE(document), &line_flow, 0);
+			for (; line_flow != NULL; gebr_geoxml_sequence_next(&line_flow)) {
+				GebrGeoXmlFlow *flow;
+				const gchar *filename = gebr_geoxml_line_get_flow_source(GEBR_GEOXML_LINE_FLOW(line_flow));
+
+				document_load((GebrGeoXmlDocument**)(&flow), filename, FALSE);
+
+				gchar * flow_cont = gebr_flow_get_detailed_report(flow, gebr.config.detailed_line_include_flow_params, FALSE);
+				g_string_append(content, flow_cont);
+				g_free(flow_cont);
+				gebr_geoxml_document_free(GEBR_GEOXML_DOCUMENT(flow));
+			}
+		}
+	} else if (type == GEBR_GEOXML_OBJECT_TYPE_FLOW) {
+		if (gebr.config.detailed_flow_css->len != 0)
+			styles = g_strdup_printf ("<link rel=\"stylesheet\" type=\"text/css\" href=\"file://%s/%s\" />",
+						  LIBGEBR_STYLES_DIR, gebr.config.detailed_flow_css->str);
+		else
+			styles = gebr_document_report_get_styles_string (report);
+
+		header = gebr_flow_generate_header(GEBR_GEOXML_FLOW(document), TRUE);
+
+		if (gebr.config.detailed_flow_include_report)
+			g_string_append (content, inner_body);
+
+		if (gebr.config.detailed_flow_include_params) {
+			gchar * params;
+			params = gebr_flow_generate_parameter_value_table (GEBR_GEOXML_FLOW (document));
+			g_string_append (content, params);
+			g_free (params);
+		}
+	} else
+		g_return_val_if_reached(NULL);
+
+	detailed_html = gebr_generate_report(title, styles, header, content->str);
+
+	g_free(header);
+	g_free(styles);
+	g_free(inner_body);
+	g_string_free(content, TRUE);
+
+	return detailed_html;
 }

@@ -28,6 +28,7 @@ AC_SUBST(TODAY)
 AC_SUBST(GEBR_VERSION_INFO)
 
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 IT_PROG_INTLTOOL
 
@@ -95,9 +96,8 @@ AC_OUTPUT([
 Makefile
 docs/Makefile
 docs/reference/Makefile
-docs/reference/comm/Makefile
-docs/reference/geoxml/Makefile
-docs/reference/gui/Makefile
+docs/reference/libgebr/Makefile
+docs/reference/libgebr/version.xml
 packages/Makefile
 packages/rpm/libgebr.fedora.spec
 packages/rpm/libgebr.mandriva.spec

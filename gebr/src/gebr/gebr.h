@@ -113,6 +113,25 @@ struct gebr {
 		gint current_notebook;
 		GString *project_line_string;
 		GString *flow_string;
+
+		// Detailed report options
+		// - For flows:
+		//  [ ] Include user's report
+		//  [ ] Include parameter/value table
+		//  (CSS Combo ^)
+		GString * detailed_flow_css;
+		gboolean detailed_flow_include_report;
+		gboolean detailed_flow_include_params;
+
+		// - For lines:
+		//  [ ] Include user's report
+		//  [ ] Include flow's report
+		//    [ ] Include parameter/value table
+		//  (CSS Combo ^)
+		GString * detailed_line_css;
+		gboolean detailed_line_include_report;
+		gboolean detailed_line_include_flow_report;
+		gboolean detailed_line_include_flow_params;
 	} config;
 
 	/* Pixmaps */

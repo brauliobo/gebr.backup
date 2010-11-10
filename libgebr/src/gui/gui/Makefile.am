@@ -17,24 +17,24 @@ include $(top_srcdir)/Makefile.decl
 marshalers.h: marshalers.list
 	glib-genmarshal --prefix=_gebr_gui_marshal marshalers.list --header >marshalers.h
 
-marshalers.c: marshalers.h
+marshalers.c: marshalers.h marshalers.list
 	glib-genmarshal --prefix=_gebr_gui_marshal marshalers.list --body >marshalers.c
 
 lib_LTLIBRARIES = libgebr_gui.la
 libgebr_gui_la_SOURCES = 		\
 	marshalers.c 			\
 	sexy-icon-entry.c 		\
-	gebr-gui-about.c 			\
-	gebr-gui-utils.c 			\
-	gebr-gui-pixmaps.c 			\
-	gebr-gui-icons.c 			\
-	gebr-gui-file-entry.c			\
-	gebr-gui-enhanced-entry.c		\
-	gebr-gui-sequence-edit.c		\
-	gebr-gui-value-sequence-edit.c		\
-	gebr-gui-program-edit.c			\
-	gebr-gui-parameter.c			\
-	gebr-gui-directory-chooser.c		\
+	gebr-gui-about.c 		\
+	gebr-gui-utils.c 		\
+	gebr-gui-pixmaps.c 		\
+	gebr-gui-icons.c 		\
+	gebr-gui-file-entry.c		\
+	gebr-gui-enhanced-entry.c	\
+	gebr-gui-sequence-edit.c	\
+	gebr-gui-value-sequence-edit.c	\
+	gebr-gui-program-edit.c		\
+	gebr-gui-parameter.c		\
+	gebr-gui-directory-chooser.c	\
 	gebr-gui-save-dialog.c		\
 	gebr-gui-help-edit-widget.c	\
 	gebr-gui-help-edit-window.c	\
@@ -46,17 +46,17 @@ libgebr_guisubincludedir = $(includedir)/libgebr/gui
 libgebr_guisubinclude_HEADERS = 	\
 	marshalers.h			\
 	sexy-icon-entry.h		\
-	gebr-gui-about.h				\
-	gebr-gui-utils.h				\
-	gebr-gui-pixmaps.h			\
-	gebr-gui-icons.h				\
-	gebr-gui-file-entry.h			\
-	gebr-gui-enhanced-entry.h		\
-	gebr-gui-sequence-edit.h		\
-	gebr-gui-value-sequence-edit.h		\
-	gebr-gui-program-edit.h			\
-	gebr-gui-parameter.h			\
-	gebr-gui-directory-chooser.h		\
+	gebr-gui-about.h		\
+	gebr-gui-utils.h		\
+	gebr-gui-pixmaps.h		\
+	gebr-gui-icons.h		\
+	gebr-gui-file-entry.h		\
+	gebr-gui-enhanced-entry.h	\
+	gebr-gui-sequence-edit.h	\
+	gebr-gui-value-sequence-edit.h	\
+	gebr-gui-program-edit.h		\
+	gebr-gui-parameter.h		\
+	gebr-gui-directory-chooser.h	\
 	gebr-gui-save-dialog.h		\
 	gebr-gui-help-edit-widget.h	\
 	gebr-gui-help-edit-window.h	\
@@ -65,12 +65,26 @@ libgebr_guisubinclude_HEADERS = 	\
 	gebr-gui-js.h
 
 noinst_HEADERS = marshalers.h
-EXTRA_DIST = ${noinst_HEADERS} marshalers.list 
 
-INCLUDES = -I$(srcdir)/../.. -I$(srcdir)/../../geoxml
-AM_CFLAGS = -Wall -std=gnu99 -fPIC @DEBUG_CFLAGS@ $(GTK_CFLAGS) $(GTHREAD_CFLAGS) $(WEBKIT_CFLAGS)
-libgebr_gui_la_LIBADD = ../../libgebr.la ../../geoxml/geoxml/libgebr_geoxml.la \
-	$(INTLLIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(WEBKIT_LIBS) 
+AM_CPPFLAGS =				\
+	-I$(srcdir)/../..		\
+	-I$(srcdir)/../../geoxml	\
+	@DEBUG_CFLAGS@			\
+	$(GTK_CFLAGS)			\
+	$(GTHREAD_CFLAGS)		\
+	$(WEBKIT_CFLAGS)
+
+AM_CFLAGS = -Wall -std=gnu99 -fPIC
+
+libgebr_gui_la_LIBADD =			\
+	../../libgebr.la		\
+	../../geoxml/geoxml/libgebr_geoxml.la \
+	$(INTLLIBS)			\
+	$(GTK_LIBS)			\
+	$(GTHREAD_LIBS)			\
+	$(WEBKIT_LIBS)
+
 libgebr_gui_la_LDFLAGS = -version-info @GEBR_VERSION_INFO@
 
+EXTRA_DIST = ${noinst_HEADERS} marshalers.list
 CLEANFILES = marshalers.c marshalers.h

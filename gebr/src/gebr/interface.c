@@ -1,7 +1,3 @@
-/**
- * @file interface.c Assembly the main components of the interface.
- */
-
 /*   GeBR - An environment for seismic processing.
  *   Copyright (C) 2007-2009 GeBR core team (http://www.gebrproject.com/)
  *
@@ -31,6 +27,10 @@
 #include "gebr.h"
 #include "flow.h"
 #include "callbacks.h"
+
+/**
+ * @file interface.c Assembly the main components of the interface.
+ */
 
 /*
  * Private data
@@ -75,6 +75,8 @@ static const GtkActionEntry actions_entries[] = {
 		NULL, N_("View the report related to project/line"), G_CALLBACK(on_project_line_show_help)},
 	{"project_line_edit", GTK_STOCK_EDIT, N_("Edit Report"),
 		NULL, N_("Edit the report related to project/line"), G_CALLBACK(on_project_line_edit_help)},
+	{"project_line_dump", GTK_STOCK_PRINT_REPORT, N_("Detailed line report"),
+		NULL, N_("View detailed line report"), G_CALLBACK(on_line_detailed_report_activate)},
 
 	/*
 	 * Flow
@@ -103,6 +105,8 @@ static const GtkActionEntry actions_entries[] = {
 		NULL, N_("View the report related to flow"), G_CALLBACK(on_flow_browse_show_help)},
 	{"flow_edit", GTK_STOCK_EDIT, N_("Edit Report"),
 		NULL, N_("Edit the report related to flow"), G_CALLBACK(on_flow_browse_edit_help)},
+	{"flow_dump", GTK_STOCK_PRINT_REPORT, N_("Detailed flow report"),
+		NULL, N_("View detailed flow report"), G_CALLBACK(on_flow_detailed_report_activate)},
 
 	/*
 	 * Flow Edition
@@ -252,6 +256,9 @@ void gebr_setup_ui(void)
 			   GTK_TOOL_ITEM(gtk_action_create_tool_item
 					 (gtk_action_group_get_action(gebr.action_group, "project_line_dict_edit"))),
 			   -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+			   GTK_TOOL_ITEM(gtk_action_create_tool_item
+					 (gtk_action_group_get_action(gebr.action_group, "project_line_dump"))), -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(), -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 			   GTK_TOOL_ITEM(gtk_action_create_tool_item
@@ -297,6 +304,10 @@ void gebr_setup_ui(void)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tool_item, -1);
 	gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(tool_item), menu);
 
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
+			   GTK_TOOL_ITEM(gtk_action_create_tool_item
+					 (gtk_action_group_get_action(gebr.action_group, "flow_dump"))), -1);
+
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(), -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 			   GTK_TOOL_ITEM(gtk_action_create_tool_item
@@ -304,14 +315,6 @@ void gebr_setup_ui(void)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
 			   GTK_TOOL_ITEM(gtk_action_create_tool_item
 					 (gtk_action_group_get_action(gebr.action_group, "flow_export"))), -1);
-
-	/* gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(), -1);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
-			   GTK_TOOL_ITEM(gtk_action_create_tool_item
-					 (gtk_action_group_get_action(gebr.action_group, "flow_io"))), -1);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar),
-			   GTK_TOOL_ITEM(gtk_action_create_tool_item
-					 (gtk_action_group_get_action(gebr.action_group, "flow_execute"))), -1); */
 
 	gebr.ui_flow_browse = flow_browse_setup_ui(menu);
 	vbox = gtk_vbox_new(FALSE, 0);

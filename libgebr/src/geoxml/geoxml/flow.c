@@ -15,6 +15,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <regex.h>
 #include <gdome.h>
 #include <string.h>
 
@@ -78,12 +79,13 @@ GebrGeoXmlFlow *gebr_geoxml_flow_new()
 
 void gebr_geoxml_flow_add_flow(GebrGeoXmlFlow * flow, GebrGeoXmlFlow * flow2)
 {
-	if (flow == NULL || flow2 == NULL)
-		return;
-
+	GebrGeoXmlSequence *category;
 	GdomeNodeList *flow2_node_list;
 	GdomeDOMString *string;
 	gulong i, n;
+
+	g_return_if_fail (flow != NULL);
+	g_return_if_fail (flow2 != NULL);
 
 	/* import each program from flow2 */
 	string = gdome_str_mkref("program");
@@ -105,6 +107,14 @@ void gebr_geoxml_flow_add_flow(GebrGeoXmlFlow * flow, GebrGeoXmlFlow * flow2)
 		root_element = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
 		revision = __gebr_geoxml_get_first_element(root_element, "revision");
 		gdome_el_insertBefore_protected(root_element, new_node, (GdomeNode *)revision, &exception);
+	}
+
+	gebr_geoxml_flow_get_category (flow2, &category, 0);
+	while (category) {
+		const gchar *name;
+		name = gebr_geoxml_value_sequence_get (GEBR_GEOXML_VALUE_SEQUENCE (category));
+		gebr_geoxml_flow_append_category (flow, name);
+		gebr_geoxml_sequence_next (&category);
 	}
 
 	gdome_str_unref(string);
@@ -452,10 +462,20 @@ GebrGeoXmlProgram *gebr_geoxml_flow_get_first_mpi_program(GebrGeoXmlFlow * flow)
 
 GebrGeoXmlCategory *gebr_geoxml_flow_append_category(GebrGeoXmlFlow * flow, const gchar * name)
 {
-	if (flow == NULL || name == NULL)
-		return NULL;
-
 	GebrGeoXmlCategory *category;
+	GebrGeoXmlSequence *sequence;
+
+	g_return_val_if_fail (flow != NULL, NULL);
+	g_return_val_if_fail (name != NULL, NULL);
+
+	gebr_geoxml_flow_get_category (flow, &sequence, 0);
+	while (sequence) {
+		const gchar *catname;
+		catname = gebr_geoxml_value_sequence_get (GEBR_GEOXML_VALUE_SEQUENCE (sequence));
+		if (strcmp (catname, name) == 0)
+			return (GebrGeoXmlCategory *)(sequence);
+		gebr_geoxml_sequence_next (&sequence);
+	}
 
 	category = (GebrGeoXmlCategory *)
 	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "category",
@@ -488,19 +508,67 @@ glong gebr_geoxml_flow_get_categories_number(GebrGeoXmlFlow * flow)
 	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "category");
 }
 
-gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRevision * revision)
+gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRevision * revision, gboolean * report_merged)
 {
 	if (flow == NULL || revision == NULL)
 		return FALSE;
 
+	GString *merged_help;
+	const gchar *revision_help;
+	const gchar *flow_help;
 	GebrGeoXmlDocument *revision_flow;
 	GebrGeoXmlSequence *first_revision;
 	GdomeElement *child;
+	*report_merged = FALSE;
 
 	/* load document validating it */
 	if (gebr_geoxml_document_load_buffer(&revision_flow,
 					     __gebr_geoxml_get_element_value((GdomeElement *) revision)))
 		return FALSE;
+
+	flow_help = gebr_geoxml_document_get_help (GEBR_GEOXML_DOCUMENT (flow));
+	revision_help = gebr_geoxml_document_get_help (revision_flow);
+	merged_help = g_string_new (flow_help);
+	if (strlen (revision_help) > 1) {
+		gchar *revision_xml;
+		regex_t regexp;
+		regmatch_t matchptr[2];
+		gssize start = -1;
+		gssize length = -1;
+		gssize flow_i = -1;
+
+		regcomp(&regexp, "<body[^>]*>\\(.*\\?\\)<\\/body>", REG_ICASE);
+		if (!regexec(&regexp, revision_help, 2, matchptr, 0)) {
+			start = matchptr[1].rm_so;
+			length = matchptr[1].rm_eo - matchptr[1].rm_so;
+		}
+
+		regcomp (&regexp, "</body>", REG_NEWLINE | REG_ICASE);
+		if (!regexec (&regexp, flow_help, 1, matchptr, 0)) {
+			flow_i = matchptr[0].rm_so;
+		}
+
+		if (start != -1 && length != -1 && flow_i != -1){
+			gchar * date = NULL;
+			gchar * comment = NULL;
+			GString * revision_data;
+
+			revision_data = g_string_new(NULL);
+
+			gebr_geoxml_flow_get_revision_data(revision, NULL, &date, &comment);
+			g_string_append(revision_data, comment);
+			g_string_append(revision_data, " ");
+			g_string_append(revision_data, date);
+			g_string_insert (merged_help, flow_i, revision_data->str); 
+			g_string_insert_len (merged_help, flow_i + revision_data->len, revision_help + start, length); 
+		}
+
+		gebr_geoxml_document_set_help (revision_flow, "");
+		gebr_geoxml_document_to_string (revision_flow, &revision_xml);
+		__gebr_geoxml_set_element_value((GdomeElement *) revision, revision_xml, __gebr_geoxml_create_CDATASection);
+		g_free (revision_xml);
+		*report_merged = TRUE;
+	}
 
 	gebr_geoxml_flow_get_revision(flow, &first_revision, 0);
 	/* remove all elements till first_revision
@@ -530,19 +598,25 @@ gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRe
 				      (GdomeNode *) new_node, (GdomeNode *) first_revision, &exception);
 	}
 
+	gebr_geoxml_document_set_help (GEBR_GEOXML_DOCUMENT (flow), merged_help->str);
+	g_string_free (merged_help, TRUE);
+
 	return TRUE;
 }
 
 GebrGeoXmlRevision *gebr_geoxml_flow_append_revision(GebrGeoXmlFlow * flow, const gchar * comment)
 {
+	GebrGeoXmlRevision *revision;
+	GebrGeoXmlSequence *i;
+	GebrGeoXmlFlow *revision_flow;
+
 	g_return_val_if_fail(flow != NULL, NULL);
 	g_return_val_if_fail(comment != NULL, NULL);
 
-	GebrGeoXmlRevision *revision;
+	revision_flow = GEBR_GEOXML_FLOW(gebr_geoxml_document_clone(GEBR_GEOXML_DOCUMENT(flow)));
+	gebr_geoxml_document_set_help (GEBR_GEOXML_DOCUMENT (revision_flow), "");
 
-	GebrGeoXmlFlow *revision_flow = GEBR_GEOXML_FLOW(gebr_geoxml_document_clone(GEBR_GEOXML_DOCUMENT(flow)));
 	/* remove revisions from the revision flow. */
-	GebrGeoXmlSequence *i;
 	gebr_geoxml_flow_get_revision(revision_flow, &i, 0);
 	while (i != NULL) {
 		GebrGeoXmlSequence *aux = (GebrGeoXmlSequence *) __gebr_geoxml_next_element((GdomeElement *) i);

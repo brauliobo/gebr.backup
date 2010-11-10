@@ -254,9 +254,11 @@ static WebKitNavigationResponse on_navigation_requested(WebKitWebView * web_view
 
 void gebr_gui_help_edit_widget_set_editing(GebrGuiHelpEditWidget * self, gboolean editing)
 {
-	GebrGuiHelpEditWidgetPrivate * priv = GEBR_GUI_HELP_EDIT_WIDGET_GET_PRIVATE(self);
-
+	GebrGuiHelpEditWidgetPrivate * priv;
+	
 	g_return_if_fail (GEBR_GUI_IS_HELP_EDIT_WIDGET (self));
+
+	priv = GEBR_GUI_HELP_EDIT_WIDGET_GET_PRIVATE (self);
 
 	priv->is_editing = editing;
 
