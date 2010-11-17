@@ -1,0 +1,2 @@
+gtkdocize
+autoreconf -i
