@@ -1,0 +1,3 @@
+libtoolize
+gtkdocize
+autoreconf -i
