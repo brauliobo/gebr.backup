@@ -15,8 +15,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 include $(top_srcdir)/Makefile.decl
 
+ACLOCAL_AMFLAGS = -I m4 --install
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
 SUBDIRS = libgebr gebrd gebr debr
+
+EXTRA_DIST = libgebr/po/Makefile.in.in	\
+	     gebrd/po/Makefile.in.in	\
+	     gebr/po/Makefile.in.in	\
+	     debr/po/Makefile.in.in
+
+DISTCLEANFILES = libgebr/po/Makefile.in	\
+		 gebrd/po/Makefile.in	\
+		 gebr/po/Makefile.in	\
+		 debr/po/Makefile.in
 
 distcheck-hook: all

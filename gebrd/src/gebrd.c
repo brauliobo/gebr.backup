@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/utils.h>
 
 #include "gebrd.h"
@@ -103,7 +103,7 @@ void gebrd_message(enum gebr_log_message_type type, const gchar * message, ...)
 	gchar *string;
 	va_list argp;
 
-#ifndef GEBRD_DEBUG
+#ifndef DEBUG
 	if (type == GEBR_LOG_DEBUG)
 		return;
 #endif

@@ -43,8 +43,15 @@ noinst_HEADERS = \
 
 EXTRA_DIST = $(noinst_HEADERS)
 
-INCLUDES =
-AM_CFLAGS = -Wall -std=gnu99 @DEBUG_CFLAGS@ \
-	$(GEBR_CFLAGS) $(GEBR_GEOXML_CFLAGS) $(GEBR_COMM_CFLAGS)
-gebrd_LDADD = libgebrd.a $(INTLLIBS) \
-	$(GEBR_LIBS) $(GEBR_GEOXML_LIBS) $(GEBR_COMM_LIBS)
+AM_CPPFLAGS = $(GEBR_CFLAGS)		\
+	      $(GEBR_COMM_CFLAGS)	\
+	      $(GEBR_GEOXML_CFLAGS)	\
+	      -DNANOVERSION=\"`hg parent --template '+{latesttagdistance}-{node|short}' 2> /dev/null || date ++%H%M`\" \
+	      @DEBUG_CFLAGS@ 
+
+AM_CFLAGS = $(COMMON_CFLAGS)
+
+gebrd_LDADD = libgebrd.a	\
+	      $(GEBR_LIBS)	\
+	      $(GEBR_COMM_LIBS)	\
+	      $(GEBR_GEOXML_LIBS)

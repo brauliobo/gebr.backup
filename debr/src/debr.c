@@ -22,9 +22,9 @@
 #include <glib/gstdio.h>
 
 #include <libgebr.h>
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/utils.h>
-#include <libgebr/gui.h>
+#include <libgebr/gui/gui.h>
 
 #include "debr.h"
 #include "help.h"
@@ -184,7 +184,7 @@ void debr_message(enum gebr_log_message_type type, const gchar * message, ...)
 	gchar *string;
 	va_list argp;
 
-#ifndef DEBR_DEBUG
+#ifndef DEBUG
 	if (type == GEBR_LOG_DEBUG)
 		return;
 #endif

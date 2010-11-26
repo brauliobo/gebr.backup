@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/gui/gebr-gui-utils.h>
 #include <libgebr/gui/gebr-gui-program-edit.h>
 
@@ -532,7 +532,7 @@ gboolean program_dialog_setup_ui(gboolean new_program)
 
 	mpi_combo = gtk_combo_box_new_text();
 	for (int i = 0; mpi_xml_to_combo[i] != NULL; i++)
-		gtk_combo_box_append_text(GTK_COMBO_BOX(mpi_combo), mpi_xml_to_combo[i]);
+		gtk_combo_box_append_text(GTK_COMBO_BOX(mpi_combo), _(mpi_xml_to_combo[i]));
 	gtk_widget_show(mpi_combo);
 	gtk_table_attach(GTK_TABLE(table), mpi_combo, 1, 2, row, row+1,
 			 (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), (GtkAttachOptions) (0), 0, 0), row++;
