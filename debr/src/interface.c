@@ -20,10 +20,11 @@
 #include <libgebr/gui/gebr-gui-utils.h>
 #include <libgebr/gui/gebr-gui-value-sequence-edit.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 
 #include "interface.h"
 #include "debr.h"
+#include "defines.h"
 #include "callbacks.h"
 #include "menu.h"
 #include "program.h"
@@ -188,7 +189,7 @@ void debr_setup_ui(void)
 	 * Actions
 	 */
 	debr.action_group = gtk_action_group_new("General");
-	gtk_action_group_set_translation_domain(debr.action_group, PACKAGE);
+	gtk_action_group_set_translation_domain(debr.action_group, GETTEXT_PACKAGE);
 	gtk_action_group_add_actions(debr.action_group, actions_entries, G_N_ELEMENTS(actions_entries), NULL);
 	gtk_action_group_add_radio_actions(debr.action_group, parameter_type_radio_actions_entries,
 					   combo_type_map_size, -1, G_CALLBACK(on_parameter_type_activate), NULL);

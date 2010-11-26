@@ -20,11 +20,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/date.h>
 #include <libgebr/utils.h>
 #include <libgebr/validate.h>
-#include <libgebr/gui.h>
+#include <libgebr/gui/gui.h>
 
 #include "menu.h"
 #include "defines.h"
@@ -83,6 +83,15 @@ static void debr_menu_sync_help_edit_window(GtkTreeIter * iter, gpointer object)
 static void debr_menu_commit_help_edit_windows(GtkTreeIter * iter);
 
 static void debr_menu_sync_revert_buttons(GtkTreeIter * iter);
+
+static gint debr_menu_check_valid (GebrGeoXmlFlow *menu);
+
+typedef enum {
+	MENU_VALIDATE_INSTALL_CATEGORIES	= 1 << 0,
+	MENU_VALIDATE_INSTALL_PROGRAMS		= 1 << 1,
+	MENU_VALIDATE_INSTALL_TITLE		= 1 << 2,
+	MENU_VALIDATE_INSTALL_PROGRAM_TITLE	= 1 << 3,
+} MenuValidateInstall;
 
 /*
  * Public functions
@@ -703,13 +712,14 @@ void menu_install(void)
 			dialog = gtk_message_dialog_new(GTK_WINDOW(debr.window),
 							(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 							GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
-							_("There are menus unsaved. You need to "
+							_("There are unsaved menus. You need to "
 							  "save then before install."));
 			gtk_dialog_run(GTK_DIALOG(dialog));
 			gtk_widget_destroy(dialog);
 			return;
 		}
 	}
+
 	gebr_gui_gtk_tree_view_foreach_selected(&iter, debr.ui_menu.tree_view) {
 		GtkWidget *dialog;
 
@@ -718,11 +728,38 @@ void menu_install(void)
 		GebrGeoXmlFlow *menu;
 		MenuStatus status;
 		gboolean do_save = FALSE;
+		gint flags;
 
 		gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.model), &iter,
 				   MENU_STATUS, &status, MENU_PATH, &menu_path, MENU_XMLPOINTER, &menu, -1);
 
 		const gchar *menu_filename = gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(menu));
+
+		flags = debr_menu_check_valid (menu);
+		if (flags != 0) {
+			GString *problems = g_string_new ("");
+
+			if (flags & MENU_VALIDATE_INSTALL_CATEGORIES)
+				g_string_append (problems, _("\n - No categories set"));
+
+			if (flags & MENU_VALIDATE_INSTALL_PROGRAMS)
+				g_string_append (problems, _("\n - Menu with no programs"));
+
+			if (flags & MENU_VALIDATE_INSTALL_TITLE)
+				g_string_append (problems, _("\n - Menu has no title"));
+
+			if (flags & MENU_VALIDATE_INSTALL_PROGRAM_TITLE)
+				g_string_append (problems, _("\n - At least one program has no title"));
+
+			gebr_gui_message_dialog (GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+						 _("Unable to install menu "),
+						 _("The menu %s can not be installed,\n"
+						   "and has the following problems:"
+						   "%s"), menu_filename, problems->str);
+			g_string_free (problems, TRUE);
+			continue;
+		}
+
 		destination = g_string_new(NULL);
 		g_string_printf(destination, "%s/.gebr/gebr/menus/%s", g_get_home_dir(), menu_filename);
 
@@ -2309,4 +2346,31 @@ gboolean debr_menu_get_iter_from_xmlpointer (gpointer menu, GtkTreeIter * iter)
 	}
 
 	return FALSE;
+}
+
+static gint debr_menu_check_valid (GebrGeoXmlFlow *menu)
+{
+	GebrGeoXmlSequence *program;
+	MenuValidateInstall flags = 0;
+
+	if (gebr_geoxml_flow_get_categories_number (menu) == 0)
+		flags |= MENU_VALIDATE_INSTALL_CATEGORIES;
+
+	if (gebr_geoxml_flow_get_programs_number (menu) == 0)
+		flags |= MENU_VALIDATE_INSTALL_PROGRAMS;
+
+	if (strlen (gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (menu))) == 0)
+		flags |= MENU_VALIDATE_INSTALL_TITLE;
+
+	gebr_geoxml_flow_get_program (menu, &program, 0);
+	while (program) {
+		if (strlen (gebr_geoxml_program_get_title (GEBR_GEOXML_PROGRAM (program))) == 0) {
+			flags |= MENU_VALIDATE_INSTALL_PROGRAM_TITLE;
+			break;
+		}
+
+		gebr_geoxml_sequence_next (&program);
+	}
+
+	return flags;
 }
