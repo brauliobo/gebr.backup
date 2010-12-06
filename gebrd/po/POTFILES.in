@@ -1,0 +1,8 @@
+# List of source files containing translatable strings.
+src/client.c
+src/gebrd.c
+src/job.c
+src/job-queue.c
+src/main.c
+src/queues.c
+src/server.c
