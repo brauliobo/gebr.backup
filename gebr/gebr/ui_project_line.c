@@ -56,77 +56,6 @@ static gboolean line_can_reorder(GtkTreeView *tree_view, GtkTreeIter *source_ite
 				 GtkTreeViewDropPosition drop_position);
 
 
-/*
- * Gets an "@field": (ex. @title:, @e-mail:, @author:) from the css
- * file header contents.
- *
- * @param filename - Name of the css file. It trusts that the file is ok.
- * @param field - Name of the field to be checked (ex. "title", "e-mail")
- *
- * @returns The field contents (ex. @title Title, etc)
- *
- */
-static gchar * get_css_header_field(const gchar * filename, const gchar * field)
-{
-	GRegex * regex = NULL;
-	GMatchInfo * match_info = NULL;
-	gchar * search_pattern = NULL;
-	GError * error = NULL;
-	gchar * contents = NULL;
-	gchar * word = NULL;
-	GString * escaped_pattern = NULL;
-	GString * tmp_escaped = NULL;
-	gint i = 0;
-
-	escaped_pattern = g_string_new(g_regex_escape_string (field, -1));
-	tmp_escaped = g_string_new("");
-
-	/* g_regex_escape_string don't escape '-',
-	 * so we need to do it manualy.
-	 */
-	for (i = 0; escaped_pattern->str[i] != '\0'; i++)
-		if (escaped_pattern->str[i]  != '-')
-			tmp_escaped = g_string_append_c(tmp_escaped, escaped_pattern->str[i]);
-		else
-			tmp_escaped = g_string_append(tmp_escaped, "\\-");
-	
-	g_string_printf (escaped_pattern, "%s", tmp_escaped->str);
-	
-	g_string_free(tmp_escaped, TRUE);
-
-	search_pattern = g_strdup_printf("@%s:.*", escaped_pattern->str);
-
-	g_file_get_contents (filename, &contents, NULL, &error);
-	
-	regex = g_regex_new (search_pattern, G_REGEX_CASELESS, 0, NULL);
-	g_regex_match_full (regex, contents, -1, 0, 0, &match_info, &error);
-
-	if (g_match_info_matches(match_info) == TRUE)
-	{
-		word = g_match_info_fetch (match_info, 0);
-		word = g_strstrip(word);
-		g_regex_unref(regex);
-		search_pattern = g_strdup_printf("[^@%s:].*", escaped_pattern->str);
-		regex = g_regex_new (search_pattern, G_REGEX_CASELESS, 0, NULL);
-		g_regex_match_full (regex, word, -1, 0, 0, &match_info, &error);
-		word = g_match_info_fetch (match_info, 0);
-		word = g_strstrip(word);
-	}
-	
-	g_free(search_pattern);	
-	g_free(contents);	
-	g_match_info_free (match_info);
-	g_regex_unref (regex);
-	g_string_free(escaped_pattern, TRUE);
-	if (error != NULL)
-	{
-		g_printerr ("Error while matching: %s\n", error->message);
-		g_error_free (error);
-	}
-
-	return word;
-}
-
 struct ui_project_line *project_line_setup_ui(void)
 {
 	struct ui_project_line *ui_project_line;
@@ -246,7 +175,7 @@ struct ui_project_line *project_line_setup_ui(void)
 	GtkWidget * hbox;
 	hbox = gtk_hbox_new(FALSE, 0);
 	ui_project_line->info.help_view = gtk_button_new_with_label(_("View report"));
-	ui_project_line->info.help_edit = gtk_button_new_with_label(_("Edit report"));
+	ui_project_line->info.help_edit = gtk_button_new_with_label(_("Edit line comments"));
 	gtk_box_pack_start(GTK_BOX(hbox), ui_project_line->info.help_view, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), ui_project_line->info.help_edit, TRUE, TRUE, 0);
 	g_signal_connect(GTK_OBJECT(ui_project_line->info.help_view), "clicked",
@@ -1060,15 +989,7 @@ line_can_reorder(GtkTreeView *tree_view, GtkTreeIter *source_iter, GtkTreeIter *
  */
 void project_line_show_help(void)
 {
-	const gchar * title;
-	GebrGeoXmlObject * object;
-
-	object = GEBR_GEOXML_OBJECT(gebr.project_line);
-	if (gebr_geoxml_document_get_type(gebr.project_line) == GEBR_GEOXML_DOCUMENT_TYPE_PROJECT)
-		title = _("Project report");
-	else
-		title = _("Line report");
-	gebr_help_show(object, FALSE, title);
+	gebr_help_show (GEBR_GEOXML_OBJECT (gebr.project_line), FALSE);
 }
 
 void project_line_edit_help(void)
@@ -1168,7 +1089,7 @@ gebr_project_line_print_dialog_custom_tab()
 		if (fnmatch("*.css", filename, 1) == 0) {
 			gtk_list_store_append(list_store, &iter);
 			gchar *absolute_path = g_strconcat(GEBR_STYLES_DIR, "/", filename, NULL);
-			gchar *title = get_css_header_field(absolute_path, "title");
+			gchar *title = gebr_document_get_css_header_field(absolute_path, "title");
 			g_free(absolute_path);
 			if (!title)
 				gtk_list_store_set(list_store, &iter, 0, filename, 1, filename, -1);
@@ -1228,8 +1149,8 @@ gebr_project_line_print_dialog_custom_tab()
 	gtk_container_add(GTK_CONTAINER(frame_param),param_vbox);
 
 
-	detailed_line_include_report = gtk_check_button_new_with_label(_("Include user's report"));
-	detailed_line_include_flow_report = gtk_check_button_new_with_label(_("Include flow report"));
+	detailed_line_include_report = gtk_check_button_new_with_label(_("Include line comments"));
+	detailed_line_include_flow_report = gtk_check_button_new_with_label(_("Include flow comments"));
 	
 	g_signal_connect(detailed_line_css_combo, "changed",
 			 G_CALLBACK(on_detailed_line_css_changed), NULL);

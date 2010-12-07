@@ -651,10 +651,10 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 	GebrGeoXmlObjectType type;
 	const gchar * title;
 	const gchar * report;
-	gchar * detailed_html = NULL;
-	gchar * inner_body = NULL;
-	gchar * styles = NULL;
-	gchar * header = NULL;
+	gchar * detailed_html = "";
+	gchar * inner_body = "";
+	gchar * styles = "";
+	gchar * header = "";
 	GString * content;
 
 	content = g_string_new (NULL);
@@ -709,8 +709,13 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 		params = gebr.config.flow_no_param_radio ? g_strdup("") : gebr_flow_generate_parameter_value_table (GEBR_GEOXML_FLOW (document));
 		g_string_append_printf (content, "<div class='gebr-geoxml-flow'>%s</div>\n", params);
 		g_free (params);
-	} else
-		g_return_val_if_reached(NULL);
+	} else if (type == GEBR_GEOXML_OBJECT_TYPE_PROJECT) {
+		g_free (inner_body);
+		return g_strdup (report);
+	} else {
+		g_free (inner_body);
+		g_return_val_if_reached (NULL);
+	}
 
 	detailed_html = gebr_generate_report(title, styles, header, content->str);
 
@@ -720,4 +725,65 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 	g_string_free(content, TRUE);
 
 	return detailed_html;
+}
+
+gchar * gebr_document_get_css_header_field (const gchar * filename, const gchar * field)
+{
+	GRegex * regex = NULL;
+	GMatchInfo * match_info = NULL;
+	gchar * search_pattern = NULL;
+	GError * error = NULL;
+	gchar * contents = NULL;
+	gchar * word = NULL;
+	GString * escaped_pattern = NULL;
+	GString * tmp_escaped = NULL;
+	gint i = 0;
+
+	escaped_pattern = g_string_new(g_regex_escape_string (field, -1));
+	tmp_escaped = g_string_new("");
+
+	/* g_regex_escape_string don't escape '-',
+	 * so we need to do it manualy.
+	 */
+	for (i = 0; escaped_pattern->str[i] != '\0'; i++)
+		if (escaped_pattern->str[i]  != '-')
+			tmp_escaped = g_string_append_c(tmp_escaped, escaped_pattern->str[i]);
+		else
+			tmp_escaped = g_string_append(tmp_escaped, "\\-");
+	
+	g_string_printf (escaped_pattern, "%s", tmp_escaped->str);
+	
+	g_string_free(tmp_escaped, TRUE);
+
+	search_pattern = g_strdup_printf("@%s:.*", escaped_pattern->str);
+
+	g_file_get_contents (filename, &contents, NULL, &error);
+	
+	regex = g_regex_new (search_pattern, G_REGEX_CASELESS, 0, NULL);
+	g_regex_match_full (regex, contents, -1, 0, 0, &match_info, &error);
+
+	if (g_match_info_matches(match_info) == TRUE)
+	{
+		word = g_match_info_fetch (match_info, 0);
+		word = g_strstrip(word);
+		g_regex_unref(regex);
+		search_pattern = g_strdup_printf("[^@%s:].*", escaped_pattern->str);
+		regex = g_regex_new (search_pattern, G_REGEX_CASELESS, 0, NULL);
+		g_regex_match_full (regex, word, -1, 0, 0, &match_info, &error);
+		word = g_match_info_fetch (match_info, 0);
+		word = g_strstrip(word);
+	}
+	
+	g_free(search_pattern);	
+	g_free(contents);	
+	g_match_info_free (match_info);
+	g_regex_unref (regex);
+	g_string_free(escaped_pattern, TRUE);
+	if (error != NULL)
+	{
+		g_printerr ("Error while matching: %s\n", error->message);
+		g_error_free (error);
+	}
+
+	return word;
 }
