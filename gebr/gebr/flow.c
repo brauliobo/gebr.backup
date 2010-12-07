@@ -44,78 +44,6 @@
 #include "ui_project_line.h"
 #include "../defines.h"
 
-
-/*
- * Gets an "@field": (ex. @title:, @e-mail:, @author:) from the css
- * file header contents.
- *
- * @param filename - Name of the css file. It trusts that the file is ok.
- * @param field - Name of the field to be checked (ex. "title", "e-mail")
- *
- * @returns The field contents (ex. @title Title, etc)
- *
- */
-static gchar * get_css_header_field(const gchar * filename, const gchar * field)
-{
-	GRegex * regex = NULL;
-	GMatchInfo * match_info = NULL;
-	gchar * search_pattern = NULL;
-	GError * error = NULL;
-	gchar * contents = NULL;
-	gchar * word = NULL;
-	GString * escaped_pattern = NULL;
-	GString * tmp_escaped = NULL;
-	gint i = 0;
-
-	escaped_pattern = g_string_new(g_regex_escape_string (field, -1));
-	tmp_escaped = g_string_new("");
-
-	/* g_regex_escape_string don't escape '-',
-	 * so we need to do it manualy.
-	 */
-	for (i = 0; escaped_pattern->str[i] != '\0'; i++)
-		if (escaped_pattern->str[i]  != '-')
-			tmp_escaped = g_string_append_c(tmp_escaped, escaped_pattern->str[i]);
-		else
-			tmp_escaped = g_string_append(tmp_escaped, "\\-");
-	
-	g_string_printf (escaped_pattern, "%s", tmp_escaped->str);
-	
-	g_string_free(tmp_escaped, TRUE);
-
-	search_pattern = g_strdup_printf("@%s:.*", escaped_pattern->str);
-
-	g_file_get_contents (filename, &contents, NULL, &error);
-	
-	regex = g_regex_new (search_pattern, G_REGEX_CASELESS, 0, NULL);
-	g_regex_match_full (regex, contents, -1, 0, 0, &match_info, &error);
-
-	if (g_match_info_matches(match_info) == TRUE)
-	{
-		word = g_match_info_fetch (match_info, 0);
-		word = g_strstrip(word);
-		g_regex_unref(regex);
-		search_pattern = g_strdup_printf("[^@%s:].*", escaped_pattern->str);
-		regex = g_regex_new (search_pattern, G_REGEX_CASELESS, 0, NULL);
-		g_regex_match_full (regex, word, -1, 0, 0, &match_info, &error);
-		word = g_match_info_fetch (match_info, 0);
-		word = g_strstrip(word);
-	}
-	
-	g_free(search_pattern);	
-	g_free(contents);	
-	g_match_info_free (match_info);
-	g_regex_unref (regex);
-	g_string_free(escaped_pattern, TRUE);
-	if (error != NULL)
-	{
-		g_printerr ("Error while matching: %s\n", error->message);
-		g_error_free (error);
-	}
-
-	return word;
-}
-
 static void on_properties_response(gboolean accept)
 {
 	if (!accept)
@@ -761,14 +689,35 @@ static void append_parameter_row(GebrGeoXmlParameter * parameter, GString * dump
 			break;
 		}
 
-                if (((radio_value == FLOW_PARAMS_NO_DEFAULT_PARAMS) && (g_strcmp0(str_value->str, default_value->str) != 0)) ||
-                    ((radio_value == FLOW_PARAMS_NO_BLANK_PARAMS) && (str_value->len > 0)) ||
-                    ((radio_value == FLOW_PARAMS_ALL_PARAMS)))
-                        g_string_append_printf(dump, "<tr>\n  <td class=\"%slabel\">%s</td>\n  <td class=\"value\">%s</td>\n</tr>\n",
-                                               (in_group?"group-":""),
-                                               gebr_geoxml_parameter_get_label(parameter),
-                                               str_value->str);
-                
+		if (((radio_value == FLOW_PARAMS_NO_DEFAULT_PARAMS) && (g_strcmp0(str_value->str, default_value->str) != 0)) ||
+		    ((radio_value == FLOW_PARAMS_NO_BLANK_PARAMS) && (str_value->len > 0)) ||
+		    ((radio_value == FLOW_PARAMS_ALL_PARAMS)))
+		{
+			/* Translating enum values to labels */		
+			GebrGeoXmlSequence *enum_option = NULL;
+			gint return_value = 0;
+
+			return_value = gebr_geoxml_program_parameter_get_enum_option(GEBR_GEOXML_PROGRAM_PARAMETER(parameter), &enum_option, 0);
+
+
+			if (enum_option != NULL && GEBR_GEOXML_RETV_INVALID_INDEX !=  return_value)
+				for (; enum_option != NULL; gebr_geoxml_sequence_next(&enum_option)) 
+				{
+					if (g_strcmp0(str_value->str, 
+						      gebr_geoxml_enum_option_get_value(GEBR_GEOXML_ENUM_OPTION(enum_option))) == 0)
+					{
+						g_string_printf(str_value, "%s", 
+								gebr_geoxml_enum_option_get_label(GEBR_GEOXML_ENUM_OPTION(enum_option)));
+						break;
+					}
+
+				}
+
+			g_string_append_printf(dump, "<tr>\n  <td class=\"%slabel\">%s</td>\n  <td class=\"value\">%s</td>\n</tr>\n",
+					       (in_group?"group-":""),
+					       gebr_geoxml_parameter_get_label(parameter),
+					       str_value->str);
+		}
 		g_string_free(str_value, TRUE);
 		g_string_free(default_value, TRUE);
 	} else {
@@ -791,6 +740,8 @@ static void append_parameter_row(GebrGeoXmlParameter * parameter, GString * dump
 			gebr_geoxml_parameters_get_parameter(parameters, &param, 0);
 
 			GString * inner_table = g_string_new(dump->str);
+
+
 			while (param) {
 				append_parameter_row(GEBR_GEOXML_PARAMETER(param), dump, TRUE);
 				gebr_geoxml_sequence_next(&param);
@@ -1113,7 +1064,7 @@ GtkWidget * gebr_flow_print_dialog_custom_tab()
 		if (fnmatch ("*.css", filename, 1) == 0) {
 			gtk_list_store_append(list_store, &iter);
 			gchar *absolute_path = g_strconcat(GEBR_STYLES_DIR, "/", filename, NULL);
-			gchar *title = get_css_header_field(absolute_path, "title");
+			gchar *title = gebr_document_get_css_header_field(absolute_path, "title");
 			g_free(absolute_path);
 			if (!title)
 				gtk_list_store_set(list_store, &iter, 0, filename, 1, filename, -1);
@@ -1172,7 +1123,7 @@ GtkWidget * gebr_flow_print_dialog_custom_tab()
 
 	gtk_container_add(GTK_CONTAINER(frame_param),param_vbox);
 
-	detailed_flow_include_report = gtk_check_button_new_with_label(_("Include user's report"));
+	detailed_flow_include_report = gtk_check_button_new_with_label(_("Include flow comments"));
 
 	g_signal_connect(detailed_flow_css, "changed", G_CALLBACK(on_detailed_flow_css_changed), NULL);
 	g_signal_connect(detailed_flow_include_report, "toggled", G_CALLBACK(on_detailed_flow_include_report_toggled), NULL);

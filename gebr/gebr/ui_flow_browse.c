@@ -215,7 +215,7 @@ GebrUiFlowBrowse *flow_browse_setup_ui(GtkWidget * revisions_menu)
 	hbox = gtk_hbox_new(FALSE, 0);
 
 	ui_flow_browse->info.help_view = gtk_button_new_with_label(_("View report"));
-	ui_flow_browse->info.help_edit = gtk_button_new_with_label(_("Edit report"));
+	ui_flow_browse->info.help_edit = gtk_button_new_with_label(_("Edit flow comments"));
 
 	gtk_box_pack_start(GTK_BOX(hbox), ui_flow_browse->info.help_view, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), ui_flow_browse->info.help_edit, TRUE, TRUE, 0);
@@ -508,7 +508,7 @@ static void flow_browse_load(void)
  */
 void flow_browse_show_help(void)
 {
-	gebr_help_show(GEBR_GEOXML_OBJECT(gebr.flow), FALSE, _("Flow report"));
+	gebr_help_show(GEBR_GEOXML_OBJECT(gebr.flow), FALSE);
 }
 
 /**
