@@ -17,16 +17,17 @@
 
 #include <locale.h>
 #ifdef ENABLE_NLS
-#  include <libintl.h>
+#include <glib/gi18n.h>
 #endif
 
 #include <glib.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/libgebr.h>
 
 #include "gebrd.h"
 #include "defines.h"
+#include "version.h"
 
 int main(int argc, char **argv)
 {
@@ -45,6 +46,7 @@ int main(int argc, char **argv)
 	setlocale(LC_ALL, "");
 
 	context = g_option_context_new(_("GeBR daemon"));
+	g_option_context_set_translation_domain(context, GETTEXT_PACKAGE);
 	g_option_context_set_summary(context, _(""));
 	g_option_context_set_description(context, _(""));
 	g_option_context_add_main_entries(context, entries, NULL);
@@ -56,7 +58,7 @@ int main(int argc, char **argv)
 	}
 
 	if (show_version == TRUE) {
-		fprintf(stdout, "%s (%s)\n", GEBRD_VERSION, gebr_version());
+		fprintf(stdout, "%s (%s)\n", GEBRD_VERSION NANOVERSION, gebr_version());
 		return 0;
 	}
 
