@@ -15,10 +15,41 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 include $(top_srcdir)/Makefile.decl
 
-DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
+SUBDIRS = . @CONFIG_SUBDIRS@ po
 
-ACLOCAL_AMFLAGS=-I m4
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = gebr.pc
 
-SUBDIRS = src packages po docs
+lib_LTLIBRARIES = libgebr.la
+libgebr_la_SOURCES = libgebr.c	\
+		     date.c	\
+		     log.c	\
+		     version.c	\
+		     utils.c	\
+		     validate.c
+
+libgebrincludedir = $(includedir)/libgebr
+libgebrinclude_HEADERS = date.h		\
+			 defines.h	\
+			 libgebr.h	\
+			 log.h		\
+			 utils.h	\
+			 validate.h	\
+			 version.h	\
+			 $(NULL)
+
+noinst_HEADERS = defines.h
+
+EXTRA_DIST = ${pkgconfig_DATA} $(noinst_HEADERS) config.h.in
+DISTCLEANFILES = config.h
+
+AM_CFLAGS = $(COMMON_CFLAGS) -fPIC
+
+AM_CPPFLAGS = $(GLIB_CFLAGS)	\
+	      -DNANOVERSION=\"$(NANOVERSION)\"\
+	      @DEBUG_CFLAGS@
+
+libgebr_la_LIBADD = -lutil $(INTLLIBS) $(GLIB_LIBS)
+libgebr_la_LDFLAGS = -version-info @GEBR_VERSION_INFO@
 
 distcheck-hook: all

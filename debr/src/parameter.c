@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/utils.h>
 #include <libgebr/gui/gebr-gui-file-entry.h>
 #include <libgebr/gui/gebr-gui-enhanced-entry.h>
@@ -27,6 +27,7 @@
 
 #include "parameter.h"
 #include "debr.h"
+#include "defines.h"
 #include "callbacks.h"
 #include "enumoptionedit.h"
 #include "interface.h"
@@ -93,20 +94,9 @@ static int combo_type_map_get_index(GebrGeoXmlParameterType type)
  * \return The index associated to this type.
  */
 #define combo_type_map_get_title(type) \
-	combo_type_map[combo_type_map_get_index(type)].title
+	_(combo_type_map[combo_type_map_get_index(type)].title)
 
 /* same order as combo_box_map */
-const GtkRadioActionEntry parameter_type_radio_actions_entries[] = {
-	{"parameter_type_real", NULL, N_("real"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FLOAT},
-	{"parameter_type_integer", NULL, N_("integer"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_INT},
-	{"parameter_type_range", NULL, N_("range"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_RANGE},
-	{"parameter_type_flag", NULL, N_("flag"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FLAG},
-	{"parameter_type_text", NULL, N_("text"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_STRING},
-	{"parameter_type_enum", NULL, N_("enum"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_ENUM},
-	{"parameter_type_file", NULL, N_("file"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_FILE},
-	{"parameter_type_group", NULL, N_("group"), NULL, NULL, GEBR_GEOXML_PARAMETER_TYPE_GROUP},
-};
-
 static gboolean parameter_dialog_setup_ui(gboolean new_parameter);
 static void parameter_append_to_ui(GebrGeoXmlParameter * parameter, GtkTreeIter * parent, GtkTreeIter *iter);
 static void parameter_insert_to_ui(GebrGeoXmlParameter *parameter, GtkTreeIter *sibling, GtkTreeIter *iter);
@@ -128,9 +118,9 @@ static void parameter_separator_changed(GtkEntry * entry, struct ui_parameter_di
 static void parameter_separator_changed_by_string(const gchar * separator, struct ui_parameter_dialog *ui);
 static void parameter_file_type_changed(GtkComboBox * combo, struct gebr_gui_parameter_widget *widget);
 static void
-parameter_file_filter_name_changed(GebrGuiGtkEnhancedEntry * entry, struct gebr_gui_parameter_widget *widget);
+parameter_file_filter_name_changed(GebrGuiEnhancedEntry * entry, struct gebr_gui_parameter_widget *widget);
 static void
-parameter_file_filter_pattern_changed(GebrGuiGtkEnhancedEntry * entry, struct gebr_gui_parameter_widget *widget);
+parameter_file_filter_pattern_changed(GebrGuiEnhancedEntry * entry, struct gebr_gui_parameter_widget *widget);
 static void parameter_number_min_on_activate(GtkEntry * entry, struct gebr_gui_parameter_widget *widget);
 static gboolean
 parameter_number_min_on_focus_out(GtkEntry * entry, GdkEvent * event, struct gebr_gui_parameter_widget *widget);
@@ -635,13 +625,15 @@ GtkWidget * parameter_create_menu_with_types(gboolean is_change_type)
 	menu = gtk_menu_new();
 
 	for (guint i = 0; i < combo_type_map_size - 1; i++) {
+		entry = parameter_type_radio_actions_entries[i];
+		GtkAction *action = gtk_action_group_get_action(debr.parameter_type_radio_actions_group, entry.name);
 		if (is_change_type) {
-			GtkAction *action;
-			action = gtk_action_group_get_action(debr.action_group, parameter_type_radio_actions_entries[i].name);
 			item = gtk_action_create_menu_item(action);
 		} else {
-			entry = parameter_type_radio_actions_entries[i];
-			item = gtk_menu_item_new_with_label(entry.label);
+			gchar *label;
+			g_object_get (action, "label", &label, NULL);
+			item = gtk_menu_item_new_with_label(label);
+			g_free (label);
 			g_signal_connect(item, "activate",
 					 G_CALLBACK(on_parameter_menu_item_new_activate),
 					 GINT_TO_POINTER(entry.value));
@@ -653,8 +645,14 @@ GtkWidget * parameter_create_menu_with_types(gboolean is_change_type)
 	 * When changing type, we do not include the 'group' item, otherwise we do.
 	 */
 	if (!is_change_type) {
+		gchar *label;
+		GtkAction *action;
+
 		entry = parameter_type_radio_actions_entries[combo_type_map_size-1];
-		item = gtk_menu_item_new_with_label(entry.label);
+		action = gtk_action_group_get_action(debr.parameter_type_radio_actions_group, entry.name);
+		g_object_get (action, "label", &label, NULL);
+		item = gtk_menu_item_new_with_label(label);
+		g_free (label);
 		g_signal_connect(item, "activate",
 				 G_CALLBACK(on_parameter_menu_item_new_activate),
 				 GINT_TO_POINTER(entry.value));
@@ -674,13 +672,13 @@ static void parameter_update_actions_sensitive()
 	gboolean flag = parameter_get_selected(NULL, FALSE);
 
 	gtk_widget_set_sensitive(GTK_WIDGET(debr.tool_item_change_type), flag);
-	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group,
+	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_parameter,
 							     "parameter_cut"), flag);
-	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group,
+	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_parameter,
 							     "parameter_copy"), flag);
-	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group,
+	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_parameter,
 							     "parameter_delete"), flag);
-	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group,
+	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_parameter,
 							     "parameter_properties"), flag);
 }
 
@@ -962,22 +960,22 @@ static gboolean parameter_dialog_setup_ui(gboolean new_parameter)
 		gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, row, row + 1,
 				 (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
 				 (GtkAttachOptions) (0), 0, 0), ++row;
-		filter_name_entry = gebr_gui_gtk_enhanced_entry_new_with_empty_text(_("name"));
+		filter_name_entry = gebr_gui_enhanced_entry_new_with_empty_text(_("name"));
 		gtk_widget_show(filter_name_entry);
 		gtk_box_pack_start(GTK_BOX(hbox), filter_name_entry, FALSE, FALSE, 0);
 		g_signal_connect(filter_name_entry, "changed",
 				 G_CALLBACK(parameter_file_filter_name_changed), gebr_gui_parameter_widget);
 		filter_pattern_entry =
-			gebr_gui_gtk_enhanced_entry_new_with_empty_text(_("pattern (eg. *.jpg *.png)"));
+			gebr_gui_enhanced_entry_new_with_empty_text(_("pattern (eg. *.jpg *.png)"));
 		gtk_widget_show(filter_pattern_entry);
 		gtk_box_pack_start(GTK_BOX(hbox), filter_pattern_entry, FALSE, FALSE, 0);
 		g_signal_connect(filter_pattern_entry, "changed",
 				 G_CALLBACK(parameter_file_filter_pattern_changed), gebr_gui_parameter_widget);
 
 		gebr_geoxml_program_parameter_get_file_filter(program_parameter, &filter_name, &filter_pattern);
-		gebr_gui_gtk_enhanced_entry_set_text(GEBR_GUI_GTK_ENHANCED_ENTRY(filter_name_entry),
+		gebr_gui_enhanced_entry_set_text(GEBR_GUI_ENHANCED_ENTRY(filter_name_entry),
 						     filter_name);
-		gebr_gui_gtk_enhanced_entry_set_text(GEBR_GUI_GTK_ENHANCED_ENTRY(filter_pattern_entry),
+		gebr_gui_enhanced_entry_set_text(GEBR_GUI_ENHANCED_ENTRY(filter_pattern_entry),
 						     filter_pattern);
 
 		break;
@@ -1361,15 +1359,15 @@ static void parameter_selected(void)
 	/* parameter type stuff */
 	gtk_widget_set_sensitive(GTK_WIDGET(debr.tool_item_change_type),
 				 gebr_geoxml_parameter_get_type(debr.parameter) != GEBR_GEOXML_PARAMETER_TYPE_GROUP);
-	g_signal_handlers_block_matched(G_OBJECT(gtk_action_group_get_action(debr.action_group, "parameter_type_real")),
+	g_signal_handlers_block_matched(G_OBJECT(gtk_action_group_get_action(debr.parameter_type_radio_actions_group, "parameter_type_real")),
 					G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(on_parameter_type_activate), NULL);
 	gtk_toggle_action_set_active(GTK_TOGGLE_ACTION
 				     (gtk_action_group_get_action
-				      (debr.action_group,
+				      (debr.parameter_type_radio_actions_group,
 				       parameter_type_radio_actions_entries[combo_type_map_get_index
 									    (gebr_geoxml_parameter_get_type
 									     (debr.parameter))].name)), TRUE);
-	g_signal_handlers_unblock_matched(G_OBJECT(gtk_action_group_get_action(debr.action_group, "parameter_type_real")),
+	g_signal_handlers_unblock_matched(G_OBJECT(gtk_action_group_get_action(debr.parameter_type_radio_actions_group, "parameter_type_real")),
 					  G_SIGNAL_MATCH_FUNC, 0, 0, NULL, G_CALLBACK(on_parameter_type_activate), NULL);
 }
 
@@ -1405,12 +1403,12 @@ static GtkMenu *parameter_popup_menu(GtkWidget * tree_view)
 
 	menu = gtk_menu_new();
 
-	param_cut        = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "parameter_cut"));
-	param_copy       = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "parameter_copy"));
-	param_paste      = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "parameter_paste"));
-	param_delete     = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "parameter_delete"));
-	param_properties = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "parameter_properties"));
-	param_preview    = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "program_preview"));
+	param_cut        = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_parameter, "parameter_cut"));
+	param_copy       = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_parameter, "parameter_copy"));
+	param_paste      = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_parameter, "parameter_paste"));
+	param_delete     = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_parameter, "parameter_delete"));
+	param_properties = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_parameter, "parameter_properties"));
+	param_preview    = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_program, "program_preview"));
 	param_new        = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
 
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(param_new), parameter_create_menu_with_types(FALSE));
@@ -1427,8 +1425,8 @@ static GtkMenu *parameter_popup_menu(GtkWidget * tree_view)
 		goto out;
 	}
 
-	param_top    = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "program_top"));
-	param_bottom = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "program_bottom"));
+	param_top    = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_program, "program_top"));
+	param_bottom = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_program, "program_bottom"));
 
 	if (gebr_gui_gtk_tree_store_can_move_up(debr.ui_parameter.tree_store, &iter) == TRUE)
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), param_top);
@@ -1449,13 +1447,13 @@ static GtkMenu *parameter_popup_menu(GtkWidget * tree_view)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), param_preview);
 
 	if (gebr_geoxml_parameter_get_type(debr.parameter) != GEBR_GEOXML_PARAMETER_TYPE_GROUP) {
-		menu_item = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "parameter_change_type"));
+		menu_item = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_parameter, "parameter_change_type"));
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), parameter_create_menu_with_types(TRUE));
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 	}
 
 out:	
-	gtk_menu_set_accel_group(GTK_MENU(menu), debr.accel_group);
+	gtk_menu_set_accel_group(GTK_MENU(menu), debr.accel_group_array[ACCEL_PARAMETER_CHANGE_TYPE]);
 	gtk_widget_show_all(menu);
 
 	return GTK_MENU(menu);
@@ -1561,7 +1559,6 @@ parameter_can_reorder(GtkTreeView * tree_view, GtkTreeIter * iter, GtkTreeIter *
 static void parameter_reconfigure_default_widget(struct ui_parameter_dialog *ui)
 {
 	gebr_gui_parameter_widget_reconfigure(ui->gebr_gui_parameter_widget);
-	gtk_box_pack_start(GTK_BOX(ui->default_widget_hbox), ui->gebr_gui_parameter_widget->widget, TRUE, TRUE, 0);
 	gtk_widget_show(ui->gebr_gui_parameter_widget->widget);
 }
 
@@ -1650,7 +1647,7 @@ static void parameter_file_type_changed(GtkComboBox * combo, struct gebr_gui_par
 
 	is_directory = gtk_combo_box_get_active(combo) == 0 ? FALSE : TRUE;
 
-	gebr_gui_gtk_file_entry_set_choose_directory(GEBR_GUI_GTK_FILE_ENTRY(widget->value_widget), is_directory);
+	gebr_gui_file_entry_set_choose_directory(GEBR_GUI_FILE_ENTRY(widget->value_widget), is_directory);
 	gebr_geoxml_program_parameter_set_file_be_directory(GEBR_GEOXML_PROGRAM_PARAMETER(widget->parameter),
 							    is_directory);
 
@@ -1661,10 +1658,10 @@ static void parameter_file_type_changed(GtkComboBox * combo, struct gebr_gui_par
  * \internal
  */
 static void
-parameter_file_filter_name_changed(GebrGuiGtkEnhancedEntry * entry, struct gebr_gui_parameter_widget *widget)
+parameter_file_filter_name_changed(GebrGuiEnhancedEntry * entry, struct gebr_gui_parameter_widget *widget)
 {
 	gebr_geoxml_program_parameter_set_file_filter(widget->program_parameter,
-						      gebr_gui_gtk_enhanced_entry_get_text(entry), NULL);
+						      gebr_gui_enhanced_entry_get_text(entry), NULL);
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
@@ -1672,10 +1669,10 @@ parameter_file_filter_name_changed(GebrGuiGtkEnhancedEntry * entry, struct gebr_
  * \internal
  */
 static void
-parameter_file_filter_pattern_changed(GebrGuiGtkEnhancedEntry * entry, struct gebr_gui_parameter_widget *widget)
+parameter_file_filter_pattern_changed(GebrGuiEnhancedEntry * entry, struct gebr_gui_parameter_widget *widget)
 {
 	gebr_geoxml_program_parameter_set_file_filter(widget->program_parameter,
-						      NULL, gebr_gui_gtk_enhanced_entry_get_text(entry));
+						      NULL, gebr_gui_enhanced_entry_get_text(entry));
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 

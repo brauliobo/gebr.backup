@@ -20,11 +20,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/date.h>
 #include <libgebr/utils.h>
 #include <libgebr/validate.h>
-#include <libgebr/gui.h>
+#include <libgebr/gui/gui.h>
 
 #include "menu.h"
 #include "defines.h"
@@ -83,6 +83,15 @@ static void debr_menu_sync_help_edit_window(GtkTreeIter * iter, gpointer object)
 static void debr_menu_commit_help_edit_windows(GtkTreeIter * iter);
 
 static void debr_menu_sync_revert_buttons(GtkTreeIter * iter);
+
+static gint debr_menu_check_valid (GebrGeoXmlFlow *menu);
+
+typedef enum {
+	MENU_VALIDATE_INSTALL_CATEGORIES	= 1 << 0,
+	MENU_VALIDATE_INSTALL_PROGRAMS		= 1 << 1,
+	MENU_VALIDATE_INSTALL_TITLE		= 1 << 2,
+	MENU_VALIDATE_INSTALL_PROGRAM_TITLE	= 1 << 3,
+} MenuValidateInstall;
 
 /*
  * Public functions
@@ -253,7 +262,7 @@ void menu_setup_ui(void)
 	g_object_set(debr.ui_menu.details.help_view, "sensitive", FALSE, NULL);
 	g_object_set(debr.ui_menu.details.help_edit, "sensitive", FALSE, NULL);
 
-	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group, "menu_save_all"), FALSE);
+	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_save_all"), FALSE);
 	debr.ui_menu.widget = hpanel;
 	gtk_widget_show_all(debr.ui_menu.widget);
 }
@@ -703,13 +712,14 @@ void menu_install(void)
 			dialog = gtk_message_dialog_new(GTK_WINDOW(debr.window),
 							(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 							GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
-							_("There are menus unsaved. You need to "
+							_("There are unsaved menus. You need to "
 							  "save then before install."));
 			gtk_dialog_run(GTK_DIALOG(dialog));
 			gtk_widget_destroy(dialog);
 			return;
 		}
 	}
+
 	gebr_gui_gtk_tree_view_foreach_selected(&iter, debr.ui_menu.tree_view) {
 		GtkWidget *dialog;
 
@@ -718,11 +728,38 @@ void menu_install(void)
 		GebrGeoXmlFlow *menu;
 		MenuStatus status;
 		gboolean do_save = FALSE;
+		gint flags;
 
 		gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.model), &iter,
 				   MENU_STATUS, &status, MENU_PATH, &menu_path, MENU_XMLPOINTER, &menu, -1);
 
 		const gchar *menu_filename = gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(menu));
+
+		flags = debr_menu_check_valid (menu);
+		if (flags != 0) {
+			GString *problems = g_string_new ("");
+
+			if (flags & MENU_VALIDATE_INSTALL_CATEGORIES)
+				g_string_append (problems, _("\n - No categories set"));
+
+			if (flags & MENU_VALIDATE_INSTALL_PROGRAMS)
+				g_string_append (problems, _("\n - Menu with no programs"));
+
+			if (flags & MENU_VALIDATE_INSTALL_TITLE)
+				g_string_append (problems, _("\n - Menu has no title"));
+
+			if (flags & MENU_VALIDATE_INSTALL_PROGRAM_TITLE)
+				g_string_append (problems, _("\n - At least one program has no title"));
+
+			gebr_gui_message_dialog (GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+						 _("Unable to install menu "),
+						 _("The menu %s can not be installed,\n"
+						   "and has the following problems:"
+						   "%s"), menu_filename, problems->str);
+			g_string_free (problems, TRUE);
+			continue;
+		}
+
 		destination = g_string_new(NULL);
 		g_string_printf(destination, "%s/.gebr/gebr/menus/%s", g_get_home_dir(), menu_filename);
 
@@ -843,7 +880,7 @@ void menu_selected(void)
 		}
 
 		gboolean help_exists = (strlen(gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(debr.menu))) ? TRUE : FALSE);
-		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group, "menu_help_view"), help_exists);
+		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_help_view"), help_exists);
 
 	} else if (type == ITER_FOLDER) {
 		menu_folder_details_update(&iter);
@@ -870,7 +907,7 @@ void menu_selected(void)
 		debr_set_actions_sensitive(names_on, TRUE);
 
 		GtkAction * action;
-		action = gtk_action_group_get_action(debr.action_group, "menu_remove_folder");
+		action = gtk_action_group_get_action(debr.action_group_menu, "menu_remove_folder");
 		if (gebr_gui_gtk_tree_model_iter_equal_to(GTK_TREE_MODEL(debr.ui_menu.model), &iter, &debr.ui_menu.iter_other))
 			gtk_action_set_sensitive(action, FALSE);
 		else
@@ -1059,13 +1096,13 @@ void menu_status_set_from_iter(GtkTreeIter * iter, MenuStatus status)
 				   MENU_VALIDATE_NEED_UPDATE, TRUE,
 				   -1);
 
-	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group, "menu_save"), unsaved);
-	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group, "menu_revert"), unsaved);
+	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_save"), unsaved);
+	gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_revert"), unsaved);
 
 	if (menu_count_unsaved(NULL) > 0)
-		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group, "menu_save_all"), TRUE);
+		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_save_all"), TRUE);
 	else
-		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group, "menu_save_all"), FALSE);
+		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_save_all"), FALSE);
 }
 
 void menu_status_set_unsaved(void)
@@ -1193,15 +1230,20 @@ gboolean menu_dialog_setup_ui(gboolean new_menu)
 	widget = gtk_vbox_new(FALSE, 0);
 	gtk_widget_show(widget);
 	gtk_box_pack_start(GTK_BOX(widget), categories_label, FALSE, FALSE, 0);
-	gtk_table_attach(GTK_TABLE(table), widget, 0, 1, 5, 6,
-			 (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_table_attach (GTK_TABLE (table), widget, 0, 1, 5, 6,
+			  (GtkAttachOptions) (GTK_FILL),
+			  (GtkAttachOptions) (GTK_FILL),
+			  0, 0);
+
 	gtk_misc_set_alignment(GTK_MISC(categories_label), 0, 0.5);
 
 	categories_sequence_edit = category_edit_new(debr.menu, new_menu);
 	gtk_widget_show(categories_sequence_edit);
-	gtk_table_attach(GTK_TABLE(table), categories_sequence_edit, 1, 2, 5, 6,
-			 (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 0, 0);
-	gtk_widget_show(categories_sequence_edit);
+	gtk_table_attach (GTK_TABLE (table),
+			  categories_sequence_edit, 1, 2, 5, 6,
+			  (GtkAttachOptions) (GTK_FILL | GTK_EXPAND),
+			  (GtkAttachOptions) (GTK_FILL | GTK_EXPAND),
+			  0, 0);
 
 	/*
 	 * Load menu into widgets
@@ -1313,7 +1355,7 @@ void menu_details_update(void)
 
 		g_object_set(debr.ui_menu.details.help_view, "sensitive", help_exists, NULL);
 		g_object_set(debr.ui_menu.details.help_edit, "sensitive", TRUE, NULL);
-		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group, "menu_help_view"), help_exists);
+		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_help_view"), help_exists);
 		validate_image_set_check_help(debr.ui_menu.help_validate_image,
 					      gebr_geoxml_document_get_help(GEBR_GEOXML_DOC(debr.menu)));
 	}
@@ -1736,50 +1778,50 @@ static GtkMenu *menu_popup_menu(GtkTreeView * tree_view)
 	menu = gtk_menu_new();
 
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_new")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_new")));
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_close")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_close")));
 	gtk_container_add(GTK_CONTAINER(menu),
 			  gtk_action_create_menu_item(gtk_action_group_get_action
-						      (debr.action_group, "menu_properties")));
+						      (debr.action_group_menu, "menu_properties")));
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_validate")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_validate")));
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-	if (gtk_action_get_sensitive(gtk_action_group_get_action(debr.action_group, "menu_save")))
+	if (gtk_action_get_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_save")))
 		gtk_container_add(GTK_CONTAINER(menu),
 				  gtk_action_create_menu_item(gtk_action_group_get_action
-							      (debr.action_group, "menu_save")));
+							      (debr.action_group_menu, "menu_save")));
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_save_as")));
-	if (gtk_action_get_sensitive(gtk_action_group_get_action(debr.action_group, "menu_revert")))
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_save_as")));
+	if (gtk_action_get_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_revert")))
 		gtk_container_add(GTK_CONTAINER(menu),
 				  gtk_action_create_menu_item(gtk_action_group_get_action
-							      (debr.action_group, "menu_revert")));
+							      (debr.action_group_menu, "menu_revert")));
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_delete")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_delete")));
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_add_folder")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_add_folder")));
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_remove_folder")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_remove_folder")));
 
 	/* view help */
 	gtk_container_add(GTK_CONTAINER(menu),
 			  gtk_action_create_menu_item(gtk_action_group_get_action
-						      (debr.action_group, "menu_help_view")));
+						      (debr.action_group_menu, "menu_help_view")));
 
 	/* edit help */
 	gtk_container_add(GTK_CONTAINER(menu),
 			  gtk_action_create_menu_item(gtk_action_group_get_action
-						      (debr.action_group, "menu_help_edit")));
+						      (debr.action_group_menu, "menu_help_edit")));
 	/*
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_select_all")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_select_all")));
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_unselect_all")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_unselect_all")));
 	*/
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
@@ -1818,7 +1860,7 @@ static GtkMenu *menu_popup_menu(GtkTreeView * tree_view)
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 	gtk_container_add(GTK_CONTAINER(menu),
-			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_install")));
+			  gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_install")));
 
 	gtk_widget_show_all(menu);
 
@@ -1837,11 +1879,11 @@ static GtkMenu *menu_dialog_save_popup_menu(GtkTreeView * tree_view)
 
 	popup_menu = gtk_menu_new();
 
-	select_all_menu_item = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_select_all"));
+	select_all_menu_item = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_select_all"));
 	g_signal_connect(select_all_menu_item, "activate", G_CALLBACK(on_menu_select_all_activate), tree_view);
 	gtk_container_add(GTK_CONTAINER(popup_menu), select_all_menu_item);
 	
-	unselect_all_menu_item = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group, "menu_unselect_all"));
+	unselect_all_menu_item = gtk_action_create_menu_item(gtk_action_group_get_action(debr.action_group_menu, "menu_unselect_all"));
 	g_signal_connect(unselect_all_menu_item, "activate", G_CALLBACK(on_menu_unselect_all_activate), tree_view);
 	gtk_container_add(GTK_CONTAINER(popup_menu), unselect_all_menu_item);
 
@@ -2309,4 +2351,31 @@ gboolean debr_menu_get_iter_from_xmlpointer (gpointer menu, GtkTreeIter * iter)
 	}
 
 	return FALSE;
+}
+
+static gint debr_menu_check_valid (GebrGeoXmlFlow *menu)
+{
+	GebrGeoXmlSequence *program;
+	MenuValidateInstall flags = 0;
+
+	if (gebr_geoxml_flow_get_categories_number (menu) == 0)
+		flags |= MENU_VALIDATE_INSTALL_CATEGORIES;
+
+	if (gebr_geoxml_flow_get_programs_number (menu) == 0)
+		flags |= MENU_VALIDATE_INSTALL_PROGRAMS;
+
+	if (strlen (gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (menu))) == 0)
+		flags |= MENU_VALIDATE_INSTALL_TITLE;
+
+	gebr_geoxml_flow_get_program (menu, &program, 0);
+	while (program) {
+		if (strlen (gebr_geoxml_program_get_title (GEBR_GEOXML_PROGRAM (program))) == 0) {
+			flags |= MENU_VALIDATE_INSTALL_PROGRAM_TITLE;
+			break;
+		}
+
+		gebr_geoxml_sequence_next (&program);
+	}
+
+	return flags;
 }
