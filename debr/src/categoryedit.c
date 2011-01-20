@@ -15,7 +15,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/validate.h>
 #include <libgebr/gui/gebr-gui-enhanced-entry.h>
 #include <libgebr/gui/gebr-gui-utils.h>
@@ -36,8 +36,8 @@ static void __category_edit_move(CategoryEdit * category_edit, GtkTreeIter * ite
 static void __category_edit_move_top(CategoryEdit * category_edit, GtkTreeIter * iter);
 static void __category_edit_move_bottom(CategoryEdit * category_edit, GtkTreeIter * iter);
 static GtkWidget *__category_edit_create_tree_view(CategoryEdit * category_edit);
-static gboolean check_duplicate (GebrGuiSequenceEdit * sequence_edit, const gchar * category,
-				 GtkTreePath *ignore_path);
+static void category_edit_add_request(CategoryEdit * category_edit, GtkWidget *combo);
+static gboolean check_duplicate (GebrGuiSequenceEdit * sequence_edit, const gchar * category);
 
 /*
  * gobject stuff
@@ -129,11 +129,16 @@ static void category_edit_init(CategoryEdit * category_edit)
 {
 }
 
-G_DEFINE_TYPE(CategoryEdit, category_edit, GEBR_GUI_GTK_TYPE_SEQUENCE_EDIT);
+G_DEFINE_TYPE(CategoryEdit, category_edit, GEBR_GUI_TYPE_SEQUENCE_EDIT);
 
 /*
  * Internal functions
  */
+
+static void on_combo_box_entry_activate (GtkWidget *entry, CategoryEdit *self)
+{
+	category_edit_add_request(self, gtk_widget_get_parent (entry));
+}
 
 /**
  * \internal
@@ -141,9 +146,12 @@ G_DEFINE_TYPE(CategoryEdit, category_edit, GEBR_GUI_GTK_TYPE_SEQUENCE_EDIT);
 static void category_edit_add_request(CategoryEdit * category_edit, GtkWidget *combo)
 {
 	gchar *name;
+	GtkWidget *entry;
 
+	entry = gtk_bin_get_child (GTK_BIN (category_edit->categories_combo));
+	gtk_editable_select_region (GTK_EDITABLE (entry), 0, -1);
 	name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(combo));
-	if (check_duplicate (GEBR_GUI_SEQUENCE_EDIT(category_edit), name, NULL) ||
+	if (check_duplicate (GEBR_GUI_SEQUENCE_EDIT(category_edit), name) ||
 	    __category_edit_check_text(name)) {
 		g_free(name);
 		return;
@@ -169,22 +177,21 @@ __category_edit_on_value_edited(GtkCellRendererText * cell, gchar * path_string,
 	GtkTreeSelection *selection;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	GtkTreePath *path;
+	gchar *old_text;
+
 	GebrGeoXmlCategory *category;
-
-	gtk_tree_model_get_iter_from_string (GTK_TREE_MODEL (sequence_edit->list_store),
-					     &iter, path_string);
-	path = gtk_tree_model_get_path (GTK_TREE_MODEL (sequence_edit->list_store), &iter);
-
-	if (check_duplicate (sequence_edit, new_text, path) ||
-	    __category_edit_check_text(new_text)) {
-		gtk_tree_path_free (path);
-		return;
-	}
-	gtk_tree_path_free (path);
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(sequence_edit->tree_view));
 	gtk_tree_selection_get_selected(selection, &model, &iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(sequence_edit->list_store), &iter, 0, &old_text, -1);
+
+	if (!strcmp (old_text, new_text))
+		return;
+
+	if (check_duplicate (sequence_edit, new_text) ||
+	    __category_edit_check_text(new_text))
+		return;
+
 	gtk_tree_model_get(GTK_TREE_MODEL(sequence_edit->list_store), &iter, 2, &category, -1);
 
 	gtk_list_store_set(sequence_edit->list_store, &iter, 0, new_text, -1);
@@ -243,7 +250,6 @@ static void __category_edit_validate_iter(CategoryEdit * category_edit, GtkTreeI
 		stock = GTK_STOCK_DIALOG_WARNING;
 	else
 		stock = NULL;
-
 	gtk_list_store_set(GEBR_GUI_SEQUENCE_EDIT(category_edit)->list_store, iter,
 			   1, stock, -1);
 }
@@ -480,18 +486,25 @@ GtkWidget *category_edit_new(GebrGeoXmlFlow * menu, gboolean new_menu)
 	gebr_geoxml_flow_get_category(menu, &category, 0);
 	category_edit = g_object_new(TYPE_CATEGORY_EDIT,
 				     "value-widget", hbox,
-				     "list-store", list_store, "category", category, NULL);
+				     "list-store", list_store,
+				     "category", category,
+				     NULL);
 
+	category_edit->categories_combo = categories_combo;
 	category_edit->validate_image = validate_image;
 	category_edit->menu = menu;
 	if (!new_menu)
 		validate_image_set_check_category_list(category_edit->validate_image, category_edit->menu);
-	g_signal_connect(GTK_OBJECT(category_edit), "add-request", G_CALLBACK(category_edit_add_request), categories_combo);
+
+	g_signal_connect (gtk_bin_get_child (GTK_BIN (categories_combo)), "activate",
+			  G_CALLBACK (on_combo_box_entry_activate), category_edit);
+	g_signal_connect (category_edit, "add-request",
+			  G_CALLBACK (category_edit_add_request), categories_combo);
 
 	return (GtkWidget *) category_edit;
 }
 
-static gboolean check_duplicate (GebrGuiSequenceEdit * sequence_edit, const gchar * category, GtkTreePath *ignore_path)
+static gboolean check_duplicate (GebrGuiSequenceEdit * sequence_edit, const gchar * category)
 {
 	gchar *i_categ;
 	gboolean retval = FALSE;
@@ -508,22 +521,17 @@ static gboolean check_duplicate (GebrGuiSequenceEdit * sequence_edit, const gcha
 		gchar *i_lower;
 		gchar *lower;
 
-		if (ignore_path) {
-			GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
-			if (gtk_tree_path_compare (ignore_path, path) == 0) {
-				gtk_tree_path_free (path);
-				continue;
-			}
-			gtk_tree_path_free (path);
-		}
-
 		gtk_tree_model_get(model, &iter, 0, &i_categ, -1);
 		i_fix = gebr_validate_case_fix (validate_case, i_categ);
 		fix = gebr_validate_case_fix (validate_case, category);
+
+		if (fix == NULL || i_fix == NULL)
+			continue;
+
 		i_lower = g_utf8_strdown (i_fix, -1);
 		lower = g_utf8_strdown (fix, -1);
 
-		if (strcmp(i_lower, lower) == 0) {
+		if (strcmp (i_lower, lower) == 0) {
 			gebr_gui_gtk_tree_view_select_iter(GTK_TREE_VIEW(sequence_edit->tree_view), &iter);
 			retval = TRUE;
 			break;

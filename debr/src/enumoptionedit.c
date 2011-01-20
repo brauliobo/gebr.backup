@@ -17,7 +17,7 @@
 
 #include <libgebr/gui/gebr-gui-enhanced-entry.h>
 #include <libgebr/gui/gebr-gui-utils.h>
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 
 #include "enumoptionedit.h"
 #include "debr-validate.h"
@@ -110,7 +110,7 @@ static void enum_option_edit_init(EnumOptionEdit * enum_option_edit)
 {
 }
 
-G_DEFINE_TYPE(EnumOptionEdit, enum_option_edit, GEBR_GUI_GTK_TYPE_SEQUENCE_EDIT);
+G_DEFINE_TYPE(EnumOptionEdit, enum_option_edit, GEBR_GUI_TYPE_SEQUENCE_EDIT);
 
 /*
  * Internal functions
@@ -120,17 +120,19 @@ static void enum_option_edit_add_request(EnumOptionEdit * enum_option_edit)
 {
 	GebrGeoXmlEnumOption *enum_option;
 
+	gtk_widget_grab_focus (enum_option_edit->value_entry);
+	gtk_editable_select_region (GTK_EDITABLE (enum_option_edit->value_entry), 0, -1);
 	enum_option = gebr_geoxml_program_parameter_append_enum_option(enum_option_edit->program_parameter,
-								       gebr_gui_gtk_enhanced_entry_get_text
-								       (GEBR_GUI_GTK_ENHANCED_ENTRY
+								       gebr_gui_enhanced_entry_get_text
+								       (GEBR_GUI_ENHANCED_ENTRY
 									(enum_option_edit->label_entry)),
-								       gebr_gui_gtk_enhanced_entry_get_text
-								       (GEBR_GUI_GTK_ENHANCED_ENTRY
+								       gebr_gui_enhanced_entry_get_text
+								       (GEBR_GUI_ENHANCED_ENTRY
 									(enum_option_edit->value_entry)));
 	__enum_option_edit_add(enum_option_edit, enum_option);
 
-	gebr_gui_gtk_enhanced_entry_set_text(GEBR_GUI_GTK_ENHANCED_ENTRY(enum_option_edit->label_entry), "");
-	gebr_gui_gtk_enhanced_entry_set_text(GEBR_GUI_GTK_ENHANCED_ENTRY(enum_option_edit->value_entry), "");
+	gebr_gui_enhanced_entry_set_text(GEBR_GUI_ENHANCED_ENTRY(enum_option_edit->label_entry), "");
+	gebr_gui_enhanced_entry_set_text(GEBR_GUI_ENHANCED_ENTRY(enum_option_edit->value_entry), "");
 
 	validate_image_set_check_enum_option_list(enum_option_edit->validate_image, enum_option_edit->program_parameter); 
 	g_signal_emit_by_name(enum_option_edit, "changed");
@@ -275,6 +277,16 @@ static GtkWidget *__enum_option_edit_create_tree_view(EnumOptionEdit * enum_opti
 	return tree_view;
 }
 
+static void on_label_entry_activate (GtkEntry *entry, EnumOptionEdit *self)
+{
+	g_signal_emit_by_name (self, "add-request");
+}
+
+static void on_value_entry_activate (GtkEntry *entry, EnumOptionEdit *self)
+{
+	gtk_widget_grab_focus (self->label_entry);
+}
+
 GtkWidget *enum_option_edit_new(GebrGeoXmlEnumOption * enum_option, GebrGeoXmlProgramParameter * program_parameter, gboolean new_parameter)
 {
 	EnumOptionEdit *enum_option_edit;
@@ -286,9 +298,9 @@ GtkWidget *enum_option_edit_new(GebrGeoXmlEnumOption * enum_option, GebrGeoXmlPr
 
 	list_store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, -1);
 	hbox = gtk_hbox_new(FALSE, 0);
-	label_entry = gebr_gui_gtk_enhanced_entry_new_with_empty_text(_("label"));
+	label_entry = gebr_gui_enhanced_entry_new_with_empty_text(_("label"));
 	gtk_widget_show(label_entry);
-	value_entry = gebr_gui_gtk_enhanced_entry_new_with_empty_text(_("value"));
+	value_entry = gebr_gui_enhanced_entry_new_with_empty_text(_("value"));
 	gtk_widget_show(value_entry);
 	gtk_widget_set_size_request(value_entry, 20, -1);
 	gtk_box_pack_start(GTK_BOX(hbox), value_entry, TRUE, TRUE, 0);
@@ -307,7 +319,13 @@ GtkWidget *enum_option_edit_new(GebrGeoXmlEnumOption * enum_option, GebrGeoXmlPr
 	enum_option_edit->value_entry = value_entry;
 	if (!new_parameter)
 		validate_image_set_check_enum_option_list(validate_image, program_parameter); 
-	g_signal_connect(GTK_OBJECT(enum_option_edit), "add-request", G_CALLBACK(enum_option_edit_add_request), NULL);
+
+	g_signal_connect (enum_option_edit, "add-request",
+			  G_CALLBACK (enum_option_edit_add_request), NULL);
+	g_signal_connect (label_entry, "activate",
+			  G_CALLBACK (on_label_entry_activate), enum_option_edit);
+	g_signal_connect (value_entry, "activate",
+			  G_CALLBACK (on_value_entry_activate), enum_option_edit);
 
 	gtk_widget_set_size_request(GTK_WIDGET(enum_option_edit), -1, 150);
 

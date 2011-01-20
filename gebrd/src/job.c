@@ -25,7 +25,7 @@
 #include <glib/gstdio.h>
 #include <gdome.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/comm/protocol.h>
 #include <libgebr/comm/streamsocket.h>
 #include <libgebr/comm/socketaddress.h>
@@ -763,7 +763,7 @@ void job_run_flow(struct job *job)
 	/*
 	 * First program
 	 */
-	/* Start wi.hwithout stdin */
+	/* Start with/without stdin */
 	if (gebr_geoxml_program_get_stdin(GEBR_GEOXML_PROGRAM(program))) {
 		/* Input file */
 		if (check_for_readable_file(gebr_geoxml_flow_io_get_input(job->flow))) {
@@ -944,9 +944,19 @@ void job_end(struct job *job)
 
 void job_kill(struct job *job)
 {
-	if (gebrd_get_server_type() == GEBR_COMM_SERVER_TYPE_REGULAR) {
-		job->user_finished = TRUE;
-		gebr_comm_process_kill(job->process);
+	if (gebrd_get_server_type() == GEBR_COMM_SERVER_TYPE_REGULAR) 
+	{
+		if (job->status == JOB_STATUS_QUEUED)
+		{
+			gebrd_queues_remove_job_from(job->queue->str, job);
+			g_string_assign(job->finish_date, gebr_iso_date());
+			job_notify_status(job, JOB_STATUS_CANCELED, job->finish_date->str);
+		}
+		else
+		{
+			job->user_finished = TRUE;
+			gebr_comm_process_kill(job->process);
+		}
 	} else if (gebrd_get_server_type() == GEBR_COMM_SERVER_TYPE_MOAB)
 		job_send_signal_on_moab("SIGKILL", job);
 }

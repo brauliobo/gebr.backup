@@ -23,7 +23,7 @@
 #include <sys/wait.h>
 #include <glib/gstdio.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/utils.h>
 
 #include "help.h"
@@ -65,10 +65,8 @@ static void on_title_ready (GebrGuiHtmlViewerWidget * widget, const gchar * titl
 static const GtkActionEntry action_entries[] = {
 	{"JumpToMenu", NULL, N_("_Jump To"), NULL, NULL,
 		G_CALLBACK(help_edit_on_jump_to_activate)},
-
 	{"RefreshAction", GTK_STOCK_REFRESH, NULL, NULL,
 		N_("Update editor's content with data from menu"), G_CALLBACK(help_edit_on_refresh)},
-
 	{"RevertAction", GTK_STOCK_REVERT_TO_SAVED, NULL, NULL,
 		N_("Revert help content to the saved state"), G_CALLBACK(help_edit_on_revert)}
 };
@@ -103,6 +101,7 @@ static void merge_ui_def(GebrGuiHelpEditWindow * window, gboolean revert_visible
 	ui_manager = gebr_gui_help_edit_window_get_ui_manager(window);
 
 	action_group = gtk_action_group_new("DebrHelpEditGroup");
+	gtk_action_group_set_translation_domain(action_group, GETTEXT_PACKAGE);
 	gtk_action_group_add_actions(action_group, action_entries, n_action_entries, window);
 	action = gtk_action_group_get_action(action_group, "JumpToMenu");
 	g_object_set(action, "hide-if-empty", FALSE, NULL);
@@ -413,6 +412,7 @@ static void help_subst_fields(GString * help, GebrGeoXmlProgram * program, gbool
 		content = (gchar *) gebr_geoxml_program_get_title(program);
 	else
 		content = (gchar *) gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(debr.menu));
+	
 
 	escaped_content = g_markup_escape_text((const gchar *) content, -1);
 
@@ -437,7 +437,8 @@ static void help_subst_fields(GString * help, GebrGeoXmlProgram * program, gbool
 		content = (gchar *) gebr_geoxml_program_get_description(program);
 	else
 		content = (gchar *) gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(debr.menu));
-	
+
+
 	escaped_content = g_markup_escape_text((const gchar *) content, -1);
 	
 	if (strlen(escaped_content)) {
@@ -474,13 +475,15 @@ static void help_subst_fields(GString * help, GebrGeoXmlProgram * program, gbool
 			gebr_geoxml_sequence_next(&category);
 		}
 		g_string_insert(help, pos, catstr->str);
+
 		g_string_free(catstr, TRUE);
 	}
 
+	/* DTD version update */
 	pos = strip_block(help, "dtd");
 	if (pos)
 		g_string_insert(help, pos, gebr_geoxml_document_get_version(GEBR_GEOXML_DOCUMENT(debr.menu)));
-
+	
         GDate *date;
         gchar datestr[13];
 	gchar *original_locale = NULL, *new_locale = NULL;
@@ -502,6 +505,7 @@ static void help_subst_fields(GString * help, GebrGeoXmlProgram * program, gbool
 	if (new_locale)
 		g_free(new_locale);
 
+	/* Program Version */
 	if (program != NULL) {
 		pos = strip_block(help, "ver");
 		if (pos)
@@ -858,6 +862,8 @@ void debr_help_show(GebrGeoXmlObject * object, gboolean menu, const gchar * titl
 	GebrGuiHtmlViewerWidget * html_viewer_widget;
 
 	window = gebr_gui_html_viewer_window_new(title); 
+	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
+
 	html_viewer_widget = gebr_gui_html_viewer_window_get_widget(GEBR_GUI_HTML_VIEWER_WINDOW(window));
 	g_signal_connect (html_viewer_widget, "title-ready", G_CALLBACK (on_title_ready), window);
 
@@ -870,8 +876,7 @@ void debr_help_show(GebrGeoXmlObject * object, gboolean menu, const gchar * titl
 		html = gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(object));
 
 	gebr_gui_html_viewer_window_show_html(GEBR_GUI_HTML_VIEWER_WINDOW(window), html);
-
-	gtk_dialog_run(GTK_DIALOG(window));
+	gtk_widget_show (window);
 }
 
 void debr_help_edit(GebrGeoXmlObject * object)
@@ -889,6 +894,14 @@ void debr_help_edit(GebrGeoXmlObject * object)
 
 	if (strlen(help) <= 1)
 		help = generate_help_from_template(object);
+	
+	/* Update of help title, author, date, etc */
+	GString * help_g_string = NULL;
+	help_g_string = g_string_new(help);
+	help_subst_fields(help_g_string, program, TRUE);
+	g_free(help);
+	help = g_strdup(help_g_string->str);
+	g_string_free(help_g_string, TRUE);
 
 	/* EDIT IT */
 	if (debr.config.native_editor || !debr.config.htmleditor->len) {
