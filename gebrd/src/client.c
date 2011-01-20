@@ -22,7 +22,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include <libgebr/intl.h>
+#include <glib/gi18n.h>
 #include <libgebr/comm/protocol.h>
 
 #include "client.h"
@@ -92,7 +92,7 @@ static void client_read(GebrCommStreamSocket * stream_socket, struct client *cli
 
 	gebrd_message(GEBR_LOG_DEBUG, "client_read %s", data->str);
 
- out:	g_string_free(data, TRUE);
+out:	g_string_free(data, TRUE);
 }
 
 static void client_error(GebrCommStreamSocket * stream_socket, enum GebrCommSocketError error, struct client *client)
