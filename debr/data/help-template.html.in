@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content=
+  "text/html; charset=utf-8" />
+  <link rel="stylesheet" type="text/css" href="gebr.css" />
+
+  <!-- begin ttl -->
+  <title>G&ecirc;BR - Flow/Program Title</title>
+  <!-- end ttl -->
+</head>
+
+<body>
+  <div class="outer-container">
+    <div class="inner-container">
+      <div class="header">
+        <div class="title">
+	  <!-- begin tt2 -->
+          <span class="flowtitle">Flow/Program Title</span>
+	  <!-- end tt2 -->
+
+          <div class="description">
+	    <!-- begin des -->
+            Put here an one-line description
+	    <!-- end des -->
+          </div>
+        </div>
+      </div>
+
+      <div class="category">
+	<!-- begin cat -->
+        First category | Second category | ...
+	<!-- end cat -->
+      </div>
+
+      <div class="main">
+        <div class="content"><!-- begin cnt --><!-- end cnt --></div>
+
+        <div class="navigation">
+          <h2>Index</h2>
+
+          <ul>
+            <li><a href="#intro">Introduction</a></li>
+
+	    <!-- begin mpr -->
+            <li><a href="#par">Parameters</a></li>
+	    <!-- end mpr -->
+
+            <li><a href="#details">Description</a></li>
+
+            <li><a href="#notes">Notes</a></li>
+
+            <li><a href="#ref">References</a></li>
+
+            <li><a href="#credits">Credits</a></li>
+          </ul>
+        </div>
+
+        <div class="clearer"></div>
+      </div>
+
+      <div class="footer">
+        <span class="left">G&ecirc;BR @VERSION@ (<!-- begin dtd --><!-- end dtd -->) |
+		<!-- begin ver -->Program's version comes here<!-- end ver --></span>
+
+        <div class="clearer"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
