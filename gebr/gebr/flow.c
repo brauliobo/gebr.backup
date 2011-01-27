@@ -36,6 +36,7 @@
 #include "menu.h"
 #include "document.h"
 #include "server.h"
+#include "job.h"
 #include "callbacks.h"
 #include "ui_flow.h"
 #include "ui_document.h"
@@ -461,9 +462,17 @@ void flow_run(struct server *server, GebrCommServerRun * config, gboolean single
 		}
 	}
 
+	/* Create job */
+	GString *queue_gstring = g_string_new(config->queue);
+	struct job * job = job_new_from_flow(server, config->flow, queue_gstring);
+	g_string_free(queue_gstring, TRUE);
+	job_set_active(job);
+	gebr.config.current_notebook = 3;
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(gebr.notebook), gebr.config.current_notebook);
 
 	/* RUN */
-	gebr_comm_server_run_flow(server->comm, config);
+	guint head_run_id = gebr_comm_server_run_flow(server->comm, config);
+	g_string_printf(job->run_id, "%u", head_run_id);
 
 	gebr_geoxml_flow_set_date_last_run(gebr.flow, gebr_iso_date());
 	document_save(GEBR_GEOXML_DOC(gebr.flow), FALSE, TRUE);
@@ -542,13 +551,24 @@ void flow_program_remove(void)
 
 	gebr_gui_gtk_tree_view_foreach_selected(&iter, gebr.ui_flow_edition->fseq_view) {
 		if (gebr_gui_gtk_tree_iter_equal_to(&iter, &gebr.ui_flow_edition->input_iter) ||
-		    gebr_gui_gtk_tree_iter_equal_to(&iter, &gebr.ui_flow_edition->output_iter))
-			continue;
+		    gebr_gui_gtk_tree_iter_equal_to(&iter, &gebr.ui_flow_edition->output_iter) ||
+		    gebr_gui_gtk_tree_iter_equal_to(&iter, &gebr.ui_flow_edition->error_iter)){
 
-		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_edition->fseq_store), &iter,
-				   FSEQ_GEBR_GEOXML_POINTER, &program, -1);
-		gebr_geoxml_sequence_remove(GEBR_GEOXML_SEQUENCE(program));
-		valid = gtk_list_store_remove(GTK_LIST_STORE(gebr.ui_flow_edition->fseq_store), &iter);
+			if (gebr_gui_gtk_tree_iter_equal_to(&iter, &gebr.ui_flow_edition->input_iter))
+				gebr_geoxml_flow_server_io_set_input(gebr.flow_server, "");
+			if (gebr_gui_gtk_tree_iter_equal_to(&iter, &gebr.ui_flow_edition->output_iter))
+				gebr_geoxml_flow_server_io_set_output(gebr.flow_server, "");
+			if (gebr_gui_gtk_tree_iter_equal_to(&iter, &gebr.ui_flow_edition->error_iter))
+				gebr_geoxml_flow_server_io_set_error(gebr.flow_server, "");
+			flow_edition_set_io();
+
+		} else {
+			gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_edition->fseq_store), &iter,
+					   FSEQ_GEBR_GEOXML_POINTER, &program, -1);
+			gebr_geoxml_sequence_remove(GEBR_GEOXML_SEQUENCE(program));
+			valid = gtk_list_store_remove(GTK_LIST_STORE(gebr.ui_flow_edition->fseq_store), &iter);
+		}
+
 	}
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
 
