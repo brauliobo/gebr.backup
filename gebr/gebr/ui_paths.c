@@ -28,6 +28,7 @@
 
 #include <glib/gi18n.h>
 #include <libgebr/gui/gui.h>
+#include <libgebr/gui/gebr-gui-sequence-edit.h>
 
 #include "ui_paths.h"
 #include "gebr.h"
@@ -145,7 +146,6 @@ static gboolean check_duplicate (GebrGuiSequenceEdit * sequence_edit, const gcha
 
 		gtk_tree_model_get(model, &iter, 0, &i_path, -1);
 
-
 		ok = gebr_stripdir( i_path, buf_i_path, sizeof(buf_i_path));
 
 		if (!ok)
@@ -217,8 +217,33 @@ void path_add(GebrGuiValueSequenceEdit * sequence_edit)
 
 gboolean path_renamed (GebrGuiValueSequenceEdit * self, const gchar * old_text, const gchar * new_text)
 {
-	if (check_duplicate (GEBR_GUI_SEQUENCE_EDIT(self), new_text))
-		return FALSE;
+	gchar *ok = NULL;
+	gchar buf[2024];
+	gchar * path_copy = NULL;
 
-	return TRUE;
+	path_copy = g_strdup(new_text);
+	ok = gebr_stripdir(path_copy, buf, sizeof(buf));
+	g_free(path_copy);
+
+	/*Checking if the duplicate are the same as the one in edit mode*/
+	if (!g_strcmp0(old_text, ok)) {
+		goto err;
+	}
+
+	if (!ok)
+		goto err;
+
+	gchar * clean_path = g_strdup_printf("%s", buf);
+	if (check_duplicate (GEBR_GUI_SEQUENCE_EDIT(self), clean_path)){
+		g_free(clean_path);
+		goto err;
+	}
+
+	if (!gebr_gui_value_sequence_edit_rename(self, clean_path)){
+		g_free(clean_path);
+		goto err;
+	}
+
+err:
+	return FALSE;
 }
