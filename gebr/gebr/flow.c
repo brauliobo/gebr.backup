@@ -558,6 +558,7 @@ void flow_program_remove(void)
 		}
 
 	}
+	flow_program_check_sensitiveness();
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
 
 	if (valid)
@@ -575,6 +576,7 @@ void flow_program_move_top(void)
 	/* Update GUI */
 	gtk_list_store_move_after(GTK_LIST_STORE(gebr.ui_flow_edition->fseq_store),
 				  &iter, &gebr.ui_flow_edition->input_iter);
+	flow_program_check_sensitiveness();
 }
 
 void flow_program_move_bottom(void)
@@ -588,6 +590,7 @@ void flow_program_move_bottom(void)
 	/* Update GUI */
 	gtk_list_store_move_before(GTK_LIST_STORE(gebr.ui_flow_edition->fseq_store),
 				   &iter, &gebr.ui_flow_edition->output_iter);
+	flow_program_check_sensitiveness();
 }
 
 void flow_copy(void)
@@ -657,6 +660,7 @@ void flow_program_paste(void)
 	}
 
 	flow_add_program_sequence_to_view(GEBR_GEOXML_SEQUENCE(pasted), TRUE);
+	flow_program_check_sensitiveness();
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
 }
 
