@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content=
+  "text/html; charset=utf-8" />
+  <link rel="stylesheet" type="text/css" href="gebr.css" />
+  <title>
+    <!-- begin ttl -->G&ecirc;BR - Flow/Program Title<!-- end ttl -->
+  </title>
+</head>
+
+<body>
+  <div class="outer-container">
+    <div class="inner-container">
+      <div class="header">
+        <div class="title">
+          <span class="flowtitle">
+            <!-- begin tt2 -->Flow/Program Title<!-- end tt2 -->
+          </span>
+          <div class="description">
+            <!-- begin des -->
+            Put here an one-line description
+            <!-- end des -->
+          </div>
+        </div>
+      </div>
+
+      <div class="category">
+        <!-- begin cat -->
+        First category | Second category | ...
+        <!-- end cat -->
+      </div>
+
+      <div class="main">
+        <div class="content">
+          <!-- begin cnt -->
+          <h2 id="intro">Introduction</h2>
+
+          <p>A short one or two paragraphs describing the purpose
+          of the program or menu. In case of menu, try to comment
+          the its purpose but not the internals of each program.
+          This should be detailed inside each program's help.</p>
+
+          <!-- begin par -->
+          <div class="parameters">
+
+            <h2 id="par">Parameters</h2>
+
+            <p>This section should be present only for program's
+            helps. You should describe each parameter the user must
+            specify to properly configure the program. It can be
+            suppressed in case the program has not parameters.</p>
+
+            <!-- begin lst -->
+            <!-- List of parameters -->
+            <ul>
+              <li><span class="reqlabel">text used as label a
+                required parameter</span><br/>Detailed description for this
+              parameter.</li>
+
+              <li><span class="label">text used as label for an
+                optional parameter</span><br/>Detailed description for this
+              parameter.</li>
+
+              <li><span class="label">text used as label for second
+                optional parameter</span><br/>Detailed description for this
+              parameter.</li>
+            </ul>
+            <!-- end lst -->
+
+          </div>
+          <!-- end par -->
+
+          <h2 id="details">Description</h2>
+
+          <p>Feel free to describe each detail of the program or
+          menu. However, note that the help of the menu must provide
+          general information about its purpose only.</p>
+
+          <h2 id="notes">Notes</h2>
+
+          <p>Any other comment or detailed information might be given
+          here.</p>
+
+          <h2 id="ref">References</h2>
+
+          <p>A list of references where the algorithm or strategy
+          is published and/or described.</p>
+
+          <!-- List of references -->
+          <ul>
+            <li>&Ouml; Yilmaz. Seismic Data Analysis: Processing,
+            Inversion, and Interpretation of Seismic Data. Society
+            of Exploration Geophysicists, Tulsa, second edition,
+            2003.</li>
+
+            <li>Robert E. Sheriff. Encyclopedic Dictionary of
+            Exploration Geophysics, volume 13 of Geophysical
+            References Series. Society of Exploration
+            Geophysicists, Tulsa, 4th edition, 2002.</li>
+          </ul>
+
+          <h2 id="credits">Credits</h2>
+
+          <p>In case of a program, credit each developer of the
+          program. In case of a flow credit the author of the
+          flow.</p>
+
+          <!-- begin cpy -->
+          <!-- end cpy -->
+          <!-- end cnt -->
+        </div>
+
+        <div class="navigation">
+          <h2>Index</h2>
+
+          <ul>
+            <li><a href="#intro">Introduction</a></li>
+
+	    <!-- begin mpr -->
+            <li><a href="#par">Parameters</a></li>
+	    <!-- end mpr -->
+
+            <li><a href="#details">Description</a></li>
+
+            <li><a href="#notes">Notes</a></li>
+
+            <li><a href="#ref">References</a></li>
+
+            <li><a href="#credits">Credits</a></li>
+          </ul>
+        </div>
+
+        <div class="clearer"></div>
+      </div>
+
+      <div class="footer">
+        <span class="left">G&ecirc;BR @VERSION@ (<!-- begin dtd --><!-- end dtd -->) |
+		<!-- begin ver -->Program's version comes here<!-- end ver --></span>
+
+        <div class="clearer"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
