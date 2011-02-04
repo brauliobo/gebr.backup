@@ -19,9 +19,10 @@
 
 #include <gdome.h>
 
-#include "value_sequence.h"
-#include "xml.h"
-#include "types.h"
+#include "gebr-geoxml-value-sequence.h"
+
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
 
 /*
  * internal stuff

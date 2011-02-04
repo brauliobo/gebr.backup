@@ -70,8 +70,6 @@ G_BEGIN_DECLS
  */
 typedef struct gebr_geoxml_enum_option GebrGeoXmlEnumOption;
 
-#include "macros.h"
-
 /**
  *
  */

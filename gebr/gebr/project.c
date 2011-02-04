@@ -24,7 +24,7 @@
 #include <glib/gi18n.h>
 #include <libgebr/utils.h>
 #include <libgebr/gui/gebr-gui-utils.h>
-#include <libgebr/geoxml/project.h>
+#include <libgebr/geoxml/geoxml.h>
 
 #include "project.h"
 #include "gebr.h"

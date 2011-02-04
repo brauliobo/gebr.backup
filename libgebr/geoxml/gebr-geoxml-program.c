@@ -21,12 +21,13 @@
 
 #include <gdome.h>
 
-#include "program.h"
-#include "parameters.h"
-#include "xml.h"
-#include "error.h"
-#include "types.h"
-#include "sequence.h"
+#include "gebr-geoxml-program.h"
+#include "gebr-geoxml-parameters.h"
+#include "gebr-geoxml-error.h"
+#include "gebr-geoxml-sequence.h"
+
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
 
 /*
  * internal structures and funcionts

@@ -20,11 +20,12 @@
 #include <utils.h>
 #include <defines.h>
 
-#include "object.h"
-#include "types.h"
-#include "xml.h"
-#include "document_p.h"
+#include "gebr-geoxml-object.h"
 #include "gebr-geoxml-tmpl.h"
+
+#include "priv-gebr-geoxml-types.h"
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-document.h"
 
 /*
  * internal structures and funcionts

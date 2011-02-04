@@ -15,17 +15,22 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GEBR_GEOXML_MACROS_H
-#define __GEBR_GEOXML_MACROS_H
+#ifndef __GEBR_GEOXML_PROGRAM_P_H
+#define __GEBR_GEOXML_PROGRAM_P_H
+
+#include <gdome.h>
+
+#include "gebr-geoxml-program.h"
+#include "gebr-geoxml-program-parameter.h"
 
 G_BEGIN_DECLS
 
 /**
  * \internal
+ * Used by gebr_geoxml_program_new_parameter and gebr_geoxml_program_parameter_set_type
  */
-#if  __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
-#  define GEBR_GEOXML_DEPRECATED __attribute__((__deprecated__))
-#endif
+GebrGeoXmlProgramParameter *__gebr_geoxml_program_new_parameter(GebrGeoXmlProgram * program, GdomeElement * before,
+								GebrGeoXmlParameterType parameter_type);
 
 G_END_DECLS
-#endif				//__GEBR_GEOXML_MACROS_H
+#endif				//__GEBR_GEOXML_PROGRAM_P_H

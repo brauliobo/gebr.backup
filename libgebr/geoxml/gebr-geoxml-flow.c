@@ -20,19 +20,20 @@
 #include <string.h>
 
 #include "../date.h"
-
-#include "flow.h"
 #include "defines.h"
-#include "xml.h"
-#include "error.h"
-#include "types.h"
-#include "document.h"
-#include "document_p.h"
-#include "program.h"
-#include "parameters.h"
-#include "parameters_p.h"
-#include "parameter_group.h"
-#include "value_sequence.h"
+
+#include "gebr-geoxml-flow.h"
+#include "gebr-geoxml-error.h"
+#include "gebr-geoxml-document.h"
+#include "gebr-geoxml-program.h"
+#include "gebr-geoxml-parameters.h"
+#include "gebr-geoxml-parameter-group.h"
+#include "gebr-geoxml-value-sequence.h"
+
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
+#include "priv-gebr-geoxml-parameters.h"
+#include "priv-gebr-geoxml-document.h"
 
 /*
  * internal structures and functions

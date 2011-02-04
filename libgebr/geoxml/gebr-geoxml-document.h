@@ -79,7 +79,7 @@ G_BEGIN_DECLS
  */
 typedef struct gebr_geoxml_document GebrGeoXmlDocument;
 
-#include "parameters.h"
+#include "gebr-geoxml-parameters.h"
 
 /**
  * Document type: flow, line or project
@@ -100,7 +100,7 @@ typedef enum {
 	GEBR_GEOXML_DOCUMENT_TYPE_PROJECT,
 } GebrGeoXmlDocumentType;
 
-#include "program.h"
+#include "gebr-geoxml-program.h"
 
 /**
  * Used by \ref gebr_geoxml_document_load 

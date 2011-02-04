@@ -19,14 +19,15 @@
 
 #include <gdome.h>
 
-#include "program-parameter.h"
-#include "types.h"
-#include "xml.h"
-#include "error.h"
-#include "parameter.h"
-#include "parameter_p.h"
-#include "program_p.h"
-#include "sequence.h"
+#include "gebr-geoxml-program-parameter.h"
+#include "gebr-geoxml-error.h"
+#include "gebr-geoxml-parameter.h"
+#include "gebr-geoxml-sequence.h"
+
+#include "priv-gebr-geoxml-types.h"
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-parameter.h"
+#include "priv-gebr-geoxml-program.h"
 
 /*
  * internal structures and funcionts

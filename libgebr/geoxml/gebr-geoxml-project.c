@@ -18,13 +18,15 @@
 #include <string.h>
 #include <gdome.h>
 
-#include "project.h"
-#include "document.h"
-#include "document_p.h"
 #include "defines.h"
-#include "error.h"
-#include "xml.h"
-#include "types.h"
+
+#include "gebr-geoxml-project.h"
+#include "gebr-geoxml-document.h"
+#include "gebr-geoxml-error.h"
+
+#include "priv-gebr-geoxml-document.h"
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
 
 /*
  * Internal structures and functions

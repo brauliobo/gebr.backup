@@ -111,8 +111,7 @@ typedef struct gebr_geoxml_line_flow GebrGeoXmlLineFlow;
  */
 typedef struct gebr_geoxml_line_path GebrGeoXmlLinePath;
 
-#include "sequence.h"
-#include "macros.h"
+#include "gebr-geoxml-sequence.h"
 
 /**
  * Create a new empty line and return a pointer to it.

@@ -101,12 +101,11 @@ typedef enum {
  */
 typedef struct gebr_geoxml_program GebrGeoXmlProgram;
 
-#include "parameter.h"
-#include "parameters.h"
-#include "program-parameter.h"
-#include "flow.h"
-#include "macros.h"
-#include "object.h"
+#include "gebr-geoxml-parameter.h"
+#include "gebr-geoxml-parameters.h"
+#include "gebr-geoxml-program-parameter.h"
+#include "gebr-geoxml-flow.h"
+#include "gebr-geoxml-object.h"
 
 /**
  * Call \p callback for each parameter of \p program

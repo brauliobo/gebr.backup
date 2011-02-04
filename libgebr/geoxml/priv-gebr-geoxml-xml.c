@@ -19,8 +19,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "xml.h"
-#include "types.h"
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
 
 /*
  * Internal internal functions

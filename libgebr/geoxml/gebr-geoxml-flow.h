@@ -109,10 +109,9 @@ typedef struct gebr_geoxml_revision GebrGeoXmlRevision;
  */
 typedef struct gebr_geoxml_flow_server GebrGeoXmlFlowServer;
 
-#include "program.h"
-#include "macros.h"
-#include "sequence.h"
-#include "object.h"
+#include "gebr-geoxml-program.h"
+#include "gebr-geoxml-sequence.h"
+#include "gebr-geoxml-object.h"
 
 /**
  * Create a new empty flow and return a pointer to it.

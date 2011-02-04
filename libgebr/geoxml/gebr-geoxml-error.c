@@ -18,7 +18,7 @@
 #include <config.h>
 #include <glib/gi18n-lib.h>
 
-#include "error.h"
+#include "gebr-geoxml-error.h"
 
 const gchar *gebr_geoxml_error_string(enum GEBR_GEOXML_RETV error)
 {

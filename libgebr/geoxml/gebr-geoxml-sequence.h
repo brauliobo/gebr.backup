@@ -91,7 +91,7 @@ G_BEGIN_DECLS
  */
 typedef struct gebr_geoxml_sequence GebrGeoXmlSequence;
 
-#include "parameter_group.h"
+#include "gebr-geoxml-parameter-group.h"
 
 /**
  * Use as an auxiliary function to gebr_geoxml_sequence_next.
