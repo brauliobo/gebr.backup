@@ -45,59 +45,63 @@
 #include "priv-gebr-geoxml-parameter.h"
 #include "priv-gebr-geoxml-parameter-group.h"
 
-/* global variables */
-/**
- * \internal
- * Global variable.
- */
-GdomeException exception;
-
-/**
- * \internal
- */
-struct gebr_geoxml_document {
-	GdomeDocument *document;
+enum {
+	PROP_0,
 };
 
-/**
- * \internal
- */
-typedef GdomeDocument *(*createDoc_func) (GdomeDOMImplementation *, char *, unsigned int, GdomeException *);
+//==============================================================================
+// GLOBAL VARIABLES							       =
+//==============================================================================
 
-/**
- * \internal
- */
+GdomeException exception;
+
 static GdomeDOMImplementation *dom_implementation;
-/**
- * \internal
- */
+
 static gint dom_implementation_ref_count = 0;
-/**
- * \internal
+
+/*
  * Used at GebrGeoXmlObject's methods.
  */
 GdomeDocument *clipboard_document = NULL;
 
-/**
- * \internal
- * Checks if \p version has the form '%d.%d.%d', ie three numbers separated by a dot.
- */
-static gboolean gebr_geoxml_document_is_version_valid(const gchar * version);
+//==============================================================================
+// PROTOTYPES								       =
+//==============================================================================
 
-/**
- * \internal
- * Checks if \p document version is less than or equal to GeBR's version.
- */
-static gboolean gebr_geoxml_document_check_version(GebrGeoXmlDocument * document, const gchar * version);
+static void gebr_geoxml_document_set_property	(GObject	*object,
+						 guint		 prop_id,
+						 const GValue	*value,
+						 GParamSpec	*pspec);
 
-/**
- * \internal
- */
-static void gebr_geoxml_document_fix_header(GString * source, const gchar * tagname, const gchar * dtd_filename);
+static void gebr_geoxml_document_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
+						 GParamSpec	*pspec);
 
-/**
- * \internal
- */
+typedef GdomeDocument *(*createDoc_func) (GdomeDOMImplementation *,
+					  char *,
+					  unsigned int,
+					  GdomeException *);
+
+static gboolean gebr_geoxml_document_is_version_valid (const gchar *version);
+
+static gboolean gebr_geoxml_document_check_version (GebrGeoXmlDocument *self,
+						    const gchar *version);
+
+static void gebr_geoxml_document_fix_header (GString *source,
+					     const gchar *tagname,
+					     const gchar *dtd_filename);
+
+G_DEFINE_TYPE(GebrGeoXmlDocument, gebr_geoxml_document, G_TYPE_OBJECT);
+
+//==============================================================================
+// GOBJECT RELATED FUNCTIONS						       =
+//==============================================================================
+
+//==============================================================================
+// PRIVATE FUNCTIONS							       =
+//==============================================================================
+
 static void __gebr_geoxml_ref(void)
 {
 	if (!dom_implementation_ref_count) {
@@ -110,9 +114,6 @@ static void __gebr_geoxml_ref(void)
 	++dom_implementation_ref_count;
 }
 
-/**
- * \internal
- */
 static void __gebr_geoxml_unref(void)
 {
 	gdome_di_unref(dom_implementation, &exception);
@@ -127,10 +128,10 @@ static void __gebr_geoxml_unref(void)
  * __gebr_geoxml_document_new_data:
  * Creates the #GebrGeoXmlDocumentData for this document.
  */
-static void __gebr_geoxml_document_new_data(GebrGeoXmlDocument * document, const gchar * filename)
+static void __gebr_geoxml_document_new_data(GebrGeoXmlDocument *self, const gchar * filename)
 {
 	GebrGeoXmlDocumentData *data = g_new(GebrGeoXmlDocumentData, 1);
-	((GdomeDocument*)document)->user_data = data;
+	self->document->user_data = data;
 	data->filename = g_string_new(filename);
 }
 
@@ -1062,6 +1063,9 @@ const gchar *gebr_geoxml_document_get_help(GebrGeoXmlDocument * document)
 	return __gebr_geoxml_get_tag_value(gebr_geoxml_document_root_element(document), "help");
 }
 
+/*
+ * Checks if @version has the form '%d.%d.%d', ie three numbers separated by a dot.
+ */
 static gboolean gebr_geoxml_document_is_version_valid(const gchar * version)
 {
 	if (!version)
@@ -1071,6 +1075,9 @@ static gboolean gebr_geoxml_document_is_version_valid(const gchar * version)
 	return sscanf(version, "%d.%d.%d", &major, &minor, &micro) == 3;
 }
 
+/*
+ * Checks if \p document version is less than or equal to GeBR's version.
+ */
 static gboolean gebr_geoxml_document_check_version(GebrGeoXmlDocument * document, const gchar * version)
 {
 	guint major1, minor1, micro1;

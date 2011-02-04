@@ -15,92 +15,63 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GEBR_GEOXML_DOCUMENT_H
-#define __GEBR_GEOXML_DOCUMENT_H
+/**
+ * SECTION: gebr-geoxml-document
+ * @short_description: An abstraction to common data and functions found in flows, lines and projects
+ * @title: GebrGeoXmlDocument class
+ * @include: libgebr/geoxml.h
+ *
+ * GebrGeoXmlFlow, GebrGeoXmlLine and GebrGeoXmlProject XML files can all be loaded using gebr_geoxml_document_load.
+ * Validation is done automatically by matching document's DTD, located in /usr/share/libgeoxml (specifically at
+ * ${datarootdir}/libgeoxml, run '--configure --help' for more information).  The same occurs with all methods in this
+ * class: they are valid for all GebrGeoXmlDocument's derived classes. Use GEBR_GEOXML_DOC to cast.
+ */
+
+#ifndef __GEBR_GEOXML_DOCUMENT_H__
+#define __GEBR_GEOXML_DOCUMENT_H__
 
 #include <glib.h>
 
+#include "gebr-geoxml-parameters.h"
+#include "gebr-geoxml-program.h"
+
+
 G_BEGIN_DECLS
 
-/**
- * \struct GebrGeoXmlDocument document.h geoxml/document.h
- * \brief
- * An abstraction to common data and functions found in flows, lines and projects.
- * \dot
- * digraph document {
- * 	fontname = "Bitstream Vera Sans"
- * 	fontsize = 9
- * 	size = "6"
- * 	node [
- * 		color = palegreen2, style = filled
- * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 9
- * 		shape = record
- * 	]
- * 	edge [
- * 		fontname = "Bitstream Vera Sans"
- * 		fontsize = 9
- * 	]
- *
- * 	"GebrGeoXmlObject" [ URL = "\ref object.h" ];
- * 	"GebrGeoXmlDocument" [ URL = "\ref document.h" ];
- * 	"GebrGeoXmlFlow" [ URL = "\ref flow.h" ];
- * 	"GebrGeoXmlLine" [ URL = "\ref line.h" ];
- * 	"GebrGeoXmlProject" [ URL = "\ref project.h" ];
- *
- * 	edge [
- * 		arrowhead = "normal"
- * 	]
- * 	"GebrGeoXmlObject" -> "GebrGeoXmlDocument"
- * 	"GebrGeoXmlDocument" -> { "GebrGeoXmlFlow" "GebrGeoXmlLine" "GebrGeoXmlProject" };
- * }
- * \enddot
- * \see document.h
- */
+
+#define GEBR_GEOXML_TYPE_DOCUMENT		(gebr_geoxml_document_get_type())
+#define GEBR_GEOXML_DOCUMENT(obj)		(G_TYPE_CHECK_INSTANCE_CAST ((obj), GEBR_GEOXML_TYPE_DOCUMENT, GebrGeoXmlDocument))
+#define GEBR_GEOXML_DOCUMENT_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), GEBR_GEOXML_TYPE_DOCUMENT, GebrGeoXmlDocumentClass))
+#define GEBR_GEOXML_IS_DOCUMENT(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), GEBR_GEOXML_TYPE_DOCUMENT))
+#define GEBR_GEOXML_IS_DOCUMENT_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), GEBR_GEOXML_TYPE_DOCUMENT))
+#define GEBR_GEOXML_DOCUMENT_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj), GEBR_GEOXML_TYPE_DOCUMENT, GebrGeoXmlDocumentClass))
+
+
+typedef struct _GebrGeoXmlDocument GebrGeoXmlDocument;
+typedef struct _GebrGeoXmlDocumentClass GebrGeoXmlDocumentClass;
+
+struct _GebrGeoXmlDocument {
+	GObject parent;
+
+	/*< private >*/
+	GdomeDocument *document;
+};
+
+struct _GebrGeoXmlDocumentClass {
+	GObjectClass parent_class;
+};
 
 /**
- * \file document.h
- * An abstraction to common data and functions found in flows, lines and projects.
- * The data is things like author, help stuff, filename, etc. See methods below for more info.
- *
- * GebrGeoXmlFlow, GebrGeoXmlLine and GebrGeoXmlProject XML files can all be loaded using gebr_geoxml_document_load.
- * Validation is done automatically by matching document's DTD, located in /usr/share/libgeoxml (specifically at ${datarootdir}/libgeoxml, run '--configure --help' for more information).
- * The same occurs with all methods in this class: they are valid for all GebrGeoXmlDocument's derived classes. Use GEBR_GEOXML_DOC to cast.
- */
-
-/**
- * Cast to GebrGeoXmlDocument's from its derived classes: GebrGeoXmlFlow, GebrGeoXmlLine and GebrGeoXmlProject
- */
-#define GEBR_GEOXML_DOCUMENT(x) ((GebrGeoXmlDocument*)(x))
-#define GEBR_GEOXML_DOC(x) GEBR_GEOXML_DOCUMENT(x)
-
-/**
- * The GebrGeoXmlDocument struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_document GebrGeoXmlDocument;
-
-#include "gebr-geoxml-parameters.h"
-
-/**
- * Document type: flow, line or project
- *
+ * GebrGeoXmlDocumentType:
+ * @GEBR_GEOXML_DOCUMENT_TYPE_FLOW: The document is a GebrGeoXmlFlow
+ * @GEBR_GEOXML_DOCUMENT_TYPE_LINE: The document is a GebrGeoXmlLine
+ * @GEBR_GEOXML_DOCUMENT_TYPE_PROJECT: The document is a GebrGeoXmlProject
  */
 typedef enum {
-	/**
-	 * The document is a GebrGeoXmlFlow
-	 */
 	GEBR_GEOXML_DOCUMENT_TYPE_FLOW,
-	/**
-	 * The document is a GebrGeoXmlLine
-	 */
 	GEBR_GEOXML_DOCUMENT_TYPE_LINE,
-	/**
-	 * The document is a GebrGeoXmlProject
-	 */
 	GEBR_GEOXML_DOCUMENT_TYPE_PROJECT,
 } GebrGeoXmlDocumentType;
-
-#include "gebr-geoxml-program.h"
 
 /**
  * Used by \ref gebr_geoxml_document_load 
@@ -361,4 +332,5 @@ const gchar *gebr_geoxml_document_get_description(GebrGeoXmlDocument * document)
 const gchar *gebr_geoxml_document_get_help(GebrGeoXmlDocument * document);
 
 G_END_DECLS
-#endif				//__GEBR_GEOXML_DOCUMENT_H
+
+#endif /* __GEBR_GEOXML_DOCUMENT_H__ */
