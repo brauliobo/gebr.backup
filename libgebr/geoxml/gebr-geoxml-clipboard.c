@@ -19,9 +19,9 @@
 
 #include <gdome.h>
 
-#include "clipboard.h"
-#include "xml.h"
-#include "types.h"
+#include "gebr-geoxml-clipboard.h"
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
 
 extern GdomeDocument *clipboard_document;
 

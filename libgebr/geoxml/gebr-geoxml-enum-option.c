@@ -17,10 +17,11 @@
 
 #include <gdome.h>
 
-#include "enum_option.h"
-#include "xml.h"
-#include "types.h"
-#include "sequence.h"
+#include "gebr-geoxml-enum-option.h"
+#include "gebr-geoxml-sequence.h"
+
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
 
 /*
  * internal structures and funcionts

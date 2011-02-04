@@ -104,8 +104,7 @@ typedef struct gebr_geoxml_project GebrGeoXmlProject;
  */
 typedef struct gebr_geoxml_project_line GebrGeoXmlProjectLine;
 
-#include "sequence.h"
-#include "macros.h"
+#include "gebr-geoxml-sequence.h"
 
 /**
  * Create a new empty project and return a pointer to it.

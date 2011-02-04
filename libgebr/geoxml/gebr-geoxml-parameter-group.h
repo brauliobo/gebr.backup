@@ -87,8 +87,8 @@ typedef struct gebr_geoxml_parameter_group GebrGeoXmlParameterGroup;
 
 #include <glib.h>
 
-#include "parameters.h"
-#include "sequence.h"
+#include "gebr-geoxml-parameters.h"
+#include "gebr-geoxml-sequence.h"
 
 /**
  * \internal

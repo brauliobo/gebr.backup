@@ -17,14 +17,16 @@
 
 #include <gdome.h>
 
-#include "line.h"
-#include "document.h"
-#include "document_p.h"
 #include "defines.h"
-#include "error.h"
-#include "xml.h"
-#include "types.h"
-#include "value_sequence.h"
+
+#include "gebr-geoxml-line.h"
+#include "gebr-geoxml-document.h"
+#include "gebr-geoxml-error.h"
+#include "gebr-geoxml-value-sequence.h"
+
+#include "priv-gebr-geoxml-document.h"
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
 
 /*
  * internal structures and funcionts

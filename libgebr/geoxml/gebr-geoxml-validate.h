@@ -21,7 +21,7 @@
 #include <glib.h>
 #include <validate.h>
 
-#include "flow.h"
+#include "gebr-geoxml-flow.h"
 
 G_BEGIN_DECLS
 

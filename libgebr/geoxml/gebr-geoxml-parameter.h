@@ -148,7 +148,7 @@ void __gebr_geoxml_parameter_set_label(GebrGeoXmlParameter * parameter, const gc
 
 #include <glib.h>
 
-#include "parameters.h"
+#include "gebr-geoxml-parameters.h"
 
 /**
  * Get GebrGeoXmlParameters in which \p parameter is inside

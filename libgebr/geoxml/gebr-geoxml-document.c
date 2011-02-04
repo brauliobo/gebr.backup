@@ -31,18 +31,19 @@
 #include <tidy/buffio.h>
 #endif
 
-#include "document.h"
-#include "document_p.h"
-#include "xml.h"
-#include "types.h"
-#include "error.h"
-#include "sequence.h"
-#include "flow.h"
-#include "parameter.h"
-#include "program-parameter.h"
-#include "parameters_p.h"
-#include "parameter_p.h"
-#include "parameter_group_p.h"
+#include "gebr-geoxml-document.h"
+#include "gebr-geoxml-error.h"
+#include "gebr-geoxml-sequence.h"
+#include "gebr-geoxml-flow.h"
+#include "gebr-geoxml-parameter.h"
+#include "gebr-geoxml-program-parameter.h"
+
+#include "priv-gebr-geoxml-document.h"
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
+#include "priv-gebr-geoxml-parameters.h"
+#include "priv-gebr-geoxml-parameter.h"
+#include "priv-gebr-geoxml-parameter-group.h"
 
 /* global variables */
 /**

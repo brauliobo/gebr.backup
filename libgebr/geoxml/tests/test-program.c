@@ -18,7 +18,7 @@
 #include <gdome.h>
 
 #include "../geoxml.h"
-#include "../geoxml/xml.h"
+#include "../geoxml/priv-gebr-geoxml-xml.h"
 
 void test_project_append_line()
 {

@@ -20,8 +20,6 @@
 
 #include <glib.h>
 
-#include "macros.h"
-
 G_BEGIN_DECLS
 
 /**
@@ -122,12 +120,11 @@ typedef struct gebr_geoxml_program_parameter GebrGeoXmlProgramParameter;
  */
 typedef struct gebr_geoxml_property_value GebrGeoXmlPropertyValue;
 
-#include "program-parameter.h"
-#include "program.h"
-#include "enum_option.h"
-#include "value_sequence.h"
-#include "document.h"
-#include "macros.h"
+#include "gebr-geoxml-program-parameter.h"
+#include "gebr-geoxml-program.h"
+#include "gebr-geoxml-enum-option.h"
+#include "gebr-geoxml-value-sequence.h"
+#include "gebr-geoxml-document.h"
 
 /**
  * Get the program to which \p program_parameter belongs to.

@@ -20,14 +20,15 @@
 
 #include <gdome.h>
 
-#include "parameters.h"
-#include "xml.h"
-#include "types.h"
-#include "error.h"
-#include "program-parameter.h"
-#include "program_parameter_p.h"
-#include "parameter_p.h"
-#include "parameter_group.h"
+#include "gebr-geoxml-parameters.h"
+#include "gebr-geoxml-error.h"
+#include "gebr-geoxml-program-parameter.h"
+#include "gebr-geoxml-parameter-group.h"
+
+#include "priv-gebr-geoxml-xml.h"
+#include "priv-gebr-geoxml-types.h"
+#include "priv-gebr-geoxml-program-parameter.h"
+#include "priv-gebr-geoxml-parameter.h"
 
 /*
  * internal stuff

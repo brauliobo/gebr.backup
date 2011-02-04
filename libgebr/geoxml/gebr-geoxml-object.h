@@ -72,7 +72,7 @@ void gebr_geoxml_object_set_user_data(GebrGeoXmlObject * object, gpointer user_d
  */
 gpointer gebr_geoxml_object_get_user_data(GebrGeoXmlObject * object);
 
-#include "document.h"
+#include "gebr-geoxml-document.h"
 
 /**
  * Get the owner document of \p object

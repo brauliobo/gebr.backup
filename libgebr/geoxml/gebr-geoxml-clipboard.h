@@ -15,22 +15,30 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GEBR_GEOXML_PROGRAM_P_H
-#define __GEBR_GEOXML_PROGRAM_P_H
+#ifndef __GEBR_GEOXML_CLIPBOARD_H
+#define __GEBR_GEOXML_CLIPBOARD_H
 
-#include <gdome.h>
+#include <glib.h>
 
-#include "program.h"
-#include "program-parameter.h"
+#include "gebr-geoxml-object.h"
 
 G_BEGIN_DECLS
 
 /**
- * \internal
- * Used by gebr_geoxml_program_new_parameter and gebr_geoxml_program_parameter_set_type
+ * Clear clipboard
  */
-GebrGeoXmlProgramParameter *__gebr_geoxml_program_new_parameter(GebrGeoXmlProgram * program, GdomeElement * before,
-								GebrGeoXmlParameterType parameter_type);
+void gebr_geoxml_clipboard_clear(void);
+
+/**
+ * Add \p object to the clipboard
+ */
+void gebr_geoxml_clipboard_copy(GebrGeoXmlObject * object);
+
+/**
+ * Paste all clipboard into \p object
+ * Return the first pasted parameter, or NULL if failed.
+ */
+GebrGeoXmlObject *gebr_geoxml_clipboard_paste(GebrGeoXmlObject * object);
 
 G_END_DECLS
-#endif				//__GEBR_GEOXML_PROGRAM_P_H
+#endif				//__GEBR_GEOXML_CLIPBOARD_H
