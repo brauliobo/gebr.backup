@@ -31,9 +31,7 @@
 #define __GEBR_GEOXML_DOCUMENT_H__
 
 #include <glib.h>
-
-#include "gebr-geoxml-parameters.h"
-#include "gebr-geoxml-program.h"
+#include <glib-object.h>
 
 
 G_BEGIN_DECLS
@@ -49,12 +47,13 @@ G_BEGIN_DECLS
 
 typedef struct _GebrGeoXmlDocument GebrGeoXmlDocument;
 typedef struct _GebrGeoXmlDocumentClass GebrGeoXmlDocumentClass;
+typedef struct _GebrGeoXmlDocumentPriv GebrGeoXmlDocumentPriv;
 
 struct _GebrGeoXmlDocument {
 	GObject parent;
 
 	/*< private >*/
-	GdomeDocument *document;
+	GebrGeoXmlDocumentPriv *priv;
 };
 
 struct _GebrGeoXmlDocumentClass {
@@ -72,6 +71,9 @@ typedef enum {
 	GEBR_GEOXML_DOCUMENT_TYPE_LINE,
 	GEBR_GEOXML_DOCUMENT_TYPE_PROJECT,
 } GebrGeoXmlDocumentType;
+
+#include "gebr-geoxml-parameters.h"
+#include "gebr-geoxml-program.h"
 
 /**
  * Used by \ref gebr_geoxml_document_load 
