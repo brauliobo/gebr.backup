@@ -270,9 +270,9 @@ void menu_setup_ui(void)
 void menu_new(gboolean edit)
 {
 	GebrGeoXmlFlow *menu = gebr_geoxml_flow_new();
-	gebr_geoxml_document_set_author(GEBR_GEOXML_DOC(menu), debr.config.name->str);
-	gebr_geoxml_document_set_email(GEBR_GEOXML_DOC(menu), debr.config.email->str);
-	gebr_geoxml_document_set_date_created(GEBR_GEOXML_DOC(menu), gebr_iso_date());
+	gebr_geoxml_document_set_author(GEBR_GEOXML_DOCUMENT(menu), debr.config.name->str);
+	gebr_geoxml_document_set_email(GEBR_GEOXML_DOCUMENT(menu), debr.config.email->str);
+	gebr_geoxml_document_set_date_created(GEBR_GEOXML_DOCUMENT(menu), gebr_iso_date());
 
 	menu_new_from_menu(menu, edit);
 }
@@ -291,11 +291,11 @@ void menu_new_from_menu(GebrGeoXmlFlow *menu, gboolean edit)
 
 
 	debr.menu = menu;
-	gebr_geoxml_document_set_title(GEBR_GEOXML_DOC(debr.menu), title_str);
-	gebr_geoxml_document_set_author(GEBR_GEOXML_DOC(debr.menu), debr.config.name->str);
-	gebr_geoxml_document_set_email(GEBR_GEOXML_DOC(debr.menu), debr.config.email->str);
-	gebr_geoxml_document_set_date_created(GEBR_GEOXML_DOC(debr.menu), gebr_iso_date());
-	gebr_geoxml_document_set_filename(GEBR_GEOXML_DOC(debr.menu), new_menu_str);
+	gebr_geoxml_document_set_title(GEBR_GEOXML_DOCUMENT(debr.menu), title_str);
+	gebr_geoxml_document_set_author(GEBR_GEOXML_DOCUMENT(debr.menu), debr.config.name->str);
+	gebr_geoxml_document_set_email(GEBR_GEOXML_DOCUMENT(debr.menu), debr.config.email->str);
+	gebr_geoxml_document_set_date_created(GEBR_GEOXML_DOCUMENT(debr.menu), gebr_iso_date());
+	gebr_geoxml_document_set_filename(GEBR_GEOXML_DOCUMENT(debr.menu), new_menu_str);
 
 	switch (menu_get_selected_type(&iter, FALSE)) {
 	case ITER_FILE:
@@ -310,7 +310,7 @@ void menu_new_from_menu(GebrGeoXmlFlow *menu, gboolean edit)
 	}
 
 	gtk_tree_store_append(debr.ui_menu.model, &iter, &target);
-	gebr_geoxml_document_set_filename(GEBR_GEOXML_DOC(menu), new_menu_str);
+	gebr_geoxml_document_set_filename(GEBR_GEOXML_DOCUMENT(menu), new_menu_str);
 	gtk_tree_store_set(debr.ui_menu.model, &iter,
 			   MENU_STATUS, MENU_STATUS_UNSAVED, MENU_IMAGE, GTK_STOCK_NO,
 			   MENU_FILENAME, new_menu_str, MENU_XMLPOINTER, (gpointer) debr.menu,
@@ -493,7 +493,7 @@ MenuMessage menu_save(GtkTreeIter * iter)
 	}
 
 	filename = g_path_get_basename(path);
-	if (gebr_geoxml_document_save(GEBR_GEOXML_DOC(menu), path) != GEBR_GEOXML_RETV_SUCCESS) {
+	if (gebr_geoxml_document_save(GEBR_GEOXML_DOCUMENT(menu), path) != GEBR_GEOXML_RETV_SUCCESS) {
 		gebr_gui_message_dialog(GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
 					_("Could not save the menu"),
 					_("You do not have necessary permissions to save "
@@ -505,9 +505,9 @@ MenuMessage menu_save(GtkTreeIter * iter)
 		debr_menu_commit_help_edit_windows(iter);
 		debr_menu_sync_revert_buttons(iter);
 
-		gebr_geoxml_document_set_filename (GEBR_GEOXML_DOC (menu), filename);
-		gebr_geoxml_document_set_date_modified(GEBR_GEOXML_DOC(menu), gebr_iso_date());
-		gebr_geoxml_document_save(GEBR_GEOXML_DOC(menu), path);
+		gebr_geoxml_document_set_filename (GEBR_GEOXML_DOCUMENT (menu), filename);
+		gebr_geoxml_document_set_date_modified(GEBR_GEOXML_DOCUMENT(menu), gebr_iso_date());
+		gebr_geoxml_document_save(GEBR_GEOXML_DOCUMENT(menu), path);
 	}
 
 	tmp = g_strdup_printf("%ld",
@@ -812,7 +812,7 @@ void menu_close(GtkTreeIter * iter, gboolean warn_user)
 		validate_close_iter(&validate->iter);
 
 	debr_remove_help_edit_window(menu, FALSE, TRUE);
-	gebr_geoxml_document_free(GEBR_GEOXML_DOC(menu));
+	gebr_geoxml_document_free(GEBR_GEOXML_DOCUMENT(menu));
 	if (gtk_tree_store_remove(debr.ui_menu.model, iter))
 		menu_select_iter(iter);
 	else
@@ -1248,10 +1248,10 @@ gboolean menu_dialog_setup_ui(gboolean new_menu)
 	/*
 	 * Load menu into widgets
 	 */
-	gtk_entry_set_text(GTK_ENTRY(title_entry), gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(debr.menu)));
-	gtk_entry_set_text(GTK_ENTRY(description_entry), gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(debr.menu)));
-	gtk_entry_set_text(GTK_ENTRY(author_entry), gebr_geoxml_document_get_author(GEBR_GEOXML_DOC(debr.menu)));
-	gtk_entry_set_text(GTK_ENTRY(email_entry), gebr_geoxml_document_get_email(GEBR_GEOXML_DOC(debr.menu))); 
+	gtk_entry_set_text(GTK_ENTRY(title_entry), gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(debr.menu)));
+	gtk_entry_set_text(GTK_ENTRY(description_entry), gebr_geoxml_document_get_description(GEBR_GEOXML_DOCUMENT(debr.menu)));
+	gtk_entry_set_text(GTK_ENTRY(author_entry), gebr_geoxml_document_get_author(GEBR_GEOXML_DOCUMENT(debr.menu)));
+	gtk_entry_set_text(GTK_ENTRY(email_entry), gebr_geoxml_document_get_email(GEBR_GEOXML_DOCUMENT(debr.menu))); 
 
 	/* Apply validation cases to the fields */
 
@@ -1357,13 +1357,13 @@ void menu_details_update(void)
 		g_object_set(debr.ui_menu.details.help_edit, "sensitive", TRUE, NULL);
 		gtk_action_set_sensitive(gtk_action_group_get_action(debr.action_group_menu, "menu_help_view"), help_exists);
 		validate_image_set_check_help(debr.ui_menu.help_validate_image,
-					      gebr_geoxml_document_get_help(GEBR_GEOXML_DOC(debr.menu)));
+					      gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(debr.menu)));
 	}
-	markup = g_markup_printf_escaped("<b>%s</b>", gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(debr.menu)));
+	markup = g_markup_printf_escaped("<b>%s</b>", gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(debr.menu)));
 	gtk_label_set_markup(GTK_LABEL(debr.ui_menu.details.title_label), markup);
 	g_free(markup);
 
-	markup = g_markup_printf_escaped("<i>%s</i>", gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(debr.menu)));
+	markup = g_markup_printf_escaped("<i>%s</i>", gebr_geoxml_document_get_description(GEBR_GEOXML_DOCUMENT(debr.menu)));
 	gtk_label_set_markup(GTK_LABEL(debr.ui_menu.details.description_label), markup);
 	g_free(markup);
 
@@ -1423,8 +1423,8 @@ void menu_details_update(void)
 
 	text = g_string_new(NULL);
 	g_string_printf(text, "%s <%s>",
-			gebr_geoxml_document_get_author(GEBR_GEOXML_DOC(debr.menu)),
-			gebr_geoxml_document_get_email(GEBR_GEOXML_DOC(debr.menu)));
+			gebr_geoxml_document_get_author(GEBR_GEOXML_DOCUMENT(debr.menu)),
+			gebr_geoxml_document_get_email(GEBR_GEOXML_DOCUMENT(debr.menu)));
 	gtk_label_set_text(GTK_LABEL(debr.ui_menu.details.author_label), text->str);
 	g_string_free(text, TRUE);
 }
@@ -1591,7 +1591,7 @@ void menu_archive(void) {
 
 	GtkTreeIter iter;
 
-	debr.menu_recovery.clone = GEBR_GEOXML_FLOW(gebr_geoxml_document_clone(GEBR_GEOXML_DOC(debr.menu)));
+	debr.menu_recovery.clone = GEBR_GEOXML_FLOW(gebr_geoxml_document_clone(GEBR_GEOXML_DOCUMENT(debr.menu)));
 
 	if (menu_get_selected(&iter, FALSE))
 		gtk_tree_model_get(GTK_TREE_MODEL(debr.ui_menu.model), &iter, MENU_STATUS, &debr.menu_recovery.status, -1);
@@ -1898,7 +1898,7 @@ static GtkMenu *menu_dialog_save_popup_menu(GtkTreeView * tree_view)
  */
 static void menu_title_changed(GtkEntry * entry)
 {
-	gebr_geoxml_document_set_title(GEBR_GEOXML_DOC(debr.menu), gtk_entry_get_text(entry));
+	gebr_geoxml_document_set_title(GEBR_GEOXML_DOCUMENT(debr.menu), gtk_entry_get_text(entry));
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
@@ -1908,7 +1908,7 @@ static void menu_title_changed(GtkEntry * entry)
  */
 static void menu_description_changed(GtkEntry * entry)
 {
-	gebr_geoxml_document_set_description(GEBR_GEOXML_DOC(debr.menu), gtk_entry_get_text(entry));
+	gebr_geoxml_document_set_description(GEBR_GEOXML_DOCUMENT(debr.menu), gtk_entry_get_text(entry));
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
@@ -2028,7 +2028,7 @@ void menu_help_edit_clicked(void)
  */
 static void menu_author_changed(GtkEntry * entry)
 {
-	gebr_geoxml_document_set_author(GEBR_GEOXML_DOC(debr.menu), gtk_entry_get_text(entry));
+	gebr_geoxml_document_set_author(GEBR_GEOXML_DOCUMENT(debr.menu), gtk_entry_get_text(entry));
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 
@@ -2038,7 +2038,7 @@ static void menu_author_changed(GtkEntry * entry)
  */
 static void menu_email_changed(GtkEntry * entry)
 {
-	gebr_geoxml_document_set_email(GEBR_GEOXML_DOC(debr.menu), gtk_entry_get_text(entry));
+	gebr_geoxml_document_set_email(GEBR_GEOXML_DOCUMENT(debr.menu), gtk_entry_get_text(entry));
 	menu_saved_status_set(MENU_STATUS_UNSAVED);
 }
 

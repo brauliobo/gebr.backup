@@ -24,7 +24,7 @@
  * GebrGeoXmlFlow, GebrGeoXmlLine and GebrGeoXmlProject XML files can all be loaded using gebr_geoxml_document_load.
  * Validation is done automatically by matching document's DTD, located in /usr/share/libgeoxml (specifically at
  * ${datarootdir}/libgeoxml, run '--configure --help' for more information).  The same occurs with all methods in this
- * class: they are valid for all GebrGeoXmlDocument's derived classes. Use GEBR_GEOXML_DOC to cast.
+ * class: they are valid for all GebrGeoXmlDocument's derived classes. Use GEBR_GEOXML_DOCUMENT to cast.
  */
 
 #ifndef __GEBR_GEOXML_DOCUMENT_H__
@@ -74,6 +74,8 @@ typedef enum {
 
 #include "gebr-geoxml-parameters.h"
 #include "gebr-geoxml-program.h"
+
+GType gebr_geoxml_document_get_type (void) G_GNUC_CONST;
 
 /**
  * Used by \ref gebr_geoxml_document_load 

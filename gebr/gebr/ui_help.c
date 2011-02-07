@@ -214,15 +214,15 @@ static void on_title_ready(GebrGuiHelpEditWidget * widget, const gchar * title, 
 	switch (gebr_geoxml_object_get_type (object)) {
 	case GEBR_GEOXML_OBJECT_TYPE_PROJECT:
 		obj_name = _("project");
-		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOC (object));
+		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (object));
 		break;
 	case GEBR_GEOXML_OBJECT_TYPE_LINE:
 		obj_name = _("line");
-		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOC (object));
+		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (object));
 		break;
 	case GEBR_GEOXML_OBJECT_TYPE_FLOW:
 		obj_name = _("flow");
-		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOC (object));
+		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (object));
 		break;
 	case GEBR_GEOXML_OBJECT_TYPE_PROGRAM:
 		obj_name = _("program");

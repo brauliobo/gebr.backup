@@ -62,7 +62,7 @@ GebrGeoXmlProjectLine *gebr_geoxml_project_append_line(GebrGeoXmlProject * proje
 	GebrGeoXmlProjectLine *project_line;
 
 	project_line = (GebrGeoXmlProjectLine *)
-	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(project)), "line", NULL);
+	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(project)), "line", NULL);
 	__gebr_geoxml_set_attr_value((GdomeElement *) project_line, "source", source);
 
 	return project_line;
@@ -92,7 +92,7 @@ int gebr_geoxml_project_get_line(GebrGeoXmlProject * project, GebrGeoXmlSequence
 	}
 
 	*project_line = (GebrGeoXmlSequence *)
-	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(project)), "line", index,
+	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(project)), "line", index,
 					 FALSE);
 
 	return (*project_line == NULL)
@@ -103,7 +103,7 @@ glong gebr_geoxml_project_get_lines_number(GebrGeoXmlProject * project)
 {
 	if (project == NULL)
 		return -1;
-	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(project)), "line");
+	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(project)), "line");
 }
 
 void gebr_geoxml_project_set_line_source(GebrGeoXmlProjectLine * project_line, const gchar * source)
