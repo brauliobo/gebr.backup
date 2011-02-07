@@ -183,7 +183,7 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 		gchar *basename;
 		basename = g_path_get_basename(path);
 
-		type = gebr_geoxml_document_get_type(parent_document);
+		type = gebr_geoxml_document_get_doctype(parent_document);
 		if (type == GEBR_GEOXML_DOCUMENT_TYPE_PROJECT)
 			gebr_geoxml_project_get_line(GEBR_GEOXML_PROJECT(parent_document), &sequence, 0);
 		else if (type == GEBR_GEOXML_DOCUMENT_TYPE_LINE)
@@ -271,7 +271,7 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 		const gchar *document_name;
 		if (document == NULL)
 			document_name = _("document");
-		else switch (gebr_geoxml_document_get_type(document)) {
+		else switch (gebr_geoxml_document_get_doctype(document)) {
 		case GEBR_GEOXML_DOCUMENT_TYPE_PROJECT:
 			document_name = _("project");
 			break;
@@ -376,7 +376,7 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 		if (*document == NULL) 
 			break;
 
-		switch (gebr_geoxml_document_get_type(*document)) {
+		switch (gebr_geoxml_document_get_doctype(*document)) {
 		case GEBR_GEOXML_DOCUMENT_TYPE_PROJECT: {
 			GebrGeoXmlSequence *project_line;
 			GebrGeoXmlDocument *orphans_project;
@@ -497,7 +497,7 @@ void document_import(GebrGeoXmlDocument * document)
 	GString *path;
 	const gchar *extension;
 
-	switch (gebr_geoxml_document_get_type(document)) {
+	switch (gebr_geoxml_document_get_doctype(document)) {
 	case GEBR_GEOXML_DOCUMENT_TYPE_FLOW:
 		extension = "flw";
 		flow_set_paths_to(GEBR_GEOXML_FLOW(document), FALSE);

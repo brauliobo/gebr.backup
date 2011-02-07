@@ -149,7 +149,7 @@ create_help_edit_window(GebrGeoXmlDocument * document)
 	g_signal_connect(window, "destroy",
 			 G_CALLBACK(on_help_edit_window_destroy), document);
 
-	switch(gebr_geoxml_document_get_type(document)) {
+	switch(gebr_geoxml_document_get_doctype(document)) {
 	case GEBR_GEOXML_DOCUMENT_TYPE_FLOW:
 		document_type = _("flow");
 		break;

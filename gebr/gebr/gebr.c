@@ -536,7 +536,7 @@ void gebr_remove_help_edit_window(GebrGeoXmlDocument * document)
 			gtk_widget_destroy(window);
 	}
 
-	switch (gebr_geoxml_document_get_type(document)) {
+	switch (gebr_geoxml_document_get_doctype(document)) {
 	case GEBR_GEOXML_DOCUMENT_TYPE_PROJECT: {
 		GebrGeoXmlProject *project = GEBR_GEOXML_PROJECT(document);
 		GebrGeoXmlSequence * i;

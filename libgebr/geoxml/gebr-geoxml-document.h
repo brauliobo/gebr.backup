@@ -122,7 +122,7 @@ GebrGeoXmlDocument *gebr_geoxml_document_clone(GebrGeoXmlDocument * source);
  *
  * \see GEBR_GEOXML_DOCUMENT_TYPE
  */
-GebrGeoXmlDocumentType gebr_geoxml_document_get_type(GebrGeoXmlDocument * document);
+GebrGeoXmlDocumentType gebr_geoxml_document_get_doctype(GebrGeoXmlDocument * document);
 
 /**
  * Returns the version string of \p document.
