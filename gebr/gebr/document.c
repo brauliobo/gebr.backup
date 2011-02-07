@@ -167,7 +167,7 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 		gebr_geoxml_flow_get_program(menu, &menu_program, index);
 		gebr_geoxml_program_set_help(program, gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(menu_program)));
 
-		document_free(GEBR_GEOXML_DOC(menu));
+		document_free(GEBR_GEOXML_DOCUMENT(menu));
 	}	
 
 	/**

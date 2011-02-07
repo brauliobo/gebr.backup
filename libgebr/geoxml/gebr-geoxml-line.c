@@ -62,7 +62,7 @@ GebrGeoXmlLineFlow *gebr_geoxml_line_append_flow(GebrGeoXmlLine * line, const gc
 	GebrGeoXmlLineFlow *line_flow;
 
 	line_flow = (GebrGeoXmlLineFlow *)
-	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(line)), "flow", NULL);
+	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(line)), "flow", NULL);
 	__gebr_geoxml_set_attr_value((GdomeElement *) line_flow, "source", source);
 
 	return line_flow;
@@ -76,7 +76,7 @@ int gebr_geoxml_line_get_flow(GebrGeoXmlLine * line, GebrGeoXmlSequence ** line_
 	}
 
 	*line_flow = (GebrGeoXmlSequence *)
-	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(line)), "flow", index,
+	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(line)), "flow", index,
 					 FALSE);
 
 	return (*line_flow == NULL)
@@ -87,7 +87,7 @@ glong gebr_geoxml_line_get_flows_number(GebrGeoXmlLine * line)
 {
 	if (line == NULL)
 		return -1;
-	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(line)), "flow");
+	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(line)), "flow");
 }
 
 void gebr_geoxml_line_set_flow_source(GebrGeoXmlLineFlow * line_flow, const gchar * source)
@@ -112,9 +112,9 @@ GebrGeoXmlLinePath *gebr_geoxml_line_append_path(GebrGeoXmlLine * line, const gc
 	GebrGeoXmlLinePath *line_path;
 
 	line_path = (GebrGeoXmlLinePath *)
-	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(line)), 
+	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(line)), 
 					     "path",
-					     __gebr_geoxml_get_first_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(line)), 
+					     __gebr_geoxml_get_first_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(line)), 
 									     "flow"));
 	gebr_geoxml_value_sequence_set(GEBR_GEOXML_VALUE_SEQUENCE(line_path), path);
 
@@ -129,7 +129,7 @@ int gebr_geoxml_line_get_path(GebrGeoXmlLine * line, GebrGeoXmlSequence ** path,
 	}
 
 	*path = (GebrGeoXmlSequence *)
-	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(line)), "path", index,
+	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(line)), "path", index,
 					 FALSE);
 
 	return (*path == NULL)
@@ -140,5 +140,5 @@ glong gebr_geoxml_line_get_paths_number(GebrGeoXmlLine * line)
 {
 	if (line == NULL)
 		return -1;
-	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(line)), "path");
+	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(line)), "path");
 }

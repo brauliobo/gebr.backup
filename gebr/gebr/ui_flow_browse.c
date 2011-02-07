@@ -268,11 +268,11 @@ void flow_browse_info_update(void)
 	GString *text;
 
 	/* Title in bold */
-	markup = g_markup_printf_escaped("<b>%s</b>", gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(gebr.flow)));
+	markup = g_markup_printf_escaped("<b>%s</b>", gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(gebr.flow)));
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.title), markup);
 	g_free(markup);
 	/* Description in italic */
-	markup = g_markup_printf_escaped("<i>%s</i>", gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(gebr.flow)));
+	markup = g_markup_printf_escaped("<i>%s</i>", gebr_geoxml_document_get_description(GEBR_GEOXML_DOCUMENT(gebr.flow)));
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.description), markup);
 	g_free(markup);
 	/* Date labels */
@@ -287,9 +287,9 @@ void flow_browse_info_update(void)
 	g_free(markup);
 	/* Dates */
 	gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.created),
-			   gebr_localized_date(gebr_geoxml_document_get_date_created(GEBR_GEOXML_DOC(gebr.flow))));
+			   gebr_localized_date(gebr_geoxml_document_get_date_created(GEBR_GEOXML_DOCUMENT(gebr.flow))));
 	gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.modified),
-			   gebr_localized_date(gebr_geoxml_document_get_date_modified(GEBR_GEOXML_DOC(gebr.flow))));
+			   gebr_localized_date(gebr_geoxml_document_get_date_modified(GEBR_GEOXML_DOCUMENT(gebr.flow))));
 	gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.lastrun),
 			   gebr_localized_date(gebr_geoxml_flow_get_date_last_run(gebr.flow)));
 
@@ -356,8 +356,8 @@ void flow_browse_info_update(void)
 	/* Author and email */
 	text = g_string_new(NULL);
 	g_string_printf(text, "%s <%s>",
-			gebr_geoxml_document_get_author(GEBR_GEOXML_DOC(gebr.flow)),
-			gebr_geoxml_document_get_email(GEBR_GEOXML_DOC(gebr.flow)));
+			gebr_geoxml_document_get_author(GEBR_GEOXML_DOCUMENT(gebr.flow)),
+			gebr_geoxml_document_get_email(GEBR_GEOXML_DOCUMENT(gebr.flow)));
 	gtk_label_set_text(GTK_LABEL(gebr.ui_flow_browse->info.author), text->str);
 	g_string_free(text, TRUE);
 
@@ -509,7 +509,7 @@ void flow_browse_show_help(void)
  */
 void flow_browse_edit_help(void)
 {
-	gebr_help_edit_document(GEBR_GEOXML_DOC(gebr.flow));
+	gebr_help_edit_document(GEBR_GEOXML_DOCUMENT(gebr.flow));
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
 }
 
@@ -653,5 +653,5 @@ static void flow_browse_on_revision_delete_activate(GtkWidget * widget, GebrGeoX
  */
 static void flow_browse_on_flow_move(void)
 {
-	document_save(GEBR_GEOXML_DOC(gebr.line), TRUE, TRUE);
+	document_save(GEBR_GEOXML_DOCUMENT(gebr.line), TRUE, TRUE);
 }

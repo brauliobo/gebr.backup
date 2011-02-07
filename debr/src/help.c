@@ -411,7 +411,7 @@ static void help_subst_fields(GString * help, GebrGeoXmlProgram * program, gbool
 	if (program != NULL)
 		content = (gchar *) gebr_geoxml_program_get_title(program);
 	else
-		content = (gchar *) gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(debr.menu));
+		content = (gchar *) gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(debr.menu));
 	
 
 	escaped_content = g_markup_escape_text((const gchar *) content, -1);
@@ -436,7 +436,7 @@ static void help_subst_fields(GString * help, GebrGeoXmlProgram * program, gbool
 	if (program != NULL)
 		content = (gchar *) gebr_geoxml_program_get_description(program);
 	else
-		content = (gchar *) gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(debr.menu));
+		content = (gchar *) gebr_geoxml_document_get_description(GEBR_GEOXML_DOCUMENT(debr.menu));
 
 
 	escaped_content = g_markup_escape_text((const gchar *) content, -1);
@@ -527,9 +527,9 @@ static void help_subst_fields(GString * help, GebrGeoXmlProgram * program, gbool
 		const gchar *author, *email;
 		gchar *escaped_author, *escaped_email;
 
-		author = gebr_geoxml_document_get_author(GEBR_GEOXML_DOC(debr.menu));
+		author = gebr_geoxml_document_get_author(GEBR_GEOXML_DOCUMENT(debr.menu));
 		escaped_author = g_markup_escape_text(author, -1);
-		email = gebr_geoxml_document_get_email(GEBR_GEOXML_DOC(debr.menu));
+		email = gebr_geoxml_document_get_email(GEBR_GEOXML_DOCUMENT(debr.menu));
 		escaped_email = g_markup_escape_text(email, -1);
 
 		g_string_printf(text, "\n          <p>%s: written by %s &lt;%s&gt;</p>\n          ",
@@ -565,7 +565,7 @@ static void help_edit_on_finished(GebrGeoXmlObject * object, const gchar * _help
 
 	switch (gebr_geoxml_object_get_type(object)) {
 	case GEBR_GEOXML_OBJECT_TYPE_FLOW:
-		gebr_geoxml_document_set_help(GEBR_GEOXML_DOC(object), help->str);
+		gebr_geoxml_document_set_help(GEBR_GEOXML_DOCUMENT(object), help->str);
 		break;
 	case GEBR_GEOXML_OBJECT_TYPE_PROGRAM:
 		gebr_geoxml_program_set_help(GEBR_GEOXML_PROGRAM(object), help->str);
