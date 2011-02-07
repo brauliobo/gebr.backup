@@ -225,7 +225,7 @@ void project_line_info_update(void)
 
 	/* initialization */
 	is_project =
-	    (gebr_geoxml_document_get_type(gebr.project_line) == GEBR_GEOXML_DOCUMENT_TYPE_PROJECT) ? TRUE : FALSE;
+	    (gebr_geoxml_document_get_doctype(gebr.project_line) == GEBR_GEOXML_DOCUMENT_TYPE_PROJECT) ? TRUE : FALSE;
 
 	/* Title in bold */
 	markup = is_project
@@ -1147,7 +1147,7 @@ gchar * gebr_line_generate_header(GebrGeoXmlDocument * document)
 	GebrGeoXmlDocumentType type;
 	GebrGeoXmlSequence *sequence;
 
-	type = gebr_geoxml_document_get_type (document);
+	type = gebr_geoxml_document_get_doctype (document);
 	g_return_val_if_fail (type == GEBR_GEOXML_DOCUMENT_TYPE_LINE, NULL);
 
 	dump = g_string_new(NULL);

@@ -187,7 +187,7 @@ void document_properties_setup_ui(GebrGeoXmlDocument * document, GebrPropertiesR
 	data->accept_response = FALSE;
 	data->document = document;
 
-	if (gebr_geoxml_document_get_type(document) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
+	if (gebr_geoxml_document_get_doctype(document) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
 		flow_browse_single_selection();
 
 	data->window = window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -273,7 +273,7 @@ void document_properties_setup_ui(GebrGeoXmlDocument * document, GebrPropertiesR
 	/* read */
 	gtk_entry_set_text(GTK_ENTRY(email), gebr_geoxml_document_get_email(document));
 
-	if (gebr_geoxml_document_get_type(document) == GEBR_GEOXML_DOCUMENT_TYPE_LINE) {
+	if (gebr_geoxml_document_get_doctype(document) == GEBR_GEOXML_DOCUMENT_TYPE_LINE) {
 		/* Line Path's*/
 		line_path_label = gtk_label_new(_("Path"));
 		gtk_widget_show(line_path_label);
@@ -454,9 +454,9 @@ void document_dict_edit_setup_ui(void)
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), add_hbox, FALSE, TRUE, 0);
 
 	int i = 0;
-	if (gebr_geoxml_document_get_type(document) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
+	if (gebr_geoxml_document_get_doctype(document) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
 		data->documents[i++] = GEBR_GEOXML_DOCUMENT(gebr.flow);
-	if (gebr_geoxml_document_get_type(document) != GEBR_GEOXML_DOCUMENT_TYPE_PROJECT)
+	if (gebr_geoxml_document_get_doctype(document) != GEBR_GEOXML_DOCUMENT_TYPE_PROJECT)
 		data->documents[i++] = GEBR_GEOXML_DOCUMENT(gebr.line);
 	data->documents[i++] = GEBR_GEOXML_DOCUMENT(gebr.project);
 	data->documents[i] = NULL;
@@ -968,7 +968,7 @@ static GtkTreeIter dict_edit_append_iter(struct dict_edit_data *data, GebrGeoXml
  */
 static const gchar *document_get_name_from_type(GebrGeoXmlDocument * document, gboolean upper)
 {
-	switch (gebr_geoxml_document_get_type(document)) {
+	switch (gebr_geoxml_document_get_doctype(document)) {
 	case GEBR_GEOXML_DOCUMENT_TYPE_PROJECT:
 		return upper ? _("Project") : _("project");
 	case GEBR_GEOXML_DOCUMENT_TYPE_LINE:
@@ -997,7 +997,7 @@ void on_response_ok(GtkButton * button, GebrPropertiesData * data)
 	document_save(data->document, TRUE, TRUE);
 
 	/* Update title in apropriated store */
-	switch ((type = gebr_geoxml_document_get_type(data->document))) {
+	switch ((type = gebr_geoxml_document_get_doctype(data->document))) {
 	case GEBR_GEOXML_DOCUMENT_TYPE_PROJECT:
 	case GEBR_GEOXML_DOCUMENT_TYPE_LINE:
 		project_line_get_selected(&iter, DontWarnUnselection);

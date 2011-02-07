@@ -56,7 +56,6 @@ struct _GebrGeoXmlDocumentPriv {
 //==============================================================================
 // GLOBAL VARIABLES							       =
 //==============================================================================
-
 GdomeException exception;
 
 static GdomeDOMImplementation *dom_implementation;
@@ -71,7 +70,6 @@ GdomeDocument *clipboard_document = NULL;
 //==============================================================================
 // PROTOTYPES								       =
 //==============================================================================
-
 static void gebr_geoxml_document_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
@@ -101,6 +99,46 @@ G_DEFINE_TYPE(GebrGeoXmlDocument, gebr_geoxml_document, G_TYPE_OBJECT);
 //==============================================================================
 // GOBJECT RELATED FUNCTIONS						       =
 //==============================================================================
+static void gebr_geoxml_document_class_init (GebrGeoXmlDocumentClass *klass)
+{
+	GObjectClass *gobject_class;
+	gobject_class = G_OBJECT_CLASS (klass);
+	gobject_class->set_property = gebr_geoxml_document_set_property;
+	gobject_class->get_property = gebr_geoxml_document_get_property;
+
+	g_type_class_add_private (klass, sizeof (GebrGeoXmlDocumentPriv));
+}
+
+static void gebr_geoxml_document_init (GebrGeoXmlDocument *self)
+{
+	self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
+						  GEBR_GEOXML_TYPE_DOCUMENT,
+						  GebrGeoXmlDocumentPriv);
+}
+
+static void gebr_geoxml_document_set_property	(GObject	*object,
+						 guint		 prop_id,
+						 const GValue	*value,
+						 GParamSpec	*pspec)
+{
+	switch (prop_id) {
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
+	}
+}
+
+static void gebr_geoxml_document_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
+						 GParamSpec	*pspec)
+{
+	switch (prop_id) {
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
+	}
+}
 
 //==============================================================================
 // PRIVATE FUNCTIONS							       =
@@ -135,7 +173,7 @@ static void __gebr_geoxml_unref(void)
 static void __gebr_geoxml_document_new_data(GebrGeoXmlDocument *self, const gchar * filename)
 {
 	GebrGeoXmlDocumentData *data = g_new(GebrGeoXmlDocumentData, 1);
-	self->document->user_data = data;
+	self->priv->document->user_data = data;
 	data->filename = g_string_new(filename);
 }
 
@@ -317,12 +355,12 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 		__gebr_geoxml_insert_new_element(element, "created", NULL);
 		__gebr_geoxml_insert_new_element(element, "modified", NULL);
 
-		if (gebr_geoxml_document_get_type((GebrGeoXmlDocument *) *document) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
+		if (gebr_geoxml_document_get_doctype((GebrGeoXmlDocument *) *document) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
 			__gebr_geoxml_insert_new_element(element, "lastrun", NULL);
 	}
 	/* document 0.2.0 to 0.2.1 */
 	if (strcmp(version, "0.2.1") < 0) {
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 			GebrGeoXmlSequence *program;
 
 			gebr_geoxml_flow_get_program(GEBR_GEOXML_FLOW(*document), &program, 0);
@@ -339,7 +377,7 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 	}
 	/* document 0.2.1 to 0.2.2 */
 	if (strcmp(version, "0.2.2") < 0) {
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 			GdomeElement *element;
 
 			__gebr_geoxml_set_attr_value(root_element, "version", "0.2.2");
@@ -372,7 +410,7 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 		__gebr_geoxml_set_attr_value(root_element, "version", "0.3.0");
 		__gebr_geoxml_set_attr_value(root_element, "nextid", "n0");
 
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 			GebrGeoXmlSequence *program;
 
 			gebr_geoxml_flow_get_program(GEBR_GEOXML_FLOW(*document), &program, 0);
@@ -494,7 +532,7 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 								__gebr_geoxml_get_first_element(root_element, "date"));
 		__gebr_geoxml_parameters_append_new(dict_element);
 
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 			__gebr_geoxml_insert_new_element(root_element, "servers",
 							 __gebr_geoxml_next_element(__gebr_geoxml_get_first_element
 										    (root_element, "io")));
@@ -504,7 +542,7 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 	if (strcmp(version, "0.3.2") < 0) {
 		__gebr_geoxml_set_attr_value(root_element, "version", "0.3.2");
 
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 			GdomeElement *element;
 
 			gebr_foreach_gslist(element, __gebr_geoxml_get_elements_by_tag(root_element, "menu")) {
@@ -549,19 +587,19 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 	if (strcmp(version, "0.3.3") < 0) {
 		// Backward compatible change, nothing to be done.
 		// Added #IMPLIED 'version' attribute to 'program' tag.
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
 			__gebr_geoxml_set_attr_value(root_element, "version", "0.3.3");
 	}
 	/* flow 0.3.3 to 0.3.4 */ 
 	if (strcmp(version, "0.3.4") < 0) {
 		// Backward compatible change, nothing to be done.
 		// Added #IMPLIED 'mpi' attribute to 'program' tag.
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
 			__gebr_geoxml_set_attr_value(root_element, "version", "0.3.4");
 	}
 	/* flow 0.3.4 to 0.3.5 */ 
 	if (strcmp(version, "0.3.5") < 0) {
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 			__gebr_geoxml_set_attr_value(root_element, "version", "0.3.5");
 
 			/* remove flow filename */
@@ -595,7 +633,7 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 	}
 	/* flow 0.3.5 to 0.3.6 */ 
 	if (strcmp(version, "0.3.6") < 0) {
-		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+		if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 			__gebr_geoxml_set_attr_value(root_element, "version", "0.3.6");
 
 			GdomeElement *element;
@@ -630,7 +668,7 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 	}
 
 	/* CHECKS (may impact performance) */
-	if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+	if (gebr_geoxml_document_get_doctype(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 		GdomeElement *element;
 
 		/* accept only on/off for flags */
@@ -806,7 +844,7 @@ GebrGeoXmlDocument *gebr_geoxml_document_clone(GebrGeoXmlDocument * source)
 	return document;
 }
 
-GebrGeoXmlDocumentType gebr_geoxml_document_get_type(GebrGeoXmlDocument * document)
+GebrGeoXmlDocumentType gebr_geoxml_document_get_doctype(GebrGeoXmlDocument * document)
 {
 	if (document == NULL)
 		return GEBR_GEOXML_DOCUMENT_TYPE_FLOW;
@@ -859,7 +897,7 @@ int gebr_geoxml_document_save(GebrGeoXmlDocument * document, const gchar * path)
 
 	gebr_geoxml_document_to_string(document, &xml);
 
-	if ((gebr_geoxml_document_get_type(document) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) && g_str_has_suffix(path, ".mnu")) {
+	if ((gebr_geoxml_document_get_doctype(document) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) && g_str_has_suffix(path, ".mnu")) {
 		fp = fopen(path, "w");
 		if (fp == NULL) {
 			return GEBR_GEOXML_RETV_PERMISSION_DENIED;
@@ -1088,7 +1126,7 @@ static gboolean gebr_geoxml_document_check_version(GebrGeoXmlDocument * document
 	guint major2, minor2, micro2;
 	const gchar * doc_version;
 
-	switch (gebr_geoxml_document_get_type(document)) {
+	switch (gebr_geoxml_document_get_doctype(document)) {
 	case GEBR_GEOXML_DOCUMENT_TYPE_FLOW:
 		doc_version = GEBR_GEOXML_FLOW_VERSION;
 		break;

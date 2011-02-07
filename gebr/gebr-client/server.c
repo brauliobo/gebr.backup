@@ -116,7 +116,7 @@ gboolean server_run_flow(struct server *server, const gchar * flow_path)
 				    gebr_geoxml_error_string((enum GEBR_GEOXML_RETV)ret));
 		return FALSE;
 	}
-	if (gebr_geoxml_document_get_type(document) != GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+	if (gebr_geoxml_document_get_doctype(document) != GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
 		gebr_client_message(GEBR_LOG_ERROR, _("The document is not a flow."));
 		return FALSE;
 	}

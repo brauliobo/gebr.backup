@@ -63,7 +63,7 @@ void line_new(void)
 	model = GTK_TREE_MODEL (gebr.ui_project_line->store);
 	gtk_tree_model_get (model, &parent, PL_XMLPOINTER, &doc, -1);
 
-	if (gebr_geoxml_document_get_type (doc) == GEBR_GEOXML_DOCUMENT_TYPE_LINE) {
+	if (gebr_geoxml_document_get_doctype (doc) == GEBR_GEOXML_DOCUMENT_TYPE_LINE) {
 		iter = parent;
 		gtk_tree_model_iter_parent (model, &parent, &iter);
 	}
