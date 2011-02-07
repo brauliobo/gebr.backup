@@ -818,13 +818,21 @@ void project_line_delete(void)
 			? 0 : 1;
 	}
 
+	GString *delete_list = g_string_new("");
+	gboolean can_delete = TRUE;
+	gint quantity_selected = 0;
 	for (GList *i = selected; i != NULL; i = g_list_next(i)) {
 		GtkTreeIter * iter = (GtkTreeIter*)i->data;
 		GtkTreeIter parent;
 		gboolean is_line = gtk_tree_model_iter_parent(GTK_TREE_MODEL(gebr.ui_project_line->store), &parent, iter);
+		GebrGeoXmlDocument *document;
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->store), iter,
+				   PL_XMLPOINTER, &document, -1);
 		
 		if (!is_line) {
 			gboolean can_delete_project;
+			quantity_selected++;
+
 			if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebr.ui_project_line->store), iter)) {
 				gboolean all_line_selected = TRUE;
 				GtkTreeIter i_iter;
@@ -836,14 +844,84 @@ void project_line_delete(void)
 					}
 				}
 				can_delete_project = all_line_selected;
-			} else 
+			} else {
 				can_delete_project = TRUE;
+			}
 
-			if (!can_delete_project)
-				project_delete(iter, TRUE); //will fail and show a message to the user
+			if (!can_delete_project) {
+				can_delete = FALSE;
+				project_delete(iter, TRUE); //will fail and show a status message to the user
+				break;
+			}
+
+			g_string_append_printf(delete_list, _("Project '%s'.\n"),
+					       gebr_geoxml_document_get_title(document));
+		} else {
+			GString *tmp = g_string_new(_("empty"));
+			glong n = gebr_geoxml_line_get_flows_number(GEBR_GEOXML_LINE(document));
+			quantity_selected++;
+
+			if (n > 0){
+				g_string_printf(tmp, _("including %ld flow(s)"), n);
+				quantity_selected++;
+			}
+
+			GtkTreeSelection *tree_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_project_line->view));
+			
+			if (gtk_tree_selection_iter_is_selected(tree_selection, &parent))
+				g_string_append(delete_list, "  ");
+
+			g_string_append_printf(delete_list, _("Line '%s' (%s).\n"),
+					       gebr_geoxml_document_get_title(document), tmp->str);
+			g_string_free(tmp, TRUE);
 		}
-
 	}
+	/* now asks the user for confirmation */
+	if (!can_delete)
+		goto out;
+	if (quantity_selected > 1)
+		can_delete = gebr_gui_confirm_action_dialog(
+				_("Confirm multiple deletion"),
+				_("The following documents are about to be deleted. This operation can't be undone! "
+				  "Are you sure?\n%s"),
+				delete_list->str);
+
+	else
+		can_delete = gebr_gui_confirm_action_dialog(
+				_("Confirm deletion"),
+				_("The following document is about to be deleted. This operation can't be undone! "
+				  "Are you sure?\n%s"),
+				delete_list->str);
+	if (!can_delete)
+		goto out;
+
+	/* delete lines first, removing them from list */
+	for (GList *i = selected; i != NULL; ) {
+		GtkTreeIter * iter = (GtkTreeIter*)i->data;
+		GtkTreeIter parent;
+		gboolean is_line = gtk_tree_model_iter_parent(GTK_TREE_MODEL(gebr.ui_project_line->store), &parent, iter);
+		
+		if (is_line) {
+			line_delete(iter, TRUE);
+
+			GList *tmp = i;
+			i = g_list_next(i);
+			gtk_tree_iter_free(iter);
+			selected = g_list_remove_link(selected, tmp);
+		} else
+			i = g_list_next(i);
+	}
+	/* now delete the remaining empty projects */
+	for (GList *i = selected; i != NULL; i = g_list_next(i)) {
+		GtkTreeIter * iter = (GtkTreeIter*)i->data;
+		project_delete(iter, TRUE);
+	}
+
+out:
+	/* frees */
+	g_string_free(delete_list, TRUE);
+	g_list_foreach(selected, (GFunc) gtk_tree_iter_free, NULL);
+	g_list_free(selected);
 }
 
 void project_line_free(void)
