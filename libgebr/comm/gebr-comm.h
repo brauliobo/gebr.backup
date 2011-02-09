@@ -1,4 +1,4 @@
-/*   libgebr - GêBR Library
+/*   libgebr - GeBR Library
  *   Copyright (C) 2007-2009 GeBR core team (http://www.gebrproject.com/)
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -15,27 +15,14 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <glib.h>
-
-#include <gebr-comm-protocol.h>
-
-void test_comm_build_message()
-{
-	GString * message;
-	struct gebr_comm_message_def msg_def = gebr_comm_message_def_create("FOO", TRUE, 2);
-
-	message = gebr_comm_protocol_build_message(msg_def, 2, NULL, NULL);
-	g_assert_cmpstr(message->str, ==, "FOO 5 0| 0|\n");
-
-	message = gebr_comm_protocol_build_message(msg_def, 2, "teste1", "123");
-	g_assert_cmpstr(message->str, ==, "FOO 14 6|teste1 3|123\n");
-}
-
-int main(int argc, char *argv[])
-{
-	g_test_init(&argc, &argv, NULL);
-
-	g_test_add_func("/comm/protocol/build-message", test_comm_build_message);
-
-	return g_test_run();
-}
+/* include all gebr_comm library's headers. */
+#include <comm/gebr-comm-socketaddress.h>
+#include <comm/gebr-comm-hostinfo.h>
+#include <comm/gebr-comm-socket.h>
+#include <comm/gebr-comm-streamsocket.h>
+#include <comm/gebr-comm-listensocket.h>
+#include <comm/gebr-comm-channelsocket.h>
+#include <comm/gebr-comm-process.h>
+#include <comm/gebr-comm-terminalprocess.h>
+#include <comm/gebr-comm-protocol.h>
+#include <comm/gebr-comm-server.h>

@@ -14,28 +14,21 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *   Inspired on Qt 4.3 version of QAbstractSocket, by Trolltech
+ *   Inspired on Qt 4.3 version of QTcpSocket, by Trolltech
  */
 
-#ifndef __GEBR_COMM_SOCKETPRIVATE_H
-#define __GEBR_COMM_SOCKETPRIVATE_H
+#ifndef __GEBR_COMM_TCP_SOCKET_PRIVATE_H
+#define __GEBR_COMM_TCP_SOCKET_PRIVATE_H
 
-#include "socket.h"
-#include "socketaddress.h"
+#include "gebr-comm-streamsocket.h"
 
 G_BEGIN_DECLS
 
-void _gebr_comm_socket_init(GebrCommSocket * socket, int fd, enum GebrCommSocketAddressType address_type);
-
-void _gebr_comm_socket_close(GebrCommSocket * socket);
-
-int _gebr_comm_socket_get_fd(GebrCommSocket * socket);
-
-void _gebr_comm_socket_enable_read_watch(GebrCommSocket * socket);
-
-void _gebr_comm_socket_enable_write_watch(GebrCommSocket * socket);
-
-void _gebr_comm_socket_emit_error(GebrCommSocket * socket, enum GebrCommSocketError error);
+/**
+ * Create an already connected socket
+ * Used by GTcpServer when a new connection is accepted.
+ */
+GebrCommStreamSocket *_gebr_comm_stream_socket_new_connected(int fd, enum GebrCommSocketAddressType address_type);
 
 G_END_DECLS
-#endif				//__GEBR_COMM_SOCKETPRIVATE_H
+#endif				//__GEBR_COMM_TCP_SOCKET_PRIVATE_H

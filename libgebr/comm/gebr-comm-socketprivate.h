@@ -13,16 +13,29 @@
  *
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *   Inspired on Qt 4.3 version of QAbstractSocket, by Trolltech
  */
 
-/* include all gebr_comm library's headers. */
-#include <comm/socketaddress.h>
-#include <comm/hostinfo.h>
-#include <comm/socket.h>
-#include <comm/streamsocket.h>
-#include <comm/listensocket.h>
-#include <comm/channelsocket.h>
-#include <comm/process.h>
-#include <comm/terminalprocess.h>
-#include <comm/protocol.h>
-#include <comm/server.h>
+#ifndef __GEBR_COMM_SOCKETPRIVATE_H
+#define __GEBR_COMM_SOCKETPRIVATE_H
+
+#include "gebr-comm-socket.h"
+#include "gebr-comm-socketaddress.h"
+
+G_BEGIN_DECLS
+
+void _gebr_comm_socket_init(GebrCommSocket * socket, int fd, enum GebrCommSocketAddressType address_type);
+
+void _gebr_comm_socket_close(GebrCommSocket * socket);
+
+int _gebr_comm_socket_get_fd(GebrCommSocket * socket);
+
+void _gebr_comm_socket_enable_read_watch(GebrCommSocket * socket);
+
+void _gebr_comm_socket_enable_write_watch(GebrCommSocket * socket);
+
+void _gebr_comm_socket_emit_error(GebrCommSocket * socket, enum GebrCommSocketError error);
+
+G_END_DECLS
+#endif				//__GEBR_COMM_SOCKETPRIVATE_H
