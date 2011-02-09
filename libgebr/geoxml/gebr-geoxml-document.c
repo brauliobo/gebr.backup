@@ -143,7 +143,6 @@ static void gebr_geoxml_document_get_property	(GObject	*object,
 //==============================================================================
 // PRIVATE FUNCTIONS							       =
 //==============================================================================
-
 static void __gebr_geoxml_ref(void)
 {
 	if (!dom_implementation_ref_count) {
@@ -750,9 +749,70 @@ static int filename_check_access(const gchar * filename)
 }
 
 /*
- * private functions and variables
+ * Checks if @version has the form '%d.%d.%d', ie three numbers separated by a dot.
  */
+static gboolean gebr_geoxml_document_is_version_valid(const gchar * version)
+{
+	if (!version)
+		return FALSE;
 
+	guint major, minor, micro;
+	return sscanf(version, "%d.%d.%d", &major, &minor, &micro) == 3;
+}
+
+/*
+ * Checks if \p document version is less than or equal to GeBR's version.
+ */
+static gboolean gebr_geoxml_document_check_version(GebrGeoXmlDocument * document, const gchar * version)
+{
+	guint major1, minor1, micro1;
+	guint major2, minor2, micro2;
+	const gchar * doc_version;
+
+	switch (gebr_geoxml_document_get_doctype(document)) {
+	case GEBR_GEOXML_DOCUMENT_TYPE_FLOW:
+		doc_version = GEBR_GEOXML_FLOW_VERSION;
+		break;
+	case GEBR_GEOXML_DOCUMENT_TYPE_LINE:
+		doc_version = GEBR_GEOXML_LINE_VERSION;
+		break;
+	case GEBR_GEOXML_DOCUMENT_TYPE_PROJECT:
+		doc_version = GEBR_GEOXML_PROJECT_VERSION;
+		break;
+	default:
+		return FALSE;
+	}
+
+	if (sscanf(version, "%d.%d.%d", &major1, &minor1, &micro1) != 3)
+		return FALSE;
+
+	if (sscanf(doc_version, "%d.%d.%d", &major2, &minor2, &micro2) != 3)
+		return FALSE;
+
+	return major2 < major1
+		|| (major2 == major1 && minor2 < minor1)
+		|| (major2 == major1 && minor2 == minor1 && micro2 < micro1) ? FALSE : TRUE;
+}
+
+static void gebr_geoxml_document_fix_header(GString * source, const gchar * tagname, const gchar * dtd_filename)
+{
+	gssize c = 0;
+	gchar * doctype;
+
+	while (source->str[c] != '>')
+		c++;
+
+	doctype = g_strdup_printf("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>"
+				  "<!DOCTYPE %s SYSTEM \"%s\">", tagname, dtd_filename);
+	g_string_erase(source, 0, c + 1);
+	g_string_prepend(source, doctype);
+	g_free(doctype);
+}
+
+//==============================================================================
+// PROTECTED FUNCTIONS (for internal lib usage,				       =
+//                      see priv-gebr-geoxml-document.h)		       =
+//==============================================================================
 GebrGeoXmlDocument *gebr_geoxml_document_new(const gchar * name, const gchar * version)
 {
 	GdomeDocument *document;
@@ -783,10 +843,9 @@ GebrGeoXmlDocument *gebr_geoxml_document_new(const gchar * name, const gchar * v
 	return (GebrGeoXmlDocument *) document;
 }
 
-/*
- * library functions.
- */
-
+//==============================================================================
+// PUBLIC FUNCTIONS							       =
+//==============================================================================
 int gebr_geoxml_document_load(GebrGeoXmlDocument ** document, const gchar * path, gboolean validate,
 			      GebrGeoXmlDiscardMenuRefCallback discard_menu_ref)
 {
@@ -1103,65 +1162,4 @@ const gchar *gebr_geoxml_document_get_help(GebrGeoXmlDocument * document)
 	if (document == NULL)
 		return NULL;
 	return __gebr_geoxml_get_tag_value(gebr_geoxml_document_root_element(document), "help");
-}
-
-/*
- * Checks if @version has the form '%d.%d.%d', ie three numbers separated by a dot.
- */
-static gboolean gebr_geoxml_document_is_version_valid(const gchar * version)
-{
-	if (!version)
-		return FALSE;
-
-	guint major, minor, micro;
-	return sscanf(version, "%d.%d.%d", &major, &minor, &micro) == 3;
-}
-
-/*
- * Checks if \p document version is less than or equal to GeBR's version.
- */
-static gboolean gebr_geoxml_document_check_version(GebrGeoXmlDocument * document, const gchar * version)
-{
-	guint major1, minor1, micro1;
-	guint major2, minor2, micro2;
-	const gchar * doc_version;
-
-	switch (gebr_geoxml_document_get_doctype(document)) {
-	case GEBR_GEOXML_DOCUMENT_TYPE_FLOW:
-		doc_version = GEBR_GEOXML_FLOW_VERSION;
-		break;
-	case GEBR_GEOXML_DOCUMENT_TYPE_LINE:
-		doc_version = GEBR_GEOXML_LINE_VERSION;
-		break;
-	case GEBR_GEOXML_DOCUMENT_TYPE_PROJECT:
-		doc_version = GEBR_GEOXML_PROJECT_VERSION;
-		break;
-	default:
-		return FALSE;
-	}
-
-	if (sscanf(version, "%d.%d.%d", &major1, &minor1, &micro1) != 3)
-		return FALSE;
-
-	if (sscanf(doc_version, "%d.%d.%d", &major2, &minor2, &micro2) != 3)
-		return FALSE;
-
-	return major2 < major1
-		|| (major2 == major1 && minor2 < minor1)
-		|| (major2 == major1 && minor2 == minor1 && micro2 < micro1) ? FALSE : TRUE;
-}
-
-static void gebr_geoxml_document_fix_header(GString * source, const gchar * tagname, const gchar * dtd_filename)
-{
-	gssize c = 0;
-	gchar * doctype;
-
-	while (source->str[c] != '>')
-		c++;
-
-	doctype = g_strdup_printf("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>"
-				  "<!DOCTYPE %s SYSTEM \"%s\">", tagname, dtd_filename);
-	g_string_erase(source, 0, c + 1);
-	g_string_prepend(source, doctype);
-	g_free(doctype);
 }
