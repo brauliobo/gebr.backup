@@ -21,17 +21,13 @@
 G_BEGIN_DECLS
 
 /**
- * \internal
+ * gebr_geoxml_document_new:
  * Private constructor. Used by super classes to create a new document
  * @param name refer to the root element (flow, line or project) @param version
  * to its corresponding last version (support by this version of libgeoxml)
  */
 GebrGeoXmlDocument *gebr_geoxml_document_new(const gchar * name, const gchar * version);
 
-/**
- * \internal
- *
- */
 #define gebr_geoxml_document_root_element(document) \
 	gdome_doc_documentElement((GdomeDocument*)document, &exception)
 
