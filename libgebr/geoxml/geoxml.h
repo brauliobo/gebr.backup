@@ -143,23 +143,22 @@
  */
 
 /* include all geoxml library's headers. */
-#include <geoxml/error.h>
-#include <geoxml/macros.h>
-#include <geoxml/object.h>
-#include <geoxml/document.h>
-#include <geoxml/project.h>
-#include <geoxml/line.h>
-#include <geoxml/flow.h>
-#include <geoxml/sequence.h>
-#include <geoxml/value_sequence.h>
-#include <geoxml/enum_option.h>
-#include <geoxml/program.h>
-#include <geoxml/parameters.h>
-#include <geoxml/parameter.h>
-#include <geoxml/program-parameter.h>
-#include <geoxml/parameter_group.h>
-#include <geoxml/clipboard.h>
-#include <geoxml/gebr-geoxml-validate.h>
+#include <geoxml/gebr-geoxml-clipboard.h>
+#include <geoxml/gebr-geoxml-document.h>
+#include <geoxml/gebr-geoxml-enum-option.h>
+#include <geoxml/gebr-geoxml-error.h>
+#include <geoxml/gebr-geoxml-flow.h>
+#include <geoxml/gebr-geoxml-line.h>
+#include <geoxml/gebr-geoxml-object.h>
+#include <geoxml/gebr-geoxml-parameter-group.h>
+#include <geoxml/gebr-geoxml-parameter.h>
+#include <geoxml/gebr-geoxml-parameters.h>
+#include <geoxml/gebr-geoxml-program-parameter.h>
+#include <geoxml/gebr-geoxml-program.h>
+#include <geoxml/gebr-geoxml-project.h>
+#include <geoxml/gebr-geoxml-sequence.h>
 #include <geoxml/gebr-geoxml-tmpl.h>
+#include <geoxml/gebr-geoxml-validate.h>
+#include <geoxml/gebr-geoxml-value-sequence.h>
 
 #endif				//__GEBR_GEOXML_H

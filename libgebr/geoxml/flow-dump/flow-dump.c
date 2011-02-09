@@ -67,7 +67,7 @@ int main(int argc, char **argv)
                         fprintf(stderr,"Unable to load %s\n", flowfn[iflow]);
                         break;
                 }
-		doc = GEBR_GEOXML_DOC(flow);
+		doc = GEBR_GEOXML_DOCUMENT(flow);
 
                 printf("%s -- %s\n",
                        gebr_geoxml_document_get_title(doc),
