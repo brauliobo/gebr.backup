@@ -15,89 +15,43 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GEBR_GEOXML_FLOW_H
-#define __GEBR_GEOXML_FLOW_H
-
-#include <glib.h>
-
-G_BEGIN_DECLS
-
 /**
- * \struct GebrGeoXmlFlow flow.h geoxml/flow.h
- * \brief
- * A sequence of programs.
- * \dot
- * digraph flow {
- * 	fontname = "Bitstream Vera Sans"
- * 	fontsize = 9
- * 	size = "6"
- * 	node [
- * 		color = palegreen2, style = filled
- * 		fontname = "Bitstream Vera Sans"
- *   fontsize = 9
- * 		shape = record
- * 	]
- * 	edge [
- * 		fontname = "Bitstream Vera Sans"
- *   fontsize = 9
- * 	]
- *
- * 	"GebrGeoXmlDocument" [ URL = "\ref document.h" ];
- * 	"GebrGeoXmlFlow" [ URL = "\ref flow.h" ];
- * 	"GebrGeoXmlSequence" [ URL = "\ref sequence.h" ];
- * 	"GebrGeoXmlProgram" [ URL = "\ref program.h" ];
- *
- * 	edge [
- * 		arrowhead = "normal"
- * 	]
- * 	"GebrGeoXmlDocument" -> "GebrGeoXmlFlow";
- * 	"GebrGeoXmlSequence" -> "GebrGeoXmlCategory";
- * 	"GebrGeoXmlSequence" -> "GebrGeoXmlProgram";
- *
- * 	edge [
- * 		arrowhead = "none"
- * 		taillabel = "0..*"
- * 	]
- * 	"GebrGeoXmlFlow" -> { "GebrGeoXmlCategory" "GebrGeoXmlProgram" };
- * }
- * \enddot
- * \see flow.h
- */
-
-/**
- * \file flow.h
  * A sequence of programs.
  *
  * Many seismic processing works involves the execution a chain - or a flow -
  * of programs, where each output of one program is the input of the next.
- *
- *
  */
 
-/**
- * Cast flow's document \p doc to GebrGeoXmlFlow
- */
-#define GEBR_GEOXML_FLOW(doc) ((GebrGeoXmlFlow*)(doc))
+#ifndef __GEBR_GEOXML_FLOW_H
+#define __GEBR_GEOXML_FLOW_H
 
-/**
- * Cast from GebrGeoXmlSequence at \p seq to GebrGeoXmlRevision
- */
+#include <glib.h>
+#include <glib-object.h>
+
+G_BEGIN_DECLS
+
+#define GEBR_GEOXML_TYPE_FLOW			(gebr_geoxml_flow_get_type())
+#define GEBR_GEOXML_FLOW(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), GEBR_GEOXML_TYPE_FLOW, GebrGeoXmlFlow))
+#define GEBR_GEOXML_FLOW_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST ((klass), GEBR_GEOXML_TYPE_FLOW, GebrGeoXmlFlowClass))
+#define GEBR_GEOXML_IS_FLOW(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), GEBR_GEOXML_TYPE_FLOW))
+#define GEBR_GEOXML_IS_FLOW_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), GEBR_GEOXML_TYPE_FLOW))
+#define GEBR_GEOXML_FLOW_GET_CLASS(obj)		(G_TYPE_INSTANCE_GET_CLASS ((obj), GEBR_GEOXML_TYPE_FLOW, GebrGeoXmlFlowClass))
+
 #define GEBR_GEOXML_REVISION(seq) ((GebrGeoXmlRevision*)(seq))
 
-/**
- * Cast from GebrGeoXmlSequence at \p seq to GebrGeoXmlFlowServer
- */
 #define GEBR_GEOXML_FLOW_SERVER(seq) ((GebrGeoXmlFlowServer*)(seq))
 
-/**
- * The GebrGeoXmlFlow struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_flow GebrGeoXmlFlow;
+typedef struct _GebrGeoXmlFlow GebrGeoXmlFlow;
+typedef struct _GebrGeoXmlFlowClass GebrGeoXmlFlowClass;
 
+struct _GebrGeoXmlFlow {
+	GebrGeoXmlDocument parent;
+};
 
-/**
- *
- */
+struct _GebrGeoXmlFlowClass {
+	GebrGeoXmlDocumentClass parent_class;
+};
+
 typedef enum {
 	GEBR_GEOXML_FLOW_ERROR_NONE = 0,
 	GEBR_GEOXML_FLOW_ERROR_NO_INPUT,
