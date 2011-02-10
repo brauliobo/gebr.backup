@@ -15,25 +15,13 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GEBR_GEOXML_DOCUMENT_P_H
-#define __GEBR_GEOXML_DOCUMENT_P_H
+#ifndef __PRIV_GEBR_GEOXML_DOCUMENT_H__
+#define __PRIV_GEBR_GEOXML_DOCUMENT_H__
+
+#include <gdome.h>
 
 G_BEGIN_DECLS
 
-/**
- * gebr_geoxml_document_new:
- * Private constructor. Used by super classes to create a new document
- * @param name refer to the root element (flow, line or project) @param version
- * to its corresponding last version (support by this version of libgeoxml)
- */
-GebrGeoXmlDocument *gebr_geoxml_document_new(const gchar * name, const gchar * version);
-
-#define gebr_geoxml_document_root_element(document) \
-	gdome_doc_documentElement((GdomeDocument*)document, &exception)
-
-/**
- * \internal
- */
 typedef struct {
 	GString *filename;
 	/** For #gebr_geoxml_object_set_user_data */
@@ -41,10 +29,21 @@ typedef struct {
 } GebrGeoXmlDocumentData;
 
 /**
- * \internal
+ * gebr_geoxml_document_new:
+ * @name:
+ * @version:
+ *
+ * Private constructor. Used by super classes to create a new document
+ * @param name refer to the root element (flow, line or project) @param version
+ * to its corresponding last version (support by this version of libgeoxml)
  */
+GebrGeoXmlDocument *gebr_geoxml_document_new(const gchar * name, const gchar * version);
+
+GdomeElement *gebr_geoxml_document_root_element(GebrGeoXmlDocument *self);
+
 #define _gebr_geoxml_document_get_data(document) \
 	((GebrGeoXmlDocumentData*)((GdomeDocument*)document)->user_data)
 
 G_END_DECLS
-#endif				//__GEBR_GEOXML_DOCUMENT_P_H
+
+#endif /* __PRIV_GEBR_GEOXML_DOCUMENT_H__ */
