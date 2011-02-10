@@ -35,14 +35,6 @@
 #include "priv-gebr-geoxml-parameters.h"
 #include "priv-gebr-geoxml-document.h"
 
-/*
- * internal structures and functions
- */
-
-struct gebr_geoxml_flow {
-	GebrGeoXmlDocument *document;
-};
-
 struct gebr_geoxml_server {
 	GdomeElement *element;
 };
