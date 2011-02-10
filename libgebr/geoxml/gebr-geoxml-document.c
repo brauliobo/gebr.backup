@@ -176,9 +176,6 @@ static void __gebr_geoxml_document_new_data(GebrGeoXmlDocument *self, const gcha
 	data->filename = g_string_new(filename);
 }
 
-/**
- * \internal
- */
 static GdomeDocument *__gebr_geoxml_document_clone_doc(GdomeDocument * source, GdomeDocumentType * document_type)
 {
 	if (source == NULL)
@@ -210,20 +207,21 @@ static GdomeDocument *__gebr_geoxml_document_clone_doc(GdomeDocument * source, G
 	return document;
 }
 
-/**
- * \internal
- */
-static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGeoXmlDiscardMenuRefCallback discard_menu_ref)
+static int __gebr_geoxml_document_validate_doc(GebrGeoXmlDocument *self,
+					       GebrGeoXmlDiscardMenuRefCallback discard_menu_ref)
 {
 	GString *source;
 	GString *dtd_filename;
 
 	GdomeDocument *tmp_doc;
+	GdomeDocument **document;
 
 	GdomeElement *root_element;
 	const gchar *version;
 
 	int ret;
+
+	document = &(self->priv->document);
 
 	dtd_filename = g_string_new(NULL);
 	if (gdome_doc_doctype(*document, &exception) != NULL) {
@@ -232,7 +230,7 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 	}
 
 	/* initialization */
-	root_element = gebr_geoxml_document_root_element(*document);
+	root_element = gebr_geoxml_document_root_element(self);
 
 	/* If there is no version attribute, the document is invalid */
 	version = gebr_geoxml_document_get_version((GebrGeoXmlDocument *) *document);
@@ -298,7 +296,7 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 	}
 	gdome_doc_unref(*document, &exception);
 	*document = tmp_doc;
-	root_element = gebr_geoxml_document_root_element(tmp_doc);
+	root_element = gebr_geoxml_document_root_element(self);
 
 	/*
 	 * Success, now change to last version
@@ -700,11 +698,31 @@ out2:
 /**
  * \internal
  */
-static int __gebr_geoxml_document_load(GebrGeoXmlDocument ** document, const gchar * src, createDoc_func func,
-				       gboolean validate, GebrGeoXmlDiscardMenuRefCallback discard_menu_ref)
+static int __gebr_geoxml_document_load(GebrGeoXmlDocument ** document,
+				       const gchar * src,
+				       createDoc_func func,
+				       gboolean validate,
+				       GebrGeoXmlDiscardMenuRefCallback discard_menu_ref,
+				       GebrGeoXmlDocumentType type)
 {
-	GdomeDocument *doc;
 	int ret;
+	GdomeDocument *doc;
+	GebrGeoXmlDocument *self;
+
+	switch (type) {
+	case GEBR_GEOXML_DOCUMENT_TYPE_FLOW:
+		doc = g_object_new (GEBR_GEOXML_TYPE_FLOW, NULL);
+		break;
+	case GEBR_GEOXML_DOCUMENT_TYPE_LINE:
+		doc = g_object_new (GEBR_GEOXML_TYPE_LINE, NULL);
+		break;
+	case GEBR_GEOXML_DOCUMENT_TYPE_PROJECT:
+		doc = g_object_new (GEBR_GEOXML_TYPE_PROJECT, NULL);
+		break;
+	default:
+		*document = NULL;
+		return GEBR_GEOXML_RETV_NULL_PTR;
+	}
 
 	/* create the implementation. */
 	__gebr_geoxml_ref();
@@ -841,6 +859,11 @@ GebrGeoXmlDocument *gebr_geoxml_document_new(const gchar * name, const gchar * v
 	__gebr_geoxml_insert_new_element(element, "modified", NULL);
 
 	return (GebrGeoXmlDocument *) document;
+}
+
+GdomeElement *gebr_geoxml_document_root_element(GebrGeoXmlDocument *self)
+{
+	return gdome_doc_documentElement (self->priv->document, &exception);
 }
 
 //==============================================================================
