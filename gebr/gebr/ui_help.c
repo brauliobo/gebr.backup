@@ -149,7 +149,7 @@ create_help_edit_window(GebrGeoXmlDocument * document)
 	g_signal_connect(window, "destroy",
 			 G_CALLBACK(on_help_edit_window_destroy), document);
 
-	switch(gebr_geoxml_document_get_type(document)) {
+	switch(gebr_geoxml_document_get_doctype(document)) {
 	case GEBR_GEOXML_DOCUMENT_TYPE_FLOW:
 		document_type = _("flow");
 		break;
@@ -214,15 +214,15 @@ static void on_title_ready(GebrGuiHelpEditWidget * widget, const gchar * title, 
 	switch (gebr_geoxml_object_get_type (object)) {
 	case GEBR_GEOXML_OBJECT_TYPE_PROJECT:
 		obj_name = _("project");
-		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOC (object));
+		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (object));
 		break;
 	case GEBR_GEOXML_OBJECT_TYPE_LINE:
 		obj_name = _("line");
-		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOC (object));
+		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (object));
 		break;
 	case GEBR_GEOXML_OBJECT_TYPE_FLOW:
 		obj_name = _("flow");
-		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOC (object));
+		obj_title = gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (object));
 		break;
 	case GEBR_GEOXML_OBJECT_TYPE_PROGRAM:
 		obj_name = _("program");

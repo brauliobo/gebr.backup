@@ -654,7 +654,7 @@ void job_free(struct job *job)
 		if (job->tail_process != NULL)
 			gebr_comm_process_free(job->tail_process);
 	if (job->flow)
-		gebr_geoxml_document_free(GEBR_GEOXML_DOC(job->flow));
+		gebr_geoxml_document_free(GEBR_GEOXML_DOCUMENT(job->flow));
 	g_string_free(job->hostname, TRUE);
 	g_string_free(job->status_string, TRUE);
 	g_string_free(job->run_id, TRUE);

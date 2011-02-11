@@ -69,7 +69,7 @@ void do_navigation_bar_update(void)
 
 	markup = g_string_new(NULL);
 	g_string_append(markup, g_markup_printf_escaped("<i>%s</i>",
-							gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(debr.menu))));
+							gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(debr.menu))));
 	if (debr.program != NULL)
 		g_string_append(markup, g_markup_printf_escaped(" :: <i>%s</i>",
 								gebr_geoxml_program_get_title(debr.program)));
@@ -238,7 +238,7 @@ void on_menu_revert_activate(void)
 		debr_remove_help_edit_window(old_menu, FALSE, TRUE);
 
 		/* revert to the one in disk */
-		gebr_geoxml_document_free(GEBR_GEOXML_DOC(old_menu));
+		gebr_geoxml_document_free(GEBR_GEOXML_DOCUMENT(old_menu));
 		debr.program = NULL;
 		gtk_tree_store_set(debr.ui_menu.model, &iter, MENU_XMLPOINTER, menu, -1);
 		menu_status_set_from_iter(&iter, MENU_STATUS_SAVED);
