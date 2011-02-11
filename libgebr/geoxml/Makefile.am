@@ -32,59 +32,58 @@ libgebr_geoxmlincludedir=$(includedir)/libgebr
 libgebr_geoxmlinclude_HEADERS=geoxml.h
 
 lib_LTLIBRARIES = libgebr_geoxml.la
-libgebr_geoxml_la_SOURCES =	\
-	clipboard.c		\
-	document.c		\
-	enum_option.c		\
-	error.c			\
-	flow.c			\
-	gebr-geoxml-validate.c	\
-	gebr-geoxml-tmpl.c	\
-	line.c			\
-	object.c		\
-	parameter.c		\
-	parameter_group.c	\
-	parameters.c		\
-	program-parameter.c	\
-	program.c		\
-	project.c		\
-	sequence.c		\
-	value_sequence.c	\
-	xml.c			\
+libgebr_geoxml_la_SOURCES =		\
+	gebr-geoxml-clipboard.c		\
+	gebr-geoxml-document.c		\
+	gebr-geoxml-enum-option.c	\
+	gebr-geoxml-error.c		\
+	gebr-geoxml-flow.c		\
+	gebr-geoxml-line.c		\
+	gebr-geoxml-object.c		\
+	gebr-geoxml-parameter.c		\
+	gebr-geoxml-parameter-group.c	\
+	gebr-geoxml-parameters.c	\
+	gebr-geoxml-program-parameter.c	\
+	gebr-geoxml-program.c		\
+	gebr-geoxml-project.c		\
+	gebr-geoxml-sequence.c		\
+	gebr-geoxml-tmpl.c		\
+	gebr-geoxml-validate.c		\
+	gebr-geoxml-value-sequence.c	\
+	priv-gebr-geoxml-xml.c		\
 	$(NULL)
 
 libgebr_geoxmlsubincludedir=$(includedir)/libgebr/geoxml
 libgebr_geoxmlsubinclude_HEADERS =	\
-	clipboard.h			\
-	document.h			\
-	enum_option.h			\
-	error.h				\
-	flow.h				\
-	gebr-geoxml-validate.h		\
+	gebr-geoxml-clipboard.h		\
+	gebr-geoxml-document.h		\
+	gebr-geoxml-enum-option.h	\
+	gebr-geoxml-error.h		\
+	gebr-geoxml-flow.h		\
+	gebr-geoxml-line.h		\
+	gebr-geoxml-object.h		\
+	gebr-geoxml-parameter-group.h 	\
+	gebr-geoxml-parameter.h		\
+	gebr-geoxml-parameters.h	\
+	gebr-geoxml-program-parameter.h	\
+	gebr-geoxml-program.h 		\
+	gebr-geoxml-project.h		\
+	gebr-geoxml-sequence.h		\
 	gebr-geoxml-tmpl.h		\
-	line.h				\
-	macros.h			\
-	object.h			\
-	parameter.h			\
-	parameter_group.h 		\
-	parameters.h			\
-	program-parameter.h		\
-	program.h 			\
-	project.h			\
-	sequence.h			\
-	value_sequence.h		\
+	gebr-geoxml-validate.h		\
+	gebr-geoxml-value-sequence.h	\
 	$(NULL)
 
-noinst_HEADERS =		\
-	document_p.h		\
-	parameter_group_p.h	\
-	parameter_p.h		\
-	parameters_p.h		\
-	program_p.h		\
-	program_parameter_p.h	\
-	sequence_p.h		\
-	types.h			\
-	xml.h			\
+noinst_HEADERS =				\
+	priv-gebr-geoxml-document.h		\
+	priv-gebr-geoxml-parameter.h		\
+	priv-gebr-geoxml-parameter-group.h	\
+	priv-gebr-geoxml-parameters.h		\
+	priv-gebr-geoxml-program.h		\
+	priv-gebr-geoxml-program-parameter.h	\
+	priv-gebr-geoxml-sequence.h		\
+	priv-gebr-geoxml-types.h		\
+	priv-gebr-geoxml-xml.h			\
 	$(NULL)
 
 AM_CPPFLAGS = -I$(top_srcdir)		\

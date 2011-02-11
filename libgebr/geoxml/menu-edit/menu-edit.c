@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Unable to load %s\n", menu[imenu]);
 			break;
 		}
-		doc = GEBR_GEOXML_DOC(flow);
+		doc = GEBR_GEOXML_DOCUMENT(flow);
 		nprog = gebr_geoxml_flow_get_programs_number(flow);
 		if (author != NULL)
 			gebr_geoxml_document_set_author(doc, author);

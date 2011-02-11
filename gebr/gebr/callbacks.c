@@ -463,14 +463,14 @@ void navigation_bar_update(void)
 
 	markup = g_string_new(NULL);
 	g_string_append(markup, g_markup_printf_escaped("<i>%s</i>",
-							gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(gebr.project))));
+							gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(gebr.project))));
 	if (gebr.line != NULL)
 		g_string_append(markup, g_markup_printf_escaped(" :: <i>%s</i>",
-								gebr_geoxml_document_get_title(GEBR_GEOXML_DOC
+								gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT
 											       (gebr.line))));
 	if (gebr.flow != NULL)
 		g_string_append(markup, g_markup_printf_escaped(" :: <i>%s</i>",
-								gebr_geoxml_document_get_title(GEBR_GEOXML_DOC
+								gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT
 											       (gebr.flow))));
 
 	gtk_label_set_markup(GTK_LABEL(gebr.navigation_box_label), markup->str);

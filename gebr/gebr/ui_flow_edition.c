@@ -703,7 +703,7 @@ static void flow_edition_menu_add(void)
 	gebr_geoxml_flow_get_program(gebr.flow, &menu_programs, menu_programs_index);
 	flow_add_program_sequence_to_view(menu_programs, TRUE);
 
-	document_free(GEBR_GEOXML_DOC(menu));
+	document_free(GEBR_GEOXML_DOCUMENT(menu));
  out:	g_free(name);
 	g_free(filename);
 }

@@ -336,7 +336,7 @@ void gebr_comm_server_run_flow(struct gebr_comm_server *server, GebrCommServerRu
 	for (GList *i = config->flows; i != NULL; i = g_list_next(i)) {
 		gchar *xml;
 		GebrCommServerRunFlow *run_flow = (GebrCommServerRunFlow*)i->data;
-		gebr_geoxml_document_to_string(GEBR_GEOXML_DOC(run_flow->flow), &xml);
+		gebr_geoxml_document_to_string(GEBR_GEOXML_DOCUMENT(run_flow->flow), &xml);
 
 		g_string_printf(run_id_gstring, "%u", run_flow->run_id);
 		gebr_comm_protocol_send_data(server->protocol, server->stream_socket,

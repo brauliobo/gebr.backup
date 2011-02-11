@@ -70,16 +70,15 @@ void flow_new (void)
 
 	/* Create a new flow */
 	flow = GEBR_GEOXML_FLOW(document_new(GEBR_GEOXML_DOCUMENT_TYPE_FLOW));
-	gebr_geoxml_document_set_title(GEBR_GEOXML_DOC(flow), _("New Flow"));
-	gebr_geoxml_document_set_author(GEBR_GEOXML_DOC(flow), gebr.config.username->str);
-	gebr_geoxml_document_set_email(GEBR_GEOXML_DOC(flow), gebr.config.email->str);
+	gebr_geoxml_document_set_title(GEBR_GEOXML_DOCUMENT(flow), _("New Flow"));
+	gebr_geoxml_document_set_author(GEBR_GEOXML_DOCUMENT(flow), gebr.config.username->str);
+	gebr_geoxml_document_set_email(GEBR_GEOXML_DOCUMENT(flow), gebr.config.email->str);
 
-	line_flow = gebr_geoxml_line_append_flow(gebr.line, gebr_geoxml_document_get_filename(GEBR_GEOXML_DOC(flow)));
+	line_flow = gebr_geoxml_line_append_flow(gebr.line, gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(flow)));
 	iter = line_append_flow_iter(flow, line_flow);
 
-
-	document_save(GEBR_GEOXML_DOC(gebr.line), TRUE, FALSE);
-	document_save(GEBR_GEOXML_DOC(flow), TRUE, TRUE);
+	document_save(GEBR_GEOXML_DOCUMENT(gebr.line), TRUE, FALSE);
+	document_save(GEBR_GEOXML_DOCUMENT(flow), TRUE, TRUE);
 
 	flow_browse_select_iter(&iter);
 
@@ -141,7 +140,7 @@ void flow_delete(gboolean confirm)
 		for (; line_flow != NULL; gebr_geoxml_sequence_next(&line_flow)) {
 			if (g_strcmp0(filename, gebr_geoxml_line_get_flow_source(GEBR_GEOXML_LINE_FLOW(line_flow))) == 0) {
 				gebr_geoxml_sequence_remove(line_flow);
-				document_save(GEBR_GEOXML_DOC(gebr.line), TRUE, FALSE);
+				document_save(GEBR_GEOXML_DOCUMENT(gebr.line), TRUE, FALSE);
 				break;
 			}
 		}
@@ -174,11 +173,11 @@ static gboolean flow_import_single (const gchar *path)
 	title = gebr_geoxml_document_get_title (flow);
 
 	gebr_message(GEBR_LOG_INFO, TRUE, TRUE, _("Flow '%s' imported to line '%s' from file '%s'."),
-		     title, gebr_geoxml_document_get_title (GEBR_GEOXML_DOC (gebr.line)), path);
+		     title, gebr_geoxml_document_get_title (GEBR_GEOXML_DOCUMENT (gebr.line)), path);
 
 	document_import (flow);
 	line_flow = gebr_geoxml_line_append_flow (gebr.line, gebr_geoxml_document_get_filename (flow));
-	document_save(GEBR_GEOXML_DOC(gebr.line), FALSE, FALSE);
+	document_save(GEBR_GEOXML_DOCUMENT(gebr.line), FALSE, FALSE);
 	iter = line_append_flow_iter(GEBR_GEOXML_FLOW (flow), line_flow);
 
 	new_title = g_strdup_printf (_("%s (Imported)"), title);
@@ -510,13 +509,13 @@ void flow_run(struct server *server, GebrCommServerRunConfig * config, gboolean 
 		gebr_geoxml_flow_get_program(flow, &i, 0);
 		if (i == NULL) {
 			gebr_message(GEBR_LOG_INFO, TRUE, FALSE, _("Flow '%s' is empty, ignoring."),
-				     gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(flow)));
+				     gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(flow)));
 			return;
 		}
 
 		/* save last run date */
 		gebr_geoxml_flow_set_date_last_run(flow, gebr_iso_date());
-		document_save(GEBR_GEOXML_DOC(flow), FALSE, TRUE);
+		document_save(GEBR_GEOXML_DOCUMENT(flow), FALSE, TRUE);
 		flow_browse_info_update(); 
 
 		/* prepare flow and add it to config */
@@ -537,13 +536,13 @@ void flow_run(struct server *server, GebrCommServerRunConfig * config, gboolean 
 
 		/* status and logging */
 		gebr_message(GEBR_LOG_INFO, TRUE, FALSE, _("Asking server to run flow '%s'."),
-			     gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(flow)));
+			     gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(flow)));
 		if (gebr_comm_server_is_local(server->comm) == FALSE)
 			gebr_message(GEBR_LOG_INFO, FALSE, TRUE, _("Asking server '%s' to run flow '%s'."),
-				     server->comm->address->str, gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(flow)));
+				     server->comm->address->str, gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(flow)));
 		else 
 			gebr_message(GEBR_LOG_INFO, FALSE, TRUE, _("Asking local server to run flow '%s'."),
-				     gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(flow)));
+				     gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(flow)));
 	}
 
 	/* Add flows and create jobs */
@@ -1027,8 +1026,8 @@ gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date)
 	g_string_printf(dump,
 			"<h1>%s</h1>\n"
 			"<h2>%s</h2>\n",
-			gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(flow)),
-			gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(flow)));
+			gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(flow)),
+			gebr_geoxml_document_get_description(GEBR_GEOXML_DOCUMENT(flow)));
 
 	if (include_date)
 		date = g_strdup_printf (", <span class=\"gebr-date\">%s</span>",
@@ -1040,8 +1039,8 @@ gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date)
 				"<p class=\"credits\">%s <span class=\"gebr-author\">%s</span>"
 				" <span class=\"gebr-email\">%s</span>%s</p>\n",
 				_("By"),
-				gebr_geoxml_document_get_author(GEBR_GEOXML_DOC(flow)),
-				gebr_geoxml_document_get_email(GEBR_GEOXML_DOC(flow)),
+				gebr_geoxml_document_get_author(GEBR_GEOXML_DOCUMENT(flow)),
+				gebr_geoxml_document_get_email(GEBR_GEOXML_DOCUMENT(flow)),
 				date ? date : "");
 	g_free (date);
 

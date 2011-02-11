@@ -225,7 +225,7 @@ void project_line_info_update(void)
 
 	/* initialization */
 	is_project =
-	    (gebr_geoxml_document_get_type(gebr.project_line) == GEBR_GEOXML_DOCUMENT_TYPE_PROJECT) ? TRUE : FALSE;
+	    (gebr_geoxml_document_get_doctype(gebr.project_line) == GEBR_GEOXML_DOCUMENT_TYPE_PROJECT) ? TRUE : FALSE;
 
 	/* Title in bold */
 	markup = is_project
@@ -237,7 +237,7 @@ void project_line_info_update(void)
 	/* Description in italic */
 	markup =
 	    g_markup_printf_escaped("<i>%s</i>",
-				    gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(gebr.project_line)));
+				    gebr_geoxml_document_get_description(GEBR_GEOXML_DOCUMENT(gebr.project_line)));
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_project_line->info.description), markup);
 	g_free(markup);
 
@@ -304,8 +304,8 @@ void project_line_info_update(void)
 	/* Author and email */
 	text = g_string_new(NULL);
 	g_string_printf(text, "%s <%s>",
-			gebr_geoxml_document_get_author(GEBR_GEOXML_DOC(gebr.project_line)),
-			gebr_geoxml_document_get_email(GEBR_GEOXML_DOC(gebr.project_line)));
+			gebr_geoxml_document_get_author(GEBR_GEOXML_DOCUMENT(gebr.project_line)),
+			gebr_geoxml_document_get_email(GEBR_GEOXML_DOCUMENT(gebr.project_line)));
 	gtk_label_set_text(GTK_LABEL(gebr.ui_project_line->info.author), text->str);
 	g_string_free(text, TRUE);
 
@@ -1053,10 +1053,10 @@ static void project_line_load(void)
 		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->store), &child,
 				   PL_XMLPOINTER, &gebr.line, -1);
 
-		gebr.project_line = GEBR_GEOXML_DOC(gebr.line);
+		gebr.project_line = GEBR_GEOXML_DOCUMENT(gebr.line);
 		line_load_flows();
 	} else {
-		gebr.project_line = GEBR_GEOXML_DOC(gebr.project);
+		gebr.project_line = GEBR_GEOXML_DOCUMENT(gebr.project);
 		gebr.line = NULL;
 	}
 
@@ -1290,7 +1290,7 @@ void project_line_show_help(void)
 
 void project_line_edit_help(void)
 {
-	gebr_help_edit_document(GEBR_GEOXML_DOC(gebr.project_line));
+	gebr_help_edit_document(GEBR_GEOXML_DOCUMENT(gebr.project_line));
 	document_save(GEBR_GEOXML_DOCUMENT(gebr.project_line), TRUE, FALSE);
 }
 
@@ -1301,7 +1301,7 @@ gchar * gebr_line_generate_header(GebrGeoXmlDocument * document)
 	GebrGeoXmlDocumentType type;
 	GebrGeoXmlSequence *sequence;
 
-	type = gebr_geoxml_document_get_type (document);
+	type = gebr_geoxml_document_get_doctype (document);
 	g_return_val_if_fail (type == GEBR_GEOXML_DOCUMENT_TYPE_LINE, NULL);
 
 	dump = g_string_new(NULL);
