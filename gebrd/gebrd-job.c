@@ -172,7 +172,6 @@ static const gchar *status_enum_to_string(enum JobStatus status)
 	return enum_to_string[status];
 }
 
-#include <libgebr/json/json-glib.h>
 /**
  * \internal
  */
@@ -212,10 +211,6 @@ static void job_status_notify_finished(GebrdJob *job)
 
 	g_string_assign(job->parent.finish_date, gebr_iso_date());
 	job_status_notify(job, new_status, job->parent.finish_date->str);
-
-	gchar *json = json_gobject_to_data (job, NULL);
-	puts (json);
-	g_free(json);
 }
 
 /**
