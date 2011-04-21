@@ -295,7 +295,7 @@ void test_gebr_geoxml_program_set_help(void)
 	gebr_geoxml_program_set_help(program,NULL);
 
 	program_help = gebr_geoxml_program_get_help(NULL);
-	g_assert(program_description == NULL);
+	g_assert(program_help == NULL);
 
 	gebr_geoxml_program_set_help(program,"Help goes here");
 	program_help = gebr_geoxml_program_get_help(program);
