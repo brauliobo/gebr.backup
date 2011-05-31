@@ -20,6 +20,8 @@
 
 #include <glib.h>
 
+#include "gebr-geo-types.h"
+
 G_BEGIN_DECLS
 
 /**
@@ -79,40 +81,6 @@ G_BEGIN_DECLS
  * \ref gebr_geoxml_line_append_flow.
  */
 
-/**
- * Cast line's document \p doc to GebrGeoXmlLine
- */
-#define GEBR_GEOXML_LINE(doc) ((GebrGeoXmlLine*)(doc))
-
-/**
- * Promote a sequence to a line flow.
- */
-#define GEBR_GEOXML_LINE_FLOW(seq) ((GebrGeoXmlLineFlow*)(seq))
-
-/**
- * Line class. Inherits GebrGeoXmlDocument.
- *
- * The GebrGeoXmlLine struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_line GebrGeoXmlLine;
-
-/**
- * Represents a reference to a flow inside a line.
- * It contains the path of the line.
- *
- * The GebrGeoXmlLineFlow struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_line_flow GebrGeoXmlLineFlow;
-
-/**
- *
- *
- * The GebrGeoXmlLinePath struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_line_path GebrGeoXmlLinePath;
-
-#include "sequence.h"
-#include "macros.h"
 
 /**
  * Create a new empty line and return a pointer to it.
@@ -184,6 +152,27 @@ int gebr_geoxml_line_get_path(GebrGeoXmlLine * line, GebrGeoXmlSequence ** path,
  * If \p line is NULL returns -1.
  */
 glong gebr_geoxml_line_get_paths_number(GebrGeoXmlLine * line);
+
+/**
+ * gebr_geoxml_line_set_group:
+ * @line:
+ * @group: the group of server this line will see
+ */
+void gebr_geoxml_line_set_group (GebrGeoXmlLine *line, const gchar *group, gboolean is_fs);
+
+/**
+ * gebr_geoxml_line_get_group:
+ * @line:
+ * @is_fs:
+ *
+ * Returns: the server group associated with this line
+ */
+const gchar *gebr_geoxml_line_get_group (GebrGeoXmlLine *line, gboolean *is_fs);
+
+/**
+ * Returns: the group label, if group is empty string, returns "All servers".
+ */
+const gchar *gebr_geoxml_line_get_group_label (GebrGeoXmlLine *line);
 
 G_END_DECLS
 #endif				//__GEBR_GEOXML_LINE_H

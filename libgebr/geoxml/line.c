@@ -16,6 +16,7 @@
  */
 
 #include <gdome.h>
+#include <glib/gi18n.h>
 
 #include "line.h"
 #include "document.h"
@@ -49,6 +50,7 @@ struct gebr_geoxml_line_path {
 GebrGeoXmlLine *gebr_geoxml_line_new()
 {
 	GebrGeoXmlDocument *document = gebr_geoxml_document_new("line", GEBR_GEOXML_LINE_VERSION);
+	__gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(document), "server-group", NULL);
 	return GEBR_GEOXML_LINE(document);
 }
 
@@ -139,4 +141,56 @@ glong gebr_geoxml_line_get_paths_number(GebrGeoXmlLine * line)
 	if (line == NULL)
 		return -1;
 	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(line)), "path");
+}
+
+void gebr_geoxml_line_set_group (GebrGeoXmlLine *line, const gchar *group, gboolean is_fs)
+{
+	gchar *gen;
+	const gchar *prefix;
+	GdomeElement *root;
+	GdomeElement *group_el;
+
+	prefix = is_fs? "fs:":"g:";
+	gen = g_strconcat (prefix, group, NULL);
+	root = gebr_geoxml_document_root_element (line);
+	group_el = __gebr_geoxml_get_first_element (root, "server-group");
+	__gebr_geoxml_set_element_value (group_el, gen,
+					 __gebr_geoxml_create_TextNode);
+	g_free (gen);
+}
+
+const gchar *gebr_geoxml_line_get_group (GebrGeoXmlLine *line, gboolean *is_fs)
+{
+	const gchar *group;
+	GdomeElement *root;
+	GdomeElement *group_el;
+
+	g_return_val_if_fail (line != NULL, NULL);
+	g_return_val_if_fail (is_fs != NULL, NULL);
+
+	root = gebr_geoxml_document_root_element (line);
+	group_el = __gebr_geoxml_get_first_element (root, "server-group");
+	group = __gebr_geoxml_get_element_value (group_el);
+
+	if (g_str_has_prefix (group, "fs:")) {
+		*is_fs = TRUE;
+		return group + 3;
+	} else if (g_str_has_prefix (group, "g:")) {
+		*is_fs = FALSE;
+		return group + 2;
+	} else {
+		*is_fs = FALSE;
+		return group;
+	}
+}
+
+const gchar *gebr_geoxml_line_get_group_label (GebrGeoXmlLine *line)
+{
+	gboolean is_fs;
+	const gchar *group = gebr_geoxml_line_get_group(line, &is_fs);
+
+	if(g_strcmp0(group, "") == 0) {
+		return _("All Servers");
+	}
+	return group;
 }

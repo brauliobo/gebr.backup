@@ -23,8 +23,7 @@
 #include <libgebr/log.h>
 #include <libgebr/geoxml/geoxml.h>
 
-#include "gebr-comm-streamsocket.h"
-#include "gebr-comm-protocol.h"
+#include "gebr-comm-protocol-socket.h"
 #include "gebr-comm-terminalprocess.h"
 #include "gebr-comm-process.h"
 #include "gebr-comm-channelsocket.h"
@@ -42,6 +41,7 @@ typedef enum {
 /**
  */
 typedef enum {
+	GEBR_COMM_SERVER_LOCATION_UNKNOWN,
 	GEBR_COMM_SERVER_LOCATION_LOCAL,
 	GEBR_COMM_SERVER_LOCATION_REMOTE
 } GebrCommServerLocation;
@@ -57,10 +57,7 @@ GebrCommServerType gebr_comm_server_get_id(const gchar * name);
 /**
  */
 struct gebr_comm_server {
-	/* the communication channel. */
-	GebrCommStreamSocket *stream_socket;
-	/* protocol parsing stuff */
-	struct gebr_comm_protocol *protocol;
+	GebrCommProtocolSocket *socket;
 	/* server address/port */
 	GString *address;
 	guint16 port;
@@ -94,6 +91,9 @@ struct gebr_comm_server {
 		void (*state_changed) (struct gebr_comm_server *server, gpointer user_data);
 		GString *(*ssh_login) (const gchar * title, const gchar * message);
 		gboolean(*ssh_question) (const gchar * title, const gchar * message);
+		void (*process_request) (struct gebr_comm_server * server, GebrCommHttpMsg * request, gpointer user_data);
+		void (*process_response) (struct gebr_comm_server * server, GebrCommHttpMsg * request,
+					  GebrCommHttpMsg * response, gpointer user_data);
 		void (*parse_messages) (struct gebr_comm_server * server, gpointer user_data);
 	} *ops;
 	gpointer user_data;
@@ -152,8 +152,18 @@ void gebr_comm_server_run_config_free(GebrCommServerRunConfig *run_config);
 GebrCommServerRunFlow* gebr_comm_server_run_config_add_flow(GebrCommServerRunConfig *config, GebrGeoXmlFlow * flow);
 
 /**
+ * gebr_comm_server_run_strip_flow:
+ * @flow: a #GebrGeoXmlFlow
+ * @...: a %NULL-terminated list of #GebrGeoXmlDocument
+ *
+ * Make a copy of @flow and removes all help strings. All dictionaries from the #GebrGeoXmlDocuments
+ * in the %NULL-terminated list @... are merged into the copy. The order is importante in the following
+ * sense: if document 'a' appears before 'b' in the list, its dictionaries are preserved in case of
+ * name clashes.
+ *
+ * Returns: a new flow prepared to run
  */
-GebrGeoXmlFlow * gebr_comm_server_run_strip_flow(GebrGeoXmlFlow * flow);
+GebrGeoXmlFlow *gebr_comm_server_run_strip_flow(GebrGeoXmlFlow *flow, ...) G_GNUC_NULL_TERMINATED;
 
 /**
  */
