@@ -20,6 +20,8 @@
 
 #include <glib.h>
 
+#include "gebr-geo-types.h"
+
 G_BEGIN_DECLS
 
 /**
@@ -66,29 +68,11 @@ G_BEGIN_DECLS
  */
 
 /**
- * Cast to super types of GebrGeoXmlValueSequence to it.
- */
-#define GEBR_GEOXML_VALUE_SEQUENCE(seq) ((GebrGeoXmlValueSequence*)(seq))
-
-/**
- * The GebrGeoXmlValueSequence struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_value_sequence GebrGeoXmlValueSequence;
-
-/**
  * Set the \p value_sequence element's value to \p value.
  *
  * If \p value_sequence or \p value is NULL nothing is done.
  */
 void gebr_geoxml_value_sequence_set(GebrGeoXmlValueSequence * value_sequence, const gchar * value);
-
-/**
- * Set the \p value_sequence element's value to a boolean \p state.
- *
- * If \p value_sequence is NULL nothing is done.
- */
-// void
-// gebr_geoxml_value_sequence_set_boolean(GebrGeoXmlValueSequence * value_sequence, gboolean state);
 
 /**
  * Get the \p value_sequence element's value.
@@ -98,12 +82,14 @@ void gebr_geoxml_value_sequence_set(GebrGeoXmlValueSequence * value_sequence, co
 const gchar *gebr_geoxml_value_sequence_get(GebrGeoXmlValueSequence * value_sequence);
 
 /**
- * Get the \p value_sequence element's value.
- *
- * If \p value_sequence is NULL returns FALSE.
+ * gebr_geoxml_value_sequence_get_dictkey:
  */
-// gboolean
-// gebr_geoxml_value_sequence_get_boolean(GebrGeoXmlValueSequence * value_sequence);
+const gchar *gebr_geoxml_value_sequence_get_dictkey (GebrGeoXmlValueSequence *self);
+
+/**
+ * gebr_geoxml_value_sequence_set_dictkey:
+ */
+void gebr_geoxml_value_sequence_set_dictkey (GebrGeoXmlValueSequence *self, const gchar *dictkey);
 
 G_END_DECLS
 #endif				//__GEBR_GEOXML_VALUE_SEQUENCE_H

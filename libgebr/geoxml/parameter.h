@@ -18,6 +18,10 @@
 #ifndef __GEBR_GEOXML_PARAMETER_H
 #define __GEBR_GEOXML_PARAMETER_H
 
+#include <glib.h>
+
+#include "gebr-geo-types.h"
+
 G_BEGIN_DECLS
 
 /**
@@ -78,84 +82,23 @@ G_BEGIN_DECLS
 /**
  * \file gebr-gui-parameter.h
  * Represents a parameter, that is, a GebrGeoXmlParameterGroup or a GebrGeoXmlParameter.
- *
- *
  */
-
-/**
- * Get the base parameter class of \p super , which can
- * be a GebrGeoXmlParameterGroup or GebrGeoXmlParameter instance
- */
-#define GEBR_GEOXML_PARAMETER(super) ((GebrGeoXmlParameter*)(super))
-
-/**
- * The GebrGeoXmlParameter struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_parameter GebrGeoXmlParameter;
-
-/**
- * \p GEBR_GEOXML_PARAMETER_TYPE lists the program's parameters types
- * supported by libgeoxml. They were made to create a properly
- * link between the seismic processing softwares and this library.
- *
- * \see gebr_geoxml_parameter_get_is_program_parameter
- */
-typedef enum {
-	/**
-	 * In case of error.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_UNKNOWN = 0,
-	/**
-	 * A parameter able to store a string on it.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_STRING,
-	/**
-	 * A parameter able to store an integer number on it.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_INT,
-	/**
-	 * A parameter able to store a file/directory path on it.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_FILE,
-	/**
-	 * A parameter able to store the state of a flag on it.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_FLAG,
-	/**
-	 * A parameter able to store a floating point number on it.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_FLOAT,
-	/**
-	 * A parameter able to store a number with maximum and minimum values on it.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_RANGE,
-	/**
-	 * A parameter able to store a value in a list options.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_ENUM,
-	/**
-	 * A sequence of parameters.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_GROUP,
-	/**
-	 * A reference to other parameter. If the referenced parameter is a program parameter,
-	 * then this parameter will only have its value as a difference.
-	 */
-	GEBR_GEOXML_PARAMETER_TYPE_REFERENCE,
-} GebrGeoXmlParameterType;
 
 void __gebr_geoxml_parameter_set_label(GebrGeoXmlParameter * parameter, const gchar * label);
-
-#include <glib.h>
-
-#include "parameters.h"
 
 /**
  * Get GebrGeoXmlParameters in which \p parameter is inside
  *
- * If \p parameter is NULL returns NULL
+ * Will fail if \p parameter is NULL.
  */
 GebrGeoXmlParameters *gebr_geoxml_parameter_get_parameters(GebrGeoXmlParameter * parameter);
+
+/**
+ * Get the program to which \p parameter belongs to.
+ *
+ * If \p parameter is NULL nothing is done.
+ */
+GebrGeoXmlProgram *gebr_geoxml_parameter_get_program(GebrGeoXmlParameter * parameter);
 
 /**
  * Change \p parameter type to \p type.
@@ -165,13 +108,6 @@ GebrGeoXmlParameters *gebr_geoxml_parameter_get_parameters(GebrGeoXmlParameter *
  * If \p parameter is NULL nothing is done.
  */
 gboolean gebr_geoxml_parameter_set_type(GebrGeoXmlParameter * parameter, GebrGeoXmlParameterType type);
-
-/**
- * Change \p parameter to reference \p reference.
- *
- * Return one of GEBR_GEOXML_RETV_SUCCESS, GEBR_GEOXML_RETV_REFERENCE_TO_ITSELF, GEBR_GEOXML_RETV_NULL_PTR
- */
-int gebr_geoxml_parameter_set_be_reference(GebrGeoXmlParameter * parameter, GebrGeoXmlParameter * reference);
 
 /**
  * Returns \p parameter 's type.
@@ -225,9 +161,11 @@ gboolean gebr_geoxml_parameter_get_is_program_parameter(GebrGeoXmlParameter * pa
 void gebr_geoxml_parameter_set_label(GebrGeoXmlParameter * parameter, const gchar * label);
 
 /**
- * Get \p parameter 's one line description.
+ * gebr_geoxml_parameter_get_label:
+ * @parameter: parameter from where the label will be get
  *
- * If \p parameter is NULL returns NULL.
+ * Get @parameter's one line description.
+ * Will fail if @parameter is NULL.
  */
 const gchar *gebr_geoxml_parameter_get_label(GebrGeoXmlParameter * parameter);
 
@@ -249,9 +187,12 @@ gboolean gebr_geoxml_parameter_get_is_in_group(GebrGeoXmlParameter * parameter);
 GebrGeoXmlParameterGroup *gebr_geoxml_parameter_get_group(GebrGeoXmlParameter * parameter);
 
 /**
- * Reset \p parameter's value and default. If \p recursive, do it for groups and do recursively.
+ * gebr_geoxml_parameter_is_dict_param:
+ * @parameter:
+ *
+ * Returns: %TRUE if @parameter is a dictionary parameter, %FALSE otherwise.
  */
-void gebr_geoxml_parameter_reset(GebrGeoXmlParameter * parameter, gboolean recursive);
+gboolean gebr_geoxml_parameter_is_dict_param(GebrGeoXmlParameter *parameter);
 
 G_END_DECLS
 #endif				//__GEBR_GEOXML_PARAMETER_H

@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <glib/gstdio.h>
 #include <locale.h>
+#include <fcntl.h>
 
 #include "defines.h"
 #include "utils.h"
@@ -115,6 +116,14 @@ gboolean gebr_path_resolve_home_variable(GString * path)
 	}
 
 	return FALSE;
+}
+
+void gebr_path_set_to(GString * path, gboolean relative)
+{
+	if (relative)
+		gebr_path_use_home_variable(path);
+	else
+		gebr_path_resolve_home_variable(path);
 }
 
 /**
@@ -426,6 +435,8 @@ gboolean gebr_g_key_file_remove_key(GKeyFile * key_file, const gchar * group, co
 /*
  * Function: gebr_validate_int
  * Validate an int parameter
+ *
+ * FIXME Deprecated
  */
 const gchar *gebr_validate_int(const gchar * text_value, const gchar * min, const gchar * max)
 {
@@ -438,7 +449,6 @@ const gchar *gebr_validate_int(const gchar * text_value, const gchar * min, cons
 		return "";
 
 	value = g_ascii_strtod(text_value, &endptr);
-
 	if (endptr - text_value	!= len)
 		return "";
 
@@ -591,4 +601,90 @@ gchar *gebr_date_get_localized (const gchar *format, const gchar *locale)
 	}
 
 	return datestr;
+}
+
+gchar *gebr_id_random_create(gssize bytes)
+{
+	gchar * id = g_new(gchar, bytes+1);
+
+	for (gint i = 0; i < bytes; ++i) {
+		GTimeVal current_time;
+		g_get_current_time(&current_time);
+		g_random_set_seed(current_time.tv_usec);
+	
+		//take care not to use separators as space, comma and others!
+		gchar c;
+		do
+			c = (gchar)g_random_int_range(48, 90);
+		while (c >= 58 && c <= 64); //rejected range
+		id[i] = c;
+	}
+	id[bytes] = '\0';
+
+	return id;
+}
+
+gchar * gebr_lock_file(const gchar *pathname, const gchar *new_lock_content, gboolean symlink)
+{
+	/* TODO */
+	if (symlink)
+		return NULL;
+
+	gchar *contents = NULL;
+
+	struct flock fl;
+	fl.l_type = F_WRLCK;
+	fl.l_whence = SEEK_SET;
+	fl.l_start = 0;
+	fl.l_len = 0;
+	fl.l_pid = getpid();
+
+	int fd = open(pathname, O_CREAT | O_WRONLY, gebr_home_mode());
+	fcntl(fd, F_SETLKW, &fl);
+
+	GError *error = NULL;
+	gsize length = 0;
+	if (g_file_test(pathname, G_FILE_TEST_IS_REGULAR) &&
+	    g_file_get_contents(pathname, &contents, &length, &error) &&
+	    length > 0) {
+		/* file exists and could be read, make it a null-terminated string */
+		gchar * tmp = g_new(gchar, length+1);
+		strncpy(tmp, contents, length);
+		tmp[length] = '\0';
+		g_free(contents);
+		contents = tmp;
+	} else {
+		length = strlen(new_lock_content);
+		if (write(fd, new_lock_content, length) > 0)
+			contents = g_strdup(new_lock_content);
+		else
+			contents = NULL;
+	}
+
+	close(fd);
+	fl.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &fl);
+
+	return contents;
+}
+
+gchar *gebr_str_word_before_pos(const gchar *str, gint *pos)
+{
+	gchar *word;
+	gint ini = *pos;
+	gint end = *pos;
+
+	while (ini >= 0 && (g_ascii_isalnum(str[ini]) || str[ini] == '_'))
+		ini--;
+
+	if (ini == end)
+		return NULL;
+
+	// Advance one so ini points to the first valid char
+	ini++;
+	*pos = ini;
+	word = g_strdup(str+ini);
+	word[end-ini+1] = '\0';
+
+	return word;
 }

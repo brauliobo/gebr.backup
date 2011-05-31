@@ -20,8 +20,10 @@
 #include <zlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include <glib/gstdio.h>
+#include <glib/gi18n.h>
 #include <gdome.h>
 #include <libxml/parser.h>
 
@@ -40,10 +42,15 @@
 #include "flow.h"
 #include "parameter.h"
 #include "program-parameter.h"
+#include "program.h"
 #include "parameters_p.h"
 #include "parameter_p.h"
+#include "parameter_group.h"
 #include "parameter_group_p.h"
+#include "value_sequence.h"
+#include "../gebr-expr.h"
 
+#include "parameters.h"
 /* global variables */
 /**
  * \internal
@@ -545,7 +552,15 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 		// Added #IMPLIED 'version' attribute to 'program' tag.
 		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW)
 			__gebr_geoxml_set_attr_value(root_element, "version", "0.3.3");
+		else if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_LINE) {
+			GdomeElement *pivot;
+			pivot = __gebr_geoxml_get_first_element(root_element, "date");
+			pivot = __gebr_geoxml_next_element(pivot);
+			__gebr_geoxml_insert_new_element(root_element, "server-group", pivot);
+			__gebr_geoxml_set_attr_value(root_element, "version", "0.3.3");
+		}
 	}
+
 	/* flow 0.3.3 to 0.3.4 */ 
 	if (strcmp(version, "0.3.4") < 0) {
 		// Backward compatible change, nothing to be done.
@@ -620,6 +635,45 @@ static int __gebr_geoxml_document_validate_doc(GdomeDocument ** document, GebrGe
 					first_instance = FALSE;
 				}
 			}
+		}
+	}
+
+	if (strcmp(version, "0.3.7") < 0) {
+		if (gebr_geoxml_document_get_type(((GebrGeoXmlDocument *) *document)) == GEBR_GEOXML_DOCUMENT_TYPE_FLOW) {
+			GdomeElement *io;
+			GdomeElement *el;
+			GdomeElement *new_io;
+			GdomeElement *lastrun;
+			GdomeElement *server;
+			GdomeElement *servers;
+
+			io = __gebr_geoxml_get_first_element (root_element, "io");
+			servers = __gebr_geoxml_next_element (io);
+			server = __gebr_geoxml_get_first_element (servers, "server");
+
+			if (!server) {
+				server = __gebr_geoxml_insert_new_element (root_element, "server", servers);
+				__gebr_geoxml_set_attr_value(server, "address", "127.0.0.1");
+				new_io = __gebr_geoxml_insert_new_element(server, "io", NULL);
+				el = __gebr_geoxml_insert_new_element(new_io, "input", NULL);
+				__gebr_geoxml_set_element_value(el, "", __gebr_geoxml_create_TextNode);
+				el = __gebr_geoxml_insert_new_element(new_io, "output", NULL);
+				__gebr_geoxml_set_element_value(el, "", __gebr_geoxml_create_TextNode);
+				el = __gebr_geoxml_insert_new_element(new_io, "error", NULL);
+				__gebr_geoxml_set_element_value(el, "", __gebr_geoxml_create_TextNode);
+				lastrun = __gebr_geoxml_insert_new_element(server, "lastrun", NULL);
+				__gebr_geoxml_set_element_value(lastrun, "", __gebr_geoxml_create_TextNode);
+			} else {
+				server = (GdomeElement*)gdome_el_cloneNode(server, TRUE, &exception);
+				gdome_el_insertBefore_protected(root_element,
+								(GdomeNode*)server,
+								(GdomeNode*)servers,
+								&exception);
+			}
+
+			gdome_el_removeChild(root_element, (GdomeNode*) io, &exception);
+			gdome_el_removeChild(root_element, (GdomeNode*) servers, &exception);
+			__gebr_geoxml_set_attr_value(root_element, "version", "0.3.7");
 		}
 	}
 
@@ -962,8 +1016,8 @@ void gebr_geoxml_document_set_email(GebrGeoXmlDocument * document, const gchar *
 
 GebrGeoXmlParameters *gebr_geoxml_document_get_dict_parameters(GebrGeoXmlDocument * document)
 {
-	if (document == NULL)
-		return NULL;
+	g_return_val_if_fail (document != NULL, NULL);
+
 	return (GebrGeoXmlParameters *)
 	    __gebr_geoxml_get_first_element(__gebr_geoxml_get_first_element
 					    (gebr_geoxml_document_root_element(document), "dict"), "parameters");
@@ -1116,4 +1170,342 @@ static void gebr_geoxml_document_fix_header(GString * source, const gchar * tagn
 	g_string_erase(source, 0, c + 1);
 	g_string_prepend(source, doctype);
 	g_free(doctype);
+}
+
+void gebr_geoxml_document_merge_dict (GebrGeoXmlDocument *dst, GebrGeoXmlDocument *src)
+{
+	GebrGeoXmlParameters *dst_params;
+	GebrGeoXmlParameters *src_params;
+	GebrGeoXmlProgramParameter *param;
+	GebrGeoXmlSequence *seq;
+	GebrGeoXmlSequence *first;
+	GdomeNode *clone;
+	GHashTable *htable;
+	const gchar *label;
+
+	g_return_if_fail (dst != NULL);
+	g_return_if_fail (src != NULL);
+
+	dst_params = gebr_geoxml_document_get_dict_parameters (dst);
+	src_params = gebr_geoxml_document_get_dict_parameters (src);
+	htable = g_hash_table_new (g_str_hash, g_str_equal);
+
+	gebr_geoxml_parameters_get_parameter (dst_params, &seq, 0);
+	first = seq;
+	while (seq) {
+		param = GEBR_GEOXML_PROGRAM_PARAMETER (seq);
+		label = gebr_geoxml_program_parameter_get_keyword (param);
+		g_hash_table_insert (htable, (gpointer)label, GINT_TO_POINTER (1));
+		gebr_geoxml_sequence_next (&seq);
+	}
+
+	gebr_geoxml_parameters_get_parameter (src_params, &seq, 0);
+	for ( ; seq; gebr_geoxml_sequence_next (&seq)) {
+		param = GEBR_GEOXML_PROGRAM_PARAMETER (seq);
+		label = gebr_geoxml_program_parameter_get_keyword (param);
+		if (g_hash_table_lookup (htable, label))
+			continue;
+
+		clone = gdome_doc_importNode((GdomeDocument *)dst, (GdomeNode *) seq,
+					     TRUE, &exception);
+		gdome_el_insertBefore((GdomeElement *)dst_params, clone, (GdomeNode*)first, &exception);
+	}
+
+	g_hash_table_unref (htable);
+}
+
+static gboolean
+document_has_dictkey (GebrGeoXmlDocument *doc, const gchar *name, gchar **out_value)
+{
+	GebrGeoXmlParameters *params = gebr_geoxml_document_get_dict_parameters (doc);
+
+	GebrGeoXmlSequence *seq;
+	gebr_geoxml_parameters_get_parameter (params, &seq, 0);
+	for (; seq != NULL; gebr_geoxml_sequence_next (&seq)) {
+		GebrGeoXmlProgramParameter *param = GEBR_GEOXML_PROGRAM_PARAMETER (seq);
+		const gchar *keyword = gebr_geoxml_program_parameter_get_keyword (param);
+
+		if (g_strcmp0 (name, keyword) == 0) {
+			*out_value = g_strdup (gebr_geoxml_program_parameter_get_first_value (param, FALSE));
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+gboolean
+gebr_geoxml_document_is_dictkey_defined (const gchar *name,
+					 gchar **out_value,
+					 GebrGeoXmlDocument *first_doc,
+					 ...)
+{
+	g_return_val_if_fail (first_doc != NULL, FALSE);
+
+	gboolean key_found = FALSE;
+
+	va_list args;
+	va_start (args, first_doc);
+	GebrGeoXmlDocument *doc = first_doc;
+
+	while (doc) {
+		gchar *value;
+		if (document_has_dictkey (doc, name, &value)) {
+			key_found = TRUE;
+			if (out_value)
+				*out_value = value;
+			break;
+		}
+
+		doc = va_arg(args, GebrGeoXmlDocument*);
+	}
+	va_end (args);
+
+	return key_found;
+}
+
+gboolean
+gebr_geoxml_document_validate_expr(const gchar *expr,
+				   GebrGeoXmlDocument *flow,
+				   GebrGeoXmlDocument *line,
+				   GebrGeoXmlDocument *proj,
+				   GError **err)
+{
+	gboolean success = TRUE;
+	GHashTable *ht;
+
+	if (*expr == '\0')
+		return TRUE;
+
+	ht = g_hash_table_new_full (g_str_hash,
+				    g_str_equal,
+				    g_free,
+				    g_free);
+
+	// Check if @expr is using any undefined variable
+	GList *vars = gebr_expr_extract_vars (expr);
+
+	GHashTable *var_hash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+	gchar * hash_key = NULL;
+	gint type = 0;
+
+	GebrGeoXmlSequence *i = gebr_geoxml_parameters_get_first_parameter(gebr_geoxml_document_get_dict_parameters(flow));
+	for (; i != NULL; gebr_geoxml_sequence_next(&i)) {
+		const gchar * key = gebr_geoxml_program_parameter_get_keyword(GEBR_GEOXML_PROGRAM_PARAMETER(i));
+		type = gebr_geoxml_parameter_get_type(GEBR_GEOXML_PARAMETER(i));
+		hash_key = g_strdup(key);
+		g_hash_table_insert(var_hash, hash_key, GINT_TO_POINTER(type));
+	}
+
+	GRegex *regex;
+	GMatchInfo *info;
+
+	regex = g_regex_new ("^[a-z][a-z0-9_]*$", 0, 0, NULL);
+
+	for (GList *i = vars; i; i = i->next) {
+		gchar *value;
+		gchar *name = i->data;
+
+		g_regex_match (regex, name, 0, &info);
+		if (!g_match_info_matches (info))
+		{
+			g_match_info_free (info);
+			success = FALSE;
+			g_set_error (err, gebr_expr_error_quark(),
+				     GEBR_EXPR_ERROR_UNDEFINED_VAR,
+				     _("Invalid name for variable %s"),
+				     name);
+			goto out;
+		}
+		g_match_info_free (info);
+
+		if (g_hash_table_lookup_extended(var_hash, name, NULL, (gpointer)&type))
+			if (type != GEBR_GEOXML_PARAMETER_TYPE_INT &&
+			    type != GEBR_GEOXML_PARAMETER_TYPE_FLOAT)
+			{
+				success = FALSE;
+				g_set_error (err, gebr_expr_error_quark(),
+					     GEBR_EXPR_ERROR_UNDEFINED_VAR,
+					     "Incompatible type for variable %s", name);
+				goto out;
+			}
+
+		if (!gebr_geoxml_document_is_dictkey_defined (name, &value,
+							      flow, line, proj,
+							      NULL))
+		{
+			success = FALSE;
+			g_set_error (err, gebr_expr_error_quark(),
+				     GEBR_EXPR_ERROR_UNDEFINED_VAR,
+				     "Undefined variable name %s", name);
+			goto out;
+		}
+		if(g_strcmp0(name,"iter") == 0)
+			value = g_strdup("0");
+
+		g_hash_table_insert (ht, g_strdup (name), value);
+	}
+
+	GError *error = NULL;
+	GebrExpr *expression = gebr_expr_new (&error);
+
+	// Check if expression is well-formed
+	if (!expression) {
+		g_propagate_error (err, error);
+		success = FALSE;
+		gebr_expr_free (expression);
+		goto out;
+	}
+
+	void f(gchar *var_name, gchar *var_value) {
+		if (error)
+			return;
+		gebr_expr_set_var (expression, var_name, var_value, &error);
+	}
+
+	g_hash_table_foreach (ht, (GHFunc) f, NULL);
+	if (error) {
+		g_propagate_error (err, error);
+		success = FALSE;
+		gebr_expr_free (expression);
+		goto out;
+	}
+
+	success = gebr_expr_eval(expression, expr, NULL, &error);
+	if (!success)
+		g_propagate_error (err, error);
+	gebr_expr_free(expression);
+
+out:
+	g_hash_table_destroy(var_hash);
+
+	g_regex_unref (regex);
+	g_hash_table_unref (ht);
+	g_list_foreach (vars, (GFunc) g_free, NULL);
+	g_list_free (vars);
+
+	return success;
+}
+
+gboolean
+gebr_geoxml_document_validate_str (const gchar *str,
+				   GebrGeoXmlDocument *flow,
+				   GebrGeoXmlDocument *line,
+				   GebrGeoXmlDocument *proj,
+				   GError **err)
+{
+	gboolean success = TRUE;
+	GRegex *regex;
+	GMatchInfo *info;
+
+	if (*str == '\0')
+		return TRUE;
+
+	// Check if @str is using any undefined variable
+	GList *vars = NULL; 
+	GebrExprError error = gebr_str_expr_extract_vars (str, &vars);
+	if (error == GEBR_EXPR_ERROR_NONE){
+
+		regex = g_regex_new ("^[a-z][a-z0-9_]*$", 0, 0, NULL);
+
+		for (GList *i = vars; i; i = i->next) {
+			gchar *value;
+			gchar *name = i->data;
+			g_regex_match (regex, name, 0, &info);
+			if (!g_match_info_matches (info))
+			{
+				success = FALSE;
+				g_match_info_free (info);
+				g_set_error (err, gebr_expr_error_quark(),
+					     GEBR_EXPR_ERROR_UNDEFINED_VAR,
+					     _("Invalid name for variable %s"),
+					     name);
+				goto out;
+			}
+			g_match_info_free (info);
+
+			if (!gebr_geoxml_document_is_dictkey_defined (name, &value,
+								      flow, line, proj,
+								      NULL))
+			{
+				success = FALSE;
+				g_set_error (err, gebr_expr_error_quark(),
+					     GEBR_EXPR_ERROR_UNDEFINED_VAR,
+					     "Undefined variable name %s", name);
+				goto out;
+			}
+		}
+	}
+	else{
+		GString * err_msg = g_string_new(NULL);
+
+		switch(error){
+		case GEBR_EXPR_ERROR_SYNTAX:
+			g_string_assign(err_msg, "Syntax Error");
+			break;
+
+		case GEBR_EXPR_ERROR_EMPTY_VAR:
+			g_string_assign(err_msg, "Empty Variable");
+			break;
+
+		case GEBR_EXPR_ERROR_STATE_UNKNOWN:
+			g_string_assign(err_msg, "State Unknown");
+			break;
+
+		default:
+			g_string_assign(err_msg, "Other Error");
+			break;
+		}
+
+		success = FALSE;
+		g_set_error_literal(err, gebr_expr_error_quark(),
+				    error,
+				    err_msg->str);
+		g_string_free(err_msg, TRUE);
+		goto out;
+	}
+
+out:
+	g_regex_unref (regex);
+	g_list_foreach (vars, (GFunc) g_free, NULL);
+	g_list_free (vars);
+
+	return success;
+}
+
+GebrGeoXmlSequence *
+gebr_geoxml_document_get_dict_parameter(GebrGeoXmlDocument *doc)
+{
+	GebrGeoXmlSequence *seq;
+	GebrGeoXmlParameters *params;
+
+	params = gebr_geoxml_document_get_dict_parameters(doc);
+	gebr_geoxml_parameters_get_parameter(params, &seq, 0);
+	return seq;
+}
+
+GebrGeoXmlParameter *
+gebr_geoxml_document_set_dict_keyword(GebrGeoXmlDocument *doc,
+				      GebrGeoXmlParameterType type,
+				      const gchar *keyword,
+				      const gchar *value)
+{
+	GebrGeoXmlParameter *param;
+	GebrGeoXmlParameters *params;
+
+	g_return_val_if_fail(doc != NULL, NULL);
+	g_return_val_if_fail(keyword != NULL, NULL);
+	g_return_val_if_fail(value != NULL, NULL);
+	g_return_val_if_fail(type == GEBR_GEOXML_PARAMETER_TYPE_STRING ||
+			     type == GEBR_GEOXML_PARAMETER_TYPE_FLOAT ||
+			     type == GEBR_GEOXML_PARAMETER_TYPE_INT,
+			     NULL);
+
+	params = gebr_geoxml_document_get_dict_parameters(doc);
+	param = gebr_geoxml_parameters_append_parameter(params, type);
+	gebr_geoxml_program_parameter_set_keyword(GEBR_GEOXML_PROGRAM_PARAMETER(param), keyword);
+	gebr_geoxml_program_parameter_set_first_value(GEBR_GEOXML_PROGRAM_PARAMETER(param),
+						      FALSE, value);
+
+	return param;
 }
