@@ -20,18 +20,27 @@
 
 #include <gtk/gtk.h>
 
-#include <geoxml.h>
+#include <geoxml/geoxml.h>
+#include <gebr-validator.h>
 
 #include "gebr-gui-file-entry.h"
 #include "gebr-gui-value-sequence-edit.h"
 #include "gebr-gui-program-edit.h"
+#include "gebr-gui-validatable-widget.h"
 
 G_BEGIN_DECLS
 
-struct gebr_gui_parameter_widget;
-typedef void (*changed_callback) (struct gebr_gui_parameter_widget * gebr_gui_parameter_widget, gpointer user_data);
+typedef struct gebr_gui_parameter_widget GebrGuiParameterWidget;
 
-struct gebr_gui_parameter_widget {
+typedef void (*changed_callback) (GebrGuiParameterWidget *widget, gpointer user_data);
+
+struct gebr_gui_parameter_widget
+{
+	GebrGuiValidatableWidget parent;
+
+	/*< private >*/
+	GebrValidator *validator;
+
 	GebrGeoXmlParameter *parameter;
 	GebrGeoXmlProgramParameter *program_parameter;
 	GebrGeoXmlParameterType parameter_type;
@@ -42,14 +51,12 @@ struct gebr_gui_parameter_widget {
 	GtkWidget *widget;
 	GtkWidget *value_widget;
 
-	/* dict stuff */
-	gboolean dict_enabled;
-	GebrGeoXmlProgramParameter *dict_parameter;
-	struct gebr_gui_gebr_gui_program_edit_dicts *dicts;
-
 	/* for lists */
 	GtkWidget *list_value_widget;
 	GebrGuiValueSequenceEdit *gebr_gui_value_sequence_edit;
+
+	/* for group */
+	GtkWidget *group_warning_widget;
 
 	/* auto submit stuff */
 	changed_callback callback;
@@ -59,20 +66,10 @@ struct gebr_gui_parameter_widget {
 /**
  * Create a new parameter widget.
  */
-struct gebr_gui_parameter_widget *
-gebr_gui_parameter_widget_new(GebrGeoXmlParameter * parameter, gboolean use_default_value, gpointer data);
-
-/**
- * Set dictionaries documents to find dictionaries parameters
- */
-void
-gebr_gui_parameter_widget_set_dicts(struct gebr_gui_parameter_widget *parameter_widget,
-				    struct gebr_gui_gebr_gui_program_edit_dicts *dicts);
-
-/**
- * Return the parameter's widget value
- */
-GString *parameter_widget_get_widget_value(struct gebr_gui_parameter_widget *parameter_widget);
+GebrGuiParameterWidget *gebr_gui_parameter_widget_new(GebrGeoXmlParameter *parameter,
+						      GebrValidator       *validator,
+						      gboolean             use_default_value,
+						      gpointer             data);
 
 /**
  *
@@ -91,9 +88,15 @@ void gebr_gui_parameter_widget_set_readonly(struct gebr_gui_parameter_widget *pa
 void gebr_gui_parameter_widget_update(struct gebr_gui_parameter_widget *parameter_widget);
 
 /**
- * Apply validations rules (if existent) to _gebr_gui_parameter_widget_
+ * gebr_gui_parameter_widget_validate:
+ * @parameter_widget: The parameter widget to be validated
+ *
+ * Set tooltip errors and icons for @parameter_widget. If the parameter is numeric
+ * and have minimum/maximum values, clamp the value.
+ *
+ * Returns: %TRUE if the parameter was valid, %FALSE otherwise.
  */
-void gebr_gui_parameter_widget_validate(struct gebr_gui_parameter_widget *parameter_widget);
+gboolean gebr_gui_parameter_widget_validate(struct gebr_gui_parameter_widget *parameter_widget);
 
 /**
  * Update UI of list with the new separator
@@ -104,6 +107,49 @@ void gebr_gui_parameter_widget_update_list_separator(struct gebr_gui_parameter_w
  * Rebuild the UI.
  */
 void gebr_gui_parameter_widget_reconfigure(struct gebr_gui_parameter_widget *parameter_widget);
+
+gboolean gebr_gui_parameter_widget_match_completion(GtkEntryCompletion *completion,
+						    const gchar *key,
+						    GtkTreeIter *iter,
+						    gpointer user_data);
+
+/**
+ * gebr_gui_parameter_add_variables_popup:
+ * @entry:
+ * @flow:
+ * @line:
+ * @proj:
+ * @type:
+ *
+ * Creates a popup menu with compatible variables for @entry.
+ *
+ * Returns: a #GtkMenu
+ */
+GtkWidget *gebr_gui_parameter_add_variables_popup(GtkEntry *entry,
+						  GebrGeoXmlDocument *flow,
+						  GebrGeoXmlDocument *line,
+						  GebrGeoXmlDocument *proj,
+						  GebrGeoXmlParameterType type);
+
+/**
+ * gebr_gui_parameter_get_completion_model:
+ */
+GtkTreeModel *gebr_gui_parameter_get_completion_model(GebrGeoXmlDocument *flow,
+						      GebrGeoXmlDocument *line,
+						      GebrGeoXmlDocument *proj,
+						      GebrGeoXmlParameterType type);
+
+/**
+ * gebr_gui_parameter_set_entry_completion:
+ */
+void gebr_gui_parameter_set_entry_completion(GtkEntry *entry,
+					     GtkTreeModel *model,
+					     GebrGeoXmlParameterType type);
+
+/**
+ * gebr_gui_group_instance_validate:
+ */
+gboolean gebr_gui_group_instance_validate(GebrValidator *validator, GebrGeoXmlSequence *instance, GtkWidget *icon);
 
 G_END_DECLS
 #endif				//__GEBR_GUI_PARAMETER_H

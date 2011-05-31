@@ -48,24 +48,36 @@ struct _GebrGuiValueSequenceEdit {
 	ValueSequenceSetFunction set_function;
 	ValueSequenceGetFunction get_function;
 	gpointer user_data;
+
+	/*< private >*/
+	gboolean has_autocomplete;
 };
+
 struct _GebrGuiValueSequenceEditClass {
 	GebrGuiSequenceEditClass parent;
 };
 
 GtkWidget *gebr_gui_value_sequence_edit_new(GtkWidget * widget);
 
-void gebr_gui_value_sequence_edit_add(GebrGuiValueSequenceEdit * gebr_gui_value_sequence_edit,
-				      GebrGeoXmlSequence * sequence);
+void gebr_gui_value_sequence_edit_add(GebrGuiValueSequenceEdit *self,
+				      GebrGeoXmlSequence *sequence);
 
-void gebr_gui_value_sequence_edit_load(GebrGuiValueSequenceEdit * gebr_gui_value_sequence_edit,
-				       GebrGeoXmlSequence * sequence,
+void gebr_gui_value_sequence_edit_load(GebrGuiValueSequenceEdit *self,
+				       GebrGeoXmlSequence *sequence,
 				       ValueSequenceSetFunction set_function,
 				       ValueSequenceGetFunction get_function,
 				       gpointer user_data);
 
-gboolean
-gebr_gui_value_sequence_edit_rename(GebrGuiValueSequenceEdit * gebr_gui_value_sequence_edit, const gchar * new_text);
+gboolean gebr_gui_value_sequence_edit_rename(GebrGuiValueSequenceEdit *self,
+					     const gchar * new_text);
+
+void gebr_gui_value_sequence_edit_clear (GebrGuiValueSequenceEdit *self);
+
+void gebr_gui_value_sequence_edit_set_autocomplete(GebrGuiValueSequenceEdit *self,
+						   GebrGeoXmlDocument *flow,
+						   GebrGeoXmlDocument *line,
+						   GebrGeoXmlDocument *proj,
+						   GebrGeoXmlParameterType type);
 
 G_END_DECLS
 

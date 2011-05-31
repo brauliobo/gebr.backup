@@ -15,10 +15,14 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GEBR_GEOXML_PROGRAM_H
-#define __GEBR_GEOXML_PROGRAM_H
+#ifndef __GEBR_GEOXML_PROGRAM_H__
+#define __GEBR_GEOXML_PROGRAM_H__
 
 #include <glib.h>
+
+#include "gebr-geo-types.h"
+
+#include <gebr-validator.h>
 
 G_BEGIN_DECLS
 
@@ -84,30 +88,6 @@ G_BEGIN_DECLS
  * - Madagascar: http://rsf.sourceforge.net
  */
 
-typedef enum {
-	GEBR_GEOXML_PROGRAM_STATUS_UNKNOWN = 0,
-	GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED,
-	GEBR_GEOXML_PROGRAM_STATUS_UNCONFIGURED,
-	GEBR_GEOXML_PROGRAM_STATUS_DISABLED,
-} GebrGeoXmlProgramStatus;
-
-/**
- * Promote a sequence to a program.
- */
-#define GEBR_GEOXML_PROGRAM(seq) ((GebrGeoXmlProgram*)(seq))
-
-/**
- * The GebrGeoXmlProgram struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_program GebrGeoXmlProgram;
-
-#include "parameter.h"
-#include "parameters.h"
-#include "program-parameter.h"
-#include "flow.h"
-#include "macros.h"
-#include "object.h"
-
 /**
  * Call \p callback for each parameter of \p program
  *
@@ -116,9 +96,14 @@ typedef struct gebr_geoxml_program GebrGeoXmlProgram;
 void gebr_geoxml_program_foreach_parameter(GebrGeoXmlProgram * program, GebrGeoXmlCallback callback, gpointer user_data);
 
 /**
- * Get the flow to which \p program belongs to.
+ * gebr_geoxml_program_flow:
+ * @program: a program appended in a flow
  *
- * If \p program is NULL nothing is done.
+ * Get the flow to which @program belongs to.
+ *
+ * @program should not be passed as NULL, or an error will occur.
+ *
+ * Returns: the flow to which @program belongs.
  */
 GebrGeoXmlFlow *gebr_geoxml_program_flow(GebrGeoXmlProgram * program);
 
@@ -263,5 +248,63 @@ const gchar *gebr_geoxml_program_get_mpi(GebrGeoXmlProgram * program);
  */
 const gchar *gebr_geoxml_program_get_url(GebrGeoXmlProgram * program);
 
+/**
+ * Get \p program's control attribute.
+ *
+ * If \p program is NULL returns GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY.
+ */
+GebrGeoXmlProgramControl gebr_geoxml_program_get_control(GebrGeoXmlProgram * program);
+
+/**
+ * gebr_geoxml_program_control_get_n:
+ * @prog: A #GebrGeoXmlProgram
+ *
+ * Returns: 0 if @prog is %NULL or the parameter is not defined, otherwise it
+ * returns the non-negative value representing the number of iterations.
+ */
+guint gebr_geoxml_program_control_get_n (GebrGeoXmlProgram *prog, gchar **step, gchar **ini);
+
+/**
+ * gebr_geoxml_program_is_var_used:
+ */
+gboolean gebr_geoxml_program_is_var_used (GebrGeoXmlProgram *self,
+					  const gchar *var_name);
+
+/**
+ * gebr_geoxml_program_set_error_id:
+ * @self: a #GebrGeoXmlProgram
+ * @clear: %TRUE to set error to @id, %FALSE to clear
+ * @id: one of #GebrGeoXmlProgramError enumerations
+ *
+ * Sets the error id for @self program. If @clear is %TRUE, @id is ignored
+ * and the error id is set to the empty string.
+ */
+void gebr_geoxml_program_set_error_id(GebrGeoXmlProgram *self,
+				      gboolean clear,
+				      GebrGeoXmlProgramError id);
+
+/**
+ * gebr_geoxml_program_get_error_id:
+ * @program: a #GebrGeoXmlProgram
+ * @id: (out): return location for the error id if @program has an error
+ *
+ * Returns: %TRUE if the @program has an error id, %FALSE otherwise
+ */
+gboolean gebr_geoxml_program_get_error_id(GebrGeoXmlProgram *self,
+					  GebrGeoXmlProgramError *id);
+
+/**
+ * gebr_geoxml_program_is_valid:
+ * @program: a #GebrGeoXmlProgram
+ * @validator: A #GebrValidator
+ * @err: return location for error, or %NULL
+ *
+ * Returns: %TRUE if @program is valid, %FALSE otherwise.
+ */
+gboolean gebr_geoxml_program_is_valid(GebrGeoXmlProgram *self,
+				      GebrValidator *validator,
+				      GError **err);
+
 G_END_DECLS
-#endif				//__GEBR_GEOXML_PROGRAM_H
+
+#endif /* __GEBR_GEOXML_PROGRAM_H__ */

@@ -18,6 +18,10 @@
 #ifndef __GEBR_GEOXML_PARAMETERS_H
 #define __GEBR_GEOXML_PARAMETERS_H
 
+#include <glib.h>
+
+#include "gebr-geo-types.h"
+
 G_BEGIN_DECLS
 
 /**
@@ -76,22 +80,6 @@ G_BEGIN_DECLS
  */
 
 /**
- * Cast a GebrGeoXmlSequence to a GebrGeoXmlParameters.
- */
-#define GEBR_GEOXML_PARAMETERS(seq) ((GebrGeoXmlParameters*)(seq))
-
-/**
- * The GebrGeoXmlParameters struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_parameters GebrGeoXmlParameters;
-
-#include <glib.h>
-
-#include "parameter_group.h"
-#include "parameter.h"
-#include "sequence.h"
-
-/**
  * Create a new parameter and append it to \p parameters.
  *
  * FIXME: If \p parameters is a from a group parameter and it has more than one instance,
@@ -116,7 +104,7 @@ void gebr_geoxml_parameters_set_default_selection(GebrGeoXmlParameters * paramet
 
 /**
  *
- * If \p parameters is NULL returns FALSE.
+ * Will fail if \p parameters is NULL.
  */
 GebrGeoXmlParameter *gebr_geoxml_parameters_get_default_selection(GebrGeoXmlParameters * parameters);
 
@@ -173,11 +161,10 @@ gboolean gebr_geoxml_parameters_get_is_in_group(GebrGeoXmlParameters * parameter
  */
 GebrGeoXmlParameterGroup *gebr_geoxml_parameters_get_group(GebrGeoXmlParameters * parameters);
 
-/**
- * Reset \p parameters' values and default values.
- * If \p recursive is true also do it for group (recursively)
- */
-void gebr_geoxml_parameters_reset(GebrGeoXmlParameters * parameters, gboolean recursive);
+gboolean gebr_geoxml_parameters_is_var_used (GebrGeoXmlParameters *self,
+					     const gchar *var_name);
+
+void gebr_geoxml_parameters_reset_to_default(GebrGeoXmlParameters * parameters);
 
 G_END_DECLS
 #endif				//__GEBR_GEOXML_PARAMETERS_H

@@ -20,7 +20,7 @@
 
 #include <glib.h>
 
-#include "macros.h"
+#include "gebr-geo-types.h"
 
 G_BEGIN_DECLS
 
@@ -101,40 +101,6 @@ G_BEGIN_DECLS
  *
  *
  */
-
-/**
- * Promote the instance \p program_parameter of GebrGeoXmlParameter to a GebrGeoXmlProgramParameter.
- */
-#define GEBR_GEOXML_PROGRAM_PARAMETER(program_parameter) ((GebrGeoXmlProgramParameter*)(program_parameter))
-
-/**
- * Promote a sequence of property's values \p sequence to a GebrGeoXmlPropertyValue.
- */
-#define GEBR_GEOXML_PROPERTY_VALUE(sequence) ((GebrGeoXmlPropertyValue*)(sequence))
-
-/**
- * The GebrGeoXmlProgramParameter struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_program_parameter GebrGeoXmlProgramParameter;
-
-/**
- * The GebrGeoXmlPropertyValue struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_property_value GebrGeoXmlPropertyValue;
-
-#include "program-parameter.h"
-#include "program.h"
-#include "enum_option.h"
-#include "value_sequence.h"
-#include "document.h"
-#include "macros.h"
-
-/**
- * Get the program to which \p program_parameter belongs to.
- *
- * If \p program_parameter is NULL nothing is done.
- */
-GebrGeoXmlProgram *gebr_geoxml_program_parameter_program(GebrGeoXmlProgramParameter * program_parameter);
 
 /**
  * Mark \p program_parameter as required or optional to run its program.
@@ -267,8 +233,6 @@ GebrGeoXmlPropertyValue *gebr_geoxml_program_parameter_append_value(GebrGeoXmlPr
  * \see gebr_geoxml_sequence_move gebr_geoxml_sequence_move_up gebr_geoxml_sequence_move_down gebr_geoxml_sequence_remove
  */
 int
-
-
 gebr_geoxml_program_parameter_get_value(GebrGeoXmlProgramParameter * program_parameter, gboolean default_value,
 					GebrGeoXmlSequence ** property_value, gulong index);
 
@@ -281,15 +245,19 @@ glong
 gebr_geoxml_program_parameter_get_values_number(GebrGeoXmlProgramParameter * program_parameter, gboolean default_value);
 
 /**
- * If \p program_parameter has a list of values, call
- * \ref gebr_geoxml_program_parameter_set_parse_list_value. Otherwise
- * call \ref gebr_geoxml_program_parameter_set_first_value
+ * gebr_geoxml_program_parameter_set_string_value:
+ * @program_parameter:
+ * @default_value:
+ * @value:
  *
- * If \p program_parameter or \p value is NULL nothing is done.
+ * If @program_parameter has a list of values, call gebr_geoxml_program_parameter_set_parse_list_value(),
+ * otherwise call gebr_geoxml_program_parameter_set_first_value().
+ *
+ * If @program_parameter or @value is %NULL nothing is done.
  */
-void
-gebr_geoxml_program_parameter_set_string_value(GebrGeoXmlProgramParameter * program_parameter, gboolean default_value,
-					       const gchar * value);
+void gebr_geoxml_program_parameter_set_string_value (GebrGeoXmlProgramParameter *program_parameter,
+						     gboolean default_value,
+						     const gchar *value);
 
 /**
  * If \p program_parameter has a list of values, return them separated
@@ -415,29 +383,25 @@ gebr_geoxml_program_parameter_set_number_min_max(GebrGeoXmlProgramParameter * pr
 						 const gchar * min, const gchar * max);
 
 /**
- * For integer, float and range parameters type, get mininimum
- * and maximum boundaries
+ * gebr_geoxml_program_parameter_get_number_min_max:
+ * @program_parameter:
+ * @min: (out): return location for the minimum value, or %NULL
+ * @max: (out): return location for the maximum value, or %NULL
  *
- * If \p program_parameter is NULL nothing is done.
- * @see gebr_geoxml_program_parameter_set_number_min_max
+ * Get the minimum and maximum values for integer, float and range parameters type.
+ * If there is no minimum or maximum value, returns an empty string.
  */
-void
-
-
-gebr_geoxml_program_parameter_get_number_min_max(GebrGeoXmlProgramParameter * program_parameter,
-						 const gchar ** min, const gchar ** max);
+void gebr_geoxml_program_parameter_get_number_min_max(GebrGeoXmlProgramParameter * program_parameter,
+                                                      const gchar ** min, const gchar ** max);
 
 /**
  *
  *
  * If \p program_parameter is NULL nothing is done.
  */
-void
-
-
-gebr_geoxml_program_parameter_set_range_properties(GebrGeoXmlProgramParameter * program_parameter,
-						   const gchar * min, const gchar * max, const gchar * inc,
-						   const gchar * digits);
+void gebr_geoxml_program_parameter_set_range_properties(GebrGeoXmlProgramParameter * program_parameter,
+                                                        const gchar * min, const gchar * max, const gchar * inc,
+                                                        const gchar * digits);
 
 /**
  *
@@ -489,6 +453,12 @@ gebr_geoxml_program_parameter_get_enum_option(GebrGeoXmlProgramParameter * progr
  * If \p program_parameter is NULL returns 0.
  */
 glong gebr_geoxml_program_parameter_get_enum_options_number(GebrGeoXmlProgramParameter * program_parameter);
+
+/**
+ * gebr_geoxml_program_parameter_is_var_used:
+ */
+gboolean gebr_geoxml_program_parameter_is_var_used (GebrGeoXmlProgramParameter *self,
+						    const gchar *var_name);
 
 G_END_DECLS
 #endif				//__GEBR_GEOXML_PROGRAM_PARAMETER_H

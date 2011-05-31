@@ -20,6 +20,8 @@
 
 #include <glib.h>
 
+#include "gebr-geo-types.h"
+
 G_BEGIN_DECLS
 
 /**
@@ -69,45 +71,6 @@ G_BEGIN_DECLS
  */
 
 /**
- * Cast to GebrGeoXmlDocument's from its derived classes: GebrGeoXmlFlow, GebrGeoXmlLine and GebrGeoXmlProject
- */
-#define GEBR_GEOXML_DOCUMENT(x) ((GebrGeoXmlDocument*)(x))
-#define GEBR_GEOXML_DOC(x) GEBR_GEOXML_DOCUMENT(x)
-
-/**
- * The GebrGeoXmlDocument struct contains private data only, and should be accessed using the functions below.
- */
-typedef struct gebr_geoxml_document GebrGeoXmlDocument;
-
-#include "parameters.h"
-
-/**
- * Document type: flow, line or project
- *
- */
-typedef enum {
-	/**
-	 * The document is a GebrGeoXmlFlow
-	 */
-	GEBR_GEOXML_DOCUMENT_TYPE_FLOW,
-	/**
-	 * The document is a GebrGeoXmlLine
-	 */
-	GEBR_GEOXML_DOCUMENT_TYPE_LINE,
-	/**
-	 * The document is a GebrGeoXmlProject
-	 */
-	GEBR_GEOXML_DOCUMENT_TYPE_PROJECT,
-} GebrGeoXmlDocumentType;
-
-#include "program.h"
-
-/**
- * Used by \ref gebr_geoxml_document_load 
- */
-typedef void (*GebrGeoXmlDiscardMenuRefCallback)(GebrGeoXmlProgram * program, const gchar * menu, gint index);
-
-/**
  * Load a document XML file at \p path into \p document.
  * The document is validated using the proper DTD. Invalid documents are not loaded.
  * The filename is set according to \p path (see #gebr_geoxml_document_set_filename).
@@ -116,7 +79,10 @@ typedef void (*GebrGeoXmlDiscardMenuRefCallback)(GebrGeoXmlProgram * program, co
  * GEBR_GEOXML_RETV_FILE_NOT_FOUND, GEBR_GEOXML_RETV_PERMISSION_DENIED, 
  * GEBR_GEOXML_RETV_INVALID_DOCUMENT, GEBR_GEOXML_RETV_DTD_SPECIFIED, GEBR_GEOXML_RETV_CANT_ACCESS_DTD
  */
-int gebr_geoxml_document_load(GebrGeoXmlDocument ** document, const gchar * path, gboolean validate, GebrGeoXmlDiscardMenuRefCallback discard_menu_ref);
+int gebr_geoxml_document_load(GebrGeoXmlDocument ** document,
+			      const gchar * path,
+			      gboolean validate,
+			      GebrGeoXmlDiscardMenuRefCallback discard_menu_ref);
 
 /**
  * Load a document XML buffer at \p xml into \p document.
@@ -229,7 +195,10 @@ void gebr_geoxml_document_set_author(GebrGeoXmlDocument * document, const gchar 
 void gebr_geoxml_document_set_email(GebrGeoXmlDocument * document, const gchar * email);
 
 /**
- * Retrieves from \p document. the parameters dictionary for use with program's parameters.
+ * gebr_geoxml_document_get_dict_parameters:
+ * @document: a #GebrGeoXmlDocument
+ *
+ * Retrieves from @document the parameters dictionary for use with program's parameters.
  *
  * If \p document is NULL returns NULL.
  */
@@ -269,10 +238,6 @@ void gebr_geoxml_document_set_description(GebrGeoXmlDocument * document, const g
  * This enables rich text documentation of the document with
  * all the functionallity of html,
  * like images, tables, fonts, etc.
- * PS: Because of implementation HTML text in \p help
- * cannot contain the string ']]>', as it is stored in a
- * CDATA Section. If those strings are found they are
- * going to be replaced by ']] >'.
  *
  * If \p document is NULL nothing is done.
  *
@@ -360,5 +325,80 @@ const gchar *gebr_geoxml_document_get_description(GebrGeoXmlDocument * document)
  */
 const gchar *gebr_geoxml_document_get_help(GebrGeoXmlDocument * document);
 
+/**
+ * gebr_geoxml_document_merge_dict:
+ * @dst: A #GebrGeoXmlDocument that will receive @src dictionary parameters
+ * @src: A #GebrGeoXmlDocument containing dictionary parameters to be merged in @dst
+ *
+ * Copies dictionary parameters from @src into @dst, without overwriting @dst original
+ * variables in case of name clash.
+ */
+void gebr_geoxml_document_merge_dict (GebrGeoXmlDocument *dst, GebrGeoXmlDocument *src);
+
+/**
+ * gebr_geoxml_document_is_dictkey_defined:
+ * @name: The name of the variable to be searched
+ * @out_value: Return location for the value of @name, or %NULL. Free with g_free()
+ * @first_doc: The first document to search the variable
+ * @...: Other documents that will be searched for
+ *
+ * Searches @name in @first_doc. If it is not found, search on other documents
+ * in the list. The search stops on the first match. If no match is found, the
+ * function returns %FALSE.
+ *
+ * Returns: %TRUE if @name was found in the list of documents
+ */
+gboolean gebr_geoxml_document_is_dictkey_defined (const gchar *name,
+						  gchar **out_value,
+						  GebrGeoXmlDocument *first_doc,
+						  ...) G_GNUC_NULL_TERMINATED;
+
+/**
+ * Validate expr against the variables at \p flow, \p line and \p proj
+ */
+gboolean
+gebr_geoxml_document_validate_expr (const gchar *expr,
+				    GebrGeoXmlDocument *flow,
+				    GebrGeoXmlDocument *line,
+				    GebrGeoXmlDocument *proj,
+				    GError **err);
+
+/**
+ * Validate str against the variables at \p flow, \p line and \p proj
+ */
+gboolean
+gebr_geoxml_document_validate_str (const gchar *str,
+				    GebrGeoXmlDocument *flow,
+				    GebrGeoXmlDocument *line,
+				    GebrGeoXmlDocument *proj,
+				    GError **err);
+
+/**
+ * gebr_geoxml_document_set_dict_keyword:
+ * @doc: A #GebrGeoXmlDocument
+ * @type: The type of the variable
+ * @keyword: The name of the variable
+ * @value: The value of the variable
+ *
+ * Creates a new variable in the dictionary variables buffer.
+ *
+ * Returns: The dictionary variable #GebrGeoXmlParameter.
+ */
+GebrGeoXmlParameter *
+gebr_geoxml_document_set_dict_keyword(GebrGeoXmlDocument *doc,
+				      GebrGeoXmlParameterType type,
+				      const gchar *keyword,
+				      const gchar *value);
+
+/**
+ * gebr_geoxml_document_get_dict_parameter:
+ * @document:
+ *
+ * Returns:
+ */
+GebrGeoXmlSequence *
+gebr_geoxml_document_get_dict_parameter(GebrGeoXmlDocument *doc);
+
 G_END_DECLS
+
 #endif				//__GEBR_GEOXML_DOCUMENT_H

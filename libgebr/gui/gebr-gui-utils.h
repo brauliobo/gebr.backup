@@ -20,7 +20,10 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
-#include <geoxml.h>
+#include <geoxml/geoxml.h>
+#include <gebr-validator.h>
+
+#include "gebr-gui-validatable-widget.h"
 
 G_BEGIN_DECLS
 
@@ -503,6 +506,10 @@ gboolean gtk_show_uri(GdkScreen *screen, const gchar *uri, guint32 timestamp, GE
 #endif
 
 gboolean gebr_gui_show_uri(const gchar * uri);
+
+gboolean gebr_gui_validate_widget(GebrGuiValidatableWidget *widget,
+				  GebrGeoXmlParameter      *param,
+				  GebrValidator            *validator);
 
 G_END_DECLS
 #endif				//__GEBR_GUI_UTILS_H
