@@ -18,15 +18,21 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <glib/gi18n.h>
 #include <gdome.h>
+#include <libgebr/gebr-validator.h>
 
-#include "program.h"
-#include "parameters.h"
-#include "xml.h"
 #include "error.h"
-#include "types.h"
+#include "object.h"
+#include "parameter.h"
+#include "parameter_group.h"
+#include "parameters.h"
+#include "program.h"
+#include "program-parameter.h"
 #include "sequence.h"
+#include "types.h"
+#include "value_sequence.h"
+#include "xml.h"
 
 /*
  * internal structures and funcionts
@@ -40,24 +46,23 @@ struct gebr_geoxml_program {
  * library functions.
  */
 
-static void gebr_geoxml_parameters_foreach(GebrGeoXmlParameters * parameters, GebrGeoXmlCallback callback, gpointer user_data)
+static gboolean gebr_geoxml_parameters_foreach(GebrGeoXmlParameters * parameters, GebrGeoXmlCallback callback, gpointer user_data)
 {
 	GebrGeoXmlSequence *parameter;
 
 	gebr_geoxml_parameters_get_parameter(parameters, &parameter, 0);
 	for (; parameter != NULL; gebr_geoxml_sequence_next(&parameter)) {
-		if (gebr_geoxml_parameter_get_type(GEBR_GEOXML_PARAMETER(parameter)) ==
-		    GEBR_GEOXML_PARAMETER_TYPE_GROUP) {
+		if (gebr_geoxml_parameter_get_type(GEBR_GEOXML_PARAMETER(parameter)) == GEBR_GEOXML_PARAMETER_TYPE_GROUP) {
 			GebrGeoXmlSequence *instance;
-
 			gebr_geoxml_parameter_group_get_instance(GEBR_GEOXML_PARAMETER_GROUP(parameter), &instance, 0);
 			for (; instance != NULL; gebr_geoxml_sequence_next(&instance))
-				gebr_geoxml_parameters_foreach(GEBR_GEOXML_PARAMETERS(instance), callback, user_data);
-
-			continue;	
-		}
-		callback(GEBR_GEOXML_OBJECT(parameter), user_data);
+				if (!gebr_geoxml_parameters_foreach(GEBR_GEOXML_PARAMETERS(instance), callback, user_data))
+					return FALSE;
+		} else if (!callback(GEBR_GEOXML_OBJECT(parameter), user_data))
+			return FALSE;
 	}
+
+	return TRUE;
 }
 
 void gebr_geoxml_program_foreach_parameter(GebrGeoXmlProgram * program, GebrGeoXmlCallback callback, gpointer user_data)
@@ -70,9 +75,7 @@ void gebr_geoxml_program_foreach_parameter(GebrGeoXmlProgram * program, GebrGeoX
 
 GebrGeoXmlFlow *gebr_geoxml_program_flow(GebrGeoXmlProgram * program)
 {
-	if (program == NULL)
-		return NULL;
-	return (GebrGeoXmlFlow *) gdome_n_parentNode((GdomeNode *) program, &exception);
+	return (GebrGeoXmlFlow *) gebr_geoxml_object_get_owner_document((GebrGeoXmlObject*) program);
 }
 
 GebrGeoXmlParameters *gebr_geoxml_program_get_parameters(GebrGeoXmlProgram * program)
@@ -84,13 +87,12 @@ GebrGeoXmlParameters *gebr_geoxml_program_get_parameters(GebrGeoXmlProgram * pro
 
 gsize gebr_geoxml_program_count_parameters(GebrGeoXmlProgram * program)
 {
-	if (program == NULL)
-		return -1;
-
 	gsize n = 0;
 	GebrGeoXmlSequence *param;
 	GebrGeoXmlParameters *parameters;
 	GebrGeoXmlParameterType type;
+
+	g_return_val_if_fail(program != NULL, 0);
 
 	parameters = gebr_geoxml_program_get_parameters(program);
 	gebr_geoxml_parameters_get_parameter(parameters, &param, 0);
@@ -301,4 +303,155 @@ const gchar *gebr_geoxml_program_get_url(GebrGeoXmlProgram * program)
 	if (program == NULL)
 		return NULL;
 	return __gebr_geoxml_get_tag_value((GdomeElement *) program, "url");
+}
+
+GebrGeoXmlProgramControl gebr_geoxml_program_get_control(GebrGeoXmlProgram * program)
+{
+	const gchar *control;
+
+	// FIXME if program is NULL, should it really return GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY?
+	// Shouldn't it be GEBR_GEOXML_PROGRAM_CONTROL_UNKNOWN? Or maybe display a warning?
+	if (program == NULL)
+		return GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY;
+
+	control = __gebr_geoxml_get_attr_value((GdomeElement*)program, "control");
+
+	if (g_strcmp0(control, "for") == 0)
+		return GEBR_GEOXML_PROGRAM_CONTROL_FOR;
+
+	if (strlen (control) == 0)
+		return GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY;
+
+	return GEBR_GEOXML_PROGRAM_CONTROL_UNKNOWN;
+}
+
+guint gebr_geoxml_program_control_get_n (GebrGeoXmlProgram *prog, gchar **step, gchar **ini)
+{
+	GebrGeoXmlProgramControl c;
+	GebrGeoXmlParameter *param;
+	GebrGeoXmlParameters *params;
+	GebrGeoXmlValueSequence *value;
+	const gchar *keyword;
+	const gchar *niter;
+	gsize n;
+
+	g_return_val_if_fail (prog != NULL, 0);
+
+	c = gebr_geoxml_program_get_control (prog);
+	g_return_val_if_fail (c == GEBR_GEOXML_PROGRAM_CONTROL_FOR, 0);
+
+	n = gebr_geoxml_program_count_parameters(prog);
+	params = gebr_geoxml_program_get_parameters (prog);
+
+	for(int i = 0; i < n; i++) {
+		gebr_geoxml_parameters_get_parameter (params, (GebrGeoXmlSequence**)&param, i);
+		gebr_geoxml_program_parameter_get_value (GEBR_GEOXML_PROGRAM_PARAMETER (param),
+						 	 FALSE, (GebrGeoXmlSequence**)&value, 0);
+		keyword = gebr_geoxml_program_parameter_get_keyword(GEBR_GEOXML_PROGRAM_PARAMETER (param));
+		if(!strcmp(keyword,"niter"))
+			niter = gebr_geoxml_value_sequence_get(value);
+		else if(!strcmp(keyword,"step"))
+			*step = (gchar *) gebr_geoxml_value_sequence_get(value);
+		else if(!strcmp(keyword,"ini_value"))
+			*ini = (gchar *) gebr_geoxml_value_sequence_get(value);
+	}
+	return atoi(niter);
+}
+
+gboolean gebr_geoxml_program_is_var_used (GebrGeoXmlProgram *self,
+					  const gchar *var_name)
+{
+	GebrGeoXmlParameters *params;
+	params = gebr_geoxml_program_get_parameters (self);
+	return gebr_geoxml_parameters_is_var_used (params, var_name);
+}
+
+GQuark gebr_geoxml_program_error_quark(void)
+{
+	return g_quark_from_static_string("gebr-geoxml-program-error-quark");
+}
+
+void gebr_geoxml_program_set_error_id(GebrGeoXmlProgram *self,
+				      gboolean clear,
+				      GebrGeoXmlProgramError id)
+{
+	gchar *str_id;
+
+	g_return_if_fail(self != NULL);
+
+	if (clear)
+		str_id = g_strdup("");
+	else
+		str_id = g_strdup_printf("%d", id);
+
+	__gebr_geoxml_set_attr_value((GdomeElement*)self, "errorid", str_id);
+	g_free(str_id);
+}
+
+gboolean gebr_geoxml_program_get_error_id(GebrGeoXmlProgram *self,
+					  GebrGeoXmlProgramError *id)
+{
+	const gchar *str_id;
+
+	g_return_val_if_fail(self != NULL, FALSE);
+
+	str_id = __gebr_geoxml_get_attr_value((GdomeElement*)self, "errorid");
+
+	if (*str_id) {
+		if (id)
+			*id = g_ascii_strtoll(str_id, NULL, 10);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+typedef struct {
+	GebrValidator *validator;
+	GError *error;
+} ValidationData;
+
+static void validate_program_parameter(GebrGeoXmlParameter *parameter, ValidationData *data)
+{
+	GebrGeoXmlParameters *instance;
+	GebrGeoXmlParameter *selected;
+	gchar *validated = NULL;
+
+	if (data->error)
+		return;
+
+	/* for exclusive groups, check if this is
+	 * the selected parameter of its instance */
+	instance = gebr_geoxml_parameter_get_parameters(parameter);
+	selected = gebr_geoxml_parameters_get_selection(instance);
+	if (selected != NULL && selected != parameter)
+		return;
+
+	gebr_validator_validate_param(data->validator,
+				      parameter,
+				      &validated,
+				      &data->error);
+
+	g_free(validated);
+}
+
+gboolean gebr_geoxml_program_is_valid(GebrGeoXmlProgram *self,
+				      GebrValidator *validator,
+				      GError **err)
+{
+	ValidationData data = {
+		.validator = validator,
+		.error = NULL
+	};
+	gebr_geoxml_program_foreach_parameter(self, (GebrGeoXmlCallback)validate_program_parameter, &data);
+
+	if (data.error) {
+		gebr_geoxml_program_set_error_id(self, FALSE, data.error->code);
+		g_propagate_error(err, data.error);
+		return FALSE;
+	}
+
+	gebr_geoxml_program_set_error_id(self, TRUE, 0);
+
+	return TRUE;
 }

@@ -16,17 +16,20 @@
  */
 
 #include <string.h>
-
 #include <gdome.h>
+#include <gebr-expr.h>
 
-#include "program-parameter.h"
-#include "types.h"
-#include "xml.h"
+#include "document.h"
 #include "error.h"
 #include "parameter.h"
 #include "parameter_p.h"
+#include "parameters.h"
+#include "program-parameter.h"
 #include "program_p.h"
 #include "sequence.h"
+#include "types.h"
+#include "value_sequence.h"
+#include "xml.h"
 
 /*
  * internal structures and funcionts
@@ -73,25 +76,6 @@ __gebr_geoxml_program_parameter_remove_value_elements(GebrGeoXmlProgramParameter
 /*
  * library functions.
  */
-
-GebrGeoXmlProgram *gebr_geoxml_program_parameter_program(GebrGeoXmlProgramParameter * program_parameter)
-{
-	if (program_parameter == NULL)
-		return NULL;
-
-	GdomeElement *program_element;
-
-	while (1) {
-		GdomeDOMString *name;
-
-		program_element = (GdomeElement *) gdome_n_parentNode((GdomeNode *) program_parameter, &exception);
-		name = gdome_el_nodeName(program_element, &exception);
-		if (!strcmp(name->str, "program"))
-			break;
-	}
-
-	return (GebrGeoXmlProgram *) program_element;
-}
 
 void gebr_geoxml_program_parameter_set_required(GebrGeoXmlProgramParameter * program_parameter, gboolean required)
 {
@@ -214,8 +198,12 @@ void
 gebr_geoxml_program_parameter_set_first_value(GebrGeoXmlProgramParameter * program_parameter, gboolean default_value,
 					      const gchar * value)
 {
-	if (program_parameter == NULL || value == NULL)
-		return;
+	GebrGeoXmlSequence *property_value = NULL;
+
+	g_return_if_fail(program_parameter != NULL);
+	g_return_if_fail(value != NULL);
+
+	gebr_geoxml_program_parameter_get_value(program_parameter, FALSE, &property_value, 0);
 	__gebr_geoxml_set_tag_value((GdomeElement *) program_parameter,
 				    default_value == FALSE ? "value" : "default", value, __gebr_geoxml_create_TextNode);
 }
@@ -234,8 +222,11 @@ gebr_geoxml_program_parameter_set_first_boolean_value(GebrGeoXmlProgramParameter
 const gchar *gebr_geoxml_program_parameter_get_first_value(GebrGeoXmlProgramParameter * program_parameter,
 							   gboolean default_value)
 {
-	if (program_parameter == NULL)
-		return NULL;
+	GebrGeoXmlSequence * property_value = NULL;
+
+	g_return_val_if_fail(program_parameter != NULL, NULL);
+
+	gebr_geoxml_program_parameter_get_value(program_parameter, FALSE, &property_value, 0);
 	return __gebr_geoxml_get_tag_value((GdomeElement *) program_parameter,
 					   default_value == FALSE ? "value" : "default");
 }
@@ -308,6 +299,8 @@ gebr_geoxml_program_parameter_set_string_value(GebrGeoXmlProgramParameter * prog
 	if (program_parameter == NULL)
 		return;
 
+	g_return_if_fail(gebr_geoxml_parameter_get_type(GEBR_GEOXML_PARAMETER(program_parameter)) != GEBR_GEOXML_PARAMETER_TYPE_GROUP);
+
 	if (gebr_geoxml_program_parameter_get_is_list(program_parameter) == FALSE)
 		gebr_geoxml_program_parameter_set_first_value(program_parameter, default_value, value);
 	else
@@ -319,6 +312,8 @@ GString *gebr_geoxml_program_parameter_get_string_value(GebrGeoXmlProgramParamet
 {
 	if (program_parameter == NULL)
 		return NULL;
+
+	g_return_val_if_fail(gebr_geoxml_parameter_get_type(GEBR_GEOXML_PARAMETER(program_parameter)) != GEBR_GEOXML_PARAMETER_TYPE_GROUP, NULL);
 
 	GString *value;
 
@@ -739,4 +734,39 @@ glong gebr_geoxml_program_parameter_get_enum_options_number(GebrGeoXmlProgramPar
 
 	type_element = __gebr_geoxml_parameter_get_type_element(parameter);
 	return __gebr_geoxml_get_elements_number(type_element, "options");
+}
+
+gboolean gebr_geoxml_program_parameter_is_var_used (GebrGeoXmlProgramParameter *self,
+						    const gchar *var_name)
+{
+	GebrGeoXmlSequence *seq;
+	GebrGeoXmlValueSequence *value;
+	const gchar *expr;
+	gboolean retval = FALSE;
+	GList *vars;
+
+	gebr_geoxml_program_parameter_get_value (self, FALSE, &seq, 0);
+	while (seq) {
+		value = GEBR_GEOXML_VALUE_SEQUENCE (seq);
+		expr = gebr_geoxml_value_sequence_get (value);
+		vars = gebr_expr_extract_vars (expr);
+
+		for (GList *i = vars; i; i = i->next) {
+			gchar *name = i->data;
+			if (g_strcmp0(name, var_name) == 0) {
+				retval = TRUE;
+				break;
+			}
+		}
+
+		g_list_foreach (vars, (GFunc) g_free, NULL);
+		g_list_free (vars);
+
+		if (retval)
+			break;
+
+		gebr_geoxml_sequence_next (&seq);
+	}
+
+	return retval;
 }

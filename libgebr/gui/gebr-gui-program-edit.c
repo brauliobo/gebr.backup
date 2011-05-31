@@ -63,7 +63,10 @@ static void on_instance_destroy(GebrGroupReorderData * data);
  */
 
 GebrGuiProgramEdit *
-gebr_gui_program_edit_setup_ui(GebrGeoXmlProgram * program, gpointer parameter_widget_data, gboolean use_default)
+gebr_gui_program_edit_setup_ui(GebrGeoXmlProgram * program,
+			       gpointer parameter_widget_data,
+			       gboolean use_default,
+			       GebrValidator *validator)
 {
 	GebrGuiProgramEdit *program_edit;
 	GtkWidget *vbox;
@@ -76,9 +79,7 @@ gebr_gui_program_edit_setup_ui(GebrGeoXmlProgram * program, gpointer parameter_w
 	program_edit->parameter_widget_data = parameter_widget_data;
 	program_edit->use_default = use_default;
 	program_edit->widget = vbox = gtk_vbox_new(FALSE, 0);
-	program_edit->dicts.project = NULL;
-	program_edit->dicts.line = NULL;
-	program_edit->dicts.flow = NULL;
+	program_edit->validator = validator;
 	gtk_widget_show(vbox);
 	program_edit->title_label = title_label = gtk_label_new(NULL);
 	gtk_widget_show(title_label);
@@ -246,11 +247,9 @@ gebr_gui_program_edit_load(GebrGuiProgramEdit *program_edit, GebrGeoXmlParameter
 	return frame;
 }
 
-/**
- * \internal
- */
-static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *program_edit,
-						       GebrGeoXmlParameter * parameter, GSList ** radio_group)
+static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit  *program_edit,
+						       GebrGeoXmlParameter *parameter,
+						       GSList             **radio_group)
 {
 	GebrGeoXmlParameterType type;
 
@@ -259,6 +258,7 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *progr
 		GtkWidget *expander;
 		GtkWidget *label_widget;
 		GtkWidget *label;
+		GtkWidget *image_widget;
 
 		GtkWidget *depth_hbox;
 		GtkWidget *group_vbox;
@@ -273,6 +273,9 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *progr
 		parameter_group = GEBR_GEOXML_PARAMETER_GROUP(parameter);
 
 		expander = gtk_expander_new("");
+		image_widget = gtk_image_new();
+		program_edit->group_warning_widget = image_widget;
+
 		gtk_widget_show(expander);
 		gtk_expander_set_expanded(GTK_EXPANDER(expander),
 					  gebr_geoxml_parameter_group_get_expand(parameter_group));
@@ -292,7 +295,6 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *progr
 				break;
 			}
 		}
-
 		if (required) {
 			gchar *markup;
 			markup = g_markup_printf_escaped("<b>%s*</b>",
@@ -302,8 +304,11 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *progr
 			g_free(markup);
 		} else 
 			label = gtk_label_new_with_mnemonic(gebr_geoxml_parameter_get_label(parameter));
+
 		gtk_widget_show(label);
+		gtk_widget_show(image_widget);
 		gtk_box_pack_start(GTK_BOX(label_widget), label, FALSE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(label_widget), image_widget, FALSE, TRUE, 5);
 
 		if (gebr_geoxml_parameter_group_get_is_instanciable(GEBR_GEOXML_PARAMETER_GROUP(parameter))) {
 			instanciate_button = gtk_button_new();
@@ -344,6 +349,9 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *progr
 
 		gebr_geoxml_parameter_group_get_instance(parameter_group, &instance, 0);
 		for (gboolean first_instance = TRUE, i = 0; instance != NULL; gebr_geoxml_sequence_next(&instance)) {
+
+			gebr_gui_group_instance_validate(program_edit->validator, instance, program_edit->group_warning_widget);
+
 			GtkWidget *widget;
 			widget = gebr_gui_program_edit_load(program_edit, GEBR_GEOXML_PARAMETERS(instance));
 			data->instances_list = g_list_prepend(data->instances_list, widget);
@@ -359,6 +367,7 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *progr
 			gebr_geoxml_object_set_user_data(GEBR_GEOXML_OBJECT(instance), widget);
 			gtk_box_pack_start(GTK_BOX(group_vbox), widget, FALSE, TRUE, 0);
 		}
+		program_edit->group_warning_widget = NULL;
 		data->instances_list = g_list_reverse(data->instances_list);
 
 		/* Updates the arrow and delete buttons */
@@ -386,12 +395,17 @@ static GtkWidget *gebr_gui_program_edit_load_parameter(GebrGuiProgramEdit *progr
 		/* input widget */
 		if (type != GEBR_GEOXML_PARAMETER_TYPE_FILE)
 			gebr_gui_parameter_widget =
-			    gebr_gui_parameter_widget_new(parameter, program_edit->use_default, NULL);
+			    gebr_gui_parameter_widget_new(parameter,
+							  program_edit->validator,
+							  program_edit->use_default,
+							  NULL);
 		else
-			gebr_gui_parameter_widget = gebr_gui_parameter_widget_new(parameter, program_edit->use_default,
+			gebr_gui_parameter_widget = gebr_gui_parameter_widget_new(parameter,
+										  program_edit->validator,
+										  program_edit->use_default,
 										  program_edit->parameter_widget_data);
-		if (program_edit->dicts.project != NULL)
-			gebr_gui_parameter_widget_set_dicts(gebr_gui_parameter_widget, &program_edit->dicts);
+
+		gebr_gui_parameter_widget->group_warning_widget = program_edit->group_warning_widget;
 		gtk_widget_show(gebr_gui_parameter_widget->widget);
 
 		/* exclusive? */

@@ -20,11 +20,13 @@
 #include <config.h>
 #include <glib/gi18n-lib.h>
 
+#include "sequence.h"
 #include "parameter.h"
 #include "parameter_p.h"
 #include "xml.h"
 #include "types.h"
 #include "error.h"
+#include "parameters.h"
 #include "parameters_p.h"
 #include "parameter_group.h"
 #include "parameter_group_p.h"
@@ -241,31 +243,44 @@ GebrGeoXmlParameters *gebr_geoxml_parameter_get_parameters(GebrGeoXmlParameter *
 	return (GebrGeoXmlParameters *) gdome_n_parentNode((GdomeNode *) parameter, &exception);
 }
 
+GebrGeoXmlProgram *gebr_geoxml_parameter_get_program(GebrGeoXmlParameter * parameter)
+{
+	if (parameter == NULL)
+		return NULL;
+
+	GdomeElement *program_element = (GdomeElement*)parameter;
+	while (1) {
+		GdomeDOMString *name;
+
+		program_element = (GdomeElement *) gdome_n_parentNode((GdomeNode *) program_element, &exception);
+		name = gdome_el_nodeName(program_element, &exception);
+		if (g_strcmp0(name->str, "program") == 0)
+			break;
+	}
+
+	return (GebrGeoXmlProgram *) program_element;
+}
+
+
 gboolean gebr_geoxml_parameter_set_type(GebrGeoXmlParameter * parameter, GebrGeoXmlParameterType type)
 {
-	GdomeElement * type_element;
-
 	g_return_val_if_fail(parameter != NULL, FALSE);
 	g_return_val_if_fail(type != GEBR_GEOXML_PARAMETER_TYPE_UNKNOWN, FALSE);
 	g_return_val_if_fail(type != GEBR_GEOXML_PARAMETER_TYPE_REFERENCE, FALSE);
 
-	type_element = __gebr_geoxml_parameter_get_type_element(parameter);
+	/* backup and remove old type */
+	GdomeElement * type_element = __gebr_geoxml_parameter_get_type_element(parameter);
+	GdomeElement * property = (GdomeElement *) gdome_el_cloneNode(__gebr_geoxml_get_first_element(type_element, "property"),
+								      TRUE, &exception);
 	gdome_n_removeChild((GdomeNode*)parameter, (GdomeNode*)type_element, &exception);
-	__gebr_geoxml_parameter_insert_type(parameter, type);
+
+	type_element = __gebr_geoxml_parameter_insert_type(parameter, type);
+	/* reinsert data */
+	gdome_el_removeChild(type_element, (GdomeNode*)__gebr_geoxml_get_first_element(type_element, "property"), &exception);
+	GdomeElement * before = __gebr_geoxml_get_first_element(type_element, "property");
+	gdome_el_insertBefore_protected(type_element, (GdomeNode*)property, (GdomeNode*)before, &exception);
 
 	return TRUE;
-}
-
-int gebr_geoxml_parameter_set_be_reference(GebrGeoXmlParameter * parameter, GebrGeoXmlParameter * reference)
-{
-	if (parameter == NULL || reference == NULL)
-		return GEBR_GEOXML_RETV_NULL_PTR;
-	if (parameter == reference)
-		return GEBR_GEOXML_RETV_REFERENCE_TO_ITSELF;
-
-	__gebr_geoxml_parameter_set_be_reference(parameter);
-
-	return GEBR_GEOXML_RETV_SUCCESS;
 }
 
 GebrGeoXmlParameterType gebr_geoxml_parameter_get_type(GebrGeoXmlParameter * parameter)
@@ -351,10 +366,10 @@ void gebr_geoxml_parameter_set_label(GebrGeoXmlParameter * parameter, const gcha
 
 const gchar *gebr_geoxml_parameter_get_label(GebrGeoXmlParameter * parameter)
 {
-	GebrGeoXmlParameter * template ;
+	GebrGeoXmlParameter *template;
 
-	if (parameter == NULL)
-		return NULL;
+	g_return_val_if_fail (parameter != NULL, NULL);
+
 	if (gebr_geoxml_parameter_get_is_reference(parameter))
 		template = gebr_geoxml_parameter_get_referencee(parameter);
 	else
@@ -377,22 +392,14 @@ GebrGeoXmlParameterGroup *gebr_geoxml_parameter_get_group(GebrGeoXmlParameter * 
 	return gebr_geoxml_parameters_get_group(gebr_geoxml_parameter_get_parameters(parameter));
 }
 
-void gebr_geoxml_parameter_reset(GebrGeoXmlParameter * parameter, gboolean recursive)
+gboolean gebr_geoxml_parameter_is_dict_param(GebrGeoXmlParameter *parameter)
 {
-	if (parameter == NULL)
-		return;
-	if (gebr_geoxml_parameter_get_type(parameter) == GEBR_GEOXML_PARAMETER_TYPE_GROUP) {
-		GebrGeoXmlSequence *instance;
+	GdomeNode *grandpa;
+	GdomeDOMString *name;
 
-		if (recursive == FALSE)
-			return;
+	grandpa = gdome_n_parentNode((GdomeNode*)parameter, &exception);
+	grandpa = gdome_n_parentNode(grandpa, &exception);
+	name = gdome_el_nodeName((GdomeElement*)grandpa, &exception);
 
-		/* call gebr_geoxml_parameter_reset on each child */
-		gebr_geoxml_parameter_group_get_instance(GEBR_GEOXML_PARAMETER_GROUP(parameter), &instance, 0);
-		for (; instance != NULL; gebr_geoxml_sequence_next(&instance))
-			gebr_geoxml_parameters_reset(GEBR_GEOXML_PARAMETERS(instance), recursive);
-	} else {
-		__gebr_geoxml_program_parameter_set_all_value((GebrGeoXmlProgramParameter *) parameter, FALSE, "");
-		__gebr_geoxml_program_parameter_set_all_value((GebrGeoXmlProgramParameter *) parameter, TRUE, "");
-	}
+	return g_strcmp0(name->str, "dict") == 0 ? TRUE:FALSE;
 }

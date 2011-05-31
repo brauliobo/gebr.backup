@@ -39,6 +39,7 @@ gboolean gebr_append_filename_extension(GString * filename, const gchar * extens
 gboolean gebr_path_is_at_home(const gchar * path);
 gboolean gebr_path_use_home_variable(GString * path);
 gboolean gebr_path_resolve_home_variable(GString * path);
+void gebr_path_set_to(GString * path, gboolean relative);
 
 GString *gebr_temp_directory_create(void);
 void gebr_temp_directory_destroy(GString * path);
@@ -133,5 +134,26 @@ gchar *gebr_str_escape (const gchar *str);
  */
 gchar *gebr_date_get_localized (const gchar *format, const gchar *locale);
 
+/*
+ * Create a random id compose of printable characters
+ * Returns: a newly allocated string containing the id
+ */
+gchar *gebr_id_random_create(gssize bytes);
+
+/*
+ * Open a file for writing. If the file already exists, its contents is returned.
+ * If not \p new_lock_content is written to the file. 
+ * A newly allocated string with the contents of \p pathname is returned.
+ */
+gchar * gebr_lock_file(const gchar *pathname, const gchar *new_lock_content, gboolean symlink);
+
+/**
+ * gebr_str_ascii_word_at:
+ * @str:
+ * @pos: (in-out): Position to search the word
+ */
+gchar *gebr_str_word_before_pos(const gchar *str, gint *pos);
+
 G_END_DECLS
+
 #endif				//__GEBR_UTILS_H
