@@ -179,6 +179,8 @@ static const GtkActionEntry dict_actions_entries[] = {
 	 G_CALLBACK(on_dict_edit_remove_clicked)},
 };
 
+static void gebr_dict_update_wizard(struct dict_edit_data *data);
+
 //==============================================================================
 // PUBLIC FUNCTIONS							       =
 //==============================================================================
@@ -700,6 +702,7 @@ void document_dict_edit_setup_ui(void)
 			gtk_tree_path_free(tree_path);
 		}
 	}
+	gebr_dict_update_wizard(data);
 
 	gtk_widget_show_all(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
@@ -915,6 +918,8 @@ static void on_dict_edit_remove_clicked(GtkButton * button, struct dict_edit_dat
 			gboolean confirmed = gebr_gui_confirm_action_dialog(_("Do you really want to delete this variable?"),
 									    _("One or more programs use this variable. Deleting it will invalidate those programs."));
 			if (confirmed) {
+				gebr_validator_remove(gebr.validator, GEBR_GEOXML_PARAMETER(parameter), &affected, &err);
+				validate_dict_iter(data, &iter);
 				gebr_geoxml_sequence_remove(parameter);
 				gtk_tree_store_remove(GTK_TREE_STORE(data->tree_model), &iter);
 				program_list_warn_undefined_variable(list, FALSE);
@@ -922,10 +927,11 @@ static void on_dict_edit_remove_clicked(GtkButton * button, struct dict_edit_dat
 			program_list_free(list);
 		}
 		else {
+			gebr_validator_remove(gebr.validator, GEBR_GEOXML_PARAMETER(parameter), &affected, &err);
+			validate_dict_iter(data, &iter);
 			gebr_geoxml_sequence_remove(parameter);
 			gtk_tree_store_remove(GTK_TREE_STORE(data->tree_model), &iter);
 		}
-		gebr_validator_remove(gebr.validator, GEBR_GEOXML_PARAMETER(parameter), &affected, &err);
 	}
 	gebr_dict_update_wizard(data);
 }
