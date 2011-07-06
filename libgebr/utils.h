@@ -154,6 +154,26 @@ gchar * gebr_lock_file(const gchar *pathname, const gchar *new_lock_content, gbo
  */
 gchar *gebr_str_word_before_pos(const gchar *str, gint *pos);
 
+/**
+ * gebr_str_remove_trailing_zeros:
+ *
+ * Modifies @str inplace by removing trailing zeros.
+ *
+ * Returns: The same @str, but modified.
+ */
+gchar *gebr_str_remove_trailing_zeros(gchar *str);
+
+/**
+ * gebr_str_canonical_var_name:
+ * @keyword: The keyword to be canonized. (not modified)
+ * @new_value: Returns a new alocated string with the canonized value of keyword.
+ * @error: A GError (not used until now)
+ *
+ * Returns: TRUE if everthing is ok. False otherwise.
+ */
+gboolean
+gebr_str_canonical_var_name(const gchar * keyword, gchar ** new_value, GError ** error);
+
 G_END_DECLS
 
 #endif				//__GEBR_UTILS_H

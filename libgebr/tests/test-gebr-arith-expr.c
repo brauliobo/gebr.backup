@@ -38,6 +38,7 @@ void test_gebr_arith_expr_invalid(void)
 {
 	gdouble result = 666;
 	GebrArithExpr *expr = gebr_arith_expr_new();
+	GError *error = NULL;
 
 	g_assert (gebr_arith_expr_eval(expr, "2*", &result, NULL) == FALSE);
 	g_assert_cmpfloat (result, ==, 666);
@@ -50,6 +51,10 @@ void test_gebr_arith_expr_invalid(void)
 
 	g_assert (gebr_arith_expr_eval(expr, "2c*", &result, NULL) == FALSE);
 	g_assert_cmpfloat (result, ==, 666);
+
+	g_assert (gebr_arith_expr_eval(expr, "2.718[", &result, &error) == FALSE);
+	g_assert_cmpfloat (result, ==, 666);
+	g_assert_error(error, GEBR_IEXPR_ERROR, GEBR_IEXPR_ERROR_SYNTAX);
 }
 
 void test_gebr_arith_expr_mult_expr(void)
@@ -100,6 +105,21 @@ void test_gebr_arith_expr_side_effect(void) {
 	g_clear_error(&error);
 }
 
+void test_gebr_arith_expr_extract_vars(void)
+{
+	GebrArithExpr *expr = gebr_arith_expr_new();
+	GList *vars = NULL;
+
+	vars = gebr_iexpr_extract_vars(GEBR_IEXPR(expr), "a+b+c");
+	g_assert(g_list_find_custom(vars, "a", (GCompareFunc)g_strcmp0));
+	g_assert(g_list_find_custom(vars, "b", (GCompareFunc)g_strcmp0));
+	g_assert(g_list_find_custom(vars, "c", (GCompareFunc)g_strcmp0));
+
+	vars = gebr_iexpr_extract_vars(GEBR_IEXPR(expr), "a+b");
+	g_assert(g_list_find_custom(vars, "a", (GCompareFunc)g_strcmp0));
+	g_assert(g_list_find_custom(vars, "b", (GCompareFunc)g_strcmp0));
+}
+
 int main(int argc, char *argv[])
 {
 	g_type_init();
@@ -110,6 +130,7 @@ int main(int argc, char *argv[])
 	g_test_add_func("/libgebr/arith-expr/mult_expression", test_gebr_arith_expr_mult_expr);
 	g_test_add_func("/libgebr/arith-expr/variables", test_gebr_arith_expr_variables);
 	g_test_add_func("/libgebr/arith-expr/side_effect", test_gebr_arith_expr_side_effect);
+	g_test_add_func("/libgebr/arith-expr/extrat_vars", test_gebr_arith_expr_extract_vars);
 
 	return g_test_run();
 }

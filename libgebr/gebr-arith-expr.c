@@ -15,8 +15,10 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <glib/gi18n.h>
+#include "config.h"
+#include <glib/gi18n-lib.h>
 
+#include "utils.h"
 #include "gebr-arith-expr.h"
 #include "gebr-iexpr.h"
 
@@ -45,11 +47,11 @@ static void gebr_arith_expr_interface_init(GebrIExprInterface *iface);
 
 static void gebr_arith_expr_finalize(GObject *object);
 
-static gboolean gebr_arith_expr_eval_internal(GebrArithExpr *self,
-					      const gchar   *expr,
-					      gdouble       *result,
-					      GError       **err);
-
+static gboolean
+gebr_arith_expr_eval_impl (GebrIExpr   *self,
+			   const gchar *expr,
+			   gchar      **result,
+			   GError     **err);
 G_DEFINE_TYPE_WITH_CODE(GebrArithExpr, gebr_arith_expr, G_TYPE_OBJECT,
 			G_IMPLEMENT_INTERFACE(GEBR_TYPE_IEXPR,
 					      gebr_arith_expr_interface_init));
@@ -135,7 +137,7 @@ static gboolean gebr_arith_expr_set_var(GebrIExpr              *iface,
 {
 	GList *vars;
 	gchar *evaluate;
-	gdouble result;
+	gchar *result;
 	gboolean retval = TRUE;
 	const gchar *undef_var = NULL;
 	const gchar *invalid_var = NULL;
@@ -217,7 +219,7 @@ static gboolean gebr_arith_expr_set_var(GebrIExpr              *iface,
 		goto exception;
 	}
 
-	if (result != 0) {
+	if (g_strcmp0(result,"0") != 0) {
 		g_set_error(err,
 			    GEBR_IEXPR_ERROR,
 			    GEBR_IEXPR_ERROR_SYNTAX,
@@ -261,17 +263,19 @@ static gboolean gebr_arith_expr_is_valid(GebrIExpr   *iface,
 		g_regex_match (regex, name, 0, &info);
 		if (!g_match_info_matches (info))
 		{
-			invalid_var = name;
+			invalid_var = g_strdup(name);
 			g_match_info_free (info);
 			break;
 		}
 		g_match_info_free (info);
 
 		if (!g_hash_table_lookup(self->priv->vars, name)) {
-			undef_var = name;
+			undef_var = g_strdup(name);
 			break;
 		}
 	}
+	g_list_foreach(vars, (GFunc)g_free, NULL);
+	g_list_free(vars);
 	g_regex_unref (regex);
 
 
@@ -284,6 +288,8 @@ static gboolean gebr_arith_expr_is_valid(GebrIExpr   *iface,
 		return FALSE;
 	}
 
+	if (!gebr_arith_expr_eval(self, expr, NULL, err))
+		return FALSE;
 
 	if (undef_var) {
 		g_set_error(err,
@@ -294,7 +300,7 @@ static gboolean gebr_arith_expr_is_valid(GebrIExpr   *iface,
 		return FALSE;
 	}
 
-	return gebr_arith_expr_eval(self, expr, NULL, err);
+	return TRUE;
 }
 
 static void gebr_arith_expr_reset(GebrIExpr *iface)
@@ -303,24 +309,30 @@ static void gebr_arith_expr_reset(GebrIExpr *iface)
 	g_hash_table_remove_all(self->priv->vars);
 }
 
-static GList *
+GList *
 gebr_arith_expr_extract_vars(GebrIExpr   *iface,
 			     const gchar *expr)
 {
 	GList *vars = NULL;
 	GRegex *regex;
 	GMatchInfo *info;
+	GHashTable *set;
 
+	set = g_hash_table_new(g_str_hash, g_str_equal);
 	regex = g_regex_new ("[a-z][0-9a-z_]*", G_REGEX_CASELESS, 0, NULL);
 	g_regex_match (regex, expr, 0, &info);
 
 	while (g_match_info_matches (info))
 	{
 		gchar *word = g_match_info_fetch (info, 0);
-		vars = g_list_prepend (vars, word);
+		if (!g_hash_table_lookup(set, word)) {
+			vars = g_list_prepend (vars, word);
+			g_hash_table_insert(set, word, GUINT_TO_POINTER(1));
+		}
 		g_match_info_next (info, NULL);
 	}
 
+	g_hash_table_unref(set);
 	g_match_info_free (info);
 	g_regex_unref (regex);
 
@@ -333,6 +345,7 @@ static void gebr_arith_expr_interface_init(GebrIExprInterface *iface)
 	iface->is_valid = gebr_arith_expr_is_valid;
 	iface->reset = gebr_arith_expr_reset;
 	iface->extract_vars = gebr_arith_expr_extract_vars;
+	iface->eval = gebr_arith_expr_eval_impl;
 }
 
 /* Private functions {{{1 */
@@ -362,10 +375,10 @@ configure_channel(GIOChannel *channel, GError **err)
 /*
  * gebr_arith_expr_eval_internal:
  */
-static gboolean
+gboolean
 gebr_arith_expr_eval_internal(GebrArithExpr *self,
 			      const gchar   *expr,
-			      gdouble       *result,
+			      gchar        **result,
 			      GError       **err)
 {
 	gchar *line;
@@ -384,7 +397,7 @@ gebr_arith_expr_eval_internal(GebrArithExpr *self,
 	if (!expr || !*expr)
 		return TRUE;
 
-	line = g_strdup_printf ("%s ; \"%s\"\n", expr, EVAL_COOKIE);
+	line = g_strdup_printf ("%s\n\"%s\"\n", expr, EVAL_COOKIE);
 	status = g_io_channel_write_chars (self->priv->in_ch, line, -1, NULL, &error);
 	g_free (line);
 
@@ -415,7 +428,7 @@ gebr_arith_expr_eval_internal(GebrArithExpr *self,
 				    GEBR_IEXPR_ERROR_SYNTAX,
 				    _("Invalid expression"));
 			g_free (line);
-			return FALSE;
+			state = ERROR;
 		} else if (error) {
 			g_warning("Error while reading `bc' error channel: %s",
 				  error->message);
@@ -435,7 +448,7 @@ gebr_arith_expr_eval_internal(GebrArithExpr *self,
 					g_free (line);
 					return FALSE;
 				} else {
-					result_str = g_strdup(line);
+					result_str = g_strndup(line, strlen(line)-1);
 					state = READ_STAMP;
 				}
 				g_free (line);
@@ -467,10 +480,11 @@ gebr_arith_expr_eval_internal(GebrArithExpr *self,
 				if (g_strcmp0(line, EVAL_COOKIE) == 0) {
 					g_free(result_str);
 					g_free(line);
-					g_set_error(err,
-						    GEBR_IEXPR_ERROR,
-						    GEBR_IEXPR_ERROR_SYNTAX,
-						    _("Expression returned multiple results"));
+					if (!err)
+						g_set_error(err,
+						            GEBR_IEXPR_ERROR,
+						            GEBR_IEXPR_ERROR_SYNTAX,
+						            _("Expression returned multiple results"));
 					return FALSE;
 				} else if (error) {
 					g_warning("Error while reading `bc' output channel: %s",
@@ -483,8 +497,7 @@ gebr_arith_expr_eval_internal(GebrArithExpr *self,
 
 		case SET_RESULT:
 			if (result != NULL)
-				*result = g_ascii_strtod(result_str, NULL);
-			g_free (result_str);
+				*result = result_str;
 			finished = TRUE;
 			break;
 		}
@@ -493,17 +506,35 @@ gebr_arith_expr_eval_internal(GebrArithExpr *self,
 	return TRUE;
 }
 
+static gboolean
+gebr_arith_expr_eval_impl (GebrIExpr   *self,
+			   const gchar *expr,
+			   gchar      **result,
+			   GError     **err)
+{
+	gdouble res = 0;
+	gboolean retval;
+
+	retval = gebr_arith_expr_eval (GEBR_ARITH_EXPR(self), expr, &res, err);
+	*result = gebr_str_remove_trailing_zeros(g_strdup_printf("%.10lf", res));
+
+	return retval;
+}
+
 /* Public functions {{{1 */
 GebrArithExpr *gebr_arith_expr_new(void)
 {
 	return g_object_new(GEBR_TYPE_ARITH_EXPR, NULL);
 }
 
+
 gboolean gebr_arith_expr_eval(GebrArithExpr *self,
 			      const gchar   *expr,
 			      gdouble       *result,
 			      GError       **err)
 {
+	gchar *string = NULL;
+
 	if (!self->priv->initialized) {
 		g_set_error(err,
 			    GEBR_IEXPR_ERROR,
@@ -520,7 +551,25 @@ gboolean gebr_arith_expr_eval(GebrArithExpr *self,
 			     _("Invalid assignment '='"));
 		return FALSE;
 	}
+	if (strchr(expr, '"')) {
+		g_set_error (err,
+			     GEBR_IEXPR_ERROR,
+			     GEBR_IEXPR_ERROR_SYNTAX,
+			     _("Invalid syntax '\"'"));
+		return FALSE;
+	}
+	gint i = 0;
+	gchar *line = strdup(expr);
+	while (line[i++]) {
+		if (line[i] == ';')
+			line[i] = '\n';
+	}
 
-	return gebr_arith_expr_eval_internal(self, expr, result, err);
+	gboolean ok = gebr_arith_expr_eval_internal(self, line, &string, err);
+	g_free(line);
 
+	if (ok && string && result)
+		*result = g_ascii_strtod(string, NULL);
+
+	return ok;
 }

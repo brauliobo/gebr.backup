@@ -44,6 +44,8 @@
 
 static void project_line_load (void);
 
+static void pl_change_selection_update_validator(GtkTreeSelection *selection);
+
 static void project_line_on_row_activated (GtkTreeView * tree_view,
 					   GtkTreePath * path,
 					   GtkTreeViewColumn * column,
@@ -118,7 +120,9 @@ struct ui_project_line *project_line_setup_ui(void)
 	gtk_tree_view_column_add_attribute(col, renderer, "text", PL_TITLE);
 	gebr_gui_gtk_tree_view_fancy_search(GTK_TREE_VIEW(ui_project_line->view), PL_TITLE);
 	g_signal_connect(gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_project_line->view)), "changed",
-			 G_CALLBACK(project_line_load), ui_project_line);
+			 G_CALLBACK(project_line_load), NULL);
+	g_signal_connect(gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_project_line->view)), "changed",
+			 G_CALLBACK(pl_change_selection_update_validator), NULL);
 
 	/* Right side */
 	scrolled_window = gtk_scrolled_window_new(NULL, NULL);
@@ -1126,6 +1130,10 @@ static void project_line_load(void)
 		g_free(line_filename);
 }
 
+static void pl_change_selection_update_validator(GtkTreeSelection *selection)
+{
+	gebr_validator_update(gebr.validator);
+}
 
 /**
  * \internal
