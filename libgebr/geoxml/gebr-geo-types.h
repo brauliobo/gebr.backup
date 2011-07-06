@@ -79,9 +79,10 @@ typedef struct gebr_geoxml_sequence GebrGeoXmlSequence;
 typedef struct gebr_geoxml_value_sequence GebrGeoXmlValueSequence;
 
 typedef enum {
-	GEBR_GEOXML_DOCUMENT_TYPE_FLOW,
+	GEBR_GEOXML_DOCUMENT_TYPE_FLOW = 0,
 	GEBR_GEOXML_DOCUMENT_TYPE_LINE,
 	GEBR_GEOXML_DOCUMENT_TYPE_PROJECT,
+	GEBR_GEOXML_DOCUMENT_TYPE_UNKNOWN
 } GebrGeoXmlDocumentType;
 
 typedef enum {
