@@ -84,21 +84,23 @@ static void gebr_gui_value_sequence_edit_class_init(GebrGuiValueSequenceEditClas
 
 	/* virtual */
 	sequence_edit_class = GEBR_GUI_SEQUENCE_EDIT_CLASS(klass);
-	sequence_edit_class->remove = (typeof(sequence_edit_class->remove)) __gebr_gui_value_sequence_edit_remove;
-	sequence_edit_class->move = (typeof(sequence_edit_class->move)) __gebr_gui_value_sequence_edit_move;
-	sequence_edit_class->move_top = (typeof(sequence_edit_class->move_top)) __gebr_gui_value_sequence_edit_move_top;
-	sequence_edit_class->move_bottom =
-	    (typeof(sequence_edit_class->move_bottom)) __gebr_gui_value_sequence_edit_move_bottom;
-	sequence_edit_class->rename = (typeof(sequence_edit_class->rename)) __gebr_gui_value_sequence_edit_rename;
+	sequence_edit_class->remove = __gebr_gui_value_sequence_edit_remove;
+	sequence_edit_class->move = __gebr_gui_value_sequence_edit_move;
+	sequence_edit_class->move_top = __gebr_gui_value_sequence_edit_move_top;
+	sequence_edit_class->move_bottom = __gebr_gui_value_sequence_edit_move_bottom;
+	sequence_edit_class->rename = __gebr_gui_value_sequence_edit_rename;
 
 	gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->set_property = (typeof(gobject_class->set_property)) gebr_gui_value_sequence_edit_set_property;
-	gobject_class->get_property = (typeof(gobject_class->get_property)) gebr_gui_value_sequence_edit_get_property;
+	gobject_class->set_property =  gebr_gui_value_sequence_edit_set_property;
+	gobject_class->get_property =  gebr_gui_value_sequence_edit_get_property;
 
-	param_spec = g_param_spec_boolean("minimum-one",
-					  "Minimum one", "True if the list keep at least one item",
-					  FALSE, (GParamFlags)(G_PARAM_READWRITE));
-	g_object_class_install_property(gobject_class, MINIMUM_ONE, param_spec);
+	g_object_class_install_property(gobject_class,
+					MINIMUM_ONE,
+					g_param_spec_boolean("minimum-one",
+							     "Minimum one",
+							     "True if the list keep at least one item",
+							     FALSE,
+							     G_PARAM_READWRITE));
 }
 
 static void gebr_gui_value_sequence_edit_init(GebrGuiValueSequenceEdit *self)
