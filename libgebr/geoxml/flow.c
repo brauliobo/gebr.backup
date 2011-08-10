@@ -29,12 +29,13 @@
 #include "document_p.h"
 #include "error.h"
 #include "flow.h"
+#include "object.h"
 #include "parameter.h"
 #include "parameter_group.h"
 #include "parameters.h"
 #include "parameters_p.h"
-#include "program.h"
 #include "program-parameter.h"
+#include "program.h"
 #include "sequence.h"
 #include "types.h"
 #include "value_sequence.h"
@@ -57,6 +58,97 @@ struct gebr_geoxml_revision {
 };
 
 /*
+ *  internal
+ */
+
+static void
+set_flow_tag_property(GebrGeoXmlFlow *flow,
+                      const gchar *tag_element,
+                      const gchar *tag_name,
+                      const gchar *tag_value)
+{
+	GdomeElement *root;
+	GdomeElement *element;
+
+	g_return_if_fail (flow != NULL);
+	g_return_if_fail (tag_value != NULL);
+	g_return_if_fail (tag_name != NULL);
+	g_return_if_fail (tag_element != NULL);
+
+	root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	element = __gebr_geoxml_get_first_element(root, tag_element);
+
+	__gebr_geoxml_set_tag_value(element, tag_name, tag_value, __gebr_geoxml_create_TextNode);
+
+	gdome_el_unref(root, &exception);
+	gdome_el_unref(element, &exception);
+}
+
+static gchar *
+get_flow_tag_property(GebrGeoXmlFlow *flow,
+                       const gchar *tag_element,
+                       const gchar *tag_name)
+{
+	gchar *prop_value;
+	GdomeElement *root;
+	GdomeElement *element;
+
+	g_return_val_if_fail(flow != NULL, NULL);
+
+	root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	element = __gebr_geoxml_get_first_element(root, tag_element);
+	prop_value =  __gebr_geoxml_get_tag_value(element, tag_name);
+
+	gdome_el_unref(root, &exception);
+	gdome_el_unref(element, &exception);
+
+	return prop_value;
+}
+
+static void
+set_flow_attr_property(GebrGeoXmlFlow *flow,
+                       const gchar *tag_element,
+                       const gchar *tag_name,
+                       const gchar *tag_value)
+{
+	GdomeElement *root;
+	GdomeElement *element;
+
+	g_return_if_fail (flow != NULL);
+	g_return_if_fail (tag_value != NULL);
+	g_return_if_fail (tag_name != NULL);
+	g_return_if_fail (tag_element != NULL);
+
+	root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	element = __gebr_geoxml_get_first_element(root, tag_element);
+
+	__gebr_geoxml_set_attr_value(element, tag_name, tag_value);
+
+	gdome_el_unref(root, &exception);
+	gdome_el_unref(element, &exception);
+}
+
+static gchar *
+get_flow_attr_property(GebrGeoXmlFlow *flow,
+                       const gchar *tag_element,
+                       const gchar *tag_name)
+{
+	gchar *prop_value;
+	GdomeElement *root;
+	GdomeElement *element;
+
+	g_return_val_if_fail(flow != NULL, NULL);
+
+	root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	element = __gebr_geoxml_get_first_element(root, tag_element);
+	prop_value = __gebr_geoxml_get_attr_value((GdomeElement *) element, tag_name);
+
+	gdome_el_unref(root, &exception);
+	gdome_el_unref(element, &exception);
+
+	return prop_value;
+}
+/*
  * library functions.
  */
 
@@ -64,22 +156,28 @@ GebrGeoXmlFlow *gebr_geoxml_flow_new()
 {
 	GebrGeoXmlDocument *document;
 	GdomeElement *io;
+	GdomeElement *root;
 	GdomeElement *server;
 
 	document = gebr_geoxml_document_new("flow", GEBR_GEOXML_FLOW_VERSION);
 
-	server = __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(document), "server", NULL);
+	root = gebr_geoxml_document_root_element(document);
+	server = __gebr_geoxml_insert_new_element(root, "server", NULL);
 	__gebr_geoxml_set_attr_value (server, "address", "");
 
 	io = __gebr_geoxml_insert_new_element(server, "io", NULL);
-	__gebr_geoxml_insert_new_element(io, "input", NULL);
-	__gebr_geoxml_insert_new_element(io, "output", NULL);
-	__gebr_geoxml_insert_new_element(io, "error", NULL);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(io, "input", NULL), &exception);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(io, "output", NULL), &exception);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(io, "error", NULL), &exception);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(server, "lastrun", NULL), &exception);
 
-	__gebr_geoxml_insert_new_element(server, "lastrun", NULL);
+	GdomeElement *date = __gebr_geoxml_get_first_element(root, "date");
+	gdome_el_unref(__gebr_geoxml_insert_new_element(date, "lastrun", NULL), &exception);
 
-	__gebr_geoxml_insert_new_element(__gebr_geoxml_get_first_element
-					 (gebr_geoxml_document_root_element(document), "date"), "lastrun", NULL);
+	gdome_el_unref(server, &exception);
+	gdome_el_unref(date, &exception);
+	gdome_el_unref(root, &exception);
+	gdome_el_unref(io, &exception);
 
 	return GEBR_GEOXML_FLOW(document);
 }
@@ -99,11 +197,13 @@ void gebr_geoxml_flow_add_flow(GebrGeoXmlFlow * flow, GebrGeoXmlFlow * flow2)
 	has_control2 = gebr_geoxml_flow_has_control_program (flow2);
 
 	/* import each program from flow2 */
+	GdomeElement *root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow2));
 	string = gdome_str_mkref("program");
 	flow2_node_list =
-	    gdome_el_getElementsByTagName(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow2)), string,
+	    gdome_el_getElementsByTagName(root, string,
 					  &exception);
 	n = gdome_nl_length(flow2_node_list, &exception);
+	gdome_el_unref(root, &exception);
 
 	for (i = 0; i < n; ++i) {
 		GdomeNode *node;
@@ -117,13 +217,17 @@ void gebr_geoxml_flow_add_flow(GebrGeoXmlFlow * flow, GebrGeoXmlFlow * flow2)
 		root_element = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
 		revision = __gebr_geoxml_get_first_element(root_element, "revision");
 		gdome_el_insertBefore_protected(root_element, new_node, (GdomeNode *)revision, &exception);
+		gdome_n_unref(node, &exception);
+		gdome_n_unref(new_node, &exception);
+		gdome_el_unref(revision, &exception);
+		gdome_el_unref(root_element, &exception);
 	}
 
 	gebr_geoxml_flow_get_category (flow2, &category, 0);
 	while (category) {
 		const gchar *name;
 		name = gebr_geoxml_value_sequence_get (GEBR_GEOXML_VALUE_SEQUENCE (category));
-		gebr_geoxml_flow_append_category (flow, name);
+		gebr_geoxml_object_unref(gebr_geoxml_flow_append_category (flow, name));
 		gebr_geoxml_sequence_next (&category);
 	}
 
@@ -155,175 +259,104 @@ void gebr_geoxml_flow_foreach_parameter(GebrGeoXmlFlow * flow, GebrGeoXmlCallbac
 
 void gebr_geoxml_flow_set_date_last_run(GebrGeoXmlFlow * flow, const gchar * last_run)
 {
-	if (flow == NULL || last_run == NULL)
-		return;
-	__gebr_geoxml_set_tag_value(__gebr_geoxml_get_first_element
-				    (gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "date"), "lastrun",
-				    last_run, __gebr_geoxml_create_TextNode);
+	set_flow_tag_property(flow, "date", "lastrun", last_run);
 }
 
-const gchar *gebr_geoxml_flow_get_date_last_run(GebrGeoXmlFlow * flow)
+gchar *gebr_geoxml_flow_get_date_last_run(GebrGeoXmlFlow * flow)
 {
-	if (flow == NULL)
-		return NULL;
-	return
-	    __gebr_geoxml_get_tag_value(__gebr_geoxml_get_first_element
-					(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "date"), "lastrun");
+	return get_flow_tag_property(flow, "date", "lastrun");
 }
 
 void gebr_geoxml_flow_server_set_address(GebrGeoXmlFlow *flow, const gchar * address)
 {
-	GdomeElement *root;
-	GdomeElement *server;
-	root = gebr_geoxml_document_root_element (flow);
-	server = __gebr_geoxml_get_first_element (root, "server");
-	__gebr_geoxml_set_attr_value (server, "address", address);
+	set_flow_attr_property(flow, "server", "address", address);
 }
 
-const gchar *gebr_geoxml_flow_server_get_address(GebrGeoXmlFlow *flow)
+gchar *gebr_geoxml_flow_server_get_address(GebrGeoXmlFlow *flow)
 {
-	GdomeElement *root;
-	GdomeElement *server;
-	root = gebr_geoxml_document_root_element (flow);
-	server = __gebr_geoxml_get_first_element (root, "server");
-	return __gebr_geoxml_get_attr_value((GdomeElement *) server, "address");
+	return get_flow_attr_property(flow, "server", "address");
 }
 
 void gebr_geoxml_flow_server_set_date_last_run(GebrGeoXmlFlow *flow, const gchar * date)
 {
-	GdomeElement *root;
-	GdomeElement *server;
-
-	g_return_if_fail (flow != NULL);
-	g_return_if_fail (date != NULL);
-
-	root = gebr_geoxml_document_root_element (flow);
-	server = __gebr_geoxml_get_first_element (root, "server");
-	__gebr_geoxml_set_tag_value ((GdomeElement *) server, "lastrun", date,
-				     __gebr_geoxml_create_TextNode);
+	set_flow_tag_property(flow, "server", "lastrun", date);
 }
 
-const gchar *gebr_geoxml_flow_server_get_date_last_run(GebrGeoXmlFlow *flow)
+gchar *gebr_geoxml_flow_server_get_date_last_run(GebrGeoXmlFlow *flow)
 {
-	GdomeElement *root;
-	GdomeElement *server;
-
-	g_return_val_if_fail (flow != NULL, NULL);
-
-	root = gebr_geoxml_document_root_element (flow);
-	server = __gebr_geoxml_get_first_element (root, "server");
-	return __gebr_geoxml_get_tag_value ((GdomeElement *) server, "lastrun");
+	return get_flow_tag_property(flow, "server", "lastrun");
 }
 
 void gebr_geoxml_flow_io_set_input(GebrGeoXmlFlow *flow, const gchar *input)
 {
-	GdomeElement *root;
-	GdomeElement *io;
-
-	g_return_if_fail (flow != NULL);
-	g_return_if_fail (input != NULL);
-
-	root = gebr_geoxml_document_root_element (flow);
-	io = __gebr_geoxml_get_first_element (root, "io");
-	__gebr_geoxml_set_tag_value (io, "input", input, __gebr_geoxml_create_TextNode);
+	set_flow_tag_property(flow, "io", "input", input);
 }
 
 void gebr_geoxml_flow_io_set_output(GebrGeoXmlFlow *flow, const gchar *output)
 {
-	GdomeElement *root;
-	GdomeElement *io;
-
-	g_return_if_fail (flow != NULL);
-	g_return_if_fail (output != NULL);
-
-	root = gebr_geoxml_document_root_element (flow);
-	io = __gebr_geoxml_get_first_element (root, "io");
-	__gebr_geoxml_set_tag_value(io, "output", output, __gebr_geoxml_create_TextNode);
+	set_flow_tag_property(flow, "io", "output", output);
 }
 
 void gebr_geoxml_flow_io_set_error(GebrGeoXmlFlow *flow, const gchar *error)
 {
-	GdomeElement *root;
-	GdomeElement *io;
-
-	g_return_if_fail (flow != NULL);
-	g_return_if_fail (error != NULL);
-
-	root = gebr_geoxml_document_root_element (flow);
-	io = __gebr_geoxml_get_first_element (root, "io");
-	__gebr_geoxml_set_tag_value(io, "error", error, __gebr_geoxml_create_TextNode);
+	set_flow_tag_property(flow, "io", "error", error);
 }
 
-const gchar *gebr_geoxml_flow_io_get_input(GebrGeoXmlFlow *flow)
+gchar *gebr_geoxml_flow_io_get_input(GebrGeoXmlFlow *flow)
 {
-	GdomeElement *root;
-	GdomeElement *io;
-
-	g_return_val_if_fail (flow != NULL, NULL);
-
-	root = gebr_geoxml_document_root_element (flow);
-	io = __gebr_geoxml_get_first_element (root, "io");
-	return __gebr_geoxml_get_tag_value (io, "input");
+	return get_flow_tag_property(flow, "io", "input");
 }
 
-const gchar *gebr_geoxml_flow_io_get_output(GebrGeoXmlFlow * flow)
+gchar *gebr_geoxml_flow_io_get_output(GebrGeoXmlFlow * flow)
 {
-	GdomeElement *root;
-	GdomeElement *io;
-
-	g_return_val_if_fail (flow != NULL, NULL);
-
-	root = gebr_geoxml_document_root_element (flow);
-	io = __gebr_geoxml_get_first_element (root, "io");
-	return __gebr_geoxml_get_tag_value(io, "output");
+	return get_flow_tag_property(flow, "io", "output");
 }
 
-const gchar *gebr_geoxml_flow_io_get_error(GebrGeoXmlFlow * flow)
+gchar *gebr_geoxml_flow_io_get_error(GebrGeoXmlFlow * flow)
 {
-	GdomeElement *root;
-	GdomeElement *io;
-
-	g_return_val_if_fail (flow != NULL, NULL);
-
-	root = gebr_geoxml_document_root_element (flow);
-	io = __gebr_geoxml_get_first_element (root, "io");
-	return __gebr_geoxml_get_tag_value(io, "error");
+	return get_flow_tag_property(flow, "io", "error");
 }
 
 GebrGeoXmlProgram *gebr_geoxml_flow_append_program(GebrGeoXmlFlow * flow)
 {
 	GdomeElement *element;
+	GdomeElement *root;
+	GdomeElement *first_el;
 
-	element = __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "program",
-						   __gebr_geoxml_get_first_element(gebr_geoxml_document_root_element
-										   (GEBR_GEOXML_DOC(flow)),
-										   "revision"));
+	root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	first_el = __gebr_geoxml_get_first_element(root, "revision");
+	element = __gebr_geoxml_insert_new_element(root, "program", first_el);
 
 	/* elements/attibutes */
 	gebr_geoxml_program_set_stdin((GebrGeoXmlProgram *) element, FALSE);
 	gebr_geoxml_program_set_stdout((GebrGeoXmlProgram *) element, FALSE);
 	gebr_geoxml_program_set_stderr((GebrGeoXmlProgram *) element, FALSE);
 	gebr_geoxml_program_set_status((GebrGeoXmlProgram *) element, GEBR_GEOXML_PROGRAM_STATUS_UNCONFIGURED);
-	__gebr_geoxml_insert_new_element(element, "title", NULL);
-	__gebr_geoxml_insert_new_element(element, "binary", NULL);
-	__gebr_geoxml_insert_new_element(element, "description", NULL);
-	__gebr_geoxml_insert_new_element(element, "help", NULL);
-	__gebr_geoxml_insert_new_element(element, "url", NULL);
-	__gebr_geoxml_parameters_append_new(element);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(element, "title", NULL), &exception);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(element, "binary", NULL), &exception);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(element, "description", NULL), &exception);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(element, "help", NULL), &exception);
+	gdome_el_unref(__gebr_geoxml_insert_new_element(element, "url", NULL), &exception);
+	gebr_geoxml_object_unref(__gebr_geoxml_parameters_append_new(element));
+
+	gdome_el_unref(root, &exception);
+	gdome_el_unref(first_el, &exception);
 
 	return (GebrGeoXmlProgram *) element;
 }
 
 int gebr_geoxml_flow_get_program(GebrGeoXmlFlow * flow, GebrGeoXmlSequence ** program, gulong index)
 {
+	GdomeElement *root;
+
 	if (flow == NULL) {
 		*program = NULL;
 		return GEBR_GEOXML_RETV_NULL_PTR;
 	}
 
-	*program = (GebrGeoXmlSequence *)
-	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "program", index,
-					 FALSE);
+	root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	*program = (GebrGeoXmlSequence *) __gebr_geoxml_get_element_at(root, "program", index, FALSE);
+	gdome_el_unref(root, &exception);
 
 	return (*program == NULL)
 	    ? GEBR_GEOXML_RETV_INVALID_INDEX : GEBR_GEOXML_RETV_SUCCESS;
@@ -333,7 +366,10 @@ glong gebr_geoxml_flow_get_programs_number(GebrGeoXmlFlow * flow)
 {
 	if (flow == NULL)
 		return -1;
-	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "program");
+	GdomeElement *root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	gulong retval =  __gebr_geoxml_get_elements_number(root, "program");
+	gdome_el_unref(root, &exception);
+	return retval;
 }
 
 GebrGeoXmlProgram *gebr_geoxml_flow_get_first_mpi_program(GebrGeoXmlFlow * flow)
@@ -366,12 +402,14 @@ GebrGeoXmlCategory *gebr_geoxml_flow_append_category(GebrGeoXmlFlow * flow, cons
 			return (GebrGeoXmlCategory *)(sequence);
 		gebr_geoxml_sequence_next (&sequence);
 	}
+	GdomeElement *root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	GdomeElement *element = __gebr_geoxml_get_first_element(root, "server");
+	category = (GebrGeoXmlCategory *)__gebr_geoxml_insert_new_element(root, "category", element);
 
-	category = (GebrGeoXmlCategory *)
-	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "category",
-					     __gebr_geoxml_get_first_element(gebr_geoxml_document_root_element
-									     (GEBR_GEOXML_DOC(flow)), "server"));
 	gebr_geoxml_value_sequence_set(GEBR_GEOXML_VALUE_SEQUENCE(category), name);
+
+	gdome_el_unref(root, &exception);
+	gdome_el_unref(element, &exception);
 
 	return category;
 }
@@ -382,20 +420,28 @@ int gebr_geoxml_flow_get_category(GebrGeoXmlFlow * flow, GebrGeoXmlSequence ** c
 		*category = NULL;
 		return GEBR_GEOXML_RETV_NULL_PTR;
 	}
+	GdomeElement *root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+	*category = (GebrGeoXmlSequence *)__gebr_geoxml_get_element_at(root, "category", index, FALSE);
 
-	*category = (GebrGeoXmlSequence *)
-	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "category", index,
-					 FALSE);
+	gdome_el_unref(root, &exception);
 
 	return (*category == NULL)
 	    ? GEBR_GEOXML_RETV_INVALID_INDEX : GEBR_GEOXML_RETV_SUCCESS;
 }
 
-glong gebr_geoxml_flow_get_categories_number(GebrGeoXmlFlow * flow)
+glong
+gebr_geoxml_flow_get_categories_number(GebrGeoXmlFlow * flow)
 {
 	if (flow == NULL)
 		return -1;
-	return __gebr_geoxml_get_elements_number(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow)), "category");
+
+	gulong retval = 0;
+	GdomeElement * root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(flow));
+
+	retval =  __gebr_geoxml_get_elements_number(root, "category");
+	gdome_el_unref(root, &exception);
+
+	return retval;	
 }
 
 gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRevision * revision, gboolean * report_merged)
@@ -404,8 +450,8 @@ gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRe
 		return FALSE;
 
 	GString *merged_help;
-	const gchar *revision_help;
-	const gchar *flow_help;
+	gchar *revision_help;
+	gchar *flow_help;
 	GebrGeoXmlDocument *revision_flow;
 	GebrGeoXmlSequence *first_revision;
 	GdomeElement *child;
@@ -460,6 +506,8 @@ gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRe
 		if(report_merged)
 			*report_merged = TRUE;
 	}
+	g_free(flow_help);
+	g_free(revision_help);
 
 	gebr_geoxml_flow_get_revision(flow, &first_revision, 0);
 	/* remove all elements till first_revision
@@ -495,10 +543,12 @@ gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRe
 	return TRUE;
 }
 
-GebrGeoXmlRevision *gebr_geoxml_flow_append_revision(GebrGeoXmlFlow * flow, const gchar * comment)
+GebrGeoXmlRevision *
+gebr_geoxml_flow_append_revision(GebrGeoXmlFlow * flow,
+				 const gchar * comment)
 {
 	GebrGeoXmlRevision *revision;
-	GebrGeoXmlSequence *i;
+	GebrGeoXmlSequence *seq;
 	GebrGeoXmlFlow *revision_flow;
 
 	g_return_val_if_fail(flow != NULL, NULL);
@@ -507,15 +557,16 @@ GebrGeoXmlRevision *gebr_geoxml_flow_append_revision(GebrGeoXmlFlow * flow, cons
 	revision_flow = GEBR_GEOXML_FLOW(gebr_geoxml_document_clone(GEBR_GEOXML_DOCUMENT(flow)));
 	gebr_geoxml_document_set_help (GEBR_GEOXML_DOCUMENT (revision_flow), "");
 
+	GdomeElement * revision_root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(revision_flow));
 	/* remove revisions from the revision flow. */
-	gebr_geoxml_flow_get_revision(revision_flow, &i, 0);
-	while (i != NULL) {
-		GebrGeoXmlSequence *aux = (GebrGeoXmlSequence *) __gebr_geoxml_next_element((GdomeElement *) i);
-		gdome_el_removeChild(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(revision_flow)),
-				     (GdomeNode *) i, &exception);
+	gebr_geoxml_flow_get_revision(revision_flow, &seq, 0);
 
-		i = aux;
+	while (seq)
+	{
+		gdome_n_unref(gdome_el_removeChild(revision_root, (GdomeNode *) seq, &exception), &exception);
+		gebr_geoxml_sequence_next(&seq);
 	}
+	gebr_geoxml_object_unref(revision_root);
 
 	/* save to xml and free */
 	gchar *revision_xml;
@@ -524,9 +575,11 @@ GebrGeoXmlRevision *gebr_geoxml_flow_append_revision(GebrGeoXmlFlow * flow, cons
 
 	GebrGeoXmlSequence *first_revision;
 	gebr_geoxml_flow_get_revision(flow, &first_revision, 0);
-	revision = (GebrGeoXmlRevision *)
-	    __gebr_geoxml_insert_new_element(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(flow)), "revision",
-					     (GdomeElement *) first_revision);
+
+	GdomeElement * root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(flow));
+	revision = (GebrGeoXmlRevision *) __gebr_geoxml_insert_new_element(root, "revision", (GdomeElement *) first_revision);
+	gebr_geoxml_object_unref(root);
+	gebr_geoxml_object_unref(first_revision);
 
 	gebr_geoxml_flow_set_revision_data(revision, revision_xml, gebr_iso_date(), comment);
 	g_free(revision_xml);
@@ -545,19 +598,26 @@ void gebr_geoxml_flow_set_revision_data(GebrGeoXmlRevision * revision, const gch
 		__gebr_geoxml_set_attr_value((GdomeElement *) revision, "comment", comment);
 }
 
-int gebr_geoxml_flow_get_revision(GebrGeoXmlFlow * flow, GebrGeoXmlSequence ** revision, gulong index)
+enum GEBR_GEOXML_RETV
+gebr_geoxml_flow_get_revision(GebrGeoXmlFlow * flow,
+			      GebrGeoXmlSequence ** revision,
+			      gulong index)
 {
-	if (flow == NULL) {
+	enum GEBR_GEOXML_RETV retval = GEBR_GEOXML_RETV_SUCCESS; 
+
+	if (flow == NULL)
+	{
 		*revision = NULL;
-		return GEBR_GEOXML_RETV_NULL_PTR;
+		g_return_val_if_fail(flow != NULL, GEBR_GEOXML_RETV_NULL_PTR);
 	}
 
-	*revision = (GebrGeoXmlSequence *)
-		__gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(flow)), "revision",
-					     index, FALSE);
+	GdomeElement * root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(flow));
+	*revision = (GebrGeoXmlSequence *) __gebr_geoxml_get_element_at(root, "revision", index, FALSE);
+	gebr_geoxml_object_unref(root);
 
-	return (*revision == NULL)
-	    ? GEBR_GEOXML_RETV_INVALID_INDEX : GEBR_GEOXML_RETV_SUCCESS;
+	retval = (*revision == NULL) ? GEBR_GEOXML_RETV_INVALID_INDEX : GEBR_GEOXML_RETV_SUCCESS;
+
+	return retval;
 }
 
 void gebr_geoxml_flow_get_revision_data(GebrGeoXmlRevision * revision, gchar ** flow, gchar ** date, gchar ** comment)
@@ -614,11 +674,15 @@ gebr_geoxml_flow_validate(GebrGeoXmlFlow *flow,
 
 		GebrGeoXmlProgramStatus status = gebr_geoxml_program_get_status(prog);
 
+		if (last_configured)
+			gebr_geoxml_object_unref(last_configured);
+		last_configured = prog;
+		gebr_geoxml_object_ref(last_configured);
+
 		if (status != GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED
 		    || gebr_geoxml_program_get_control(prog) == GEBR_GEOXML_PROGRAM_CONTROL_FOR)
 			continue;
 
-		last_configured = prog;
 		program_title = gebr_geoxml_program_get_title(prog);
 
 		if (first && gebr_geoxml_program_get_stdin(prog)) {
@@ -628,6 +692,8 @@ gebr_geoxml_flow_validate(GebrGeoXmlFlow *flow,
 					    _("No input file specified for program "
 					      "\"%s\" at flow \"%s\""),
 					    program_title, flow_title);
+				gebr_geoxml_object_unref(seq);
+				gebr_geoxml_object_unref(last_configured);
 				return FALSE;
 			}
 
@@ -639,6 +705,8 @@ gebr_geoxml_flow_validate(GebrGeoXmlFlow *flow,
 					    _("Invalid input file specified for program "
 					      "\"%s\" at flow \"%s\""),
 					    program_title, flow_title);
+				gebr_geoxml_object_unref(seq);
+				gebr_geoxml_object_unref(last_configured);
 				return FALSE;
 			}
 		} else {
@@ -654,6 +722,8 @@ gebr_geoxml_flow_validate(GebrGeoXmlFlow *flow,
 					    _("Flow \"%s\" is broken before program "
 					      "\"%s\" (no input)."),
 					    flow_title, program_title);
+				gebr_geoxml_object_unref(seq);
+				gebr_geoxml_object_unref(last_configured);
 				return FALSE;
 			case 2:	/* Previous does write to stdin but current does not care about */
 				g_set_error(err, GEBR_GEOXML_FLOW_ERROR,
@@ -661,6 +731,8 @@ gebr_geoxml_flow_validate(GebrGeoXmlFlow *flow,
 					    _("Flow \"%s\" is broken before program "
 					      "\"%s\" (unexpected output).\n"),
 					    flow_title, program_title);
+				gebr_geoxml_object_unref(seq);
+				gebr_geoxml_object_unref(last_configured);
 				return FALSE;
 			default:
 				g_warn_if_reached();
@@ -675,6 +747,7 @@ gebr_geoxml_flow_validate(GebrGeoXmlFlow *flow,
 			    GEBR_GEOXML_FLOW_ERROR_NO_VALID_PROGRAMS,
 			    _("No configured or enabled programs found for flow \"%s\""),
 			    flow_title);
+		gebr_geoxml_object_unref(last_configured);
 		return FALSE;
 	}
 
@@ -688,6 +761,7 @@ gebr_geoxml_flow_validate(GebrGeoXmlFlow *flow,
 			    GEBR_GEOXML_FLOW_ERROR_INVALID_OUTFILE,
 			    _("Invalid output file file specified for program \"%s\" at flow \"%s\""),
 			    program_title, flow_title);
+		gebr_geoxml_object_unref(last_configured);
 		return FALSE;
 	}	
 
@@ -700,31 +774,38 @@ gebr_geoxml_flow_validate(GebrGeoXmlFlow *flow,
 			    GEBR_GEOXML_FLOW_ERROR_INVALID_ERRORFILE,
 			    _("Invalid error file specified for program \"%s\" at flow \"%s\""),
 			    program_title, flow_title);
+		gebr_geoxml_object_unref(last_configured);
 		return FALSE;
 	}	
 	
+	gebr_geoxml_object_unref(last_configured);
 	return TRUE;
 }
 
 gboolean gebr_geoxml_flow_has_control_program (GebrGeoXmlFlow *flow)
 {
-	return (gebr_geoxml_flow_get_control_program(flow) == NULL ? FALSE : TRUE);
+	GebrGeoXmlProgram *control = gebr_geoxml_flow_get_control_program(flow);
+
+	if (!control)
+		return FALSE;
+
+	gebr_geoxml_object_unref(control);
+	return TRUE;
 }
 
 GebrGeoXmlProgram * gebr_geoxml_flow_get_control_program (GebrGeoXmlFlow *flow)
 {
 	GebrGeoXmlSequence *seq;
-	GebrGeoXmlProgram *prog;
 	GebrGeoXmlProgramControl cont;
 
 	gebr_geoxml_flow_get_program (flow, &seq, 0);
 	while (seq) {
-		prog = GEBR_GEOXML_PROGRAM (seq);
-		cont = gebr_geoxml_program_get_control (prog);
+		cont = gebr_geoxml_program_get_control(GEBR_GEOXML_PROGRAM(seq));
 		if (cont != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY
-		    && cont != GEBR_GEOXML_PROGRAM_CONTROL_UNKNOWN)
-			return prog;
-		gebr_geoxml_sequence_next (&seq);
+		    && cont != GEBR_GEOXML_PROGRAM_CONTROL_UNKNOWN) {
+			return GEBR_GEOXML_PROGRAM(seq);
+		}
+		gebr_geoxml_sequence_next(&seq);
 	}
 	return NULL;
 }
@@ -740,23 +821,30 @@ gboolean gebr_geoxml_flow_insert_iter_dict (GebrGeoXmlFlow *flow)
 	seq = gebr_geoxml_parameters_get_first_parameter (dict);
 	keyword = gebr_geoxml_program_parameter_get_keyword (GEBR_GEOXML_PROGRAM_PARAMETER (seq));
 
-	if (g_strcmp0 (keyword, "iter") == 0)
+	if (g_strcmp0 (keyword, "iter") == 0) {
+		gebr_geoxml_object_unref(dict);
+		gebr_geoxml_object_unref(seq);
 		return FALSE;
+	}
 
 	param = gebr_geoxml_parameters_append_parameter(dict, GEBR_GEOXML_PARAMETER_TYPE_FLOAT);
 	gebr_geoxml_program_parameter_set_list_separator(GEBR_GEOXML_PROGRAM_PARAMETER (param), "|");
 
+	gebr_geoxml_object_unref(dict);
+	gebr_geoxml_object_unref(seq);
+
 	// Append four values in iter parameter to represent the
 	// current value and the 'ini', 'step' and 'n' values.
-	gebr_geoxml_program_parameter_append_value(GEBR_GEOXML_PROGRAM_PARAMETER (param), FALSE);
-	gebr_geoxml_program_parameter_append_value(GEBR_GEOXML_PROGRAM_PARAMETER (param), FALSE);
-	gebr_geoxml_program_parameter_append_value(GEBR_GEOXML_PROGRAM_PARAMETER (param), FALSE);
+	gebr_geoxml_object_unref(gebr_geoxml_program_parameter_append_value(GEBR_GEOXML_PROGRAM_PARAMETER (param), FALSE));
+	gebr_geoxml_object_unref(gebr_geoxml_program_parameter_append_value(GEBR_GEOXML_PROGRAM_PARAMETER (param), FALSE));
+	gebr_geoxml_object_unref(gebr_geoxml_program_parameter_append_value(GEBR_GEOXML_PROGRAM_PARAMETER (param), FALSE));
 
 	gebr_geoxml_program_parameter_set_keyword(GEBR_GEOXML_PROGRAM_PARAMETER (param), "iter");
 	gebr_geoxml_parameter_set_label(param, _("Loop iteration counter"));
 	gebr_geoxml_sequence_move_after(GEBR_GEOXML_SEQUENCE (param), NULL);
 
 	gebr_geoxml_flow_update_iter_dict_value(flow);
+	gebr_geoxml_object_unref(param);
 
 	return TRUE;
 }
@@ -765,7 +853,7 @@ void gebr_geoxml_flow_remove_iter_dict (GebrGeoXmlFlow *flow)
 {
 	GebrGeoXmlSequence *seq;
 	GebrGeoXmlParameters *dict;
-	const gchar *keyword;
+	gchar *keyword;
 
 	dict = gebr_geoxml_document_get_dict_parameters (GEBR_GEOXML_DOCUMENT (flow));
 	seq = gebr_geoxml_parameters_get_first_parameter (dict);
@@ -773,6 +861,9 @@ void gebr_geoxml_flow_remove_iter_dict (GebrGeoXmlFlow *flow)
 
 	if (g_strcmp0 (keyword, "iter") == 0)
 		gebr_geoxml_sequence_remove(seq);
+
+	gebr_geoxml_object_unref(dict);
+	g_free(keyword);
 }
 
 void gebr_geoxml_flow_io_set_output_append(GebrGeoXmlFlow *flow, gboolean setting)
@@ -857,8 +948,10 @@ void gebr_geoxml_flow_update_iter_dict_value(GebrGeoXmlFlow *flow)
 	iter = GEBR_GEOXML_PROGRAM_PARAMETER(gebr_geoxml_document_get_dict_parameter(doc));
 	keyword = gebr_geoxml_program_parameter_get_keyword(iter);
 
-	if (g_strcmp0 (keyword, "iter") != 0)
+	if (g_strcmp0 (keyword, "iter") != 0) {
+		gebr_geoxml_object_unref(iter);
 		return;
+	}
 
 	program = gebr_geoxml_flow_get_control_program(flow);
 	n = gebr_geoxml_program_control_get_n(program, &step, &ini);
@@ -879,6 +972,11 @@ void gebr_geoxml_flow_update_iter_dict_value(GebrGeoXmlFlow *flow)
 	// Set 'n'
 	gebr_geoxml_sequence_next(&seq);
 	gebr_geoxml_value_sequence_set(GEBR_GEOXML_VALUE_SEQUENCE(seq), n);
+
+	gebr_geoxml_object_unref(iter);
+	gebr_geoxml_object_unref(program);
+	if (seq)
+		gebr_geoxml_object_unref(seq);
 
 	g_free(current);
 }

@@ -1220,6 +1220,7 @@ static void parameter_append_to_ui(GebrGeoXmlParameter * parameter, GtkTreeIter 
 	GtkTreeIter iter_;
 
 	gtk_tree_store_append(debr.ui_parameter.tree_store, &iter_, parent);
+	gebr_geoxml_object_ref(parameter);
 	gtk_tree_store_set(debr.ui_parameter.tree_store, &iter_, PARAMETER_XMLPOINTER, parameter, -1);
 	parameter_load_iter(&iter_, TRUE);
 
