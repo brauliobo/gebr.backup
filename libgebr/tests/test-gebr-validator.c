@@ -30,6 +30,8 @@
  * calling scope.
  */
 
+gboolean gebr_validator_update_vars(GebrValidator *, GebrGeoXmlDocumentType, GError **);
+
 /*
  * DEF_FLOAT:
  *
@@ -43,6 +45,7 @@
 	                                              GEBR_GEOXML_PARAMETER_TYPE_FLOAT, \
 	                                              name, value); \
 	gebr_validator_insert(fixture->validator, param, NULL, &error); \
+	gebr_geoxml_object_unref(param); \
 	g_assert_no_error(error); \
 	} G_STMT_END
 
@@ -54,6 +57,7 @@
 	                                              GEBR_GEOXML_PARAMETER_TYPE_FLOAT, \
 	                                              name, value); \
 	gebr_validator_insert(fixture->validator, param, NULL, &error); \
+	gebr_geoxml_object_unref(param); \
 	g_assert_error(error, domain, code); \
 	g_clear_error(&error); \
 	} G_STMT_END
@@ -107,6 +111,7 @@
 	                                              GEBR_GEOXML_PARAMETER_TYPE_STRING, \
 	                                              name, value); \
 	gebr_validator_insert(fixture->validator, param, NULL, &error); \
+	gebr_geoxml_object_unref(param); \
 	g_assert_no_error(error); \
 	} G_STMT_END
 
@@ -118,6 +123,7 @@
 	                                              GEBR_GEOXML_PARAMETER_TYPE_STRING, \
 	                                              name, value); \
 	gebr_validator_insert(fixture->validator, param, NULL, &error); \
+	gebr_geoxml_object_unref(param); \
 	g_assert_error(error, domain, code); \
 	g_clear_error(&error); \
 	} G_STMT_END
@@ -840,6 +846,43 @@ void test_gebr_validator_divide_by_zero(Fixture *fixture, gconstpointer data)
 	g_clear_error(&error);
 }
 
+void test_gebr_validator_leaks(Fixture *fixture, gconstpointer data)
+{
+	GError *error = NULL;
+	GebrGeoXmlParameter *a, *b;
+	a = gebr_geoxml_document_set_dict_keyword(GEBR_GEOXML_DOCUMENT(fixture->proj),
+	                                              GEBR_GEOXML_PARAMETER_TYPE_STRING,
+	                                              "a", "A");
+	gebr_validator_insert(fixture->validator, a, NULL, &error);
+	g_assert_no_error(error);
+	b = gebr_geoxml_document_set_dict_keyword(GEBR_GEOXML_DOCUMENT(fixture->proj),
+	                                              GEBR_GEOXML_PARAMETER_TYPE_FLOAT,
+	                                              "b", "1");
+	gebr_validator_update(fixture->validator);
+	g_assert_no_error(error);
+	gebr_validator_update_vars(fixture->validator, GEBR_GEOXML_DOCUMENT_TYPE_FLOW, &error);
+	g_assert_no_error(error);
+	gebr_validator_validate_param(fixture->validator, a, NULL, &error);
+	g_assert_no_error(error);
+	gebr_validator_remove(fixture->validator, a, NULL, &error);
+	g_assert_no_error(error);
+	gebr_geoxml_object_unref(a);
+	gebr_geoxml_object_unref(b);
+}
+
+void test_gebr_geoxml_validate_flow(Fixture *fixture, gconstpointer data)
+{
+	GebrGeoXmlDocument *doc;
+	GError *err = NULL;
+
+	gebr_geoxml_document_load(&doc, TEST_SRCDIR "/../geoxml/tests/dict_test_flow.flw", TRUE, NULL);
+
+	gebr_geoxml_flow_validate(GEBR_GEOXML_FLOW(doc), fixture->validator, &err);
+	g_assert_no_error(err);
+
+	gebr_geoxml_document_free(doc);
+}
+
 int main(int argc, char *argv[])
 {
 	g_type_init();
@@ -900,6 +943,14 @@ int main(int argc, char *argv[])
 		   test_gebr_validator_divide_by_zero,
 		   fixture_teardown);
 
+	g_test_add("/libgebr/validator/leaks", Fixture, NULL,
+		   fixture_setup,
+			test_gebr_validator_leaks,
+		   fixture_teardown);
+	g_test_add("/libgebr/validator/validate_flow", Fixture, NULL,
+	           fixture_setup,
+	           test_gebr_geoxml_validate_flow,
+	           fixture_teardown);
 	g_test_add_func("/libgebr/validator/rename", test_gebr_validator_rename);
 
 	return g_test_run();

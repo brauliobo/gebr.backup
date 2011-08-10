@@ -43,6 +43,10 @@ static GebrGeoXmlDocument *document_cache_check(const gchar *path)
 
 static void document_cache_add(const gchar *path, GebrGeoXmlDocument * document)
 {
+	GebrGeoXmlDocument *cached = document_cache_check(path);
+
+	g_warn_if_fail(!cached || cached == document);
+
 	g_hash_table_insert(gebr.xmls_by_filename, g_strdup(path), document);
 }
 
@@ -151,6 +155,12 @@ int document_load_path(GebrGeoXmlDocument **document, const gchar * path)
 
 int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * path, GtkTreeIter *parent, gboolean cache)
 {
+	if (cache) {
+		*document = document_cache_check(path);
+		if (*document)
+			return GEBR_GEOXML_RETV_SUCCESS;
+	}
+
 	/*
 	 * Callback to remove menu reference from program to maintain backward compatibility
 	 */
@@ -165,10 +175,21 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 
 		/* go to menu's program index specified in flow */
 		gebr_geoxml_flow_get_program(menu, &menu_program, index);
-		gebr_geoxml_program_set_help(program, gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(menu_program)));
+		gchar *tmp_help_p = gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(menu_program));
+		gebr_geoxml_program_set_help(program, tmp_help_p);
+		g_free(tmp_help_p);
 
 		document_free(GEBR_GEOXML_DOC(menu));
 	}	
+
+	int ret = gebr_geoxml_document_load(document, path, TRUE, g_str_has_suffix(path, ".flw") ?
+					    __document_discard_menu_ref_callback : NULL);
+
+	if (ret == GEBR_GEOXML_RETV_SUCCESS) {
+		if (cache)
+			document_cache_add(path, *document);
+		return GEBR_GEOXML_RETV_SUCCESS;
+	}
 
 	/**
 	 * \internal
@@ -205,17 +226,6 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 		}
 
 		g_free(basename);
-	}
-
-	if (cache && (*document = document_cache_check(path)) != NULL) {
-		return GEBR_GEOXML_RETV_SUCCESS;
-	}
-	int ret; 
-	if (!(ret = gebr_geoxml_document_load(document, path, TRUE, g_str_has_suffix(path, ".flw") ?
-					      __document_discard_menu_ref_callback : NULL))) {
-		if (cache)
-			document_cache_add(path, *document);
-		return ret;
 	}
 
 	GString *string;
@@ -479,7 +489,6 @@ gboolean document_save(GebrGeoXmlDocument * document, gboolean set_modified_date
 
 	path = document_get_path(gebr_geoxml_document_get_filename(document));
 	ret = document_save_at(document, path->str, set_modified_date, cache);
-
 	g_string_free(path, TRUE);
 	return ret;
 }
@@ -672,7 +681,7 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 	GebrGeoXmlSequence *line_flow;
 	GebrGeoXmlObjectType type;
 	const gchar * title;
-	const gchar * report;
+	gchar * report;
 	gchar * detailed_html = "";
 	gchar * inner_body = "";
 	gchar * styles = "";
@@ -751,9 +760,10 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 		}
 	} else if (type == GEBR_GEOXML_OBJECT_TYPE_PROJECT) {
 		g_free (inner_body);
-		return g_strdup (report);
+		return report;
 	} else {
 		g_free (inner_body);
+		g_free (report);
 		g_return_val_if_reached (NULL);
 	}
 
@@ -763,6 +773,7 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 	g_free(styles);
 	g_free(inner_body);
 	g_string_free(content, TRUE);
+	g_free (report);
 
 	return detailed_html;
 }

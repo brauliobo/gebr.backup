@@ -58,10 +58,15 @@ static gboolean gebr_geoxml_parameters_foreach(GebrGeoXmlParameters * parameters
 			GebrGeoXmlSequence *instance;
 			gebr_geoxml_parameter_group_get_instance(GEBR_GEOXML_PARAMETER_GROUP(parameter), &instance, 0);
 			for (; instance != NULL; gebr_geoxml_sequence_next(&instance))
-				if (!gebr_geoxml_parameters_foreach(GEBR_GEOXML_PARAMETERS(instance), callback, user_data))
+				if (!gebr_geoxml_parameters_foreach(GEBR_GEOXML_PARAMETERS(instance), callback, user_data)) {
+					gebr_geoxml_object_unref(parameter);
+					gebr_geoxml_object_unref(instance);
 					return FALSE;
-		} else if (!callback(GEBR_GEOXML_OBJECT(parameter), user_data))
+				}
+		} else if (!callback(GEBR_GEOXML_OBJECT(parameter), user_data)) {
+			gebr_geoxml_object_unref(parameter);
 			return FALSE;
+		}
 	}
 
 	return TRUE;
@@ -72,7 +77,9 @@ void gebr_geoxml_program_foreach_parameter(GebrGeoXmlProgram * program, GebrGeoX
 	if (program == NULL)
 		return;
 
-	gebr_geoxml_parameters_foreach(gebr_geoxml_program_get_parameters(program), callback, user_data);
+	GebrGeoXmlParameters *params = gebr_geoxml_program_get_parameters(program);
+	gebr_geoxml_parameters_foreach(params, callback, user_data);
+	gebr_geoxml_object_unref(params);
 }
 
 GebrGeoXmlFlow *gebr_geoxml_program_flow(GebrGeoXmlProgram * program)
@@ -258,7 +265,7 @@ GebrGeoXmlProgramStatus gebr_geoxml_program_get_status(GebrGeoXmlProgram * progr
 	return GEBR_GEOXML_PROGRAM_STATUS_UNKNOWN;
 }
 
-const gchar *gebr_geoxml_program_get_title(GebrGeoXmlProgram * program)
+gchar *gebr_geoxml_program_get_title(GebrGeoXmlProgram * program)
 {
 	if (program == NULL)
 		return NULL;
@@ -272,21 +279,21 @@ const gchar *gebr_geoxml_program_get_binary(GebrGeoXmlProgram * program)
 	return __gebr_geoxml_get_tag_value((GdomeElement *) program, "binary");
 }
 
-const gchar *gebr_geoxml_program_get_description(GebrGeoXmlProgram * program)
+gchar *gebr_geoxml_program_get_description(GebrGeoXmlProgram * program)
 {
 	if (program == NULL)
 		return NULL;
 	return __gebr_geoxml_get_tag_value((GdomeElement *) program, "description");
 }
 
-const gchar *gebr_geoxml_program_get_help(GebrGeoXmlProgram * program)
+gchar *gebr_geoxml_program_get_help(GebrGeoXmlProgram * program)
 {
 	if (program == NULL)
 		return NULL;
 	return __gebr_geoxml_get_tag_value((GdomeElement *) program, "help");
 }
 
-const gchar *gebr_geoxml_program_get_version(GebrGeoXmlProgram * program)
+gchar *gebr_geoxml_program_get_version(GebrGeoXmlProgram * program)
 {
 	if (program == NULL)
 		return NULL;
@@ -309,7 +316,7 @@ const gchar *gebr_geoxml_program_get_url(GebrGeoXmlProgram * program)
 
 GebrGeoXmlProgramControl gebr_geoxml_program_get_control(GebrGeoXmlProgram * program)
 {
-	const gchar *control;
+	gchar *control;
 
 	// FIXME if program is NULL, should it really return GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY?
 	// Shouldn't it be GEBR_GEOXML_PROGRAM_CONTROL_UNKNOWN? Or maybe display a warning?
@@ -318,11 +325,17 @@ GebrGeoXmlProgramControl gebr_geoxml_program_get_control(GebrGeoXmlProgram * pro
 
 	control = __gebr_geoxml_get_attr_value((GdomeElement*)program, "control");
 
-	if (g_strcmp0(control, "for") == 0)
+	if (g_strcmp0(control, "for") == 0) {
+		g_free(control);
 		return GEBR_GEOXML_PROGRAM_CONTROL_FOR;
+	}
 
-	if (strlen (control) == 0)
+	if (strlen (control) == 0) {
+		g_free(control);
 		return GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY;
+	}
+
+	g_free(control);
 
 	return GEBR_GEOXML_PROGRAM_CONTROL_UNKNOWN;
 }
