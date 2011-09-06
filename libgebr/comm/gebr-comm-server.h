@@ -20,6 +20,7 @@
 
 #include <glib.h>
 
+#include <gebr-validator.h>
 #include <libgebr/log.h>
 #include <libgebr/geoxml/geoxml.h>
 
@@ -118,7 +119,7 @@ struct gebr_comm_server {
  * Returned by gebr_comm_server_run_config_add_flow 
  */
 typedef struct {
-	GebrGeoXmlFlow * flow;
+	gchar *flow_xml;
 	guint run_id;
 } GebrCommServerRunFlow;
 /**
@@ -149,21 +150,9 @@ void gebr_comm_server_run_config_free(GebrCommServerRunConfig *run_config);
 
 /**
  */
-GebrCommServerRunFlow* gebr_comm_server_run_config_add_flow(GebrCommServerRunConfig *config, GebrGeoXmlFlow * flow);
-
-/**
- * gebr_comm_server_run_strip_flow:
- * @flow: a #GebrGeoXmlFlow
- * @...: a %NULL-terminated list of #GebrGeoXmlDocument
- *
- * Make a copy of @flow and removes all help strings. All dictionaries from the #GebrGeoXmlDocuments
- * in the %NULL-terminated list @... are merged into the copy. The order is importante in the following
- * sense: if document 'a' appears before 'b' in the list, its dictionaries are preserved in case of
- * name clashes.
- *
- * Returns: a new flow prepared to run
- */
-GebrGeoXmlFlow *gebr_comm_server_run_strip_flow(GebrGeoXmlFlow *flow, ...) G_GNUC_NULL_TERMINATED;
+guint gebr_comm_server_run_config_add_flow(GebrCommServerRunConfig *config,
+                                           GebrValidator *vaildator,
+                                           GebrGeoXmlFlow *flow);
 
 /**
  */

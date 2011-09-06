@@ -15,8 +15,13 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include "libgebr-gettext.h"
 #include <glib/gi18n-lib.h>
+#include <glib/gstdio.h>
 
 #include "utils.h"
 #include "gebr-arith-expr.h"
@@ -36,8 +41,8 @@ struct _GebrArithExprPriv {
 	GHashTable *vars;
 	GIOChannel *in_ch;
 	GIOChannel *out_ch;
-	GIOChannel *err_ch;
 	gboolean initialized;
+	GPid child;
 };
 
 /* Prototypes {{{2 */
@@ -52,6 +57,9 @@ gebr_arith_expr_eval_impl (GebrIExpr   *self,
 			   const gchar *expr,
 			   gchar      **result,
 			   GError     **err);
+
+gboolean arith_spawn_bc(GebrArithExpr *self, int *in_fd, int *out_fd);
+
 G_DEFINE_TYPE_WITH_CODE(GebrArithExpr, gebr_arith_expr, G_TYPE_OBJECT,
 			G_IMPLEMENT_INTERFACE(GEBR_TYPE_IEXPR,
 					      gebr_arith_expr_interface_init));
@@ -69,40 +77,27 @@ static void gebr_arith_expr_class_init(GebrArithExprClass *klass)
 
 static void gebr_arith_expr_init(GebrArithExpr *self)
 {
-	const gchar *home_dir	= g_get_home_dir ();
-	gchar *argv[]		= {"bc", "-l", NULL};
-	GError *error		= NULL;
-	gint in_fd, out_fd, err_fd;
+	gint in_fd, out_fd;
+	GError *error = NULL;
 
 	self->priv = G_TYPE_INSTANCE_GET_PRIVATE(self,
 						 GEBR_TYPE_ARITH_EXPR,
 						 GebrArithExprPriv);
 
-	g_spawn_async_with_pipes (home_dir, argv, NULL,
-				  G_SPAWN_SEARCH_PATH,
-				  NULL, NULL, NULL,
-				  &in_fd, &out_fd, &err_fd,
-				  &error);
-
-	if (error) {
-		g_warning("Could not execute `bc': %s",
-			  error->message);
-		g_clear_error(&error);
+	if (!arith_spawn_bc (self, &in_fd, &out_fd)) {
+		g_warning("Could not execute `bc'");
 		self->priv->initialized = FALSE;
 		return;
 	}
 
 	self->priv->in_ch = g_io_channel_unix_new (in_fd);
 	self->priv->out_ch = g_io_channel_unix_new (out_fd);
-	self->priv->err_ch = g_io_channel_unix_new (err_fd);
 
 	if (!configure_channel (self->priv->in_ch, &error) ||
-	    !configure_channel (self->priv->out_ch, &error) ||
-	    !configure_channel (self->priv->err_ch, &error))
+	    !configure_channel (self->priv->out_ch, &error))
 	{
 		g_io_channel_unref (self->priv->in_ch);
 		g_io_channel_unref (self->priv->out_ch);
-		g_io_channel_unref (self->priv->err_ch);
 
 		g_warning("Could not create channels to listen `bc': %s",
 			  error->message);
@@ -121,8 +116,13 @@ static void gebr_arith_expr_init(GebrArithExpr *self)
 
 static void gebr_arith_expr_finalize(GObject *object)
 {
+	gint exitstatus;
 	GebrArithExpr *self = GEBR_ARITH_EXPR(object);
 
+	kill(self->priv->child, SIGKILL);
+	waitpid(self->priv->child, &exitstatus, 0);
+	g_io_channel_unref (self->priv->in_ch);
+	g_io_channel_unref (self->priv->out_ch);
 	g_hash_table_unref(self->priv->vars);
 
 	G_OBJECT_CLASS(gebr_arith_expr_parent_class)->finalize(object);
@@ -319,17 +319,20 @@ gebr_arith_expr_extract_vars(GebrIExpr   *iface,
 	GHashTable *set;
 
 	set = g_hash_table_new(g_str_hash, g_str_equal);
-	regex = g_regex_new ("[a-z][0-9a-z_]*", G_REGEX_CASELESS, 0, NULL);
+	regex = g_regex_new ("([a-z][0-9a-z_]*)\\s*(.?)", G_REGEX_CASELESS, 0, NULL);
 	g_regex_match (regex, expr, 0, &info);
 
 	while (g_match_info_matches (info))
 	{
-		gchar *word = g_match_info_fetch (info, 0);
-		if (!g_hash_table_lookup(set, word)) {
+		gchar *word = g_match_info_fetch (info, 1);
+		gchar *next_char = g_match_info_fetch(info, 2);
+		if (next_char[0] != '(' && !g_hash_table_lookup(set, word)) {
 			vars = g_list_prepend (vars, word);
 			g_hash_table_insert(set, word, GUINT_TO_POINTER(1));
-		}
+		} else
+			g_free(word);
 		g_match_info_next (info, NULL);
+		g_free(next_char);
 	}
 
 	g_hash_table_unref(set);
@@ -349,6 +352,51 @@ static void gebr_arith_expr_interface_init(GebrIExprInterface *iface)
 }
 
 /* Private functions {{{1 */
+/*
+ */
+gboolean
+arith_spawn_bc(GebrArithExpr *self, int *infd, int *outfd)
+{
+	const gchar *home_dir	= g_get_home_dir ();
+	gchar *argv[]		= {"bc", "-l", NULL};
+
+	gint in_fd[2];
+	gint out_fd[2];
+
+	if (pipe(in_fd) < 0 || pipe(out_fd) < 0)
+		return FALSE;
+
+	self->priv->child = fork();
+
+	if (self->priv->child < 0)
+		return FALSE;
+
+	if (self->priv->child == 0) {
+		if (dup2(in_fd[0], 0) < 0 ||
+		    dup2(out_fd[1], 1) < 0 ||
+		    dup2(out_fd[1], 2) < 0)
+			_exit(1);
+
+		if (close(in_fd[1]) < 0 ||
+		    close(out_fd[0]) < 0)
+			_exit(1);
+
+		if (g_chdir(home_dir) < 0)
+			_exit(1);
+
+		setsid();
+		execvp(argv[0], argv);
+	}
+
+	close(in_fd[0]);
+	close(out_fd[1]);
+
+	*infd = in_fd[1];
+	*outfd = out_fd[0];
+
+	return TRUE;
+}
+
 /*
  * configure_channel:
  *
@@ -372,6 +420,32 @@ configure_channel(GIOChannel *channel, GError **err)
 	return TRUE;
 }
 
+static gboolean
+read_bc_line(GebrArithExpr *self,
+	     gchar **line,
+	     GError **err)
+{
+	GError *error = NULL;
+	GIOStatus status;
+
+	do
+		status = g_io_channel_read_line(self->priv->out_ch, line, NULL, NULL, &error);
+	while (status == G_IO_STATUS_AGAIN);
+
+	if (error) {
+		g_warning("Error while reading `bc' output channel: %s",
+			  error->message);
+		g_set_error(err, GEBR_IEXPR_ERROR,
+			    GEBR_IEXPR_ERROR_INITIALIZE,
+			    _("Error while reading `bc' output channel: %s"),
+			    error->message);
+		g_clear_error(&error);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 /*
  * gebr_arith_expr_eval_internal:
  */
@@ -382,23 +456,20 @@ gebr_arith_expr_eval_internal(GebrArithExpr *self,
 			      GError       **err)
 {
 	gchar *line;
-	GIOStatus status;
-	gchar *result_str = NULL;
 	GError *error = NULL;
-	gboolean finished = FALSE;
 
-	enum {
-		READ_RESULT,
-		READ_STAMP,
-		ERROR,
-		SET_RESULT,
-	} state = READ_RESULT;
+	gchar *striped = (expr && *expr) ? g_strstrip(g_strdup(expr)) : NULL;
+	gboolean empty = !striped || !*striped;
+	g_free(striped);
 
-	if (!expr || !*expr)
-		return TRUE;
+	if (empty) {
+		g_set_error(err, GEBR_IEXPR_ERROR, GEBR_IEXPR_ERROR_EMPTY_EXPR,
+		            _("Empty expression"));
+		return FALSE;
+	}
 
 	line = g_strdup_printf ("%s\n\"%s\"\n", expr, EVAL_COOKIE);
-	status = g_io_channel_write_chars (self->priv->in_ch, line, -1, NULL, &error);
+	g_io_channel_write_chars (self->priv->in_ch, line, -1, NULL, &error);
 	g_free (line);
 
 	if (error)
@@ -418,92 +489,80 @@ gebr_arith_expr_eval_internal(GebrArithExpr *self,
 		return FALSE;
 	}
 
-	while (!finished)
-	{
-		status = g_io_channel_read_line (self->priv->err_ch, &line, NULL, NULL, &error);
+	GString *buffer = g_string_sized_new(70);
 
-		if (status == G_IO_STATUS_NORMAL) {
+	int results = 0;
+	while (read_bc_line(self, &line, err)) {
+		if (!line || g_strcmp0(line, EVAL_COOKIE) == 0) {
+			g_free(line);
+			break;
+		}
+		if (g_str_has_prefix(line, "(standard_in) ")) {
+			gchar *msg;
+			msg = strchr(line, ':');
+			msg[strlen(msg) - 1] = '\0';
 			g_set_error(err,
 				    GEBR_IEXPR_ERROR,
 				    GEBR_IEXPR_ERROR_SYNTAX,
-				    _("Invalid expression"));
-			g_free (line);
-			state = ERROR;
-		} else if (error) {
-			g_warning("Error while reading `bc' error channel: %s",
-				  error->message);
-			g_clear_error(&error);
+				    _("Invalid expression%s"), msg);
+			goto exception_and_flush;
 		}
-
-		switch (state)
-		{
-		case READ_RESULT:
-			status = g_io_channel_read_line(self->priv->out_ch, &line, NULL, NULL, &error);
-			if (status == G_IO_STATUS_NORMAL) {
-				if (g_strcmp0(line, EVAL_COOKIE) == 0) {
-					g_set_error(err,
-						    GEBR_IEXPR_ERROR,
-						    GEBR_IEXPR_ERROR_SYNTAX,
-						    _("Expression does not evaluate to a value"));
-					g_free (line);
-					return FALSE;
-				} else {
-					result_str = g_strndup(line, strlen(line)-1);
-					state = READ_STAMP;
-				}
-				g_free (line);
-			} else if (error) {
-				g_warning("Error while reading `bc' output channel: %s",
-					  error->message);
-				g_clear_error(&error);
-			}
-			break;
-		case READ_STAMP:
-			status = g_io_channel_read_line(self->priv->out_ch, &line, NULL, NULL, &error);
-			if (status == G_IO_STATUS_NORMAL) {
-				if (g_strcmp0(line, EVAL_COOKIE) == 0) {
-					state = SET_RESULT;
-				} else {
-					state = ERROR;
-				}
-				g_free (line);
-			} else if (error) {
-				g_warning("Error while reading `bc' output channel: %s",
-					  error->message);
-				g_clear_error(&error);
-			}
-			break;
-		case ERROR:
-			// TODO: Flush output and error
-			status = g_io_channel_read_line(self->priv->out_ch, &line, NULL, NULL, &error);
-			if (status == G_IO_STATUS_NORMAL) {
-				if (g_strcmp0(line, EVAL_COOKIE) == 0) {
-					g_free(result_str);
-					g_free(line);
-					if (!err)
-						g_set_error(err,
-						            GEBR_IEXPR_ERROR,
-						            GEBR_IEXPR_ERROR_SYNTAX,
-						            _("Expression returned multiple results"));
-					return FALSE;
-				} else if (error) {
-					g_warning("Error while reading `bc' output channel: %s",
-						  error->message);
-					g_clear_error(&error);
-				}
-				g_free (line);
-			}
-			break;
-
-		case SET_RESULT:
-			if (result != NULL)
-				*result = result_str;
-			finished = TRUE;
-			break;
+		if (g_str_has_prefix(line, "Runtime error (func")) {
+			gchar *msg;
+			msg = strchr(line, ':');
+			msg[strlen(msg) - 1] = '\0';
+			g_set_error(err,
+				    GEBR_IEXPR_ERROR,
+				    GEBR_IEXPR_ERROR_RUNTIME,
+				    _("Invalid expression%s"), msg);
+			goto exception_and_flush;
 		}
+		if (g_str_has_prefix(line, "Runtime warning (func"))
+			continue;
+
+		int length = strlen(line);
+		if (line[length - 2] == '\\')
+			length -= 2;
+		else
+			results++;
+		g_string_append_len(buffer, line, length);
+		g_free(line);
 	}
 
+	if (results == 0) {
+		g_set_error(err,
+			    GEBR_IEXPR_ERROR,
+			    GEBR_IEXPR_ERROR_SYNTAX,
+			    _("Expression does not evaluate to a value"));
+		goto exception;
+	}
+
+	if (results > 1) {
+		g_set_error(err,
+		            GEBR_IEXPR_ERROR,
+		            GEBR_IEXPR_ERROR_SYNTAX,
+		            _("Expression returned multiple results"));
+		goto exception;
+	}
+
+	g_string_set_size(buffer, buffer->len - 1);
+	if (result)
+		*result = buffer->str;
+	g_string_free(buffer, !result);
 	return TRUE;
+
+exception_and_flush:
+
+	do {
+		g_free(line);
+		read_bc_line(self, &line, NULL);
+	} while (g_strcmp0(line, EVAL_COOKIE) != 0);
+	g_free(line);
+
+exception:
+
+	g_string_free(buffer, TRUE);
+	return FALSE;
 }
 
 static gboolean
@@ -544,29 +603,22 @@ gboolean gebr_arith_expr_eval(GebrArithExpr *self,
 		return FALSE;
 	}
 
-	if (strchr(expr, '=')) {
+	if (strchr(expr, ';')) {
 		g_set_error (err,
 			     GEBR_IEXPR_ERROR,
 			     GEBR_IEXPR_ERROR_SYNTAX,
-			     _("Invalid assignment '='"));
+			     _("Invalid syntax: ';'"));
 		return FALSE;
 	}
 	if (strchr(expr, '"')) {
 		g_set_error (err,
 			     GEBR_IEXPR_ERROR,
 			     GEBR_IEXPR_ERROR_SYNTAX,
-			     _("Invalid syntax '\"'"));
+			     _("Invalid syntax: '\"'"));
 		return FALSE;
 	}
-	gint i = 0;
-	gchar *line = strdup(expr);
-	while (line[i++]) {
-		if (line[i] == ';')
-			line[i] = '\n';
-	}
 
-	gboolean ok = gebr_arith_expr_eval_internal(self, line, &string, err);
-	g_free(line);
+	gboolean ok = gebr_arith_expr_eval_internal(self, expr, &string, err);
 
 	if (ok && string && result)
 		*result = g_ascii_strtod(string, NULL);

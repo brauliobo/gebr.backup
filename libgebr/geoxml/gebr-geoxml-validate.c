@@ -15,7 +15,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "libgebr-gettext.h"
 #include <glib/gi18n-lib.h>
 #include <string.h>
 
@@ -53,8 +57,8 @@ GebrGeoXmlValidate *gebr_geoxml_validate_new(gpointer data, GebrGeoXmlValidateOp
 		options.category = TRUE;
 		options.mhelp = TRUE;
 		options.progs = TRUE;
-        options.url = TRUE;
-        options.verbose = TRUE;
+		options.url = TRUE;
+		options.verbose = TRUE;
 	}
 	validate->options = options;
 
@@ -160,14 +164,18 @@ gint gebr_geoxml_validate_report_menu(GebrGeoXmlValidate * validate, GebrGeoXmlF
 	}
 	if (validate->options.mhelp) {
 		validate_append_item(validate, _("Help:          "));
-		if (strlen(gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(menu))) >= 1)
+		gchar *tmp_help = gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(menu));
+		if (strlen(tmp_help) >= 1)
 			validate->operations.append_text(validate->data, _("Defined"));
 		else
 			validate_append_check(validate, "", GEBR_VALIDATE_CHECK_EMPTY, GEBR_VALIDATE_CASE_HELP, "");
+		g_free (tmp_help);
 		validate->operations.append_text(validate->data, "\n");
 	}
 	if (validate->options.ehelp == 0) {
-		validate->operations.append_text(validate->data, "%s", gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(menu)));
+		gchar *tmp_help = gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(menu));
+		validate->operations.append_text(validate->data, "%s", tmp_help);
+		g_free (tmp_help);
 	}
 	if (validate->options.category) {
 		gebr_geoxml_flow_get_category(menu, &seq, 0);
@@ -182,7 +190,9 @@ gint gebr_geoxml_validate_report_menu(GebrGeoXmlValidate * validate, GebrGeoXmlF
 	gint nprog = gebr_geoxml_flow_get_programs_number(menu);
 	if (validate->options.ehelp > 0 && validate->options.ehelp <= nprog) {
 		gebr_geoxml_flow_get_program(menu, &seq, validate->options.ehelp - 1);
-		validate->operations.append_text(validate->data, "%s", gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(seq)));
+		gchar *tmp_help = gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(seq));
+		validate->operations.append_text(validate->data, "%s", tmp_help);
+		g_free(tmp_help);
 	}
 
 	if (!validate->options.progs && !validate->options.params)
@@ -223,10 +233,12 @@ gint gebr_geoxml_validate_report_menu(GebrGeoXmlValidate * validate, GebrGeoXmlF
 						gebr_geoxml_program_get_url(prog),
 						GEBR_VALIDATE_CASE_PROGRAM_URL);
 		validate_append_item(validate, _("  Help:        "));
-		if (strlen(gebr_geoxml_program_get_help(prog)) >= 1)
+		gchar *tmp_help_p = gebr_geoxml_program_get_help(prog);
+		if (strlen(tmp_help_p) >= 1)
 			validate->operations.append_text(validate->data, _("Defined"));
 		else
 			validate_append_check(validate, "", GEBR_VALIDATE_CHECK_EMPTY, GEBR_VALIDATE_CASE_HELP, "");
+		g_free(tmp_help_p);
 		validate->operations.append_text(validate->data, "\n");
 
 		if (validate->options.params) {
@@ -239,9 +251,12 @@ gint gebr_geoxml_validate_report_menu(GebrGeoXmlValidate * validate, GebrGeoXmlF
 			parameter = GEBR_GEOXML_PARAMETER(gebr_geoxml_parameters_get_first_parameter
 							  (gebr_geoxml_program_get_parameters(prog)));
 
-			validate->ipar = 0;
-			for (; parameter != NULL; gebr_geoxml_sequence_next((GebrGeoXmlSequence **)&parameter), ++validate->ipar)
+			if (parameter)
+				validate->ipar = 0;
+
+			for (; parameter; gebr_geoxml_sequence_next((GebrGeoXmlSequence **)&parameter), ++validate->ipar)
 				show_parameter(validate, parameter);
+			validate->ipar = -1;
 			g_hash_table_unref(hotkey_table);
 		}
 	}
@@ -452,7 +467,10 @@ static void show_parameter(GebrGeoXmlValidate * validate, GebrGeoXmlParameter * 
 
 		template = gebr_geoxml_parameter_group_get_template(GEBR_GEOXML_PARAMETER_GROUP(parameter));
 		subpar = gebr_geoxml_parameters_get_first_parameter(template);
-		validate->isubpar = 0;
+
+		if (subpar)
+			validate->isubpar = 0;
+
 		for (; subpar != NULL; gebr_geoxml_sequence_next(&subpar), ++validate->isubpar)
 			show_parameter(validate, GEBR_GEOXML_PARAMETER(subpar));
 

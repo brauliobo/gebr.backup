@@ -17,6 +17,13 @@
 
 //remove round warning
 #define _ISOC99_SOURCE
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,27 +33,36 @@
 #include <glib/gstdio.h>
 #include <locale.h>
 #include <fcntl.h>
+#include <signal.h>
 
-#include "defines.h"
 #include "utils.h"
 
-/**
- * Replace each reference of \p oldtext in \p string
- * with \p newtext. If \p newtext if NULL, then each reference of oldtext found is removed.
- */
-void gebr_g_string_replace(GString * string, const gchar * oldtext, const gchar * newtext)
+void
+gebr_g_string_replace(GString * string,
+		      const gchar * oldtext,
+		      const gchar * newtext)
 {
-	gchar *position;
-	gssize oldtext_len = strlen(oldtext);
+	g_return_if_fail(string != NULL);
+	g_return_if_fail(oldtext != NULL);
 
-	position = string->str;
-	while ((position = strstr(string->str, oldtext)) != NULL) {
-		gssize index = (position - string->str) / sizeof(gchar);
-		g_string_erase(string, index, oldtext_len);
+	gchar * text = NULL;
 
-		if (newtext != NULL)
-			g_string_insert(string, index, newtext);
-	}
+	if (g_strrstr(string->str, oldtext) == NULL)
+		return;
+
+	if (newtext == NULL)
+		text = g_strdup("");
+	else
+		text = g_strdup(newtext);
+
+	gchar ** split = g_strsplit(string->str, oldtext, -1);
+
+	gchar * new_string = g_strjoinv(text, split);
+	string = g_string_assign(string, new_string);
+
+	g_free(new_string);
+	g_free(text);
+	g_strfreev(split);
 }
 
 /**
@@ -211,16 +227,17 @@ GString *gebr_make_temp_filename(const gchar * template)
  */
 gint gebr_system(const gchar *cmd, ...)
 {
-	gint ret;
+	gint exit, ret;
 
 	va_list argp;
 	va_start(argp, cmd);
 	gchar *cmd_parsed = g_strdup_vprintf(cmd, argp);
 	va_end(argp);
 	ret = system(cmd_parsed);
+	exit = WEXITSTATUS(ret);
 	g_free(cmd_parsed);
 
-	return ret;
+	return exit;
 }
 
 /**
@@ -714,21 +731,21 @@ gebr_str_canonical_var_name(const gchar * keyword, gchar ** new_value, GError **
 {
 	g_return_val_if_fail(keyword != NULL, FALSE);
 	g_return_val_if_fail(error == NULL, FALSE);
+
 	/* This pointer must point to something */
 	g_return_val_if_fail(new_value != NULL, FALSE);
 
-	*new_value = g_utf8_strdown(keyword,-1);
+	gchar *str = g_utf8_strdown(keyword, -1);
 
 	/* g_strcanon modifies the string in place */
-	*new_value = g_strcanon(*new_value, 
-			       "abcdefghijklmnopqrstuvxwyz1234567890_",
-			       '_');
-	if (!g_unichar_isalpha((*new_value)[0]))
-	{
-		gchar * new = g_strdup_printf("var_%s", *new_value);
-		g_free(*new_value);
-		*new_value = new;
-	}
+	g_strcanon(str, "abcdefghijklmnopqrstuvxwyz1234567890_", ' ');
+	g_strstrip(str);
+	g_strcanon(str, "abcdefghijklmnopqrstuvxwyz1234567890_", '_');
+	if (!g_unichar_isalpha(g_utf8_get_char(str))) {
+		*new_value = g_strdup_printf("var_%s", str);
+		g_free(str);
+	} else
+		*new_value = str;
 
 	return TRUE;
 }

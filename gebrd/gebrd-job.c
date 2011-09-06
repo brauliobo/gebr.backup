@@ -31,8 +31,6 @@
 #include <libgebr/comm/gebr-comm-socketaddress.h>
 #include <libgebr/utils.h>
 #include <libgebr/date.h>
-#include <libgebr/gebr-iexpr.h>
-#include <libgebr/gebr-string-expr.h>
 #include <libgebr/geoxml/gebr-geo-types.h>
 
 #include "gebrd-job.h"
@@ -58,10 +56,11 @@ static void gebrd_job_class_init(GebrdJobClass * klass)
 
 
 static void job_assembly_cmdline(GebrdJob *job);
-static void job_process_finished(GebrCommProcess * process, GebrdJob *job);
+static void job_process_finished(GebrCommProcess * process, gint status, GebrdJob *job);
 static void job_send_signal_on_moab(const char * signal, GebrdJob * job);
 static GebrdMpiInterface * job_get_mpi_impl(const gchar * mpi_name, GString * n_process);
 static gchar *escape_quote_and_slash(const gchar *str);
+static gchar *replace_quotes(gchar *str);
 
 /**
  * \internal
@@ -219,9 +218,12 @@ static void job_status_notify_finished(GebrdJob *job)
  * \internal
  * Only for regular jobs
  */
-static void job_process_finished(GebrCommProcess * process, GebrdJob *job)
+static void job_process_finished(GebrCommProcess * process, gint status, GebrdJob *job)
 {
-	job_status_notify_finished(job);
+	if (WEXITSTATUS(status) == 0)
+		job_status_notify_finished(job);
+	else
+		job_status_notify(job, JOB_STATUS_FAILED, _("Job exited with failure"));
 }
 
 /**
@@ -381,17 +383,16 @@ void job_new(GebrdJob ** _job, struct client * client, GString * queue, GString 
 	GebrGeoXmlDocument *document;
 	int ret = gebr_geoxml_document_load_buffer(&document, xml->str);
 	job->flow = GEBR_GEOXML_FLOW(document);
-
-	/* Global variable for current job flow */
-	gebrd->flow = GEBR_GEOXML_FLOW(job->flow);
-
-	g_assert(gebrd->validator != NULL);
-	gebr_validator_update(gebrd->validator);
+	gebrd->flow = document;
 
 	if (job->flow == NULL)
 		job_issue(job, gebr_geoxml_error_explained_string(ret));
-	else
+	else {
 		g_string_assign(job->parent.title, gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(job->flow)));
+		gebrd_clean_proj_line_dicts();
+		gebr_geoxml_document_split_dict(gebrd->flow, gebrd->line, gebrd->proj, NULL);
+		gebr_validator_update(gebrd_get_validator(gebrd));
+	}
 
 	/* just to send the client the command line, we could do this after by changing the protocol */
 	job_assembly_cmdline(job);
@@ -463,25 +464,11 @@ void job_status_notify(GebrdJob *job, enum JobStatus status, const gchar *_param
 void job_run_flow(GebrdJob *job)
 {
 	GString *cmd_line;
-	guint issue_number = 0;
 
 	/* initialization */
 	cmd_line = g_string_new(NULL);
 
 	if (job->critical_error == TRUE)
-		goto err;
-
-	/* Check if there is configured programs */
-	GebrGeoXmlSequence *program;
-	gebr_geoxml_flow_get_program(job->flow, &program, 0);
-	while (program != NULL &&
-	       gebr_geoxml_program_get_status(GEBR_GEOXML_PROGRAM(program)) != GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED) {
-		job_issue(job, _("%u) Skipping disabled/not configured program '%s'.\n"),
-			  ++issue_number, gebr_geoxml_program_get_title(GEBR_GEOXML_PROGRAM(program)));
-
-		gebr_geoxml_sequence_next(&program);
-	}
-	if (program == NULL)
 		goto err;
 
 	/*
@@ -567,6 +554,8 @@ void job_run_flow(GebrdJob *job)
 		/* pool for moab status */
 		g_timeout_add(1000, (GSourceFunc)job_moab_checkjob_pooling, job); 
 	} else {
+		GebrGeoXmlSequence *program;
+
 		g_signal_connect(job->process, "ready-read-stdout", G_CALLBACK(job_process_read_stdout), job);
 		g_signal_connect(job->process, "ready-read-stderr", G_CALLBACK(job_process_read_stderr), job);
 		g_signal_connect(job->process, "finished", G_CALLBACK(job_process_finished), job);
@@ -776,7 +765,7 @@ static gboolean job_parse_parameter(GebrdJob *job, GebrGeoXmlParameter * paramet
 				gchar *escaped;
 				GError *error = NULL;
 
-				gebr_string_expr_eval(job->str_expr, strip, &result, &error);
+				gebr_validator_evaluate_interval(gebrd_get_validator(gebrd), strip, GEBR_GEOXML_PARAMETER_TYPE_STRING, GEBR_GEOXML_DOCUMENT_TYPE_FLOW, FALSE, &result, &error);
 
 				if (!error) {
 					escaped = escape_quote_and_slash(result);
@@ -844,28 +833,30 @@ static gboolean job_parse_parameter(GebrdJob *job, GebrGeoXmlParameter * paramet
 			if (*strip) {
 				g_ascii_strtod(strip, &end_str);
 				if(*end_str) {
+					gchar *escaped = replace_quotes(gebr_geoxml_parameter_get_label (parameter));
 					if(type == GEBR_GEOXML_PARAMETER_TYPE_INT)
 						temp = g_strdup_printf("round(%s)", strip);
 					else
 						temp = g_strdup(strip);
 					if(*vmin && *vmax)
 						g_string_append_printf (expr_buf, "\t\tmin(%s,max(%s,%s)) # V[%"G_GSIZE_FORMAT"]: %s\n", vmax, vmin, temp,
-									job->expr_count + job->n_vars, gebr_geoxml_parameter_get_label (parameter));
+									job->expr_count + job->n_vars, escaped);
 					else if(*vmin)
 						g_string_append_printf (expr_buf, "\t\tmax(%s,%s) # V[%"G_GSIZE_FORMAT"]: %s\n", vmin, temp,
-									job->expr_count + job->n_vars, gebr_geoxml_parameter_get_label (parameter));
+									job->expr_count + job->n_vars, escaped);
 					else if(*vmax)
 						g_string_append_printf (expr_buf, "\t\tmax(%s,%s) # V[%"G_GSIZE_FORMAT"]: %s\n", vmax, temp,
-									job->expr_count + job->n_vars, gebr_geoxml_parameter_get_label (parameter));
+									job->expr_count + job->n_vars, escaped);
 					else
 						g_string_append_printf (expr_buf, "\t\t%s # V[%"G_GSIZE_FORMAT"]: %s\n", temp,
-									job->expr_count + job->n_vars, gebr_geoxml_parameter_get_label (parameter));
+									job->expr_count + job->n_vars, escaped);
 
 					if(!first)
 						g_string_append(job->parent.cmd_line, separator);
 					g_string_append_printf (job->parent.cmd_line, "${V[%"G_GSIZE_FORMAT"]}", job->expr_count + job->n_vars);
 					job->expr_count++;
 					g_free(temp);
+					g_free(escaped);
 				} else  {
 					if(!first)
 						g_string_append(job->parent.cmd_line, separator);
@@ -971,137 +962,124 @@ guint gebrd_bc_hash_func(gconstpointer a)
 	return g_str_hash(a);
 }
 
-static void define_bc_variables(GebrdJob *job, GString *expr_buf, GString *str_buf, gsize *n_vars)
+static gchar* define_bc_variables(GebrdJob *job, GString *expr_buf, GString *str_buf, gsize *n_vars, guint *issue_number)
 {
 	gsize j = 0;
 	const gchar *value;
 	const gchar *keyword;
+	const gchar *n = NULL;
+	gchar *result = NULL;
 	GebrGeoXmlSequence *seq;
 	GebrGeoXmlParameters *params;
 	GebrGeoXmlProgramParameter *prog_param;
 	GebrGeoXmlProgram *program;
 	GebrGeoXmlProgramStatus status;
-	GError * error = NULL;
+	GebrGeoXmlParameter *param;
+	GError *err = NULL;
 
 	program = gebr_geoxml_flow_get_control_program(job->flow);
 	status = gebr_geoxml_program_get_status(program);
-	if(gebr_geoxml_program_get_control(program) == GEBR_GEOXML_PROGRAM_CONTROL_FOR
-			&& status == GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED)
+	if (gebr_geoxml_program_get_control(program) == GEBR_GEOXML_PROGRAM_CONTROL_FOR
+	    && status == GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED)
 	{
-		GebrGeoXmlSequence *parameter;
-		gebr_geoxml_flow_insert_iter_dict(gebrd->flow);
-		parameter = gebr_geoxml_document_get_dict_parameter(GEBR_GEOXML_DOCUMENT(gebrd->flow));
-		gebr_validator_insert(gebrd->validator, GEBR_GEOXML_PARAMETER(parameter), NULL, &error);
-		g_string_append_printf(expr_buf, "\t\titer # V[%"G_GSIZE_FORMAT"]\n", j);
-		gebr_iexpr_set_var(GEBR_IEXPR(job->str_expr), "iter",
-		                   GEBR_GEOXML_PARAMETER_TYPE_STRING,
-		                   "${V[[0]]}", NULL);
-		j++;
+		gchar *iter_expr;
+		const gchar *ini, *step;
+		GebrGeoXmlProgramParameter *pparam;
+		n = gebr_geoxml_program_control_get_n(program, &step, &ini);
+		gebr_validator_evaluate(gebrd_get_validator(gebrd), n, GEBR_GEOXML_PARAMETER_TYPE_FLOAT, GEBR_GEOXML_DOCUMENT_TYPE_LINE, &result, &err);
+		if (err) {
+			*issue_number += 1;
+			job_issue(job, _("%u) %s '%s'.\n"),
+			          *issue_number, err->message,
+			          gebr_geoxml_program_get_title(GEBR_GEOXML_PROGRAM(program)));
+			g_clear_error(&err);
+		}
+		result = g_strdup_printf("%d", atoi(result));
+		iter_expr = g_strdup_printf("(%s) + (%s) * '\"$counter\"'", ini, step);
+		pparam = GEBR_GEOXML_PROGRAM_PARAMETER(gebr_geoxml_document_get_dict_parameter(gebrd->flow));
+		gebr_geoxml_program_parameter_set_first_value(pparam, FALSE, iter_expr);
+		g_free(iter_expr);
 	}
-	// Insert variables definitions
-	params = gebr_geoxml_document_get_dict_parameters (GEBR_GEOXML_DOCUMENT (job->flow));
-	gebr_geoxml_parameters_get_parameter (params, &seq, 0);
-	for (; seq; gebr_geoxml_sequence_next (&seq))
-	{
-		gchar *label;
-		gchar *var_value;
-		GebrGeoXmlParameterType type = gebr_geoxml_parameter_get_type (GEBR_GEOXML_PARAMETER (seq));
 
-		switch (type)
+	GebrGeoXmlDocument *docs[3] = {
+		gebrd->proj,
+		gebrd->line,
+		gebrd->flow,
+	};
+
+	for (int i = 0; i < 3; i++) {
+		// Insert variables definitions
+		params = gebr_geoxml_document_get_dict_parameters(GEBR_GEOXML_DOCUMENT (docs[i]));
+		gebr_geoxml_parameters_get_parameter(params, &seq, 0);
+		for (; seq; gebr_geoxml_sequence_next(&seq))
 		{
-		case GEBR_GEOXML_PARAMETER_TYPE_FLOAT:
-		case GEBR_GEOXML_PARAMETER_TYPE_INT: {
-			const gchar *vmin, *vmax;
-			prog_param = GEBR_GEOXML_PROGRAM_PARAMETER (seq);
+			gchar *label;
+			gchar *var_value;
+			GebrGeoXmlParameterType type = gebr_geoxml_parameter_get_type (GEBR_GEOXML_PARAMETER (seq));
 
-			g_assert(gebrd->validator != NULL);
-			gebr_validator_insert(gebrd->validator,
-					      GEBR_GEOXML_PARAMETER(prog_param),
-					      NULL, &error);
+			switch (type)
+			{
+			case GEBR_GEOXML_PARAMETER_TYPE_FLOAT:
+			case GEBR_GEOXML_PARAMETER_TYPE_INT: {
+				prog_param = GEBR_GEOXML_PROGRAM_PARAMETER (seq);
+				param = GEBR_GEOXML_PARAMETER(seq);
 
-			label = g_strdup(gebr_geoxml_parameter_get_label (GEBR_GEOXML_PARAMETER (seq)));
-			value = gebr_geoxml_program_parameter_get_first_value (prog_param, FALSE);
-			keyword = gebr_geoxml_program_parameter_get_keyword (prog_param);
-			gebr_geoxml_program_parameter_get_number_min_max(GEBR_GEOXML_PROGRAM_PARAMETER (seq), &vmin, &vmax);
-			if(*vmin && *vmax)
-				g_string_append_printf(expr_buf, "\t\t%s = min(%s,max(%s,%s)) ; %s # V[%"G_GSIZE_FORMAT"]: %s\n",
-						       keyword, vmax, vmin, value, keyword, j, replace_quotes(label));
-			else if(*vmin)
-				g_string_append_printf(expr_buf, "\t\t%s = max(%s,%s) ; %s # V[%"G_GSIZE_FORMAT"]: %s\n",
-						       keyword, vmin, value, keyword, j, replace_quotes(label));
-			else if(*vmax)
-				g_string_append_printf(expr_buf, "\t\t%s = min(%s,%s) ; %s # V[%"G_GSIZE_FORMAT"]: %s\n",
-				                       keyword, vmax, value, keyword, j, replace_quotes(label));
-			else
-				g_string_append_printf(expr_buf, "\t\t%s = %s ; %s # V[%"G_GSIZE_FORMAT"]: %s\n",
+				label = g_strdup(gebr_geoxml_parameter_get_label (param));
+				value = gebr_geoxml_program_parameter_get_first_value (prog_param, FALSE);
+				keyword = gebr_geoxml_program_parameter_get_keyword (prog_param);
+				g_string_append_printf(expr_buf, "\t\t%s = (%s) ; %s # V[%"G_GSIZE_FORMAT"]: %s\n",
 						       keyword, value, keyword, j, replace_quotes(label));
-			var_value = g_strdup_printf("${V[[%"G_GSIZE_FORMAT"]]}", j++);
-			gebr_iexpr_set_var(GEBR_IEXPR(job->str_expr), keyword,
-					   GEBR_GEOXML_PARAMETER_TYPE_STRING,
-					   var_value, NULL);
-			g_free (var_value);
-			g_free (label);
-			break;
-		}
-		case GEBR_GEOXML_PARAMETER_TYPE_STRING: {
-			gchar *bash_var;
-			gchar *result = NULL;
-			prog_param = GEBR_GEOXML_PROGRAM_PARAMETER (seq);
+				var_value = g_strdup_printf("${V[[%"G_GSIZE_FORMAT"]]}", j++);
+				gebr_geoxml_parameter_set_type(param, GEBR_GEOXML_PARAMETER_TYPE_STRING);
+				gebr_validator_change_value(gebrd_get_validator(gebrd), param, var_value, NULL, NULL);
+				g_free (var_value);
+				g_free (label);
+				break;
+			}
 
-			g_assert(gebrd->validator != NULL);
-			gebr_validator_insert(gebrd->validator,
-					      GEBR_GEOXML_PARAMETER(prog_param),
-					      NULL,
-					      &error);
+			case GEBR_GEOXML_PARAMETER_TYPE_STRING: {
+				GebrGeoXmlDocumentType scope;
+				gchar *bash_var;
+				gchar *result = NULL;
+				prog_param = GEBR_GEOXML_PROGRAM_PARAMETER (seq);
+				param = GEBR_GEOXML_PARAMETER(seq);
 
-			value = gebr_geoxml_program_parameter_get_first_value (prog_param, FALSE);
-			keyword = gebr_geoxml_program_parameter_get_keyword (prog_param);
-			gebr_string_expr_eval(job->str_expr, value, &result, NULL);
-			bash_var = g_strdup_printf("${%s}", keyword);
-			gebr_iexpr_set_var(GEBR_IEXPR(job->str_expr), keyword,
-					   GEBR_GEOXML_PARAMETER_TYPE_STRING,
-					   bash_var, NULL);
-			g_string_append_printf(str_buf, "\t%s=\"%s\"\n", keyword, result);
-			g_free(bash_var);
-			g_free(result);
-			break;
-		}
-		default:
-			continue;
+				value = gebr_geoxml_program_parameter_get_first_value (prog_param, FALSE);
+				keyword = gebr_geoxml_program_parameter_get_keyword (prog_param);
+				scope = gebr_geoxml_parameter_get_scope(param);
+				gebr_validator_evaluate_interval(gebrd_get_validator(gebrd), value, GEBR_GEOXML_PARAMETER_TYPE_STRING, scope, FALSE, &result, NULL);
+				bash_var = g_strdup_printf("${%s}", keyword);
+				gebr_validator_change_value(gebrd_get_validator(gebrd), param, bash_var, NULL, NULL);
+				g_string_append_printf(str_buf, "\t%s=\"%s\"\n", keyword, result);
+				g_free(bash_var);
+				g_free(result);
+				break;
+			}
+			default:
+				continue;
+			}
 		}
 	}
 
 	*n_vars = j;
+
+	return result;
 }
 
 /*
  * assemble_bc_cmd_line:
  */
-static void assemble_bc_cmd_line (GString *expr_buf,
-				  const gchar *ini,
-				  const gchar *step)
+static void assemble_bc_cmd_line (GString *expr_buf)
 {
-	gboolean is_loop;
-
 	// If there are no expressions, don't bother creating the command line!
 	if (expr_buf->len == 0)
 		return;
 
-	is_loop = ini && step;
-
 	 g_string_prepend(expr_buf,
+			  "\tV=($(echo 'scale=5\n"
 	                  "\t\tdefine min(a,b){ if(a<b) {return a;} else {return b;}}\n"
 	                  "\t\tdefine max(a,b){ if(a>b) {return a;} else {return b;}}\n"
 	                  "\t\tdefine round(x){ auto s; s = scale; if(x>0) x+=0.5 else x-=0.5; scale = 0; x/=1; scale = s; return (x);}\n");
-
-	// Initiate `iter' variable if we have ini and step
-	if (is_loop) {
-		gchar *header;
-		header = g_strdup_printf("\tV=($(echo \"iter=%s+%s*$counter\"'\n", ini, step);
-		g_string_prepend (expr_buf, header);
-		g_free(header);
-	} else
-		g_string_prepend (expr_buf, "\tV=($(echo '\n");
 
 	// Pipe into bc
 	g_string_append (expr_buf, "\t' | bc -l ))\n");
@@ -1109,11 +1087,8 @@ static void assemble_bc_cmd_line (GString *expr_buf,
 
 gboolean gebr_output_use_var_iter(GebrdJob *job, const gchar *output_expr)
 {
-	g_assert(gebrd->validator != NULL);
-	return gebr_validator_expression_check_using_var(gebrd->validator,
-					      output_expr,
-					      GEBR_GEOXML_DOCUMENT_TYPE_FLOW,
-					      "iter");
+	return gebr_validator_use_iter(gebrd_get_validator(gebrd), output_expr,
+	                               GEBR_GEOXML_PARAMETER_TYPE_STRING, GEBR_GEOXML_DOCUMENT_TYPE_FLOW);
 }
 
 static void job_assembly_cmdline(GebrdJob *job)
@@ -1125,13 +1100,11 @@ static void job_assembly_cmdline(GebrdJob *job)
 	GebrdMpiInterface *mpi;
 	gulong nprog;
 	gboolean has_control = FALSE;
-	guint counter = 0;
-	gchar *step, *ini;
+	gchar *n;
 	GString *expr_buf = g_string_new("");
 	GString *str_buf = g_string_new("");
 
 	job->expr_count = 0;
-	job->str_expr = gebr_string_expr_new();
 
 	if (job->flow == NULL) 
 		goto err;
@@ -1158,10 +1131,8 @@ static void job_assembly_cmdline(GebrdJob *job)
 		goto err;
 	}
 
-	if (gebr_geoxml_program_get_control(GEBR_GEOXML_PROGRAM(program)) != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY &&
-	    gebr_geoxml_program_get_control(GEBR_GEOXML_PROGRAM(program)) != GEBR_GEOXML_PROGRAM_CONTROL_UNKNOWN){
+	if (gebr_geoxml_program_get_control(GEBR_GEOXML_PROGRAM(program)) == GEBR_GEOXML_PROGRAM_CONTROL_FOR) {
 		has_control = TRUE;
-		counter = gebr_geoxml_program_control_get_n(GEBR_GEOXML_PROGRAM(program), &step, &ini);
 		/* Check if there is configured programs */
 		gebr_geoxml_sequence_next(&program);
 		while (program != NULL &&
@@ -1174,44 +1145,6 @@ static void job_assembly_cmdline(GebrdJob *job)
 
 		if (program == NULL) {
 			job_issue(job, _("No configured programs.\n"));
-			goto err;
-		}
-
-	}
-
-	/*
-	 * First program
-	 */
-	/* Start without stdin */
-	if (gebr_geoxml_program_get_stdin(GEBR_GEOXML_PROGRAM(program))) {
-		if (strlen(gebr_geoxml_flow_io_get_input(job->flow)) == 0) {
-			job_issue(job, _("No input file selected.\n"));
-			goto err;
-		}
-
-		gchar *result;
-		const gchar *input_expr;
-		GError *error = NULL;
-
-		input_expr = gebr_geoxml_flow_io_get_input(job->flow);
-		gebr_string_expr_eval(job->str_expr, input_expr, &result, &error);
-
-		if (!error) {
-			gchar *escaped = escape_quote_and_slash(result);
-			g_string_append_printf(job->parent.cmd_line, "<\"%s\" ", escaped);
-			g_free(result);
-			g_free(escaped);
-		} else {
-			switch (error->code) {
-			case GEBR_IEXPR_ERROR_SYNTAX:
-			case GEBR_IEXPR_ERROR_INVAL_VAR:
-				job_issue(job, _("Syntax error in input file expression"));
-				break;
-			case GEBR_IEXPR_ERROR_UNDEF_VAR:
-				job_issue(job, _("Undefined variable in input file expression"));
-				break;
-			}
-			g_error_free(error);
 			goto err;
 		}
 	}
@@ -1238,10 +1171,48 @@ static void job_assembly_cmdline(GebrdJob *job)
 		g_free(mpicmd);
 	}
 
-	define_bc_variables(job, expr_buf, str_buf, &job->n_vars);
+	// define variables on bc, to use on stdin, stdout, stderr and expressions
+	n = define_bc_variables(job, expr_buf, str_buf, &job->n_vars, &issue_number);
 
 	if (job_add_program_parameters(job, GEBR_GEOXML_PROGRAM(program), expr_buf) == FALSE)
 		goto err;
+
+	/*
+	 * First program
+	 */
+	/* Start without stdin */
+	if (gebr_geoxml_program_get_stdin(GEBR_GEOXML_PROGRAM(program))) {
+		if (strlen(gebr_geoxml_flow_io_get_input(job->flow)) == 0) {
+			job_issue(job, _("No input file selected.\n"));
+			goto err;
+		}
+
+		gchar *result;
+		const gchar *input_expr;
+		GError *error = NULL;
+
+		input_expr = gebr_geoxml_flow_io_get_input(job->flow);
+		gebr_validator_evaluate_interval(gebrd_get_validator(gebrd), input_expr, GEBR_GEOXML_PARAMETER_TYPE_STRING, GEBR_GEOXML_DOCUMENT_TYPE_FLOW, FALSE, &result, &error);
+
+		if (!error) {
+			gchar *escaped = escape_quote_and_slash(result);
+			g_string_append_printf(job->parent.cmd_line, "<\"%s\" ", escaped);
+			g_free(result);
+			g_free(escaped);
+		} else {
+			switch (error->code) {
+			case GEBR_IEXPR_ERROR_SYNTAX:
+			case GEBR_IEXPR_ERROR_INVAL_VAR:
+				job_issue(job, _("Syntax error in input file expression"));
+				break;
+			case GEBR_IEXPR_ERROR_UNDEF_VAR:
+				job_issue(job, _("Undefined variable in input file expression"));
+				break;
+			}
+			g_error_free(error);
+			goto err;
+		}
+	}
 
 	/* These variables keep the parsed stdout and stderr */
 	gchar *stdout_parsed = NULL;
@@ -1255,7 +1226,7 @@ static void job_assembly_cmdline(GebrdJob *job)
 		const gchar *error_expr;
 
 		error_expr = gebr_geoxml_flow_io_get_error(job->flow);
-		gebr_string_expr_eval(job->str_expr, error_expr, &result, &error);
+		gebr_validator_evaluate_interval(gebrd_get_validator(gebrd), error_expr, GEBR_GEOXML_PARAMETER_TYPE_STRING, GEBR_GEOXML_DOCUMENT_TYPE_FLOW, FALSE, &result, &error);
 
 		if (!error) {
 			stderr_use_iter = gebr_output_use_var_iter(job, error_expr);
@@ -1297,10 +1268,8 @@ static void job_assembly_cmdline(GebrdJob *job)
 			continue;
 		}
 
-		if (gebr_geoxml_program_get_control(GEBR_GEOXML_PROGRAM(program)) != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY &&
-		    gebr_geoxml_program_get_control(GEBR_GEOXML_PROGRAM(program)) != GEBR_GEOXML_PROGRAM_CONTROL_UNKNOWN){
+		if (gebr_geoxml_program_get_control(GEBR_GEOXML_PROGRAM(program)) == GEBR_GEOXML_PROGRAM_CONTROL_FOR) {
 			has_control = TRUE;
-			counter = gebr_geoxml_program_control_get_n(GEBR_GEOXML_PROGRAM(program), &step, &ini);
 			gebr_geoxml_sequence_next(&program);
 			continue;
 		}
@@ -1377,7 +1346,7 @@ static void job_assembly_cmdline(GebrdJob *job)
 			GError *error = NULL;
 
 			output_expr = gebr_geoxml_flow_io_get_output(job->flow);
-			gebr_string_expr_eval(job->str_expr, output_expr, &result, &error);
+			gebr_validator_evaluate_interval(gebrd_get_validator(gebrd), output_expr, GEBR_GEOXML_PARAMETER_TYPE_STRING, GEBR_GEOXML_DOCUMENT_TYPE_FLOW, FALSE, &result, &error);
 			if (!error) {
 				stdout_use_iter = gebr_output_use_var_iter(job, output_expr);
 				stdout_parsed = escape_quote_and_slash(result);
@@ -1402,28 +1371,29 @@ static void job_assembly_cmdline(GebrdJob *job)
 			}
 		}
 	}
-	if (has_control) {
+	if (has_control && n) {
 		gchar *prefix, *remove;
-		assemble_bc_cmd_line (expr_buf, ini, step);
-		prefix = g_strdup_printf("for (( counter=0; counter<%d; counter++ ))\ndo\n%s\n%s",
-					 counter, expr_buf->str, str_buf->str);
+		assemble_bc_cmd_line (expr_buf);
+		prefix = g_strdup_printf("for (( counter=0; counter<%s; counter++ ))\ndo\n%s\n%s",
+		                         n, expr_buf->str, str_buf->str);
 		if(!gebr_geoxml_flow_io_get_output_append(job->flow) && !stdout_use_iter &&
-		   strlen(gebr_geoxml_flow_io_get_output(job->flow)) > 0 && previous_stdout) {
-			remove = g_strdup_printf("\n\ttest $counter -eq 0 && rm -f %s\n", stdout_parsed);
+				strlen(gebr_geoxml_flow_io_get_output(job->flow)) > 0 && previous_stdout) {
+			remove = g_strdup_printf("\n\ttest $counter -eq 0 && > %s\n", stdout_parsed);
 			g_string_prepend(job->parent.cmd_line, remove);
 			g_free(remove);
 		}
 		if(!gebr_geoxml_flow_io_get_error_append(job->flow) && !stderr_use_iter &&
-		   strlen(gebr_geoxml_flow_io_get_error(job->flow)) > 0) {
-			remove = g_strdup_printf("\n\ttest $counter -eq 0 && rm -f %s\n", stderr_parsed);
+				strlen(gebr_geoxml_flow_io_get_error(job->flow)) > 0) {
+			remove = g_strdup_printf("\n\ttest $counter -eq 0 && > %s\n", stderr_parsed);
 			g_string_prepend(job->parent.cmd_line, remove);
 			g_free(remove);
 		}
 		g_string_prepend(job->parent.cmd_line, prefix);
 		g_string_append(job->parent.cmd_line, "\ndone");
 		g_free(prefix);
+		g_free(n);
 	} else {
-		assemble_bc_cmd_line (expr_buf, NULL, NULL);
+		assemble_bc_cmd_line (expr_buf);
 		g_string_prepend(job->parent.cmd_line, str_buf->str);
 		g_string_prepend(job->parent.cmd_line, expr_buf->str);
 	}
@@ -1433,7 +1403,6 @@ static void job_assembly_cmdline(GebrdJob *job)
 	g_string_free(str_buf, TRUE);
 	return;
 err:	
-	g_object_unref(job->str_expr);
 	g_string_free(expr_buf, TRUE);
 	g_string_assign(job->parent.cmd_line, "");
 	job->critical_error = TRUE;

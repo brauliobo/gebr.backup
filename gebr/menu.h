@@ -61,6 +61,11 @@ void menu_list_populate(void);
  */
 gboolean menu_list_create_index(void);
 
+/*
+ *
+ */
+void demos_list_create(GtkMenu *menu);
+
 /**
  * Lists all system directories that GeBR looks for menus.
  * \return a vector of strings, terminated by NULL. You don't need to free this.

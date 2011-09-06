@@ -38,8 +38,6 @@
 
 static void flow_browse_load(void);
 
-static void change_selection_update_validator(void);
-
 static void flow_browse_on_row_activated(GtkTreeView * tree_view, GtkTreePath * path,
 					 GtkTreeViewColumn * column, GebrUiFlowBrowse *ui_flow_browse);
 static GtkMenu *flow_browse_popup_menu(GtkWidget * widget, GebrUiFlowBrowse *ui_flow_browse);
@@ -104,8 +102,6 @@ GebrUiFlowBrowse *flow_browse_setup_ui(GtkWidget * revisions_menu)
 			 ui_flow_browse);
 	g_signal_connect(gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_flow_browse->view)), "changed",
 			 G_CALLBACK(flow_browse_load), NULL);
-	g_signal_connect(gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_flow_browse->view)), "changed",
-			 G_CALLBACK(change_selection_update_validator), NULL);
 
 	renderer = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
@@ -329,7 +325,7 @@ void flow_browse_info_update(void)
 	markup = g_markup_printf_escaped("<b>%s</b>", _("Output:"));
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.output_label), markup);
 	g_free(markup);
-	markup = g_markup_printf_escaped("<b>%s</b>", _("Error log:"));
+	markup = g_markup_printf_escaped("<b>%s</b>", _("Log:"));
 	gtk_label_set_markup(GTK_LABEL(gebr.ui_flow_browse->info.error_label), markup);
 	g_free(markup);
 
@@ -421,11 +417,13 @@ void flow_browse_load_revision(GebrGeoXmlRevision * revision, gboolean new)
 	menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REVERT_TO_SAVED, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menu_item);
 	g_signal_connect(menu_item, "activate", G_CALLBACK(flow_browse_on_revision_revert_activate), revision);
+	gebr_geoxml_object_ref(revision);
 
 	menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menu_item);
 	g_object_set_data(G_OBJECT(menu_item), "menu-item-to-be-removed", menu_item_rev);
 	g_signal_connect(menu_item, "activate", G_CALLBACK(flow_browse_on_revision_delete_activate), revision);
+	gebr_geoxml_object_ref(revision);
 
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item_rev), submenu);
 	gtk_widget_show_all(submenu);
@@ -438,7 +436,7 @@ void flow_browse_load_revision(GebrGeoXmlRevision * revision, gboolean new)
 
 /**
  * \internal
- * Load a selected flow from file when selected in "Flow Browse".
+ * Load a selected flow from file when selected in "Flow Browser".
  */
 static void flow_browse_load(void)
 {
@@ -465,6 +463,9 @@ static void flow_browse_load(void)
 			   FB_XMLPOINTER, &gebr.flow,
 			   -1);
 
+	if (gebr.validator)
+		gebr_validator_update(gebr.validator);
+
 	/* free previous flow and load it */
 	gtk_widget_set_sensitive(gebr.ui_flow_edition->queue_combobox, TRUE);
 	gtk_widget_set_sensitive(gebr.ui_flow_edition->server_combobox, TRUE);
@@ -487,11 +488,6 @@ static void flow_browse_load(void)
 
 	g_free(filename);
 	g_free(title);
-}
-
-static void change_selection_update_validator(void)
-{
-	gebr_validator_update(gebr.validator);
 }
 
 /**
@@ -597,27 +593,31 @@ static GtkMenu *flow_browse_popup_menu(GtkWidget * widget, GebrUiFlowBrowse *ui_
  * \internal
  * Change flow to selected revision
  */
-static void flow_browse_on_revision_revert_activate(GtkMenuItem * menu_item, GebrGeoXmlRevision * revision)
+static void
+flow_browse_on_revision_revert_activate(GtkMenuItem *menu_item,
+					GebrGeoXmlRevision *revision)
 {
 	if (gebr_gui_confirm_action_dialog(_("Backup current state?"),
 					   _("You are about to revert to a previous state. "
 					     "The current Flow will be lost after this action. "
-					     "Do you want to save the current Flow's state?")) && !flow_revision_save())
-		return;
+					     "Do you want to save the current Flow's state?")))
+		if (!flow_revision_save())
+			return;
 
-	gchar *date;
-	gchar *comment;
+	gchar *date = NULL;
+	gchar *comment = NULL;
 	gboolean report_merged = FALSE;
 	GtkTreeIter iter;
 
 	gebr_geoxml_flow_get_revision_data(revision, NULL, &date, &comment);
 	if (!gebr_geoxml_flow_change_to_revision(gebr.flow, revision, &report_merged)) {
-		document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
+		document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, FALSE);
 		gebr_message(GEBR_LOG_ERROR, TRUE, FALSE, _("Could not revert to state '%s' ('%s')."), comment, date);
+		g_free(date);
+		g_free(comment);
 		return;
 	}
-
-	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
+	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, FALSE);
 
 	if (report_merged)
 		gebr_message(GEBR_LOG_INFO, TRUE, TRUE, _("Reverted to state '%s' ('%s'), and merged reports"), comment, date);
@@ -625,11 +625,14 @@ static void flow_browse_on_revision_revert_activate(GtkMenuItem * menu_item, Geb
 		gebr_message(GEBR_LOG_INFO, TRUE, TRUE, _("Reverted to state '%s' ('%s')."), comment, date);
 
 	flow_browse_load();
+	gebr_validator_force_update(gebr.validator);
 	flow_browse_get_selected(&iter, FALSE);
 	gtk_list_store_set(gebr.ui_flow_browse->store, &iter,
 			   FB_TITLE, gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(gebr.flow)), -1);
 	flow_browse_info_update();
 
+	g_free(date);
+	g_free(comment);
 }
 
 /**
@@ -643,7 +646,7 @@ static void flow_browse_on_revision_delete_activate(GtkWidget * widget, GebrGeoX
 						    "you will not be able to recover it later."));
 	if (response) {
 		gebr_geoxml_sequence_remove(GEBR_GEOXML_SEQUENCE(revision));
-		document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
+		document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, FALSE);
 		menu_item = g_object_get_data(G_OBJECT(widget), "menu-item-to-be-removed");
 		gtk_widget_destroy(GTK_WIDGET(menu_item));
 		flow_browse_info_update();

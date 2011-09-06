@@ -43,6 +43,7 @@ enum {
 	JC_QUEUE_NAME,
 	JC_TITLE,
 	JC_STRUCT, /* non-NULL if it is a job */
+	JC_VISIBLE,
 	JC_N_COLUMN
 };
 
@@ -67,19 +68,19 @@ struct ui_job_control *job_control_setup_ui(void);
 
 /**
  */
-void job_control_save(void);
+gboolean job_control_save(void);
 /**
  */
 void job_control_cancel(void);
 /**
  */
-void job_control_close(void);
+gboolean job_control_close(void);
 /**
  */
 void job_control_clear(gboolean force);
 /**
  */
-void job_control_stop(void);
+gboolean job_control_stop(void);
 
 /*
  */

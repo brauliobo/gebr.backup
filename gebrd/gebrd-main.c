@@ -15,6 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "gebrd-gettext.h"
+
 #include <locale.h>
 #ifdef ENABLE_NLS
 #include <glib/gi18n.h>
@@ -27,7 +33,6 @@
 #include <libgebr/gebr-version.h>
 
 #include "gebrd.h"
-#include "gebrd-defines.h"
 
 int main(int argc, char **argv)
 {
@@ -45,8 +50,8 @@ int main(int argc, char **argv)
 
 	g_type_init();
 
-	setlocale(LC_ALL, "");
 	gebr_libinit(GETTEXT_PACKAGE);
+	gebr_geoxml_init();
 
 	context = g_option_context_new(_("GeBR daemon"));
 	g_option_context_set_translation_domain(context, GETTEXT_PACKAGE);
@@ -73,6 +78,7 @@ int main(int argc, char **argv)
 
 	gebrd_config_load();
 	gebrd_init();
+	gebr_geoxml_finalize();
 
 	return 0;
 }

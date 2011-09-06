@@ -169,6 +169,11 @@ void on_help_contents_activate(void);
  */
 void on_help_about_activate (void);
 
+/*
+ *
+ */
+void import_demo(GtkWidget *menu_item, const gchar *path);
+
 void navigation_bar_update(void);
 
 void on_flow_browse_show_help(void);
@@ -209,6 +214,12 @@ void on_server_common_remove(void);
  * Send server command to kill daemon
  */
 void on_server_common_stop(void);
+
+/*
+ * Function: open_url_on_press_event
+ * Open url of gebrproject to install SU samples
+ */
+void open_url_on_press_event(void);
 
 G_END_DECLS
 #endif				//__CALLBACKS_H

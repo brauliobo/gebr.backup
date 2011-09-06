@@ -15,11 +15,16 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "../libgebr-gettext.h"
+
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
-#include <config.h>
 #include <glib/gi18n-lib.h>
 
 #include "gebr-gui-utils.h"
@@ -270,7 +275,9 @@ static gboolean gebr_gui_message_dialog_vararg(GtkMessageType type, GtkButtonsTy
 		gtk_window_set_title(GTK_WINDOW(dialog), title);
 
 	gchar *string = g_strdup_vprintf(message, args);
-	gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", string);
+	gchar *escaped = g_markup_printf_escaped("%s",string);
+	gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", escaped);
+	g_free(escaped);
 	g_free(string);
 
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1027,7 +1034,7 @@ gtk_tree_view_reorder_callback(GtkTreeView * tree_view, GtkTreeIter * iter, GtkT
 	if (drop_position == GTK_TREE_VIEW_DROP_AFTER) {
 		gebr_geoxml_sequence_move_after(sequence, position_sequence);
 		gtk_list_store_move_after(GTK_LIST_STORE(tree_model), iter, position);
-
+		gebr_geoxml_object_ref(position_sequence);
 		gebr_geoxml_sequence_next(&position_sequence);
 	} else {
 		gebr_geoxml_sequence_move_before(sequence, position_sequence);

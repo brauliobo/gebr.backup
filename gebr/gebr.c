@@ -74,6 +74,9 @@ void gebr_init(void)
 	gebr.program = NULL;
 	gebr.flow_clipboard = NULL;
 
+	gebr.current_report.report_wind = NULL;
+	gebr.current_report.report_group = NULL;
+
 	/* check/create config dir */
 	if (gebr_create_config_dirs() == FALSE) {
 		fprintf(stderr, _("Unable to create GêBR configuration files.\n"
@@ -157,10 +160,12 @@ gboolean gebr_quit(gboolean save_config)
 	g_hash_table_destroy(gebr.xmls_by_filename);
 
 	gebr_validator_free(gebr.validator);
+	gebr.validator = NULL;
 
 	/*
 	 * Data frees and cleanups
 	 */
+	gtk_tree_view_set_model(GTK_TREE_VIEW(gebr.ui_flow_browse->view), NULL);
 	flow_free();
 	project_line_free();
 

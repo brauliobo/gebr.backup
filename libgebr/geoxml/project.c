@@ -15,10 +15,13 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <string.h>
 #include <gdome.h>
 
-#include "defines.h"
 #include "document.h"
 #include "document_p.h"
 #include "error.h"
@@ -85,14 +88,16 @@ gboolean gebr_geoxml_project_has_line(GebrGeoXmlProject * project, const gchar *
 
 int gebr_geoxml_project_get_line(GebrGeoXmlProject * project, GebrGeoXmlSequence ** project_line, gulong index)
 {
+	GdomeElement *root;
+
 	if (project == NULL) {
 		*project_line = NULL;
 		return GEBR_GEOXML_RETV_NULL_PTR;
 	}
 
-	*project_line = (GebrGeoXmlSequence *)
-	    __gebr_geoxml_get_element_at(gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(project)), "line", index,
-					 FALSE);
+	root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOC(project));
+	*project_line = (GebrGeoXmlSequence *) __gebr_geoxml_get_element_at(root, "line", index, FALSE);
+	gdome_el_unref(root, &exception);
 
 	return (*project_line == NULL)
 	    ? GEBR_GEOXML_RETV_INVALID_INDEX : GEBR_GEOXML_RETV_SUCCESS;
