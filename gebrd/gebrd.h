@@ -77,7 +77,9 @@ struct _GebrdApp {
 	/**
 	 * Validator for flow variables
 	 */
-	GebrGeoXmlFlow *flow;
+	GebrGeoXmlDocument *flow;
+	GebrGeoXmlDocument *line;
+	GebrGeoXmlDocument *proj;
 	GebrValidator *validator;
 };
 struct _GebrdAppClass {
@@ -129,6 +131,20 @@ void gebrd_user_data_save(void);
  * TODO
  */
 const GebrdMpiConfig * gebrd_get_mpi_config_by_name(const gchar * name);
+
+/**
+ * gebrd_clean_proj_line_dicts:
+ *
+ * Clean the dictionary variables from #gebrd.line and #gebrd.proj
+ */
+void gebrd_clean_proj_line_dicts(void);
+
+/*
+ *  gebrd_get_validator:
+ *
+ *  Get validator to gebrd if self->validator != NULL
+ */
+GebrValidator *gebrd_get_validator(GebrdApp *self);
 
 G_END_DECLS
 #endif				//__GEBRD_H

@@ -15,14 +15,17 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "debr-gettext.h"
+
 #include <locale.h>
-
 #include <gtk/gtk.h>
-
 #include <libgebr/gui/gebr-gui-icons.h>
 #include <libgebr/libgebr.h>
 
-#include "debr-defines.h"
 #include "debr-interface.h"
 #include "debr.h"
 
@@ -31,16 +34,16 @@ int main(int argc, char *argv[])
 	g_type_init();
 	g_thread_init(NULL);
 
-	setlocale(LC_ALL, "");
-	setlocale(LC_NUMERIC, "C");
 	gebr_libinit(GETTEXT_PACKAGE);
+	gebr_geoxml_init();
 
 	gtk_init(&argc, &argv);
 
 	gebr_gui_setup_icons();
-	gebr_gui_setup_theme();
 	debr_setup_ui();
 	gtk_main();
+
+	gebr_geoxml_finalize();
 
 	return 0;
 }

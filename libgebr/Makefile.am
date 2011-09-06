@@ -52,7 +52,6 @@ libgebr_la_SOURCES = 		\
 	gebr-arith-expr.c	\
 	gebr-expr.c		\
 	gebr-iexpr.c		\
-	gebr-string-expr.c	\
 	gebr-tar.c		\
 	gebr-validator.c	\
 	gebr-version.c		\
@@ -66,11 +65,9 @@ libgebr_la_SOURCES = 		\
 libgebrincludedir = $(includedir)/libgebr
 libgebrinclude_HEADERS =	\
 	date.h			\
-	defines.h		\
 	gebr-arith-expr.h	\
 	gebr-expr.h		\
 	gebr-iexpr.h		\
-	gebr-string-expr.h	\
 	gebr-tar.h		\
 	gebr-validator.h	\
 	gebr-version.h		\
@@ -80,7 +77,7 @@ libgebrinclude_HEADERS =	\
 	validate.h		\
 	$(NULL)
 
-noinst_HEADERS = defines.h marshalers.h
+noinst_HEADERS = marshalers.h libgebr-gettext.h
 
 libgebr_la_LIBADD = -lutil $(GLIB_LIBS)
 libgebr_la_LDFLAGS = -version-info @GEBR_VERSION_INFO@
@@ -96,11 +93,8 @@ pkgconfig_DATA = gebr.pc
 EXTRA_DIST +=			\
 	${pkgconfig_DATA}	\
 	$(noinst_HEADERS)	\
-	config.h.in		\
 	marshalers.list		\
 	$(NULL)
-
-DISTCLEANFILES += config.h
 
 distcheck-hook: all
 

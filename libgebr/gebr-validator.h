@@ -109,48 +109,20 @@ gboolean gebr_validator_change_value(GebrValidator       *self,
  * @validator: A #GebrValidator
  * @source: The variable to operate on
  * @pivot: The pivot for the operation, or %NULL to append
+ * @pivot_scope: The scope of the pivot
  * @copy: The return location for the new parameter
  * @affected: The #GebrGeoXmlParameter's affected by this operation
  * @error: Return location for error
  *
  * Returns: %TRUE if the move was successfull, %FALSE otherwise.
  */
-gboolean gebr_validator_move(GebrValidator        *self,
-			     GebrGeoXmlParameter  *source,
-			     GebrGeoXmlParameter  *pivot,
-			     GebrGeoXmlParameter **copy,
-			     GList               **affected,
-			     GError              **error);
-
-/**
- * gebr_validator_check_using_var:
- * @validator: A #GebrValidator
- * @source: Variable which the function check if using @var
- * @var: The variable for check
- * @scope: The variable scope (GEBR_GEOXML_DOCUMENT_TYPE_FLOW | LINE | PROJECT)
- *
- * Returns: %TRUE if @source using @var (direct or indirect), %FALSE otherwise.
- */
-gboolean
-gebr_validator_check_using_var(GebrValidator *self,
-                               const gchar   *source,
-			       GebrGeoXmlDocumentType scope,
-                               const gchar   *var);
-/**
- * gebr_validator_expression_check_using_var:
- * @validator: A #GebrValidator
- * @expr: Variable which the function check if using @var
- * @var: The variable for check
- * @scope: The variable scope (GEBR_GEOXML_DOCUMENT_TYPE_FLOW | LINE | PROJECT)
- *
- * Important! This function works only for string variables.
- * Returns: %TRUE if @source using @var (direct or indirect), %FALSE otherwise.
- */
-gboolean
-gebr_validator_expression_check_using_var(GebrValidator *self,
-                                          const gchar   *expr,
-                                          GebrGeoXmlDocumentType scope,
-                                          const gchar   *var);
+gboolean gebr_validator_move(GebrValidator         *self,
+			     GebrGeoXmlParameter   *source,
+			     GebrGeoXmlParameter   *pivot,
+			     GebrGeoXmlDocumentType pivot_scope,
+			     GebrGeoXmlParameter  **copy,
+			     GList                **affected,
+			     GError               **error);
 
 /**
  * gebr_validator_validate_param:
@@ -170,6 +142,22 @@ gboolean gebr_validator_validate_param(GebrValidator       *validator,
 				       gchar              **validated,
 				       GError             **error);
 
+
+/**
+ * gebr_validator_validate_expr:
+ * @validator: A #GebrValidator
+ * @expression: The expression to be validated
+ * @type: The type of the @expression
+ * @scope: The scope to start validate
+ * @error: Returns location for the error, or %NULL
+ *
+ * Returns: %TRUE if @expression is valid, %FALSE otherwise.
+ */
+gboolean gebr_validator_validate_expr_on_scope(GebrValidator          *self,
+                                               const gchar            *str,
+                                               GebrGeoXmlParameterType type,
+                                               GebrGeoXmlDocumentType scope,
+                                               GError                **err);
 /**
  * gebr_validator_validate_expr:
  * @validator: A #GebrValidator
@@ -199,8 +187,18 @@ void gebr_validator_get_documents(GebrValidator       *validator,
 /**
  * gebr_validator_update:
  * @validator: The #GebrValidator to be updated
+ *
+ * Updates of all variables of the changed documents.
  */
 void gebr_validator_update(GebrValidator *validator);
+
+/**
+ * gebr_validator_force_update:
+ * @validator:
+ *
+ * Forces update of all variables, ignoring document cache.
+ */
+void gebr_validator_force_update(GebrValidator *validator);
 
 /**
  * gebr_validator_free:
@@ -209,10 +207,33 @@ void gebr_validator_update(GebrValidator *validator);
 void gebr_validator_free(GebrValidator *validator);
 
 /**
- * gebr_validator_evaluate:
+ * gebr_validator_evaluate_param:
  * @validator: The #GebrValidator to be used
  * @expr: The expression to be evaluated
  * @type: The type of expression (GEBR_GEOXML_PARAMETER_TYPE_STRING | GEBR_GEOXML_PARAMETER_TYPE_FLOAT)
+ * @scope: Scope to evaluate expression
+ * @show_interval: %TRUE if want to evaluate a interval ([1, ..., 10]), %FALSE otherwise
+ * @value: Returns the value of the expression.
+ * @error: Returns the error, if any.
+ *
+ * Calculate the value of @expr and return it at @value.
+ *
+ * Returns: %TRUE if @expr could be evaluated. %FALSE otherwise.
+ */
+gboolean gebr_validator_evaluate_interval(GebrValidator *self,
+                                          const gchar *expr,
+                                          GebrGeoXmlParameterType type,
+                                          GebrGeoXmlDocumentType scope,
+                                          gboolean show_interval,
+                                          gchar **value,
+                                          GError **error);
+
+/**
+ * gebr_validator_evaluate_param:
+ * @validator: The #GebrValidator to be used
+ * @expr: The expression to be evaluated
+ * @type: The type of expression (GEBR_GEOXML_PARAMETER_TYPE_STRING | GEBR_GEOXML_PARAMETER_TYPE_FLOAT)
+ * @scope: Scope to evaluate expression
  * @value: Returns the value of the expression.
  * @error: Returns the error, if any.
  *
@@ -221,11 +242,81 @@ void gebr_validator_free(GebrValidator *validator);
  * Returns: %TRUE if @expr could be evaluated. %FALSE otherwise.
  */
 gboolean gebr_validator_evaluate(GebrValidator *self,
-                                 GebrGeoXmlParameter *myparam,
                                  const gchar * expr,
                                  GebrGeoXmlParameterType type,
+                                 GebrGeoXmlDocumentType scope,
                                  gchar **value,
                                  GError **error);
+/**
+ * gebr_validator_evaluate_param:
+ * @validator: The #GebrValidator to be used
+ * @myparam: The parameter to evaluate
+ * @value: Returns the value of the expression.
+ * @error: Returns the error, if any.
+ *
+ * Calculate the value of @expr and return it at @value.
+ *
+ * Returns: %TRUE if @expr could be evaluated. %FALSE otherwise.
+ */
+gboolean gebr_validator_evaluate_param(GebrValidator *self,
+                                       GebrGeoXmlParameter *myparam,
+                                       gchar **value,
+                                       GError **error);
+
+/**
+ * gebr_validator_is_var_in_scope:
+ * @validator:
+ * @name:
+ * @scope:
+ *
+ * Returns: %TRUE if @name exists in @scope, %FALSE otherwise
+ */
+gboolean gebr_validator_is_var_in_scope(GebrValidator *self,
+					const gchar *name,
+					GebrGeoXmlDocumentType scope);
+/**
+ * gebr_validator_set_document:
+ * @validator:
+ * @doc:
+ * @type:
+ * @force:
+ *
+ * Set on validator, a new @doc
+ *
+ */
+void gebr_validator_set_document(GebrValidator *self,
+				 GebrGeoXmlDocument **doc,
+				 GebrGeoXmlDocumentType type,
+				 gboolean force);
+
+/**
+ * gebr_validator_use_iter:
+ * @self:
+ * @expr:
+ * @type:
+ * @scope:
+ *
+ * Returns:
+ */
+gboolean gebr_validator_use_iter(GebrValidator *self,
+				 const gchar *expr,
+				 GebrGeoXmlParameterType type,
+				 GebrGeoXmlDocumentType scope);
+
+/**
+ * gebr_validator_validate_control_parameter:
+ * @self: @GebrValidator to validate parameter
+ * @name:
+ * @expression:
+ * @error: @GError to set if has error
+ *
+ * Return %FALSE if parameter have error, %FALSE otherwise
+ */
+gboolean
+gebr_validator_validate_control_parameter(GebrValidator *self,
+                                          const gchar *name,
+                                          const gchar *expression,
+                                          GError **error);
 
 G_END_DECLS
 

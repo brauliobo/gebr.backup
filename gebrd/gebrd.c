@@ -65,10 +65,9 @@ static void gebrd_app_init(GebrdApp * self)
 	gethostname(self->hostname, 255);
 	g_random_set_seed((guint32) time(NULL));
 	self->flow = NULL;
-	self->validator = gebr_validator_new((GebrGeoXmlDocument**)&self->flow,
-					      NULL,
-					      NULL);
-	g_assert(self->validator != NULL);
+	self->line = NULL;
+	self->proj = NULL;
+	self->validator = NULL;
 }
 static void gebrd_app_finalize(GObject * object)
 {
@@ -80,7 +79,12 @@ static void gebrd_app_finalize(GObject * object)
 	/* client */
 	g_list_foreach(self->clients, (GFunc) client_free, NULL);
 	g_list_free(self->clients);
-	gebr_validator_free(self->validator);
+	if (self->validator)
+		gebr_validator_free(self->validator);
+
+	gebr_geoxml_document_free(gebrd->flow);
+	gebr_geoxml_document_free(gebrd->line);
+	gebr_geoxml_document_free(gebrd->proj);
 
 	G_OBJECT_CLASS(gebrd_app_parent_class)->finalize(object);
 }
@@ -370,4 +374,21 @@ const GebrdMpiConfig * gebrd_get_mpi_config_by_name(const gchar * name)
 		if (g_strcmp0(((GebrdMpiConfig*)iter->data)->name->str, name) == 0)
 			return (GebrdMpiConfig*)iter->data;
 	return NULL;
+}
+
+void
+gebrd_clean_proj_line_dicts(void)
+{
+	gebr_geoxml_document_free(gebrd->line);
+	gebr_geoxml_document_free(gebrd->proj);
+	gebrd->line = GEBR_GEOXML_DOCUMENT(gebr_geoxml_line_new());
+	gebrd->proj = GEBR_GEOXML_DOCUMENT(gebr_geoxml_project_new());
+}
+
+GebrValidator *gebrd_get_validator(GebrdApp *self)
+{
+	if (!self->validator)
+		self->validator = gebr_validator_new(&self->flow, &self->line, &self->proj);
+
+	return self->validator;
 }

@@ -30,11 +30,8 @@ test_gebr_expr_SOURCES = test-gebr-expr.c
 TEST_PROGS += test-gebr-arith-expr
 test_gebr_arith_expr_SOURCES = test-gebr-arith-expr.c
 
-TEST_PROGS += test-gebr-string-expr
-test_gebr_string_expr_SOURCES = test-gebr-string-expr.c
-
 TEST_PROGS += test-gebr-validator
 test_gebr_validator_SOURCES = test-gebr-validator.c
 
-EXTRA_DIST = tar-test.tar.gz
-CLEANFILES = tar-create-test.tar.gz
+EXTRA_DIST = tar-test.tar.gz forloop.mnu
+DISTCLEANFILES = tar-create-test.tar.gz forloop.mnu

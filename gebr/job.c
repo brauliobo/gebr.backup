@@ -99,13 +99,14 @@ static GebrJob *job_new(GebrServer *server, GString * title, GString *queue)
 	GtkTreeIter queue_jc_iter = job_add_jc_queue_iter(job);
 	/* Add job on the job control list */
 	GtkTreeIter iter;
-	gtk_tree_store_append(gebr.ui_job_control->store, &iter, &queue_jc_iter); 
+	gtk_tree_store_append(gebr.ui_job_control->store, &iter, &queue_jc_iter);
 	gtk_tree_store_set(gebr.ui_job_control->store, &iter,
 			   JC_SERVER_ADDRESS, job->server->comm->address->str,
 			   JC_QUEUE_NAME, job->parent.queue_id->str,
 			   JC_TITLE, job->parent.title->str,
 			   JC_STRUCT, job,
 			   JC_IS_JOB, TRUE,
+			   JC_VISIBLE, TRUE,
 			   -1);
 	job->iter = iter;
 	/* Add queue on the server queue list model (only if server is regular) */
@@ -186,12 +187,49 @@ GebrJob *job_new_from_jid(GebrServer *server, GString * jid, GString * _status, 
 void job_free(GebrJob *job)
 {
 	/* UI */
-	if (gtk_tree_store_remove(gebr.ui_job_control->store, &job->iter))
-		gebr_gui_gtk_tree_view_select_iter(GTK_TREE_VIEW(gebr.ui_job_control->view), &job->iter);
-	else {
+	GtkTreeIter parent;
+	gchar *i_name;
+
+	gtk_tree_model_iter_parent(GTK_TREE_MODEL(gebr.ui_job_control->store), &parent, &job->iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_job_control->store), &parent,
+	                   JC_QUEUE_NAME, &i_name, -1);
+	if (gtk_tree_store_remove(gebr.ui_job_control->store, &job->iter)) {
+		GtkTreeIter iter;
+		GtkTreeModelFilter *filter;
+		filter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model(GTK_TREE_VIEW(gebr.ui_job_control->view)));
+		gtk_tree_model_filter_convert_child_iter_to_iter(filter, &iter, &job->iter);
+		gebr_gui_gtk_tree_view_select_iter(GTK_TREE_VIEW(gebr.ui_job_control->view), &iter);
+	} else {
 		gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, "", -1);
 		gtk_label_set_text(GTK_LABEL(gebr.ui_job_control->label), "");
+
+		if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gebr.ui_job_control->store), &parent) == 0 && g_strcmp0(i_name,"j") != 0) {
+			GtkTreeModel *model;
+			GtkTreeIter queue_iter;
+			gboolean valid;
+			gchar *queue_id;
+
+			model = gtk_combo_box_get_model(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox));
+
+			if (!model)
+				valid = FALSE;
+			else
+				valid = gtk_tree_model_get_iter_first(model, &queue_iter);
+
+			while (valid) {
+				gtk_tree_model_get(model, &queue_iter,
+				                   SERVER_QUEUE_ID, &queue_id, -1);
+				if (g_strcmp0(i_name, queue_id) == 0) {
+					gtk_list_store_remove(GTK_LIST_STORE(model), &queue_iter);
+					break;
+				}
+				valid = gtk_tree_model_iter_next(model, &queue_iter);
+				g_free(queue_id);
+			}
+			gtk_combo_box_set_active(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), 0);
+		}
 	}
+	g_free(i_name);
 	g_object_unref(job);
 }
 
@@ -244,13 +282,21 @@ void job_close(GebrJob *job, gboolean force, gboolean verbose)
 
 void job_set_active(GebrJob *job)
 {
- 	gebr_gui_gtk_tree_view_select_iter(GTK_TREE_VIEW(gebr.ui_job_control->view), &job->iter);
+	GtkTreeIter iter;
+	GtkTreeModelFilter *filter;
+	filter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model(GTK_TREE_VIEW(gebr.ui_job_control->view)));
+	gtk_tree_model_filter_convert_child_iter_to_iter(filter, &iter, &job->iter);
+ 	gebr_gui_gtk_tree_view_select_iter(GTK_TREE_VIEW(gebr.ui_job_control->view), &iter);
 }
 
 gboolean job_is_active(GebrJob *job)
 {
+	GtkTreeIter iter;
+	GtkTreeModelFilter *filter;
+	filter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model(GTK_TREE_VIEW(gebr.ui_job_control->view)));
+	gtk_tree_model_filter_convert_child_iter_to_iter(filter, &iter, &job->iter);
 	return gtk_tree_selection_iter_is_selected(gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_job_control->view)),
-						   &job->iter);
+						   &iter);
 }
 
 void job_append_output(GebrJob *job, GString * output)
@@ -309,7 +355,9 @@ void job_update_label(GebrJob *job)
 			if (job->parent.finish_date->len) {
 				g_string_append(label, _(" - "));
 				g_string_append(label, gebr_localized_date(job->parent.finish_date->str));
-			} else
+			} else if(job->parent.status == JOB_STATUS_FAILED)
+				g_string_append(label, _(" (Failed)"));
+			else
 				g_string_append(label, _(" (running)"));
 		}
 		g_string_append(label, _("."));
@@ -390,7 +438,6 @@ void job_status_show(GebrJob *job)
 void job_load_details(GebrJob *job)
 {
 	job_status_show(job);
-	gtk_label_set_text(GTK_LABEL(gebr.ui_job_control->label), "");
 	gtk_text_buffer_set_text(gebr.ui_job_control->text_buffer, "", 0);
 	if (job == NULL)
 		return;
@@ -518,14 +565,19 @@ void job_status_update(GebrJob *job, enum JobStatus status, const gchar *paramet
 		/* We suppose the requeue always happen to a true queue */
 		if (job->parent.status == JOB_STATUS_RUNNING) {
 			const gchar *queue_title = job->server->type == GEBR_COMM_SERVER_TYPE_REGULAR 
-				? job->parent.queue_id->str+1 /* jump q identifier */ : job->parent.queue_id->str;
-			GString *string = g_string_new(NULL);
-			g_string_printf(string, _("After '%s' at '%s'"), job->parent.title->str, queue_title);
-			gtk_list_store_set(job->server->queues_model, &queue_iter, 
-					   SERVER_QUEUE_TITLE, string->str,
-					   SERVER_QUEUE_ID, job->parent.queue_id->str, 
-					   SERVER_QUEUE_LAST_RUNNING_JOB, job, -1);
-			g_string_free(string, TRUE);
+						   ? job->parent.queue_id->str+1 /* jump q identifier */ : job->parent.queue_id->str;
+			if (job->parent.queue_id->str[0] != 'q') {
+				GString *string = g_string_new(NULL);
+				g_string_printf(string, _("After '%s' at '%s'"), job->parent.title->str, queue_title);
+				gtk_list_store_set(job->server->queues_model, &queue_iter,
+				                   SERVER_QUEUE_TITLE, string->str,
+				                   SERVER_QUEUE_ID, job->parent.queue_id->str,
+				                   SERVER_QUEUE_LAST_RUNNING_JOB, job, -1);
+				g_string_free(string, TRUE);
+			} else {
+				gtk_list_store_remove(job->server->queues_model, &queue_iter);
+				gtk_combo_box_set_active(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), 0);
+			}
 		}
 
 		if (was_selected)
@@ -580,7 +632,8 @@ void job_status_update(GebrJob *job, enum JobStatus status, const gchar *paramet
 		} else {
 			const gchar *queue_title = job->server->type == GEBR_COMM_SERVER_TYPE_REGULAR 
 				? job->parent.queue_id->str+1 /* jump q identifier */ : job->parent.queue_id->str;
-			g_string_printf(string, _("After '%s' at '%s'"), job->parent.title->str, queue_title);
+			if (job->parent.queue_id->str[0] != 'q')
+				g_string_printf(string, _("After '%s' at '%s'"), job->parent.title->str, queue_title);
 		}
 		if (!queue_exists)
 			gtk_list_store_append(job->server->queues_model, &queue_iter);

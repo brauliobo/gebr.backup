@@ -24,7 +24,7 @@
     </section>
     <section>
       <title>Informações técnicas</title>
-      <para>Este guia refere-se à <emphasis role="bold">versão 0.12.0</emphasis> da GêBR. As telas usadas no guia foram
+      <para>Este guia refere-se à <emphasis role="bold">versão 0.14.0</emphasis> da GêBR. As telas usadas no guia foram
 	capturadas em um sistema <emphasis role="bold">Ubuntu 10.04</emphasis>. Por isso, podem apresentar pequenas
 	diferenças em relação a outros sistemas operacionais. Para obter instruções de instalação específicas para cada
 	sistema, leia o <emphasis><link xlink:href="http://www.gebrproject.com/install-guide">guia de
@@ -239,6 +239,9 @@
           <para>Import/Export</para>
         </listitem>
         <listitem>
+          <para>Loops</para>
+        </listitem>
+        <listitem>
           <para>Migration and Dip Moveout</para>
         </listitem>
         <listitem>
@@ -263,16 +266,16 @@
         </step>
         <step>
           <para>Selecione a aba <guilabel>Fluxos</guilabel> e, em seguida, clique no
-                  botão <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/botao_criar_fluxo.png"/></imageobject></inlinemediaobject></guiicon>.</para>
+            botão <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/botao_criar_fluxo.png"/></imageobject></inlinemediaobject></guiicon>.</para>
         </step>
         <step>
           <para>Na janela <guilabel>Propriedade para Fluxo</guilabel>, digite um <emphasis>título</emphasis> para o
           fluxo (por exemplo, <userinput>Meu primeiro fluxo</userinput>). Se desejar, digite também uma
           breve <emphasis>descrição</emphasis> do fluxo, o <emphasis>autor</emphasis> e um <emphasis>e-mail</emphasis>
-          para contato. Feito isso, clique<guibutton>OK</guibutton>.</para>
+          para contato. Feito isso, clique <guibutton>OK</guibutton>.</para>
         </step>
         <step>
-          <para>Selecione a aba <guilabel>Editor de Fluxo</guilabel>. Em seguida, expanda a categoria
+          <para>A aba <guilabel>Editor de Fluxo</guilabel> será mostrada. Em seguida, expanda a categoria
             <guimenu>Graphics</guimenu> e dê um clique duplo no menu <guimenuitem>SU Simple X
             Image</guimenuitem>. Fazendo isso você adiciona este menu ao seu fluxo (note que o programa
             <guimenuitem>SU Simple X Image</guimenuitem> agora aparece na caixa <guilabel>Sequência de fluxo</guilabel>,
@@ -389,7 +392,7 @@
       </listitem>
       <listitem>
         <para>
-          <link linkend="sec_3_1_5">Editar o dicionário de parâmetros do projeto ou linha</link>
+          <link linkend="sec_3_1_5">Editar o dicionário de variáveis do projeto ou linha</link>
         </para>
       </listitem>
       <listitem>
@@ -443,9 +446,9 @@
           <guilabel>Detalhes</guilabel>, localizada no lado direito da janela principal, exibe informações sobre a linha
           selecionada.</para>
       <tip>
-        <para>A GêBR permite <emphasis role="bold">colapsar</emphasis> ou <emphasis role="bold">expandir</emphasis> o
-          projeto. No estado colapsado, as <emphasis role="bold">linhas do projeto ficam ocultas</emphasis>. No estado
-          expandido, as <emphasis role="bold">linhas do projeto ficam visíveis</emphasis>. Para colapsar, clique no
+        <para>A GêBR permite <emphasis role="bold">contrair</emphasis> ou <emphasis role="bold">expandir</emphasis> o
+          projeto. No estado contraído, as <emphasis role="bold">linhas do projeto ficam ocultas</emphasis>. No estado
+          expandido, as <emphasis role="bold">linhas do projeto ficam visíveis</emphasis>. Para contrair, clique no
           ícone <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_expandido.png"/></imageobject></inlinemediaobject></guiicon> à esquerda do nome do projeto. Para expandir, clique no
           ícone <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_colapsado.png"/></imageobject></inlinemediaobject></guiicon>.</para>
       </tip>
@@ -474,8 +477,8 @@
         personalizados, cujo detalhamento será abordado na <xref linkend="editar_caminhos_preferenciais_da_linha"/>.</para>
     </section>
     <section xml:id="sec_3_1_5">
-      <title>Editar o dicionário de parâmetros do projeto ou linha</title>
-      <para>Este recurso está documentado na <xref linkend="dicionario_de_parametros"/>.</para>
+      <title>Editar o dicionário de variáveis do projeto ou linha</title>
+      <para>Este recurso está documentado na <xref linkend="variaveis_dicionario"/>.</para>
     </section>
     <section xml:id="editar_caminhos_preferenciais_da_linha">
       <title>Editar caminhos preferenciais da linha</title>
@@ -802,8 +805,8 @@
           <guilabel>Título, Descrição, Autor e Email</guilabel>.</para>
     </section>
     <section xml:id="sec_3_2_6">
-      <title>Editar o dicionário de parâmetros de um fluxo</title>
-      <para>Este recurso está documentado na <xref linkend="dicionario_de_parametros"/>.</para>
+      <title>Editar o dicionário de variáveis de um fluxo</title>
+      <para>Este recurso está documentado na <xref linkend="variaveis_dicionario"/>.</para>
     </section>
     <section xml:id="sec_3_2_7">
       <title>Salvar o estado de um fluxo</title>
@@ -951,7 +954,7 @@
 	isso é feito na aba
 	<guilabel>Editor de Fluxo</guilabel>.</para>
     <para>Na <xref linkend="criando_fluxos"/> vimos que os menus padrão da
-      GêBR são separados em doze categorias, listadas na caixa <guilabel>Menu</guilabel>, no lado direito da janela
+      GêBR são separados em treze categorias, listadas na caixa <guilabel>Menu</guilabel>, no lado direito da janela
       principal:</para>
     <itemizedlist>
       <listitem>
@@ -975,6 +978,9 @@
       <listitem>
         <para>Import/Export</para>
       </listitem>
+	  <listitem>
+        <para>Loops</para>
+      </listitem>
       <listitem>
         <para>Migration and Dip Moveout</para>
       </listitem>
@@ -991,7 +997,7 @@
         <para>Utilities</para>
       </listitem>
     </itemizedlist>
-    <para>Por padrão, as categorias são mostradas na forma colapsada, ocultando os componentes. Para exibir os
+    <para>Por padrão, as categorias são mostradas na forma contraída, ocultando os componentes. Para exibir os
 	componentes de uma categoria, você deve expandí-la clicando no
   ícone <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_colapsado.png"/></imageobject></inlinemediaobject></guiicon> à esquerda da categoria.</para>
     <para>Para <emphasis role="bold">adicionar um programa</emphasis> ao fluxo, siga o seguinte procedimento:</para>
@@ -1230,6 +1236,29 @@
       <para>No momento em que o fluxo começa a ser executado, a GêBR alterna imediatamente para a aba
           <guilabel>Controle de tarefas</guilabel>, que mostra o relatório (<emphasis>log</emphasis>) da execução.</para>
     </section>
+    <section xml:id="loop">
+      <title>Programa Loop</title>
+      <para>O programa <emphasis>Loop</emphasis> (que pertence a categoria <emphasis role="bold">Loops</emphasis>) é tratado de uma maneira especial comparado aos outros programas da GêBR. Vamos ver a seguir
+      algumas destas diferenças.</para>
+      <para>Ao adicionarmos o programa Loop, nota-se que ele sempre aparece no topo do fluxo, isso ocorre para representar 
+      que aquele fluxo será executado repetidamente, de acordo com o preenchimento dos parâmetros do programa (visto na seção <xref linkend="editar_parametros_programa"/>).</para>
+        <mediaobject>
+          <caption>Na aba Editor de Fluxo, após o programa <emphasis>Loop</emphasis> ser adicionado e configurado.</caption>
+          <imageobject>
+            <imagedata fileref="../images/loop_adicionado.png"/>
+          </imageobject>
+        </mediaobject>
+      <para>Após o <emphasis>Loop</emphasis> ser adicionado, teremos acesso a uma nova variável, chamada <emphasis role="bold">iter</emphasis>, que tem seu valor alterado a cada iteração,
+      de acordo com o preenchimento de seus parâmetros.</para>
+      <mediaobject>
+          <caption>Janela de edição de parâmetros do programa <emphasis>Loop</emphasis>, com um exemplo simples do preenchimento.</caption>
+          <imageobject>
+            <imagedata fileref="../images/loop_parametros.png"/>
+          </imageobject>
+        </mediaobject>
+      <tip>Maiores informações sobre a variável <emphasis role="bold">iter</emphasis> estão disponíveis na seção <xref linkend="variavel_iter"/>.</tip>
+    </section>
+    
   </section>
   <section xml:id="controle_de_tarefas">
     <title>A aba 
@@ -1298,101 +1327,115 @@
                 com <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_tarefa_terminada_erro.png"/></imageobject></inlinemediaobject></guiicon>.</para>
     </section>
   </section>
-  <section xml:id="sec_4">
-    <title>Recursos adicionais</title>
-    <section xml:id="dicionario_de_parametros">
-      <title>O dicionário de parâmetros</title>
-      <para>O dicionário de parâmetros é uma novidade introduzida na <emphasis role="bold">versão 0.9.15 da
-	GêBR</emphasis>. É um recurso muito flexível, que pode ser utilizado de muitas formas diferentes e para diversos
-	fins, a critério do usuário. Vamos ilustrar com um exemplo:</para>
-      <procedure>
+  <section xml:id="variaveis_dicionario">
+    <title>Variáveis</title>
+    <section xml:id="janela_dicionario">
+      <title>O dicionário</title>
+      <para>O dicionário é um recurso muito flexível, que pode ser utilizado de formas diferentes e para diversos fins, e foi totalmente reformulado na 
+      <emphasis role="bold">versão 0.14 da GêBR</emphasis>.</para>
+	<para>Agora o dicionário, como os parâmetros de programa, aceita expressões, podendo assim definir variáveis mais complexas,
+	tornando-se uma ferramenta muito interessante na construção de fluxos. Durante esta seção vamos apresentar exemplos do uso de variáveis em um fluxo.</para>
+	<para>A seguir um exemplo simples de como definir uma variável no dicionário:</para>
+	 <procedure>
         <step>
-          <para>Crie um fluxo e insira nele um programa muito simples chamado 
-            <guimenuitem>Sleep</guimenuitem>, cuja única função é pausar a execução do fluxo por um determinado tempo
+        <para>Crie um fluxo e insira nele um programa muito simples chamado 
+            <guimenuitem>Echo</guimenuitem>, cuja única função é mostrar na saída o texto escrito
             (você encontra este programa na categoria 
             <guimenu>Shell tools</guimenu>, na aba 
             <guilabel>Editor de Fluxo</guilabel>).</para>
           <figure>
             <mediaobject>
-              <caption>Na aba Fluxos, acrescentamos "Fluxo 1" à "Minha linha" uso no próximo exemplo. </caption>
+              <caption>Na aba Fluxos, acrescentamos "Fluxo Exemplo" à "Linha teste 1", utilizado no próximo exemplo. </caption>
               <imageobject>
-                <imagedata fileref="../images/exemplo_dicionario_1.png"/>
+                <imagedata fileref="../images/exemplo_variaveis_1.png"/>
               </imageobject>
             </mediaobject>
           </figure>
           <figure>
             <mediaobject>
-              <caption>Na aba Editor de Fluxo, adiciona-se um programa chamado "Sleep" ao "Fluxo 1".</caption>
+              <caption>Na aba Editor de Fluxo, adiciona-se um programa chamado "Echo" ao "Fluxo Exemplo".</caption>
               <imageobject>
-                <imagedata fileref="../images/exemplo_dicionario_2.png"/>
+                <imagedata fileref="../images/exemplo_variaveis_2.png"/>
               </imageobject>
             </mediaobject>
           </figure>
         </step>
         <step>
-          <para>Na aba <guilabel>Projetos e Linhas</guilabel>, clique no
-                  botão <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/botao_dicionario_projeto.png"/></imageobject></inlinemediaobject></guiicon> para <emphasis role="bold">editar o dicionário de
-          parâmetros</emphasis>.</para>
+          <para>Na aba <guilabel>Editor de Fluxo</guilabel>, clique no
+                  botão <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/botao_dicionario_projeto.png"/></imageobject></inlinemediaobject></guiicon> 
+                  para <emphasis role="bold">editar o dicionário de variáveis</emphasis>.</para>
         </step>
         <step>
-          <para>Na janela que se abre (<guilabel>Dicionário de parâmetros para linha</guilabel>), clique duas vezes no
-          campo <guilabel>Novo</guilabel>, dentro da lista <guilabel>Projeto</guilabel>. Abre-se um menu com três opções
-          (<guimenuitem>inteiro</guimenuitem>, <guimenuitem>real</guimenuitem> e
-            <guimenuitem>string</guimenuitem>). Selecione a opção <guimenuitem>inteiro</guimenuitem>, depois digite
-            <userinput>Tempo</userinput> na coluna <guilabel>Palavra-chave</guilabel> e
-            <userinput>5</userinput> na coluna <guilabel>Valor</guilabel>. Ao terminar, sua janela deve se parecer com a
-            seguinte:</para>
+          <para>Na janela que se abre (<guilabel>Dicionário de variáveis para fluxo</guilabel>), clique em <emphasis>Nova</emphasis> no escopo de <emphasis role="bold">Fluxo</emphasis>.
+		  Preencha o campo <emphasis>Palavra-chave</emphasis> (este será o nome de sua variável) com <emphasis role="bold">var1</emphasis>. Em seguida, aperte enter para prosseguir para o próximo campo, o campo <emphasis>Valor</emphasis>. Antes de preenchê-lo, será 
+		  necessário escolher um tipo de dado para a sua variável recém criada (<guimenuitem>Número</guimenuitem> ou <guimenuitem>Texto</guimenuitem>), escolha <guimenuitem>Número</guimenuitem>. O cursor do mouse agora estará localizado no campo <emphasis>Valor</emphasis>, preencha esse campo com o número 
+		  <emphasis role="bold">10</emphasis> e pressione enter novamente.</para> O último campo é o campo <emphasis>Comentário</emphasis>. Preencha esse campo com algum comentário, descrevendo a função da sua variável recém criada. Lembrando que o comentário é opcional e pode ser deixado em branco.
+          <para>Ao terminar, sua janela deve se parecer com a seguinte:</para>
           <figure>
             <mediaobject>
               <caption>Na janela de parâmetros de dicionário para Fluxo, é possível editar parâmetros para este Fluxo, para sua Linha ou seu Projeto.</caption>
               <imageobject>
-                <imagedata fileref="../images/exemplo_dicionario_3.png"/>
+                <imagedata fileref="../images/exemplo_variaveis_3.png"/>
               </imageobject>
             </mediaobject>
           </figure>
+          <tip>Para entender melhor sobre a definição de variáveis, veja a seção <xref linkend="definindo_variaveis"/>.</tip>
+          <tip>Posicionando o mouse em cima do ícone do tipo da variável, podemos ver a expressão resolvida.</tip>
+          <tip>Podemos navegar entre os campos do dicionário utilizando as teclas <keycap>Enter</keycap>, <keycap>Tab</keycap> ou com o 
+          <mousebutton>Botão esquerdo do mouse</mousebutton>.</tip>
         </step>
+     </procedure>
+    </section>
+    
+    <section xml:id="definindo_variaveis">
+      <title>Definindo e usando variáveis</title>
+      <para>Agora que já temos uma variável simples no dicionário, vamos utilizá-la para definir outras variáveis mais complexas.
+      Utilizando a mesma idéia de criação de uma variável, visto na seção <xref linkend="janela_dicionario"/>, vamos definir mais duas variáveis:</para>
+      <procedure>
         <step>
-          <para>Depois de fechar a janela <guilabel>Dicionário de parâmeros para linha</guilabel>, selecione a aba
-            <guilabel>Editor de Fluxo</guilabel> e, na caixa <guilabel>Sequência de fluxo</guilabel>, dê um clique duplo
-            no programa <guilabel>Sleep</guilabel>. Na janela que se abre (<guilabel>Parâmetros</guilabel>), clique com
-            o <emphasis role="bold">botão direito do mouse</emphasis> no campo <guilabel>Time to sleep</guilabel>. O
-            objetivo é atribuir a variável <emphasis role="bold">Tempo=5</emphasis> ao parâmetro <guilabel>Time to
-            sleep</guilabel>, como mostrado a seguir:</para>
+          <para>Variável de nome <emphasis role="bold">var2</emphasis>, tipo <guimenuitem>Número</guimenuitem> e valor 
+          <emphasis role="bold">var1 + 10</emphasis>.
+          </para>
           <figure>
             <mediaobject>
-              <caption>Através de um clique com o botão direito na área de edição da janela de parâmetros do programa "Sleep" surge um menu de contexto
-		 em que é possível, entre outras coisas, inserir parâmetros de discionário conforme exemplo.</caption>
+              <caption>Criando a variável <emphasis role="bold">var2</emphasis>, usando auto-completação.</caption>
               <imageobject>
-                <imagedata fileref="../images/exemplo_dicionario_4.png"/>
+                <imagedata fileref="../images/exemplo_variaveis_4.png"/>
               </imageobject>
             </mediaobject>
           </figure>
         </step>
         <step>
-          <para>Depois de fechar a janela <guilabel>Parâmetros</guilabel>, vá para a aba
-            <guilabel>Fluxos</guilabel> e crie algumas cópias do fluxo, dando nomes diferentes a cada uma. Ao executar
-            qualquer um destes fluxos, o resultado é uma  <emphasis role="bold">pausa de 5 segundos</emphasis>.</para>
+         <para>Variável de nome <emphasis role="bold">string</emphasis>, tipo <guimenuitem>Texto</guimenuitem> e valor 
+          <emphasis role="bold">Variável 2 vale [var2]</emphasis>.
+          </para>
           <figure>
             <mediaobject>
-              <caption>Na aba Fluxos, conforme já abordado, pode-se fazer cópias de um fluxo.
-		 No exemplo, as cópias terão parâmetros de dicionário para os programas "sleep's" tal qual a matriz.</caption>
+              <caption>Criando a variável <emphasis role="bold">string</emphasis>, e verificando o resultado.</caption>
               <imageobject>
-                <imagedata fileref="../images/exemplo_dicionario_5.png"/>
+                <imagedata fileref="../images/exemplo_variaveis_5.png"/>
               </imageobject>
             </mediaobject>
           </figure>
+          <tip>Para utilizar variáveis em campos do tipo <guimenuitem>Texto</guimenuitem>, deve-se colocar o nome da variável cercada de colchetes 
+      <emphasis role="bold">[</emphasis>nome-da-variável<emphasis role="bold">]</emphasis>.</tip>
         </step>
         <step>
-          <para>Acesse novamente o dicionário de parâmetros e digite o valor 
-            <userinput>2</userinput> no lugar do valor 
-            <userinput>5</userinput>. Isso altera o valor da variável
-            <userinput>Tempo</userinput> em todos os fluxos. Agora, ao executar qualquer um deles, o resultado é uma  <emphasis role="bold">pausa de 2 segundos</emphasis>, e não mais de 5 segundos como antes.</para>
+          <para>Agora com as variáveis criadas, vamos utiliza-las no nosso "Fluxo Exemplo" já criado.</para>
+          <para>Na aba Editor de Fluxo, dê um clique duplo no programa <guilabel>Echo</guilabel>, na janela de edição de parâmetros, 
+          vamos utilizar a variável <emphasis role="bold">string</emphasis>.</para>
+          <figure>
+            <mediaobject>
+              <caption>Preenchendo o parâmetro com a variável <emphasis role="bold">string</emphasis> do dicionário.</caption>
+              <imageobject>
+                <imagedata fileref="../images/exemplo_variaveis_6.png"/>
+              </imageobject>
+            </mediaobject>
+          </figure>
         </step>
       </procedure>
-      <para>O que o exemplo tenta mostrar é que, por meio do dicionário de parâmetros, é
-	possível <emphasis role="bold">modificar os fluxos indiretamente</emphasis>, alterando as variáveis definidas no
-	dicionário. Sem isso, seria muito mais penoso alterar o tempo de execução dos fluxos do exemplo, pois as cópias
-	teriam de ser reconfiguradas uma a uma.</para>
+      <tip>Para validar uma expressão ou uma variável, em qualquer campo, basta utilizar a tecla <keycap>Enter</keycap>.</tip>
+      <tip>Para ver todas as variáveis disponíveis para auto-completação, basta digitar no campo o caracter '<emphasis role="bold">[</emphasis>' (abrir colchete).</tip>
       <important>
         <para>Você pode definir a visibilidade das variáveis, compartimentando-as nas listas
           <guilabel>Projeto</guilabel>, <guilabel>Linha</guilabel> e <guilabel>Fluxo</guilabel>. Variáveis pertencentes
@@ -1403,6 +1446,164 @@
           selecionado</emphasis>.</para>
       </important>
     </section>
+    
+	<section xml:id="variavel_iter">
+	  <title>A variável iter</title>
+	  <para>Como vimos na seção <xref linkend="loop"/>, a GêBR permite o uso de loops, através do programa <guimenuitem>Loop</guimenuitem>. Juntamente com esse programa, temos acesso a uma variável
+	    especial, chamada <emphasis role="bold">iter</emphasis>. A seguir, mostraremos um exemplo de uso desta variável:</para>
+	    <procedure>
+	      <step>
+	        <para>Vamos supor que queiramos saber em qual dia da semana serão as festas de fim de ano nos próximos 5 anos. Para esse fim, necessitamos do calendário do mês de Dezembro desses anos.
+	        Para isso, utilizaremos o programa <guimenuitem>Calendar</guimenuitem> (você encontra este programa na categoria <guimenu>Shell tools</guimenu>, 
+	        na aba <guilabel>Editor de Fluxo</guilabel>).</para>
+	        <para>Portanto, utilizando o preenchimento dos parâmetros proposto no exemplo da seção <xref linkend="loop"/>, teremos a variável <emphasis role="bold">iter</emphasis>
+	        no dicionário como na janela a seguir.</para>
+	        <figure>
+            <mediaobject>
+              <caption>A variavel <emphasis role="bold">iter</emphasis> com sua expressão resolvida.</caption>
+              <imageobject>
+                <imagedata fileref="../images/exemplo_iter_1.png"/>
+              </imageobject>
+            </mediaobject>
+          </figure>
+	      </step>
+	      <step>
+	        <para>Agora iremos definir uma variável no dicionário que representará o ano atual, facilitando o processo de escolha do ano.
+	        Vamos definir a variável na Linha, com o nome de <emphasis role="bold">ano_atual</emphasis> e valor <emphasis role="bold">2011</emphasis>.</para>
+	        <figure>
+            <mediaobject>
+              <caption>A variavel <emphasis role="bold">ano_atual</emphasis> definida no dicionário.</caption>
+              <imageobject>
+                <imagedata fileref="../images/exemplo_iter_2.png"/>
+              </imageobject>
+            </mediaobject>
+          </figure>
+	      </step>
+	      <step>
+	        <para>Após definirmos esta variável, vamos melhorar os parâmetros do programa <guimenuitem>Loop</guimenuitem>, para que a variável 
+	        <emphasis role="bold">iter</emphasis> tenha um comportamento melhor para o propósito do problema.</para>
+	        <para>Logo, no parâmetro Initial value (valor inicial) iremos incluir a variável <emphasis role="bold">ano_atual</emphasis>.
+	        No parâmetro Step (passo de cada iteração), preencheremos com 1, pois queremos anos seguidos.
+	        No parâmetro Total number of steps (número total de passos), colocaremos o valor 5, para que realize está repetição 5 vezes, desta forma,
+	        pegando os 5 próximos anos, apartir de 2011.</para>
+	        <figure>
+            <mediaobject>
+              <caption>Parâmetros do programa <guimenuitem>Loop</guimenuitem> preenchidos.</caption>
+              <imageobject>
+                <imagedata fileref="../images/exemplo_iter_3.png"/>
+              </imageobject>
+            </mediaobject>
+          </figure>
+            <important>
+              <para>O programa <guimenuitem>Loop</guimenuitem> pode usar apenas variáveis definidas na Linha e no Projeto, os quais aquele fluxo pertence.</para>  
+            </important>
+	      </step>
+	      <step>
+	        <para>Agora, abrimos o programa <guimenuitem>Calendar</guimenuitem> e vamos preencher seus parâmetros.
+	        Iremos apenas preencher dois parâmetros, o Month com o valor <emphasis>December</emphasis>, e o Year com a variável <emphasis role="bold">iter</emphasis>.</para>
+	        <figure>
+            <mediaobject>
+              <caption>Parâmetros do programa <guimenuitem>Calendar</guimenuitem> preenchidos.</caption>
+              <imageobject>
+                <imagedata fileref="../images/exemplo_iter_4.png"/>
+              </imageobject>
+            </mediaobject>
+          </figure>
+          <para>Ao colocarmos o mouse sobre o ícone de tipo do parâmetro Year, podemos verificar através da tooltip 
+          <guiicon><inlinemediaobject>
+            <imageobject>
+              <imagedata fileref="../images/exemplo_iter_5.png"/>
+            </imageobject>
+          </inlinemediaobject></guiicon>
+          o valor resolvido da variável <emphasis role="bold">iter</emphasis>, assim podemos verificar que iremos percorrer os anos que queriamos.</para>
+	      </step>
+	      <step>
+	        <para>Agora, com o programa preenchido corretamente, executamos o programa (assunto abordado na seção <xref linkend="executar_fluxo"/>), 
+	        e visualizar quando serão as festas de fim de ano para os próximos 5 anos.</para>
+	        <figure>
+            <mediaobject>
+              <caption>Resultado da execução do fluxo, na aba <guilabel>Controle de Tarefas</guilabel>.</caption>
+              <imageobject>
+                <imagedata fileref="../images/exemplo_iter_6.png"/>
+              </imageobject>
+            </mediaobject>
+          </figure>
+	      </step>
+	    </procedure>
+	    <para>Este foi um exemplo simples do uso da variável <emphasis role="bold">iter</emphasis> em um fluxo, mas podemos notar que o uso de loop e de variáveis
+	    definidas no dicionário podem facilitar muito nossas tarefas, deixando todo o processo mais dinâmico.</para>
+	</section>	
+	<section xml:id="variaveis_recursos">
+	  <title>Recursos no dicionário</title>
+	    <para>O dicionário conta com novos recursos que facilitam bastante sua usabilidade, vamos listar alguns destes recursos:</para>
+	    <itemizedlist>
+	    <listitem>
+          <para><emphasis role="bold">Funções</emphasis></para>
+          <para>Além de utilizar variáveis e expressões para preencher os valores, podemos também usar algumas funções pré-definidas:</para>
+          <itemizedlist>
+            <listitem><para><emphasis>Seno</emphasis> - Utiliza-se na forma <emphasis role="bold">s (</emphasis>valor<emphasis role="bold">)</emphasis>.</para></listitem>
+          </itemizedlist>
+          <itemizedlist>
+            <listitem><para><emphasis>Cosseno</emphasis> - Utiliza-se na forma <emphasis role="bold">c (</emphasis>valor<emphasis role="bold">)</emphasis>.</para></listitem>
+          </itemizedlist>
+          <itemizedlist>
+            <listitem><para><emphasis>Arcotangente</emphasis> - Utiliza-se na forma <emphasis role="bold">a (</emphasis>valor<emphasis role="bold">)</emphasis>.</para></listitem>
+          </itemizedlist>
+          <itemizedlist>
+            <listitem><para><emphasis>Logaritimo Natural</emphasis> - Utiliza-se na forma <emphasis role="bold">l (</emphasis>valor<emphasis role="bold">)</emphasis>.</para></listitem>
+          </itemizedlist>
+          <itemizedlist>
+            <listitem><para><emphasis>Função exponencial</emphasis> - Utiliza-se na forma <emphasis role="bold">e (</emphasis>valor<emphasis role="bold">)</emphasis>.</para></listitem>
+          </itemizedlist>
+          <itemizedlist>
+            <listitem><para><emphasis>Função de Bessel</emphasis> - Utiliza-se na forma <emphasis role="bold">j (</emphasis>ordem, valor<emphasis role="bold">)</emphasis>.</para></listitem> 
+          </itemizedlist>
+        </listitem>
+        <listitem>
+        <para><emphasis role="bold">Drag and Drop</emphasis></para>
+        <itemizedlist>
+          <listitem><para>É possível reordenar as variáveis do dicionário utilizando-se do recurso de drag and drop, deixando a declaração das variáveis
+          mais flexível e dinâmica, dado que uma variável só pode utilizar uma outra que está definida acima dela, tornando assim este recurso muito importante.</para>
+          <figure>
+          <mediaobject>
+            <caption>Resultado da execução do fluxo, na aba <guilabel>Controle de Tarefas</guilabel>.</caption>
+            <imageobject>
+              <imagedata fileref="../images/recurso_dict_1.png"/>
+            </imageobject>
+          </mediaobject>
+          </figure>
+          </listitem>
+        </itemizedlist>
+        </listitem>
+        <listitem>
+        <para><emphasis role="bold">Validação dinâmica</emphasis></para>
+        <itemizedlist>
+          <listitem>
+            <para>O dicionário conta com uma validação de suas variáveis de uma forma totalmente dinâmica, ocorrendo revalidação quando se altera o nome, 
+            o valor e a posição de uma variável, deixando assim, muito mais prático de definir tudo na ordem correta.</para>
+           <para>Programas que utilizam variáveis com erros, também são automaticamente validados, mudando seu estado de configuração (assunto abordado na seção <xref linkend="sec_3_3_5"/>).</para>
+            <figure>
+            <mediaobject>
+              <caption>A Variável <emphasis role="bold">ano_atual</emphasis> está usando uma variável que não existe na sua expressão,
+              por isso ela fica em um estado de erro.</caption>
+              <imageobject>
+                <imagedata fileref="../images/recurso_dict_2.png"/>
+              </imageobject>
+            </mediaobject>
+            </figure>
+          </listitem>
+        </itemizedlist>
+        <tip>Todos os campos, sejam eles parâmetros de programa ou variáveis, se contiverem algum, automaticamente exibirão o ícone 
+        <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_nao_configurado.png"/></imageobject></inlinemediaobject></guiicon>,
+        que contém em sua tooltip, uma explicação do erro.</tip>
+        </listitem>
+        </itemizedlist>
+	</section>	
+  </section>
+  
+  <section xml:id="sec_4">
+    <title>Recursos adicionais</title>
+    
     <section xml:id="menu">
       <title>O menu 
 	<guimenu>Ações</guimenu></title>
@@ -1474,7 +1675,7 @@
       <title>O log de execução</title>
       <para>A GêBR grava grande parte das ações executadas pelo usuário, bem como os resultados dessas ações, no
 	chamado <emphasis>log de execução</emphasis>. Este log é mostrado na parte inferior da janela principal. Pode
-	ser apresentado na forma colapsada (padrão) ou expandida (como na janela abaixo).</para>
+	ser apresentado na forma contraída (padrão) ou expandida (como na janela abaixo).</para>
       <figure>
         <mediaobject>
           <caption>No canto inferior das janelas principais da GêBR, encontra-se o log de execução, que carrega as informações dos processamentos da GêBR.</caption>

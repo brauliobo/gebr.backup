@@ -34,8 +34,8 @@ int main(int argc, char **argv)
 	GError *error = NULL;
 	GOptionContext *context;
 
-	setlocale(LC_ALL, "");
 	gebr_libinit("libgebr");
+	gebr_geoxml_init();
 
 	context = g_option_context_new(NULL);
 	g_option_context_set_translation_domain(context, "libgebr");
@@ -82,6 +82,8 @@ int main(int argc, char **argv)
 	ret = 0;
 	g_strfreev(files);
  out:	g_option_context_free(context);
+
+	gebr_geoxml_finalize();
 
 	return ret;
 }

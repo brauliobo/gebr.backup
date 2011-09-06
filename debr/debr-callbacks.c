@@ -19,6 +19,12 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "debr-gettext.h"
+
 #include <glib/gi18n.h>
 #include <libgebr/date.h>
 #include <libgebr/utils.h>
@@ -27,7 +33,6 @@
 #include <libgebr/geoxml/gebr-geoxml-validate.h>
 
 #include "debr-callbacks.h"
-#include "debr-defines.h"
 #include "debr.h"
 #include "debr-preferences.h"
 #include "debr-parameter.h"
@@ -240,6 +245,7 @@ void on_menu_revert_activate(void)
 		/* revert to the one in disk */
 		gebr_geoxml_document_free(GEBR_GEOXML_DOC(old_menu));
 		debr.program = NULL;
+		gebr_geoxml_document_ref(GEBR_GEOXML_DOCUMENT(menu));
 		gtk_tree_store_set(debr.ui_menu.model, &iter, MENU_XMLPOINTER, menu, -1);
 		menu_status_set_from_iter(&iter, MENU_STATUS_SAVED);
 
@@ -370,7 +376,7 @@ void on_menu_validate_activate(void)
 	GtkTreeIter iter;
 
 	gebr_gui_gtk_tree_view_foreach_selected(&iter, debr.ui_menu.tree_view)
-		menu_validate(&iter);
+		validate_menu(&iter);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(debr.notebook), NOTEBOOK_PAGE_VALIDATE);
 }
 

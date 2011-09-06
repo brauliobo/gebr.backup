@@ -16,6 +16,7 @@
  */
 
 #include <glib.h>
+#include <geoxml/geoxml.h>
 
 #include "../utils.h"
 
@@ -84,7 +85,7 @@ void test_gebr_str_canonical_var_name(void)
 	canonical = NULL;
 
 	gebr_str_canonical_var_name("CDP EM METROS (m)", &canonical, NULL);
-	g_assert_cmpstr(canonical, ==, "cdp_em_metros__m_");
+	g_assert_cmpstr(canonical, ==, "cdp_em_metros__m");
 	g_free(canonical);
 	canonical = NULL;
 
@@ -112,15 +113,81 @@ void test_gebr_str_canonical_var_name(void)
 	key = NULL;
 }
 
+void test_gebr_str_replace(void)
+{
+	GString * str = g_string_new("[ ]");
+	gebr_g_string_replace(str, "[", "[[");
+	g_assert_cmpstr(str->str, ==, "[[ ]");
+
+	gebr_g_string_replace(str, "]", "]]");
+	g_assert_cmpstr(str->str, ==, "[[ ]]");
+
+	g_string_free(str, TRUE);
+
+	str = g_string_new("ruim");
+	gebr_g_string_replace(str, "ruim", "bom");
+	g_assert_cmpstr(str->str, ==, "bom");
+	g_string_free(str, TRUE);
+
+	str = g_string_new("1e-10");
+	gebr_g_string_replace(str, "e", "*10^");
+	gebr_g_string_replace(str, "E", "*10^");
+	g_assert_cmpstr(str->str, ==, "1*10^-10");
+	g_string_free(str, TRUE);
+
+	str = g_string_new("1E-10");
+	gebr_g_string_replace(str, "e", "*10^");
+	gebr_g_string_replace(str, "E", "*10^");
+	g_assert_cmpstr(str->str, ==, "1*10^-10");
+	g_string_free(str, TRUE);
+
+	str = g_string_new("sim não sim");
+	gebr_g_string_replace(str, "não", "sim");
+	g_assert_cmpstr(str->str, ==, "sim sim sim");
+	g_string_free(str, TRUE);
+
+	str = g_string_new("áéíóúâê ô _ ô");
+	gebr_g_string_replace(str, "á", "a");
+	gebr_g_string_replace(str, "é", "e");
+	gebr_g_string_replace(str, "í", "i");
+	gebr_g_string_replace(str, "ó", "o");
+	gebr_g_string_replace(str, "ú", "u");
+	gebr_g_string_replace(str, "â", "a");
+	gebr_g_string_replace(str, "ê", "e");
+	gebr_g_string_replace(str, "ô", "o");
+
+	g_assert_cmpstr(str->str, ==, "aeiouae o _ o");
+	g_string_free(str, TRUE);
+
+	str = g_string_new("Isso deve sair: banana");
+	gebr_g_string_replace(str, "banana", NULL);
+	g_assert_cmpstr(str->str, ==, "Isso deve sair: ");
+	g_string_free(str, TRUE);
+
+	str = g_string_new("oi\r\n");
+	gebr_g_string_replace(str, "\r\n", "\n");
+	g_assert_cmpstr(str->str, ==, "oi\n");
+	g_string_free(str, TRUE);
+
+	str = g_string_new("oi\r\n");
+	gebr_g_string_replace(str, "\r\n", NULL);
+	g_assert_cmpstr(str->str, ==, "oi");
+	g_string_free(str, TRUE);
+
+}
 
 int main(int argc, char *argv[])
 {
 	g_test_init(&argc, &argv, NULL);
+	gebr_geoxml_init();
 
 	g_test_add_func("/libgebr/utils/str-escape", test_gebr_str_escape);
 	g_test_add_func("/libgebr/utils/str_word_before_pos", test_gebr_str_word_before_pos);
 	g_test_add_func("/libgebr/utils/str_remove_trailing_zeros", test_gebr_str_remove_trailing_zeros);
 	g_test_add_func("/libgebr/utils/str_canonical_var_name", test_gebr_str_canonical_var_name);
+	g_test_add_func("/libgebr/utils/str_replace", test_gebr_str_replace);
 
-	return g_test_run();
+	gint ret = g_test_run();
+	gebr_geoxml_finalize();
+	return ret;
 }

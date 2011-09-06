@@ -23,11 +23,10 @@
 #include <string.h>
 #include <config.h>
 
+#include "../libgebr-gettext.h"
 #include <glib/gi18n-lib.h>
-
 #include <libgebr/utils.h>
 
-#include "../defines.h"
 #include "gebr-comm-server.h"
 #include "gebr-comm-listensocket.h"
 #include "gebr-comm-protocol.h"
@@ -41,7 +40,7 @@ gebr_comm_server_log_message(struct gebr_comm_server *server, enum gebr_log_mess
 			     const gchar * message, ...);
 
 static void local_run_server_read(GebrCommProcess * process, struct gebr_comm_server *server);
-static void local_run_server_finished(GebrCommProcess * process, struct gebr_comm_server *server);
+static void local_run_server_finished(GebrCommProcess * process, gint status, struct gebr_comm_server *server);
 
 static gboolean
 gebr_comm_ssh_parse_output(GebrCommTerminalProcess * process, struct gebr_comm_server *server,
@@ -80,9 +79,9 @@ GebrCommServerRunConfig * gebr_comm_server_run_config_new(void)
 
 void gebr_comm_server_run_config_free(GebrCommServerRunConfig *config)
 {
-	void free_each(GebrCommServerRunFlow * run_flow)
+	void free_each(GebrCommServerRunFlow *run_flow)
 	{
-		gebr_geoxml_document_free(GEBR_GEOXML_DOCUMENT(run_flow->flow));
+		g_free(run_flow->flow_xml);
 		g_free(run_flow);
 	}
 
@@ -93,23 +92,23 @@ void gebr_comm_server_run_config_free(GebrCommServerRunConfig *config)
 	g_free(config);
 }
 
-GebrCommServerRunFlow* gebr_comm_server_run_config_add_flow(GebrCommServerRunConfig *config, GebrGeoXmlFlow * flow)
+/*
+ * gebr_comm_server_run_strip_flow:
+ * @validator:
+ * @flow: a #GebrGeoXmlFlow.
+ *
+ * Make a copy of @flow and removes all help strings. All dictionaries from
+ * @line and @proj are merged into the copy.
+ *
+ * Returns: a new flow prepared to run.
+ */
+static GebrGeoXmlFlow *
+gebr_comm_server_run_strip_flow(GebrValidator *validator, GebrGeoXmlFlow *flow)
 {
-	static guint run_id = 0;
-	GebrCommServerRunFlow *run_flow = g_new(GebrCommServerRunFlow, 1);
-	run_flow->flow = GEBR_GEOXML_FLOW(gebr_geoxml_document_clone(GEBR_GEOXML_DOCUMENT(flow)));
-	run_flow->run_id = run_id++;
-	config->flows = g_list_append(config->flows, run_flow);
-	return run_flow;
-}
-
-GebrGeoXmlFlow *gebr_comm_server_run_strip_flow(GebrGeoXmlFlow *flow,
-						 ...)
-{
-	va_list ap;
 	GebrGeoXmlSequence *i;
-	GebrGeoXmlDocument *doc;
 	GebrGeoXmlDocument *clone;
+	GebrGeoXmlDocument *line;
+	GebrGeoXmlDocument *proj;
 
 	g_return_val_if_fail (flow != NULL, NULL);
 
@@ -125,26 +124,45 @@ GebrGeoXmlFlow *gebr_comm_server_run_strip_flow(GebrGeoXmlFlow *flow,
 	gebr_geoxml_flow_get_revision(GEBR_GEOXML_FLOW (clone), &i, 0);
 	while (i != NULL) {
 		GebrGeoXmlSequence *tmp;
-
+		gebr_geoxml_object_ref(i);
 		tmp = i;
 		gebr_geoxml_sequence_next(&tmp);
 		gebr_geoxml_sequence_remove(i);
 		i = tmp;
 	}
 
-	/* Remove 'iter' dictionary */
-	gebr_geoxml_flow_remove_iter_dict (GEBR_GEOXML_FLOW(clone));
-
-	/* Merge all dictionaries */
-	va_start(ap, flow);
-	doc = va_arg(ap, GebrGeoXmlDocument*);
-	while (doc) {
-		gebr_geoxml_document_merge_dict (clone, doc);
-		doc = va_arg(ap, GebrGeoXmlDocument*);
+	/* Merge and Strip invalid parameters in dictionary */
+	i = gebr_geoxml_document_get_dict_parameter(clone);
+	while (i != NULL) {
+		if (validator && !gebr_validator_validate_param(validator, GEBR_GEOXML_PARAMETER(i), NULL, NULL)) {
+			GebrGeoXmlSequence *aux = i;
+			gebr_geoxml_object_ref(aux);
+			gebr_geoxml_sequence_next(&i);
+			gebr_geoxml_sequence_remove(aux);
+			continue;
+		}
+		gebr_geoxml_sequence_next(&i);
 	}
-	va_end(ap);
+	gebr_validator_get_documents(validator, NULL, &line, &proj);
+	gebr_geoxml_document_merge_dicts(validator, clone, line, proj, NULL);
 
 	return GEBR_GEOXML_FLOW (clone);
+}
+
+guint gebr_comm_server_run_config_add_flow(GebrCommServerRunConfig *config, GebrValidator *validator, GebrGeoXmlFlow * flow)
+{
+	static guint run_id = 0;
+	GebrCommServerRunFlow *run_flow = g_new(GebrCommServerRunFlow, 1);
+	GebrGeoXmlFlow *stripped = gebr_comm_server_run_strip_flow(validator, flow);
+	gchar *xml;
+
+	gebr_geoxml_document_to_string(GEBR_GEOXML_DOC(stripped), &xml);
+	gebr_geoxml_document_free(GEBR_GEOXML_DOCUMENT(stripped));
+
+	run_flow->flow_xml = xml;
+	run_flow->run_id = run_id++;
+	config->flows = g_list_append(config->flows, run_flow);
+	return run_flow->run_id;
 }
 
 gchar * gebr_comm_server_get_user(const gchar * address)
@@ -355,19 +373,15 @@ void gebr_comm_server_run_flow(struct gebr_comm_server *server, GebrCommServerRu
 	GString *run_id_gstring = g_string_new("");
 
 	for (GList *i = config->flows; i != NULL; i = g_list_next(i)) {
-		gchar *xml;
 		GebrCommServerRunFlow *run_flow = (GebrCommServerRunFlow*)i->data;
-		gebr_geoxml_document_to_string(GEBR_GEOXML_DOC(run_flow->flow), &xml);
 
 		g_string_printf(run_id_gstring, "%u", run_flow->run_id);
 		gebr_comm_protocol_socket_oldmsg_send(server->socket, FALSE,
-						      gebr_comm_protocol_defs.run_def, 5, xml,
+						      gebr_comm_protocol_defs.run_def, 5, run_flow->flow_xml,
 						      config->account ? config->account : "",
 						      config->queue ? config->queue : "",
 						      config->num_processes ? config->num_processes : "",
 						      run_id_gstring->str);
-
-		g_free(xml);
 	}
 
 	g_string_free(run_id_gstring, TRUE);
@@ -414,7 +428,7 @@ static void local_run_server_read(GebrCommProcess * process, struct gebr_comm_se
 /**
  * \internal
  */
-static void local_run_server_finished(GebrCommProcess * process, struct gebr_comm_server *server)
+static void local_run_server_finished(GebrCommProcess * process, gint status, struct gebr_comm_server *server)
 {
 	GebrCommSocketAddress socket_address;
 

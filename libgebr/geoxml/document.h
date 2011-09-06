@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "gebr-geo-types.h"
+#include <gebr-validator.h>
 
 G_BEGIN_DECLS
 
@@ -69,6 +70,16 @@ G_BEGIN_DECLS
  * Validation is done automatically by matching document's DTD, located in /usr/share/libgeoxml (specifically at ${datarootdir}/libgeoxml, run '--configure --help' for more information).
  * The same occurs with all methods in this class: they are valid for all GebrGeoXmlDocument's derived classes. Use GEBR_GEOXML_DOC to cast.
  */
+
+/**
+ * gebr_geoxml_init:
+ */
+void gebr_geoxml_init(void);
+
+/**
+ * gebr_geoxml_finalize:
+ */
+void gebr_geoxml_finalize(void);
 
 /**
  * Load a document XML file at \p path into \p document.
@@ -125,7 +136,7 @@ GebrGeoXmlDocumentType gebr_geoxml_document_get_type(GebrGeoXmlDocument * docume
  *
  * If \p document is NULL nothing is done.
  */
-const gchar *gebr_geoxml_document_get_version(GebrGeoXmlDocument * document);
+gchar *gebr_geoxml_document_get_version(GebrGeoXmlDocument * document);
 
 /**
  * Validate the document specified in \p filename.
@@ -264,7 +275,7 @@ const gchar *gebr_geoxml_document_get_filename(GebrGeoXmlDocument * document);
  *
  * \see gebr_geoxml_document_set_title
  */
-const gchar *gebr_geoxml_document_get_title(GebrGeoXmlDocument * document);
+gchar *gebr_geoxml_document_get_title(GebrGeoXmlDocument * document);
 
 /**
  * Get the \p document 's author name.
@@ -273,7 +284,7 @@ const gchar *gebr_geoxml_document_get_title(GebrGeoXmlDocument * document);
  *
  * \see gebr_geoxml_document_set_author
  */
-const gchar *gebr_geoxml_document_get_author(GebrGeoXmlDocument * document);
+gchar *gebr_geoxml_document_get_author(GebrGeoXmlDocument * document);
 
 /**
  * Get the \p document 's author email
@@ -282,7 +293,7 @@ const gchar *gebr_geoxml_document_get_author(GebrGeoXmlDocument * document);
  *
  * \see gebr_geoxml_document_set_email
  */
-const gchar *gebr_geoxml_document_get_email(GebrGeoXmlDocument * document);
+gchar *gebr_geoxml_document_get_email(GebrGeoXmlDocument * document);
 
 /**
  * Get the \p document 'c creation date
@@ -291,7 +302,7 @@ const gchar *gebr_geoxml_document_get_email(GebrGeoXmlDocument * document);
  *
  * \see gebr_geoxml_document_set_date_created
  */
-const gchar *gebr_geoxml_document_get_date_created(GebrGeoXmlDocument * document);
+gchar * gebr_geoxml_document_get_date_created(GebrGeoXmlDocument * document);
 
 /**
  * Get the \p document 's last modification date
@@ -300,7 +311,7 @@ const gchar *gebr_geoxml_document_get_date_created(GebrGeoXmlDocument * document
  *
  * \see gebr_geoxml_document_set_date_modified
  */
-const gchar *gebr_geoxml_document_get_date_modified(GebrGeoXmlDocument * document);
+gchar * gebr_geoxml_document_get_date_modified(GebrGeoXmlDocument * document);
 
 /**
  * Get a brief description of the document, usually an one line text.
@@ -310,7 +321,7 @@ const gchar *gebr_geoxml_document_get_date_modified(GebrGeoXmlDocument * documen
  *
  * \see gebr_geoxml_document_set_description
  */
-const gchar *gebr_geoxml_document_get_description(GebrGeoXmlDocument * document);
+gchar *gebr_geoxml_document_get_description(GebrGeoXmlDocument * document);
 
 /**
  * Returns the help associated with this document.
@@ -323,55 +334,39 @@ const gchar *gebr_geoxml_document_get_description(GebrGeoXmlDocument * document)
  *
  * \see gebr_geoxml_document_set_help
  */
-const gchar *gebr_geoxml_document_get_help(GebrGeoXmlDocument * document);
+gchar *gebr_geoxml_document_get_help(GebrGeoXmlDocument * document);
 
 /**
- * gebr_geoxml_document_merge_dict:
- * @dst: A #GebrGeoXmlDocument that will receive @src dictionary parameters
- * @src: A #GebrGeoXmlDocument containing dictionary parameters to be merged in @dst
+ * gebr_geoxml_document_merge_dicts:
+ * @validator: Uses validator to omit parameters with error,
+ *       if NULL is passed all parameters are merged.
+ * @first: The #GebrGeoXmlDocument that will contain all dictionary parameters.
+ * @...: A %NULL-terminated list of #GebrGeoXmlDocument that will be merged
+ *       into @first.
  *
- * Copies dictionary parameters from @src into @dst, without overwriting @dst original
- * variables in case of name clash.
+ * Merges all dictionaries into @first separating them with a special
+ * parameter. After applying this function, no one should use @first before
+ * calling gebr_geoxml_document_split_dict().
  */
-void gebr_geoxml_document_merge_dict (GebrGeoXmlDocument *dst, GebrGeoXmlDocument *src);
+void gebr_geoxml_document_merge_dicts(GebrValidator *validator, GebrGeoXmlDocument *first,
+				      ...) G_GNUC_NULL_TERMINATED;
 
 /**
- * gebr_geoxml_document_is_dictkey_defined:
- * @name: The name of the variable to be searched
- * @out_value: Return location for the value of @name, or %NULL. Free with g_free()
- * @first_doc: The first document to search the variable
- * @...: Other documents that will be searched for
+ * gebr_geoxml_document_split_dict:
+ * @first: The #GebrGeoXmlDocument containing dictionary parameters (or not).
+ * @...: A %NULL-terminated list of #GebrGeoXmlDocument that will be filled
+ *       with @first's dictionary parameters.
  *
- * Searches @name in @first_doc. If it is not found, search on other documents
- * in the list. The search stops on the first match. If no match is found, the
- * function returns %FALSE.
+ * If @first has dictionary parameters separated by the function
+ * gebr_geoxml_document_merge_dicts(), make sure the list @... have enougth
+ * documents to hold them. If that is not the case, the function returns
+ * %FALSE.
  *
- * Returns: %TRUE if @name was found in the list of documents
+ * Returns: %TRUE if the document list was large enougth to hold @first's
+ * dictionary parameters, %FALSE otherwise.
  */
-gboolean gebr_geoxml_document_is_dictkey_defined (const gchar *name,
-						  gchar **out_value,
-						  GebrGeoXmlDocument *first_doc,
-						  ...) G_GNUC_NULL_TERMINATED;
-
-/**
- * Validate expr against the variables at \p flow, \p line and \p proj
- */
-gboolean
-gebr_geoxml_document_validate_expr (const gchar *expr,
-				    GebrGeoXmlDocument *flow,
-				    GebrGeoXmlDocument *line,
-				    GebrGeoXmlDocument *proj,
-				    GError **err);
-
-/**
- * Validate str against the variables at \p flow, \p line and \p proj
- */
-gboolean
-gebr_geoxml_document_validate_str (const gchar *str,
-				    GebrGeoXmlDocument *flow,
-				    GebrGeoXmlDocument *line,
-				    GebrGeoXmlDocument *proj,
-				    GError **err);
+gboolean gebr_geoxml_document_split_dict(GebrGeoXmlDocument *first,
+					 ...) G_GNUC_NULL_TERMINATED;
 
 /**
  * gebr_geoxml_document_set_dict_keyword:
@@ -406,11 +401,31 @@ void gebr_geoxml_document_set_dtd_dir(const gchar *path);
 
 /**
  * gebr_geoxml_document_canonize_dict_parameters:
- * @document:
+ * @document: Document (flow/line/project) that will have its parameters canonized.
+ * @list_copy: A hash table pointer to access the keywords -> canonized list.
+ *
+ * This function canonizes a document dictionary, changing invalid variable
+ * names to a valid form.
+ *
+ * The list to variable names/values is freed every time you canonize a new
+ * project.
+ *
+ * This fuction also converts the variable type to the current supported types
+ * (e.g. int to float)
+ *
+ * Ex: "CDP EM METROS (M)" becomes "cdp_em_metros_m_".
+ *
+ * Important: You should not free the pointer list_copy.
+ *
+ * Returns: TRUE if everything when fine, FALSE otherwise.
  */
 gboolean
 gebr_geoxml_document_canonize_dict_parameters(GebrGeoXmlDocument * document,
 					      GHashTable 	** vars_list);
+
+void gebr_geoxml_document_ref(GebrGeoXmlDocument *self);
+
+void gebr_geoxml_document_unref(GebrGeoXmlDocument *self);
 
 G_END_DECLS
 

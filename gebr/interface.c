@@ -16,18 +16,26 @@
  *   <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "gebr-gettext.h"
+
 #include <string.h>
 
+#include <gio/gio.h>
 #include <glib/gi18n.h>
 #include <libgebr/gui/gebr-gui-pixmaps.h>
 #include <libgebr/gui/gebr-gui-utils.h>
+#include <libgebr/utils.h>
 
 #include "ui_flow_edition.h"
 #include "interface.h"
 #include "gebr.h"
-#include "defines.h"
 #include "flow.h"
 #include "callbacks.h"
+#include "menu.h"
 
 /**
  * @file interface.c Assembly the main components of the interface.
@@ -53,7 +61,8 @@ static const GtkActionEntry actions_entries[] = {
 	{"help_contents", GTK_STOCK_HELP, NULL,
 		"<Control>h", NULL, G_CALLBACK(on_help_contents_activate)},
 	{"help_about", GTK_STOCK_ABOUT, NULL,
-		NULL, NULL, G_CALLBACK(on_help_about_activate)}
+		NULL, NULL, G_CALLBACK(on_help_about_activate)},
+	{"help_demos_su", NULL, ("_Samples")},
 };
 
 static const GtkActionEntry actions_entries_project_line[] = {
@@ -68,8 +77,8 @@ static const GtkActionEntry actions_entries_project_line[] = {
 		"Delete", N_("Delete selected Projects and Lines"), G_CALLBACK(on_project_line_delete_activate)},
 	{"project_line_properties", GTK_STOCK_PROPERTIES, NULL,
 		NULL, N_("Edit properties"), G_CALLBACK(on_document_properties_activate)},
-	{"project_line_dict_edit", "accessories-dictionary", N_("Parameter dictionary"),
-		NULL, N_("Edit parameter dictionary"), G_CALLBACK(on_document_dict_edit_activate)},
+	{"project_line_dict_edit", "accessories-dictionary", N_("Variables dictionary"),
+		NULL, N_("Edit variables dictionary"), G_CALLBACK(on_document_dict_edit_activate)},
 	{"project_line_import", "document-import", N_("Import"),
 		NULL, N_("Import Projects or Lines"), G_CALLBACK(on_project_line_import_activate)},
 	{"project_line_export", "document-export", N_("Export"),
@@ -90,8 +99,8 @@ static const GtkActionEntry actions_entries_flow[] = {
 		N_("Delete selected Flows"), G_CALLBACK(on_flow_delete_activate)},
 	{"flow_properties", GTK_STOCK_PROPERTIES, NULL,
 		NULL, N_("Edit properties"), G_CALLBACK(on_document_properties_activate)},
-	{"flow_dict_edit", "accessories-dictionary", N_("Parameter dictionary"),
-		NULL, N_("Edit parameter dictionary"), G_CALLBACK(on_document_dict_edit_activate)},
+	{"flow_dict_edit", "accessories-dictionary", N_("Variables dictionary"),
+		NULL, N_("Edit variables dictionary"), G_CALLBACK(on_document_dict_edit_activate)},
 	{"flow_change_revision", "document-open-recent", N_("Saved status"),
 		NULL, NULL, NULL},
 	{"flow_import", "document-import", N_("Import"), NULL,
@@ -142,7 +151,7 @@ static const GtkActionEntry actions_entries_job_control[] = {
 	 */
 	{"job_control_save", GTK_STOCK_SAVE, NULL,
 		NULL, N_("Save Job information to a file"), G_CALLBACK(on_job_control_queue_save)},
-	{"job_control_close", "gnome-fs-trash-empty", N_("Close"),
+	{"job_control_close", "trash-empty", N_("Close"),
 		"Delete", N_("Clear selected Jobs"), G_CALLBACK(on_job_control_queue_close)},
 	{"job_control_stop", GTK_STOCK_STOP, N_("Cancel"),
 		NULL, N_("Ask server to cancel the selected Job"), G_CALLBACK(on_job_control_queue_stop)},
@@ -151,7 +160,7 @@ static const GtkActionEntry actions_entries_job_control[] = {
 	 */
 	{"job_control_queue_save", GTK_STOCK_SAVE, N_("Save All"),
 		NULL, N_("Ask server to save all Jobs from queue"), G_CALLBACK(on_job_control_queue_save)},
-	{"job_control_queue_close", "gnome-fs-trash-empty", N_("Close All"),
+	{"job_control_queue_close", "trash-empty", N_("Close All"),
 		NULL, N_("Clear all Jobs from selected queue"), G_CALLBACK(on_job_control_queue_close)},
 	{"job_control_queue_stop", GTK_STOCK_STOP, N_("Cancel All"),
 		NULL, N_("Ask server to cancel all Jobs from selected queue"), G_CALLBACK(on_job_control_queue_stop)}
@@ -495,6 +504,15 @@ static void assembly_menus(GtkMenuBar * menu_bar)
 
 	gtk_container_add(GTK_CONTAINER(menu),
 			  gtk_action_create_menu_item(gtk_action_group_get_action(gebr.action_group_general, "help_contents")));
+
+	menu_item = gtk_action_create_menu_item(gtk_action_group_get_action(gebr.action_group_general, "help_demos_su"));
+	gtk_container_add(GTK_CONTAINER(menu), menu_item);
+
+        gtk_container_add(GTK_CONTAINER(menu), gtk_separator_menu_item_new());
 	gtk_container_add(GTK_CONTAINER(menu),
 			  gtk_action_create_menu_item(gtk_action_group_get_action(gebr.action_group_general, "help_about")));
+
+	GtkWidget *submenu = gtk_menu_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+	demos_list_create(GTK_MENU(submenu));
 }

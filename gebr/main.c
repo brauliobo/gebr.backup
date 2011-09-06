@@ -15,6 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "gebr-gettext.h"
+
 #include <stdlib.h>
 #include <locale.h>
 
@@ -26,13 +32,11 @@
 #include <libgebr/gebr-version.h>
 
 #include "gebr.h"
-#include "defines.h"
 #include "interface.h"
 
 
 int main(int argc, char **argv, char **env)
 {
-
 	gboolean show_version = FALSE;
 	gboolean show_sys_dir = FALSE;
 	GOptionEntry entries[] = {
@@ -47,10 +51,10 @@ int main(int argc, char **argv, char **env)
 
 	g_type_init();
 	g_thread_init(NULL);
+	gdk_threads_init();
 
-	setlocale(LC_ALL, "");
-	setlocale(LC_NUMERIC, "C");
 	gebr_libinit(GETTEXT_PACKAGE);
+	gebr_geoxml_init();
 
 	context = g_option_context_new(_(" - GeBR, a seismic processing environment"));
 	g_option_context_set_summary(context,
@@ -104,11 +108,15 @@ int main(int argc, char **argv, char **env)
 
 	gtk_init(&argc, &argv);
 
-	gebr_gui_setup_theme();
 	gebr_gui_setup_icons();
 	gebr_setup_ui();
 	gebr_init();
 
+	gdk_threads_enter();
 	gtk_main();
+	gdk_threads_leave();
+
+	gebr_geoxml_finalize();
+
 	return 0;
 }

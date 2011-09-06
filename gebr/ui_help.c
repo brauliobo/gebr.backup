@@ -21,6 +21,12 @@
  * Responsible for help/report exibition and edition
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "gebr-gettext.h"
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +42,6 @@
 #include "ui_help.h"
 #include "gebr.h"
 #include "document.h"
-#include "../defines.h"
 #include "menu.h"
 #include "flow.h"
 #include "ui_project_line.h"
@@ -128,7 +133,7 @@ create_help_edit_window(GebrGeoXmlDocument * document)
 	guint merge_id;
 	gchar * title;
 	const gchar * doc_title;
-	const gchar * help;
+	gchar * help;
 	const gchar * filemenu;
 	const gchar * mark;
 	const gchar * document_type;
@@ -146,8 +151,19 @@ create_help_edit_window(GebrGeoXmlDocument * document)
 	window = gebr_gui_help_edit_window_new(help_edit_widget);
 	help_edit_window = GEBR_GUI_HELP_EDIT_WINDOW(window);
 
+
 	g_signal_connect(window, "destroy",
 			 G_CALLBACK(on_help_edit_window_destroy), document);
+
+
+	void 
+	free_help(GtkWidget * widget,
+		  gpointer help)
+	{
+		g_free((gchar *)help);
+	}
+
+	g_signal_connect_after(window, "destroy", G_CALLBACK(free_help), help);
 
 	switch(gebr_geoxml_document_get_type(document)) {
 	case GEBR_GEOXML_DOCUMENT_TYPE_FLOW:
@@ -195,6 +211,13 @@ create_help_edit_window(GebrGeoXmlDocument * document)
 static void on_help_edit_window_destroy(GtkWidget * widget, gpointer document)
 {
 	g_hash_table_remove(gebr.help_edit_windows, document);
+}
+
+static gboolean on_close_window(GtkWidget *widget, GdkEventFocus *event)
+{
+	gebr.current_report.report_wind = NULL;
+	gebr.current_report.report_group = NULL;
+	return FALSE;
 }
 
 static void on_title_ready(GebrGuiHelpEditWidget * widget, const gchar * title, GtkWindow * window)
@@ -356,7 +379,7 @@ void gebr_help_show_selected_program_help(void)
 
 void gebr_help_show(GebrGeoXmlObject *object, gboolean menu)
 {
-	const gchar * html;
+	gchar * html;
 	GtkWidget * window;
 	GebrGuiHtmlViewerWidget * html_viewer_widget;
 	GebrGeoXmlObjectType type;
@@ -375,6 +398,7 @@ void gebr_help_show(GebrGeoXmlObject *object, gboolean menu)
 		gebr_gui_html_viewer_widget_generate_links(html_viewer_widget, object);
 		html = gebr_geoxml_document_get_help(GEBR_GEOXML_DOCUMENT(object));
 		gebr_gui_html_viewer_window_show_html(GEBR_GUI_HTML_VIEWER_WINDOW(window), html);
+		g_free(html);
 	}
 	else switch (type) {
 	case GEBR_GEOXML_OBJECT_TYPE_FLOW:
@@ -387,6 +411,9 @@ void gebr_help_show(GebrGeoXmlObject *object, gboolean menu)
 		GtkActionGroup *group;
 		GtkAction *action;
 		GebrGuiHtmlViewerWindow *html_window;
+
+		gtk_window_set_modal (GTK_WINDOW (window), FALSE);
+		g_signal_connect(window, "destroy", G_CALLBACK(on_close_window), NULL);
 
 		html_window = GEBR_GUI_HTML_VIEWER_WINDOW (window);
 		manager = gebr_gui_html_viewer_window_get_ui_manager (html_window);
@@ -403,14 +430,22 @@ void gebr_help_show(GebrGeoXmlObject *object, gboolean menu)
 						    n_html_viewer_radio_entries,
 						    0, G_CALLBACK (on_ptbl_changed), window);
 
+		if (gebr.current_report.report_wind) {
+			GtkActionGroup *old_group = gebr.current_report.report_group;
+			GtkAction *action = gtk_action_group_get_action(old_group, "OptionsMenu");
+			if (gtk_action_is_sensitive(action))
+				gtk_action_set_sensitive(action, FALSE);
+		}
+		gebr.current_report.report_wind = window;
+		gebr.current_report.report_group = group;
+
 		gint i = 1;
-		GtkRadioAction *radio_action;
+		GtkRadioAction *radio_action, *first_radio;
 		GSList *style_group = NULL;
 
-		radio_action = gtk_radio_action_new ("StyleNoneAction", _("None"), NULL, NULL, 0);
+		first_radio = radio_action = gtk_radio_action_new ("StyleNoneAction", _("None"), NULL, NULL, 0);
 		gtk_radio_action_set_group (radio_action, style_group);
 		style_group = gtk_radio_action_get_group (radio_action);
-		g_signal_connect (radio_action, "changed", G_CALLBACK (on_style_action_changed), window);
 		gtk_action_group_add_action (group, GTK_ACTION (radio_action));
 		dir = g_dir_open (GEBR_STYLES_DIR, 0, &error);
 
@@ -440,6 +475,8 @@ void gebr_help_show(GebrGeoXmlObject *object, gboolean menu)
 					style_group = gtk_radio_action_get_group (radio_action);
 					gtk_action_group_add_action (group, GTK_ACTION (radio_action));
 					g_free (action_name);
+					g_free (css_title);
+					g_free (abs_path);
 
 					if (type == GEBR_GEOXML_OBJECT_TYPE_LINE) {
 						if (g_strcmp0 (fname, gebr.config.detailed_line_css->str) == 0)
@@ -454,6 +491,7 @@ void gebr_help_show(GebrGeoXmlObject *object, gboolean menu)
 			}
 			g_dir_close (dir);
 		}
+		g_signal_connect (first_radio, "changed", G_CALLBACK (on_style_action_changed), window);
 
 		gtk_ui_manager_insert_action_group (manager, group, 0);
 		merge_id = gtk_ui_manager_add_ui_from_string (manager, html_viewer_ui_def, -1, &error);
@@ -512,10 +550,12 @@ void gebr_help_show(GebrGeoXmlObject *object, gboolean menu)
 	case GEBR_GEOXML_OBJECT_TYPE_PROJECT:
 		html = gebr_geoxml_document_get_help (GEBR_GEOXML_DOCUMENT (object));
 		gebr_gui_html_viewer_window_show_html (GEBR_GUI_HTML_VIEWER_WINDOW (window), html);
+		g_free(html);
 		break;
 	case GEBR_GEOXML_OBJECT_TYPE_PROGRAM:
 		html = gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(object));
 		gebr_gui_html_viewer_window_show_html(GEBR_GUI_HTML_VIEWER_WINDOW(window), html);
+		g_free(html);
 		break;
 	default:
 		g_return_if_reached ();
@@ -548,7 +588,9 @@ void gebr_help_edit_document(GebrGeoXmlDocument * document)
 			gebr_message(GEBR_LOG_ERROR, TRUE, TRUE, _("Unable to create temporary file."));
 			goto out;
 		}
-		g_string_assign(prepared_html, gebr_geoxml_document_get_help(document));
+		gchar *tmp_help = gebr_geoxml_document_get_help(document);
+		g_string_assign(prepared_html, (const gchar *)tmp_help);
+		g_free(tmp_help);
 		fputs(prepared_html->str, html_fp);
 		fclose(html_fp);
 

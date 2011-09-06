@@ -51,20 +51,27 @@ GQuark gebr_iexpr_error_quark(void);
 /**
  * GebrIExprError:
  * @GEBR_IEXPR_ERROR_INITIALIZE: The validator failed to initialize.
+ * @GEBR_IEXPR_ERROR_EMPTY_EXPR:
+ * @GEBR_IEXPR_ERROR_TOOBIG:
+ * @GEBR_IEXPR_ERROR_RUNTIME:
  * @GEBR_IEXPR_ERROR_SYNTAX: The expression syntax is invalid.
  * @GEBR_IEXPR_ERROR_UNDEF_VAR: An undefined variable was found.
- * @GEBR_IEXPR_ERROR_UNDEF_REFERENCE: Variable use another variable not well defined
+ * @GEBR_IEXPR_ERROR_BAD_REFERENCE: Variable use another variable not well defined
  * @GEBR_IEXPR_ERROR_INVAL_VAR: An invalid variable name was found.
  * @GEBR_IEXPR_ERROR_INVAL_TYPE: Variable type not supported.
  * @GEBR_IEXPR_ERROR_CYCLE: The variable has cycle dependencies.
  * @GEBR_IEXPR_ERROR_TYPE_MISMATCH: The numeric variable uses a string one.
+ * @GEBR_IEXPR_ERROR_BAD_MOVE:
+ * @GEBR_IEXPR_ERROR_PATH:
  *
  * Error codes returned by expression handling functions.
  */
 typedef enum {
 	GEBR_IEXPR_ERROR_INITIALIZE,
-	GEBR_IEXPR_ERROR_SYNTAX,
 	GEBR_IEXPR_ERROR_EMPTY_EXPR,
+	GEBR_IEXPR_ERROR_TOOBIG,
+	GEBR_IEXPR_ERROR_RUNTIME,
+	GEBR_IEXPR_ERROR_SYNTAX,
 	GEBR_IEXPR_ERROR_UNDEF_VAR,
 	GEBR_IEXPR_ERROR_UNDEF_REFERENCE,
 	GEBR_IEXPR_ERROR_BAD_REFERENCE,
@@ -73,6 +80,7 @@ typedef enum {
 	GEBR_IEXPR_ERROR_CYCLE,
 	GEBR_IEXPR_ERROR_TYPE_MISMATCH,
 	GEBR_IEXPR_ERROR_BAD_MOVE,
+	GEBR_IEXPR_ERROR_PATH,
 } GebrIExprError;
 
 typedef struct _GebrIExpr GebrIExpr;

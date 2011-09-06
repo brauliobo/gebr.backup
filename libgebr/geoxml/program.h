@@ -22,6 +22,7 @@
 
 #include "gebr-geo-types.h"
 
+#include <gebr-iexpr.h>
 #include <gebr-validator.h>
 
 G_BEGIN_DECLS
@@ -212,7 +213,7 @@ GebrGeoXmlProgramStatus gebr_geoxml_program_get_status(GebrGeoXmlProgram * progr
 /**
  *
  */
-const gchar *gebr_geoxml_program_get_title(GebrGeoXmlProgram * program);
+gchar *gebr_geoxml_program_get_title(GebrGeoXmlProgram * program);
 
 /**
  *
@@ -222,19 +223,19 @@ const gchar *gebr_geoxml_program_get_binary(GebrGeoXmlProgram * program);
 /**
  *
  */
-const gchar *gebr_geoxml_program_get_description(GebrGeoXmlProgram * program);
+gchar *gebr_geoxml_program_get_description(GebrGeoXmlProgram * program);
 
 /**
  *
  */
-const gchar *gebr_geoxml_program_get_help(GebrGeoXmlProgram * program);
+gchar *gebr_geoxml_program_get_help(GebrGeoXmlProgram * program);
 
 /**
  * Gets the \p program's version.
  *
  * If \p program is NULL returns NULL.
  */
-const gchar *gebr_geoxml_program_get_version(GebrGeoXmlProgram * program);
+gchar *gebr_geoxml_program_get_version(GebrGeoXmlProgram * program);
 
 /**
  * Get \p program's mpi implementation.
@@ -262,15 +263,29 @@ GebrGeoXmlProgramControl gebr_geoxml_program_get_control(GebrGeoXmlProgram * pro
  * Returns: 0 if @prog is %NULL or the parameter is not defined, otherwise it
  * returns the non-negative value representing the number of iterations.
  */
-guint gebr_geoxml_program_control_get_n (GebrGeoXmlProgram *prog, gchar **step, gchar **ini);
+const gchar *gebr_geoxml_program_control_get_n(GebrGeoXmlProgram *prog,
+					       const gchar **step,
+					       const gchar **ini);
+
+/**
+ * gebr_geoxml_program_control_get_labels:
+ * @prog: A Loop program.
+ * @ini: Return location for initial value label.
+ * @step: Return location for step label.
+ * @niter: Return location for number of iterations label.
+ */
+void gebr_geoxml_program_control_get_labels(GebrGeoXmlProgram *prog,
+					    const gchar **ini,
+					    const gchar **step,
+					    const gchar **niter);
 
 /**
  * gebr_geoxml_program_control_set_n:
  */
-void gebr_geoxml_program_set_n(GebrGeoXmlProgram *prog,
-			       const gchar *step,
-			       const gchar *ini,
-			       const gchar *n);
+void gebr_geoxml_program_control_set_n(GebrGeoXmlProgram *prog,
+                                       const gchar *step,
+                                       const gchar *ini,
+                                       const gchar *n);
 
 /**
  * gebr_geoxml_program_is_var_used:
@@ -282,14 +297,14 @@ gboolean gebr_geoxml_program_is_var_used (GebrGeoXmlProgram *self,
  * gebr_geoxml_program_set_error_id:
  * @self: a #GebrGeoXmlProgram
  * @clear: %TRUE to set error to @id, %FALSE to clear
- * @id: one of #GebrGeoXmlProgramError enumerations
+ * @id: one of #GebrIExprError enumerations
  *
  * Sets the error id for @self program. If @clear is %TRUE, @id is ignored
  * and the error id is set to the empty string.
  */
 void gebr_geoxml_program_set_error_id(GebrGeoXmlProgram *self,
 				      gboolean clear,
-				      GebrGeoXmlProgramError id);
+				      GebrIExprError id);
 
 /**
  * gebr_geoxml_program_get_error_id:
@@ -299,7 +314,7 @@ void gebr_geoxml_program_set_error_id(GebrGeoXmlProgram *self,
  * Returns: %TRUE if the @program has an error id, %FALSE otherwise
  */
 gboolean gebr_geoxml_program_get_error_id(GebrGeoXmlProgram *self,
-					  GebrGeoXmlProgramError *id);
+					  GebrIExprError *id);
 
 /**
  * gebr_geoxml_program_is_valid:

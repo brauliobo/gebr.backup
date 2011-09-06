@@ -16,6 +16,10 @@
  *   <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <time.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -25,7 +29,6 @@
 #include <glib/gi18n.h>
 #include <libgebr/utils.h>
 #include <libgebr/date.h>
-#include <libgebr/defines.h>
 #include <libgebr/gui/gebr-gui-save-dialog.h>
 
 #include "document.h"
@@ -43,6 +46,10 @@ static GebrGeoXmlDocument *document_cache_check(const gchar *path)
 
 static void document_cache_add(const gchar *path, GebrGeoXmlDocument * document)
 {
+	GebrGeoXmlDocument *cached = document_cache_check(path);
+
+	g_warn_if_fail(!cached || cached == document);
+
 	g_hash_table_insert(gebr.xmls_by_filename, g_strdup(path), document);
 }
 
@@ -151,6 +158,12 @@ int document_load_path(GebrGeoXmlDocument **document, const gchar * path)
 
 int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * path, GtkTreeIter *parent, gboolean cache)
 {
+	if (cache) {
+		*document = document_cache_check(path);
+		if (*document)
+			return GEBR_GEOXML_RETV_SUCCESS;
+	}
+
 	/*
 	 * Callback to remove menu reference from program to maintain backward compatibility
 	 */
@@ -165,10 +178,21 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 
 		/* go to menu's program index specified in flow */
 		gebr_geoxml_flow_get_program(menu, &menu_program, index);
-		gebr_geoxml_program_set_help(program, gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(menu_program)));
+		gchar *tmp_help_p = gebr_geoxml_program_get_help(GEBR_GEOXML_PROGRAM(menu_program));
+		gebr_geoxml_program_set_help(program, tmp_help_p);
+		g_free(tmp_help_p);
 
 		document_free(GEBR_GEOXML_DOC(menu));
 	}	
+
+	int ret = gebr_geoxml_document_load(document, path, TRUE, g_str_has_suffix(path, ".flw") ?
+					    __document_discard_menu_ref_callback : NULL);
+
+	if (ret == GEBR_GEOXML_RETV_SUCCESS) {
+		if (cache)
+			document_cache_add(path, *document);
+		return GEBR_GEOXML_RETV_SUCCESS;
+	}
 
 	/**
 	 * \internal
@@ -205,17 +229,6 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 		}
 
 		g_free(basename);
-	}
-
-	if (cache && (*document = document_cache_check(path)) != NULL) {
-		return GEBR_GEOXML_RETV_SUCCESS;
-	}
-	int ret; 
-	if (!(ret = gebr_geoxml_document_load(document, path, TRUE, g_str_has_suffix(path, ".flw") ?
-					      __document_discard_menu_ref_callback : NULL))) {
-		if (cache)
-			document_cache_add(path, *document);
-		return ret;
 	}
 
 	GString *string;
@@ -327,7 +340,9 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 	if (!document_path_is_at_gebr_data_dir(path)) {
 		gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_OK, 0);
 		gtk_widget_show_all(dialog);
+		gdk_threads_enter();
 		gtk_dialog_run(GTK_DIALOG(dialog));
+		gdk_threads_leave();
 		gtk_widget_destroy(dialog);
 		goto out;
 	}
@@ -340,6 +355,7 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 	gtk_widget_show_all(dialog);
 	gint response;
 	gboolean keep_dialog = FALSE;
+	gdk_threads_enter();
 	do switch ((response = gtk_dialog_run(GTK_DIALOG(dialog)))) {
 	case 1: { /* Export */
 		gchar * export_path;
@@ -437,6 +453,7 @@ int document_load_path_with_parent(GebrGeoXmlDocument **document, const gchar * 
 		keep_dialog = FALSE;
 		break;
 	} while (keep_dialog);
+	gdk_threads_leave();
 
 	/* frees */
 	if (*document) {
@@ -475,7 +492,6 @@ gboolean document_save(GebrGeoXmlDocument * document, gboolean set_modified_date
 
 	path = document_get_path(gebr_geoxml_document_get_filename(document));
 	ret = document_save_at(document, path->str, set_modified_date, cache);
-
 	g_string_free(path, TRUE);
 	return ret;
 }
@@ -492,9 +508,8 @@ void document_free(GebrGeoXmlDocument * document)
 	gebr_geoxml_document_free(document);
 }
 
-void document_import(GebrGeoXmlDocument * document)
+void document_import(GebrGeoXmlDocument * document, gboolean save)
 {
-	GString *path;
 	const gchar *extension;
 
 	switch (gebr_geoxml_document_get_type(document)) {
@@ -510,16 +525,19 @@ void document_import(GebrGeoXmlDocument * document)
 		extension = "prj";
 		break;
 	default:
+		g_warn_if_reached();
 		return;
 	}
 	GString *new_filename = document_assembly_filename(extension);
-	path = document_get_path(new_filename->str);
 	gebr_geoxml_document_set_filename(document, new_filename->str);
+
+	if (save) {
+		GString *path = document_get_path(new_filename->str);
+		document_save_at(document, path->str, FALSE, TRUE);
+		g_string_free(path, TRUE);
+	}
+
 	g_string_free(new_filename, TRUE);
-
-	document_save_at(document, path->str, FALSE, TRUE);
-
-	g_string_free(path, TRUE);
 }
 
 GString *document_assembly_filename(const gchar * extension)
@@ -666,8 +684,8 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 {
 	GebrGeoXmlSequence *line_flow;
 	GebrGeoXmlObjectType type;
-	const gchar * title;
-	const gchar * report;
+	gchar * title;
+	gchar * report;
 	gchar * detailed_html = "";
 	gchar * inner_body = "";
 	gchar * styles = "";
@@ -706,11 +724,13 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 
 				include_table = gebr.config.detailed_line_parameter_table != GEBR_PARAM_TABLE_NO_TABLE;
 				document_load((GebrGeoXmlDocument**)(&flow), filename, FALSE);
+				gebr_validator_set_document(gebr.validator,(GebrGeoXmlDocument**)(&flow), GEBR_GEOXML_DOCUMENT_TYPE_FLOW, TRUE);
 				gchar * flow_cont = gebr_flow_get_detailed_report(flow, include_table, FALSE);
 				g_string_append(content, flow_cont);
 				g_free(flow_cont);
 				gebr_geoxml_document_free(GEBR_GEOXML_DOCUMENT(flow));
 			}
+			gebr_validator_set_document(gebr.validator, (GebrGeoXmlDocument**)(&gebr.flow), GEBR_GEOXML_DOCUMENT_TYPE_FLOW, TRUE);
 		}
 	} else if (type == GEBR_GEOXML_OBJECT_TYPE_FLOW) {
 		if (gebr.config.detailed_flow_css->len != 0)
@@ -725,17 +745,29 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 			g_string_append_printf (content, "<div class='gebr-geoxml-flow'>%s</div>\n", inner_body);
 
 		gchar * params;
-		if (gebr.config.detailed_flow_parameter_table == GEBR_PARAM_TABLE_NO_TABLE)
+		gchar *flow_dict, *line_dict, *proj_dict;
+		if (gebr.config.detailed_flow_parameter_table == GEBR_PARAM_TABLE_NO_TABLE) {
 			params = g_strdup("");
-		else
+			proj_dict = g_strdup("");
+			line_dict = g_strdup("");
+			flow_dict = g_strdup("");
+		} else {
 			params = gebr_flow_generate_parameter_value_table (GEBR_GEOXML_FLOW (document));
-		g_string_append_printf (content, "<div class='gebr-geoxml-flow'>%s</div>\n", params);
+			proj_dict = gebr_generate_variables_value_table(GEBR_GEOXML_DOCUMENT(gebr.project), TRUE, FALSE);
+			line_dict = gebr_generate_variables_value_table(GEBR_GEOXML_DOCUMENT(gebr.line), FALSE, FALSE);
+			flow_dict = gebr_generate_variables_value_table(document, FALSE, TRUE);
+			g_string_append_printf (content, "<div class='gebr-geoxml-flow'>%s%s%s%s</div>\n", proj_dict, line_dict, flow_dict, params);
+		}
 		g_free (params);
+		g_free (proj_dict);
+		g_free (line_dict);
+		g_free (flow_dict);
 	} else if (type == GEBR_GEOXML_OBJECT_TYPE_PROJECT) {
 		g_free (inner_body);
-		return g_strdup (report);
+		return report;
 	} else {
 		g_free (inner_body);
+		g_free (report);
 		g_return_val_if_reached (NULL);
 	}
 
@@ -745,67 +777,50 @@ gchar * gebr_document_generate_report (GebrGeoXmlDocument *document)
 	g_free(styles);
 	g_free(inner_body);
 	g_string_free(content, TRUE);
+	g_free (report);
+	g_free(title);
 
 	return detailed_html;
 }
 
 gchar * gebr_document_get_css_header_field (const gchar * filename, const gchar * field)
 {
-	GRegex * regex = NULL;
-	GMatchInfo * match_info = NULL;
-	gchar * search_pattern = NULL;
-	GError * error = NULL;
-	gchar * contents = NULL;
-	gchar * word = NULL;
-	GString * escaped_pattern = NULL;
-	GString * tmp_escaped = NULL;
-	gint i = 0;
+	GString *search;
+	gchar *contents;
+	gchar *word;
+	gchar *escaped;
 
-	escaped_pattern = g_string_new(g_regex_escape_string (field, -1));
-	tmp_escaped = g_string_new("");
+	if (!g_file_get_contents(filename, &contents, NULL, NULL))
+		g_return_val_if_reached(NULL);
+
+	escaped = g_regex_escape_string(field, -1);
+	search = g_string_new("@");
 
 	/* g_regex_escape_string don't escape '-',
-	 * so we need to do it manualy.
-	 */
-	for (i = 0; escaped_pattern->str[i] != '\0'; i++)
-		if (escaped_pattern->str[i]  != '-')
-			tmp_escaped = g_string_append_c(tmp_escaped, escaped_pattern->str[i]);
+	 * so we need to do it manually. */
+	for (int i = 0; escaped[i]; i++) {
+		if (escaped[i] != '-')
+			g_string_append_c(search, escaped[i]);
 		else
-			tmp_escaped = g_string_append(tmp_escaped, "\\-");
-	
-	g_string_printf (escaped_pattern, "%s", tmp_escaped->str);
-	
-	g_string_free(tmp_escaped, TRUE);
+			g_string_append(search, "\\-");
+	}
+	g_free(escaped);
+	g_string_append(search, ":(.*)");
 
-	search_pattern = g_strdup_printf("@%s:.*", escaped_pattern->str);
+	GMatchInfo * match_info;
+	GRegex *regex = g_regex_new(search->str, G_REGEX_CASELESS, 0, NULL);
+	g_regex_match(regex, contents, 0, &match_info);
 
-	g_file_get_contents (filename, &contents, NULL, &error);
-	
-	regex = g_regex_new (search_pattern, G_REGEX_CASELESS, 0, NULL);
-	g_regex_match_full (regex, contents, -1, 0, 0, &match_info, &error);
-
-	if (g_match_info_matches(match_info) == TRUE)
+	if (g_match_info_matches(match_info))
 	{
-		word = g_match_info_fetch (match_info, 0);
-		word = g_strstrip(word);
-		g_regex_unref(regex);
-		search_pattern = g_strdup_printf("[^@%s:].*", escaped_pattern->str);
-		regex = g_regex_new (search_pattern, G_REGEX_CASELESS, 0, NULL);
-		g_regex_match_full (regex, word, -1, 0, 0, &match_info, &error);
-		word = g_match_info_fetch (match_info, 0);
-		word = g_strstrip(word);
+		word = g_match_info_fetch (match_info, 1);
+		g_strstrip(word);
 	}
 	
-	g_free(search_pattern);	
+	g_string_free(search, TRUE);
 	g_free(contents);	
-	g_match_info_free (match_info);
-	g_regex_unref (regex);
-	g_string_free(escaped_pattern, TRUE);
-	if (error != NULL)
-	{
-		g_printerr ("Error while matching: %s\n", error->message);
-		g_error_free (error);
-	}
+	g_match_info_free(match_info);
+	g_regex_unref(regex);
 
 	return word;
 }

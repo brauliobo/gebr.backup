@@ -63,6 +63,7 @@ int main(int argc, char **argv)
 	int nmenu;
 
 	gebr_libinit("libgebr");
+	gebr_geoxml_init();
 
 	parse_command_line(argc, argv);
 
@@ -90,6 +91,10 @@ int main(int argc, char **argv)
 
 	report("Comparing files", fnmenu[nmenu - 2], fnmenu[nmenu - 1]);
 	diff_count--;
+	if (!doc[0] || !doc[1]) {
+		printf("The file %s not exist.\n", doc[0]? fnmenu[nmenu - 1] : fnmenu[nmenu - 2]);
+		goto out;
+	}
 	report("Filename", gebr_geoxml_document_get_filename(doc[0]), gebr_geoxml_document_get_filename(doc[1]));
 	report("Title", gebr_geoxml_document_get_title(doc[0]), gebr_geoxml_document_get_title(doc[1]));
 	report("Description",
@@ -100,7 +105,12 @@ int main(int argc, char **argv)
 	       gebr_geoxml_document_get_date_created(doc[0]), gebr_geoxml_document_get_date_created(doc[1]));
 	report("Modified date",
 	       gebr_geoxml_document_get_date_modified(doc[0]), gebr_geoxml_document_get_date_modified(doc[1]));
-	report_help("Help", gebr_geoxml_document_get_help(doc[0]), gebr_geoxml_document_get_help(doc[1]));
+	gchar *help1, *help2;
+	help1 = gebr_geoxml_document_get_help(doc[0]);
+	help2 = gebr_geoxml_document_get_help(doc[1]);
+	report_help("Help", help1, help2);
+	g_free (help1);
+	g_free (help2);
 
 	{
 		GString *cat[2];
@@ -182,10 +192,15 @@ int main(int argc, char **argv)
 		       (gebr_geoxml_program_get_stderr(prog[1]) ? "Append" : "Ignore"));
 
 		report("Executable", gebr_geoxml_program_get_binary(prog[0]), gebr_geoxml_program_get_binary(prog[1]));
+		report("Version", gebr_geoxml_program_get_version(prog[0]), gebr_geoxml_program_get_version(prog[1]));
 
 		report("URL", gebr_geoxml_program_get_url(prog[0]), gebr_geoxml_program_get_url(prog[1]));
 
-		report_help("Help", gebr_geoxml_program_get_help(prog[0]), gebr_geoxml_program_get_help(prog[1]));
+		gchar *tmp_help_p1 = gebr_geoxml_program_get_help(prog[0]);
+		gchar *tmp_help_p2 = gebr_geoxml_program_get_help(prog[1]);
+		report_help("Help", tmp_help_p1, tmp_help_p2);
+		g_free(tmp_help_p1);
+		g_free(tmp_help_p2);
 
 		compare_parameters(prog[0], prog[1]);
 
@@ -202,6 +217,7 @@ int main(int argc, char **argv)
 
 	g_string_free(prefix, TRUE);
 	g_string_free(offset, TRUE);
+	gebr_geoxml_finalize();
 
 	return EXIT_SUCCESS;
 }

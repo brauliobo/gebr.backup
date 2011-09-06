@@ -15,6 +15,10 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -29,9 +33,9 @@
 #include <libgebr/gui/gebr-gui-utils.h>
 
 #include "menu.h"
-#include "defines.h"
 #include "gebr.h"
 #include "document.h"
+#include "callbacks.h"
 
 /**
  * \internal
@@ -42,6 +46,13 @@ static const gchar * directory_list[] = {
 	GEBR_SYS_MENUS_DIR,
 	"/usr/share/gebr/menus",
 	"/usr/local/share/gebr/menus",
+	NULL
+};
+
+static const gchar * directory_list_demos[] = {
+	GEBR_SYS_DEMOS_DIR,
+	"/usr/share/gebr/demos",
+	"/usr/local/share/gebr/demos",
 	NULL
 };
 
@@ -420,4 +431,74 @@ static void menu_scan_directory(const gchar * directory, GKeyFile * menu_key_fil
 	}
 
 	g_string_free(path, TRUE);
+}
+
+static gchar *canonize_name(const gchar *path)
+{
+	GFile *file = g_file_new_for_path(path);
+	GFileInfo *info = g_file_query_info(file, G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME, 0, NULL, NULL);
+
+	gchar *label = g_strdup(g_file_info_get_attribute_string(info, G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME));
+	g_strdelimit(label, "_", ' ');
+
+	g_object_unref(file);
+	g_object_unref(info);
+
+	return label;
+}
+
+static void populate_menu_demo(const gchar *dir, GtkMenu *menu)
+{
+	gchar *filename;
+	gchar *dirname;
+	GString *path;
+	path = g_string_new(NULL);
+
+	gebr_directory_foreach_file(dirname, dir) {
+		gboolean has_demo = FALSE;
+		g_string_printf(path, "%s/%s", dir, dirname);
+		if (!g_file_test(path->str, G_FILE_TEST_IS_DIR)) {
+			g_string_free(path, TRUE);
+			continue;
+		}
+		gchar *label = canonize_name(path->str);
+		GtkWidget *menu_item = gtk_menu_item_new_with_label(label);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		GtkWidget *submenu = gtk_menu_new();
+		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+		g_free(label);
+		gebr_directory_foreach_file_hyg(filename, path->str, dir) {
+			if (!fnmatch("*.prjz", filename, 1)) {
+				has_demo = TRUE;
+				gchar *demo_path = g_strconcat(dir, "/", dirname, "/", filename, NULL);
+				label = canonize_name(demo_path);
+				label[strlen(label) - 5] = '\0';
+				menu_item = gtk_menu_item_new_with_label(label);
+				gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menu_item);
+				g_signal_connect(menu_item, "activate", G_CALLBACK(import_demo), demo_path);
+				g_object_weak_ref(G_OBJECT(menu_item), (GWeakNotify)g_free, demo_path);
+				g_free(label);
+			}
+		}
+		if (!has_demo) {
+			if (g_strcmp0(dirname, "Seismic_Unix") == 0) {
+				menu_item = gtk_menu_item_new_with_label(_("Install Seismic Unix package.\n"
+						"Click here to get the script of Seismic Unix on GêBR Project website."));
+				g_signal_connect(menu_item, "button_press_event", G_CALLBACK(open_url_on_press_event), NULL);
+			} else {
+				menu_item = gtk_menu_item_new_with_label(_("Empty"));
+				gtk_widget_set_sensitive(menu_item, FALSE);
+			}
+			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menu_item);
+		}
+		g_string_free(path, TRUE);
+	}
+}
+
+void demos_list_create(GtkMenu *menu)
+{
+	populate_menu_demo(directory_list_demos[0], menu);
+	for (int i = 1; directory_list_demos[i]; i++)
+		if (!gebr_realpath_equal (directory_list[i], directory_list[0]))
+			populate_menu_demo(directory_list_demos[i], menu);
 }

@@ -15,7 +15,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../config.h"
+#include "../libgebr-gettext.h"
 
 #include "gebr-gui-validatable-widget.h"
 #include "../gebr-iexpr.h"
@@ -51,8 +51,12 @@ gboolean gebr_gui_validatable_widget_validate(GebrGuiValidatableWidget *widget,
 
 	type = gebr_geoxml_parameter_get_type(param);
 	expression = gebr_gui_validatable_widget_get_value(widget);
-	retval = gebr_validator_validate_expr(self, expression, type, &error);
 	pparam = GEBR_GEOXML_PROGRAM_PARAMETER(param);
+
+	if (gebr_geoxml_program_get_control(gebr_geoxml_parameter_get_program(param)) == GEBR_GEOXML_PROGRAM_CONTROL_FOR)
+		retval = gebr_validator_validate_control_parameter(self, gebr_geoxml_program_parameter_get_keyword(pparam), expression, &error);
+	else
+		retval = gebr_validator_validate_expr(self, expression, type, &error);
 
 	if (!error && !*expression && gebr_geoxml_program_parameter_get_required(pparam))
 		g_set_error(&error,
