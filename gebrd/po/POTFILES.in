@@ -1,0 +1,8 @@
+# List of source files containing translatable strings.
+gebrd-client.c
+gebrd.c
+gebrd-job.c
+gebrd-job-queue.c
+gebrd-main.c
+gebrd-queues.c
+gebrd-server.c
