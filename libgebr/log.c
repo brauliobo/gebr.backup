@@ -15,6 +15,16 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * SECTION: log
+ * @short_description: GeBR's logging class
+ * @title: GeBR Log Class
+ * @include: libgebr/log.h
+ *
+ * The GeBR logging class provides functions for logging various types of
+ * messages, such as informative messages and error messages.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -32,9 +42,19 @@
  * Library functions
  */
 
-struct gebr_log *gebr_log_open(const gchar * path)
+struct _GebrLogMessage {
+	GebrLogMessageType type;
+	GString *date;
+	GString *message;
+};
+
+struct _GebrLog {
+	GIOChannel *io_channel;
+};
+
+GebrLog *gebr_log_open(const gchar * path)
 {
-	struct gebr_log *log;
+	GebrLog *log;
 	GError *error;
 
 	/* does it exist? if not, create it */
@@ -46,19 +66,28 @@ struct gebr_log *gebr_log_open(const gchar * path)
 	}
 
 	error = NULL;
-	log = g_new(struct gebr_log, 1);
+	log = g_new(GebrLog, 1);
 	log->io_channel = g_io_channel_new_file(path, "r+", &error);
 	g_io_channel_seek_position(log->io_channel, 0, G_SEEK_END, &error);
 
 	return log;
 }
 
-struct gebr_log_message *gebr_log_message_new(enum gebr_log_message_type type, const gchar * date,
+/**
+ * gebr_log_message_new:
+ * @type: The type of this message.
+ * @date: When this message occured.
+ * @message: The message itself.
+ *
+ * Returns: A newly allocated #GebrLogMessage structure. Free with
+ * gebr_log_message_free().
+ */
+GebrLogMessage *gebr_log_message_new(GebrLogMessageType type, const gchar * date,
 					      const gchar * message)
 {
-	struct gebr_log_message *log_message;
+	GebrLogMessage *log_message;
 
-	log_message = g_new(struct gebr_log_message, 1);
+	log_message = g_new(GebrLogMessage, 1);
 	log_message->type = type;
 	log_message->date = g_string_new(date);
 	log_message->message = g_string_new(message);
@@ -66,21 +95,27 @@ struct gebr_log_message *gebr_log_message_new(enum gebr_log_message_type type, c
 	return log_message;
 }
 
-void gebr_log_message_free(struct gebr_log_message *message)
+/**
+ * gebr_log_message_free:
+ * @message: The #GebrLogMessage.
+ *
+ * Free the message structure.
+ */
+void gebr_log_message_free(GebrLogMessage *message)
 {
 	g_string_free(message->date, TRUE);
 	g_string_free(message->message, TRUE);
 	g_free(message);
 }
 
-void gebr_log_close(struct gebr_log *log)
+void gebr_log_close(GebrLog *log)
 {
 	g_io_channel_unref(log->io_channel);
 
 	g_free(log);
 }
 
-GList *gebr_log_messages_read(struct gebr_log *log)
+GList *gebr_log_messages_read(GebrLog *log)
 {
 	GList *messages;
 	GString *line;
@@ -91,8 +126,8 @@ GList *gebr_log_messages_read(struct gebr_log *log)
 	line = g_string_new(NULL);
 	g_io_channel_seek_position(log->io_channel, 0, G_SEEK_SET, &error);
 	while (g_io_channel_read_line_string(log->io_channel, line, NULL, &error) == G_IO_STATUS_NORMAL) {
-		struct gebr_log_message *message;
-		enum gebr_log_message_type type;
+		GebrLogMessage *message;
+		GebrLogMessageType type;
 		gchar **splits;
 
 		splits = g_strsplit(line->str, " ", 3);
@@ -136,7 +171,7 @@ void gebr_log_messages_free(GList * messages)
 	g_list_free(messages);
 }
 
-void gebr_log_add_message(struct gebr_log *log, enum gebr_log_message_type type, const gchar * message)
+void gebr_log_add_message(GebrLog *log, GebrLogMessageType type, const gchar * message)
 {
 	GString *line;
 	gchar *ident_str;
@@ -181,6 +216,41 @@ void gebr_log_add_message(struct gebr_log *log, enum gebr_log_message_type type,
 	error = NULL;
 	g_io_channel_flush(log->io_channel, &error);
 
-	/* frees */
 	g_string_free(line, TRUE);
+}
+
+/**
+ * gebr_log_message_get_date:
+ * @message: The #GebrLogMessage.
+ *
+ * Returns: The time in which this message was sent; do not free it.
+ */
+const gchar *
+gebr_log_message_get_date(GebrLogMessage *message)
+{
+	return message->date->str;
+}
+
+/**
+ * gebr_log_message_get_message:
+ * @message: The #GebrLogMessage.
+ *
+ * Returns: The message that was sent; do not free it.
+ */
+const gchar *
+gebr_log_message_get_message(GebrLogMessage *message)
+{
+	return message->message->str;
+}
+
+/**
+ * gebr_log_message_get_type:
+ * @message: The #GebrLogMessage.
+ *
+ * Returns: The type of this message.
+ */
+GebrLogMessageType
+gebr_log_message_get_type(GebrLogMessage *message)
+{
+	return message->type;
 }

@@ -42,18 +42,21 @@
 enum {
 	LAST_PROPERTY
 };
+
 enum {
 	LAST_SIGNAL
 };
-// static guint object_signals[LAST_SIGNAL];
+
 G_DEFINE_TYPE(GebrdJob, gebrd_job, GEBR_COMM_JOB_TYPE)
+
 static void gebrd_job_init(GebrdJob * job)
 {
+	job->exec_speed = g_string_new(NULL);
 }
+
 static void gebrd_job_class_init(GebrdJobClass * klass)
 {
 }
-
 
 static void job_assembly_cmdline(GebrdJob *job);
 static void job_process_finished(GebrCommProcess * process, gint status, GebrdJob *job);
@@ -358,7 +361,7 @@ GebrdJob *job_find(GString * jid)
 }
 
 void job_new(GebrdJob ** _job, struct client * client, GString * queue, GString * account, GString * xml,
-	     GString * n_process, GString * run_id)
+	     GString * n_process, GString * run_id, GString *exec_speed)
 {
 	/* initialization */
 	GebrdJob *job = GEBRD_JOB(g_object_new(GEBRD_JOB_TYPE, NULL, NULL));
@@ -375,6 +378,8 @@ void job_new(GebrdJob ** _job, struct client * client, GString * queue, GString 
 	g_string_assign(job->parent.queue_id, queue->str);
 	g_string_assign(job->parent.moab_account, account->str);
 	g_string_assign(job->parent.n_process, n_process->str);
+	g_debug("Execution speed is %s", exec_speed->str);
+	g_string_assign(job->exec_speed, exec_speed->str);
 	job->parent.status = JOB_STATUS_INITIAL;
 
 	*_job = job;
@@ -414,6 +419,7 @@ void job_free(GebrdJob *job)
 			gebr_comm_process_free(job->tail_process);
 	if (job->flow)
 		gebr_geoxml_document_free(GEBR_GEOXML_DOC(job->flow));
+	g_string_free(job->exec_speed, TRUE);
 	g_object_unref(job);
 }
 
@@ -1109,6 +1115,9 @@ static void job_assembly_cmdline(GebrdJob *job)
 	if (job->flow == NULL) 
 		goto err;
 
+	job->is_parallelizable =
+		gebr_geoxml_flow_is_parallelizable(job->flow, gebrd_get_validator(gebrd));
+
 	has_error_output_file = strlen(gebr_geoxml_flow_io_get_error(job->flow)) ? TRUE : FALSE;
 	nprog = gebr_geoxml_flow_get_programs_number(job->flow);
 	if (nprog == 0) {
@@ -1163,7 +1172,9 @@ static void job_assembly_cmdline(GebrdJob *job)
 	const gchar * binary;
 	binary = gebr_geoxml_program_get_binary(GEBR_GEOXML_PROGRAM(program));
 	if (mpi == NULL)
-		g_string_append_printf(job->parent.cmd_line, "%s ", binary);
+		g_string_append_printf(job->parent.cmd_line, "%s%s ",
+				       job->is_parallelizable ? "$exec ":"",
+				       binary);
 	else {
 		gchar * mpicmd;
 		mpicmd = gebrd_mpi_interface_build_comand(mpi, binary);
@@ -1279,23 +1290,12 @@ static void job_assembly_cmdline(GebrdJob *job)
 
 		/* How to connect chained programs */
 		int chain_option = gebr_geoxml_program_get_stdin(GEBR_GEOXML_PROGRAM(program)) + (previous_stdout << 1);
+		const gchar *sep = NULL;
 		switch (chain_option) {
-		case 0:	{
+		case 0:
 			/* Previous does not write to stdin and current does not carry about */
-
-			const gchar * binary;
-
-			binary = gebr_geoxml_program_get_binary(GEBR_GEOXML_PROGRAM(program));
-			if (mpi == NULL)
-				g_string_append_printf(job->parent.cmd_line, "; %s ", binary);
-			else {
-				gchar * mpicmd;
-				mpicmd = gebrd_mpi_interface_build_comand(mpi, binary);
-				g_string_append_printf(job->parent.cmd_line, "; %s ", mpicmd);
-				g_free(mpicmd);
-			}
+			sep = ";";
 			break;
-		}
 		case 1:	/* Previous does not write to stdin but current expect something */
 			job_issue(job, _("Broken flow before %s (no input).\n"),
 				  gebr_geoxml_program_get_title(GEBR_GEOXML_PROGRAM(program)));
@@ -1304,26 +1304,27 @@ static void job_assembly_cmdline(GebrdJob *job)
 			job_issue(job, _("Broken flow before %s (unexpected output).\n"),
 				  gebr_geoxml_program_get_title(GEBR_GEOXML_PROGRAM(program)));
 			goto err;
-		case 3:	{
+		case 3:
 			/* Both talk to each other */
-
-			const gchar * binary;
-
-			binary = gebr_geoxml_program_get_binary(GEBR_GEOXML_PROGRAM(program));
-
-			if (mpi == NULL)
-				g_string_append_printf(job->parent.cmd_line, "| %s ", binary);
-			else {
-				gchar * mpicmd;
-				mpicmd = gebrd_mpi_interface_build_comand(mpi, binary);
-				g_string_append_printf(job->parent.cmd_line, "| %s ", mpicmd);
-				g_free(mpicmd);
-			}
-
+			sep = "|";
 			break;
-		}
 		default:
 			break;
+		}
+
+		const gchar * binary;
+
+		binary = gebr_geoxml_program_get_binary(GEBR_GEOXML_PROGRAM(program));
+		if (mpi == NULL)
+			g_string_append_printf(job->parent.cmd_line, "%s %s%s ",
+					       sep,
+					       job->is_parallelizable ? "$exec ":"",
+					       binary);
+		else {
+			gchar * mpicmd;
+			mpicmd = gebrd_mpi_interface_build_comand(mpi, binary);
+			g_string_append_printf(job->parent.cmd_line, "%s %s ", sep, mpicmd);
+			g_free(mpicmd);
 		}
 
 		if (job_add_program_parameters(job, GEBR_GEOXML_PROGRAM(program), expr_buf) == FALSE)
@@ -1334,9 +1335,11 @@ static void job_assembly_cmdline(GebrdJob *job)
 	}
 
 	gboolean stdout_use_iter = FALSE;
+
 	if (has_error_output_file == FALSE)
 		job_issue(job,
 			  _("No error file selected; error output merged with standard output.\n"));
+
 	if (previous_stdout) {
 		if (strlen(gebr_geoxml_flow_io_get_output(job->flow)) == 0)
 			job_issue(job, _("Proceeding without output file.\n"));
@@ -1350,8 +1353,9 @@ static void job_assembly_cmdline(GebrdJob *job)
 			if (!error) {
 				stdout_use_iter = gebr_output_use_var_iter(job, output_expr);
 				stdout_parsed = escape_quote_and_slash(result);
-				if(gebr_geoxml_flow_io_get_output_append(job->flow) ||
-				   (has_control && !stdout_use_iter))
+
+				if (gebr_geoxml_flow_io_get_output_append(job->flow) ||
+				    (has_control && !stdout_use_iter))
 					g_string_append_printf(job->parent.cmd_line, ">> \"%s\" ", stdout_parsed);
 				else
 					g_string_append_printf(job->parent.cmd_line, "> \"%s\" ", stdout_parsed);
@@ -1372,23 +1376,49 @@ static void job_assembly_cmdline(GebrdJob *job)
 		}
 	}
 	if (has_control && n) {
-		gchar *prefix, *remove;
+		gchar *prefix;
+		gchar *remove;
+		gint nprocs, nice;
+
 		assemble_bc_cmd_line (expr_buf);
-		prefix = g_strdup_printf("for (( counter=0; counter<%s; counter++ ))\ndo\n%s\n%s",
-		                         n, expr_buf->str, str_buf->str);
-		if(!gebr_geoxml_flow_io_get_output_append(job->flow) && !stdout_use_iter &&
-				strlen(gebr_geoxml_flow_io_get_output(job->flow)) > 0 && previous_stdout) {
+		nprocs = gebrd_app_set_heuristic_aggression(gebrd, atoi(job->exec_speed->str), &nice);
+
+		if (job->is_parallelizable) {
+			job_issue(job, "This flow is executed with %d processor(s) using %s of machine.\n", nprocs, nice == 0? "all the resources" : "only the idle time");
+			prefix = g_strdup_printf("PROC=%d\n"
+						 "NICE=%d\n"
+						 "exec=\"nice -n $NICE\"\n"
+						 "for (( _outter=0; _outter < %s; _outter+=$PROC ))\n"
+						 "do\n"
+						 "  unset PIDS\n"
+						 "  for (( counter=$_outter; counter < $_outter+$PROC && counter < %s; counter++ ))\n"
+						 "  do\n"
+						 "    %s\n%s",
+						 nprocs, nice, n, n, expr_buf->str, str_buf->str);
+			g_string_append(job->parent.cmd_line, " ) &\nPIDS=\"$! $PIDS\"");
+			g_string_prepend_c(job->parent.cmd_line, '(');
+		} else {
+			job_issue(job, "This flow is executed with 1 processor(s) using all the resources of machine.\n");
+			prefix = g_strdup_printf("for (( counter=0; counter<%s; counter++ ))\ndo\n%s\n%s",
+						 n, expr_buf->str, str_buf->str);
+		}
+		if (!gebr_geoxml_flow_io_get_output_append(job->flow) && !stdout_use_iter &&
+		    strlen(gebr_geoxml_flow_io_get_output(job->flow)) > 0 && previous_stdout) {
 			remove = g_strdup_printf("\n\ttest $counter -eq 0 && > %s\n", stdout_parsed);
 			g_string_prepend(job->parent.cmd_line, remove);
 			g_free(remove);
 		}
-		if(!gebr_geoxml_flow_io_get_error_append(job->flow) && !stderr_use_iter &&
-				strlen(gebr_geoxml_flow_io_get_error(job->flow)) > 0) {
+		if (!gebr_geoxml_flow_io_get_error_append(job->flow) && !stderr_use_iter &&
+		    strlen(gebr_geoxml_flow_io_get_error(job->flow)) > 0) {
 			remove = g_strdup_printf("\n\ttest $counter -eq 0 && > %s\n", stderr_parsed);
 			g_string_prepend(job->parent.cmd_line, remove);
 			g_free(remove);
 		}
 		g_string_prepend(job->parent.cmd_line, prefix);
+		if (job->is_parallelizable)
+			g_string_append_printf(job->parent.cmd_line, "\n"
+					       "  done\n"
+					       "  wait $PIDS\n");
 		g_string_append(job->parent.cmd_line, "\ndone");
 		g_free(prefix);
 		g_free(n);
