@@ -173,7 +173,7 @@ static void gebr_server_init (GebrServer *self)
 /**
  * \internal
  */
-static void server_log_message(enum gebr_log_message_type type, const gchar * message)
+static void server_log_message(GebrLogMessageType type, const gchar * message)
 {
 	gebr_message(type, TRUE, TRUE, message);
 }
@@ -198,7 +198,6 @@ static void server_state_changed(struct gebr_comm_server *comm_server, GebrServe
  */
 static GString *server_ssh_login(const gchar * title, const gchar * message)
 {
-	gdk_threads_enter();
 	GtkWidget *dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(gebr.window),
 							(GtkDialogFlags)(GTK_DIALOG_MODAL |
 									 GTK_DIALOG_DESTROY_WITH_PARENT),
@@ -219,7 +218,6 @@ static GString *server_ssh_login(const gchar * title, const gchar * message)
 	GString *password = !confirmed ? NULL : g_string_new(gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	gtk_widget_destroy(dialog);
-	gdk_threads_leave();
 	return password;
 }
 
@@ -228,9 +226,7 @@ static GString *server_ssh_login(const gchar * title, const gchar * message)
  */
 static gboolean server_ssh_question(const gchar * title, const gchar * message)
 {
-	gdk_threads_enter();
 	gboolean response = gebr_gui_confirm_action_dialog(title, message);
-	gdk_threads_leave();
 	return response;
 }
 
@@ -482,4 +478,14 @@ void gebr_server_set_autoconnect (GebrServer *self, gboolean setting)
 void gebr_server_connect (GebrServer *self)
 {
 	gebr_comm_server_connect (self->comm);
+}
+
+gint gebr_server_get_ncores (GebrServer *self)
+{
+	return self->ncores;
+}
+
+void gebr_server_set_ncores (GebrServer *self, gint cores)
+{
+	self->ncores = cores;
 }

@@ -33,8 +33,13 @@
 #include "gebrd-server.h"
 #include "gebrd-client.h"
 #include "gebrd-job-queue.h"
+#include "gebrd-sysinfo.h"
 
 #define GEBRD_CONF_FILE "/etc/gebr/gebrd.conf"
+
+#define MAX_NICE 19
+#define MIN_NICE 0
+#define DEFAULT_NPROCS 1
 
 GebrdApp *gebrd = NULL;
 
@@ -43,13 +48,13 @@ enum {
 	PROP_0,
 	LAST_PROPERTY
 };
-//static guint property_member_offset [] = {0,
-//};
+
 enum {
 	LAST_SIGNAL
 };
-//static guint object_signals[LAST_SIGNAL];
+
 G_DEFINE_TYPE(GebrdApp, gebrd_app, G_TYPE_OBJECT)
+
 static void gebrd_app_init(GebrdApp * self)
 {
 	self->user_data_filename = g_string_new(NULL);
@@ -68,7 +73,12 @@ static void gebrd_app_init(GebrdApp * self)
 	self->line = NULL;
 	self->proj = NULL;
 	self->validator = NULL;
+
+	GebrdCpuInfo *cpu = gebrd_cpu_info_new();
+	self->nprocs = gebrd_cpu_info_n_procs(cpu);
+	gebrd_cpu_info_free(cpu);
 }
+
 static void gebrd_app_finalize(GObject * object)
 {
 	GebrdApp *self = (GebrdApp *) object;
@@ -222,7 +232,7 @@ void gebrd_quit(void)
 	g_main_loop_quit(gebrd->main_loop);
 }
 
-void gebrd_message(enum gebr_log_message_type type, const gchar * message, ...)
+void gebrd_message(GebrLogMessageType type, const gchar * message, ...)
 {
 	gchar *string;
 	const gchar *loglevel;
@@ -391,4 +401,19 @@ GebrValidator *gebrd_get_validator(GebrdApp *self)
 		self->validator = gebr_validator_new(&self->flow, &self->line, &self->proj);
 
 	return self->validator;
+}
+
+gint
+gebrd_app_set_heuristic_aggression(GebrdApp *self,
+				   gint aggressive,
+				   gint *nice)
+{
+	if (aggressive > 0)
+		*nice = MIN_NICE;
+	else {
+		*nice = MAX_NICE;
+		aggressive *= -1;
+	}
+
+	return (self->nprocs - DEFAULT_NPROCS) * (aggressive-1)/4 + DEFAULT_NPROCS;
 }
