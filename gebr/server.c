@@ -51,6 +51,17 @@ gebr_server_set_property (GObject         *object,
                          GParamSpec      *pspec)
 {
 	GebrServer *self = GEBR_SERVER (object);
+	gboolean is_auto_choose = FALSE;
+
+	if (self == NULL)
+		return;
+
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->common.store), &self->iter,
+			   SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+
+	if(is_auto_choose)
+		return;
+
 	switch (prop_id) {
 	case PROP_ADDRESS:
 		gtk_list_store_set (gebr.ui_server_list->common.store, &self->iter,
@@ -81,22 +92,38 @@ gebr_server_get_property (GObject         *object,
 	gchar *address;
 	GebrServer *self = GEBR_SERVER (object);
 	GtkTreeModel *model = GTK_TREE_MODEL (gebr.ui_server_list->common.store);
+	gboolean is_auto_choose = FALSE;
+
+	if (self == NULL)
+		return;
+
+	gtk_tree_model_get(model, &self->iter,
+			   SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
 
 	switch (prop_id) {
 	case PROP_ADDRESS:
 		gtk_tree_model_get (model, &self->iter,
 				    SERVER_NAME, &address,
 				    -1);
-		g_value_take_string (value, address);
+		if (is_auto_choose)
+			g_value_take_string (value, g_strdup(""));
+		else
+			g_value_take_string (value, address);
 		break;
 	case PROP_AUTOCONNECT:
-		g_value_set_boolean (value, gebr_server_get_autoconnect (self));
+		if (is_auto_choose)
+			g_value_set_boolean (value, FALSE);
+		else
+			g_value_set_boolean (value, gebr_server_get_autoconnect (self));
 		break;
 	case PROP_TAGS:
 		gtk_tree_model_get (model, &self->iter,
 				    SERVER_TAGS, &tags,
 				    -1);
-		g_value_take_string (value, tags);
+		if (is_auto_choose)
+			g_value_take_string (value, g_strdup(""));
+		else
+			g_value_take_string (value, tags);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -173,7 +200,7 @@ static void gebr_server_init (GebrServer *self)
 /**
  * \internal
  */
-static void server_log_message(enum gebr_log_message_type type, const gchar * message)
+static void server_log_message(GebrLogMessageType type, const gchar * message)
 {
 	gebr_message(type, TRUE, TRUE, message);
 }
@@ -198,7 +225,6 @@ static void server_state_changed(struct gebr_comm_server *comm_server, GebrServe
  */
 static GString *server_ssh_login(const gchar * title, const gchar * message)
 {
-	gdk_threads_enter();
 	GtkWidget *dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(gebr.window),
 							(GtkDialogFlags)(GTK_DIALOG_MODAL |
 									 GTK_DIALOG_DESTROY_WITH_PARENT),
@@ -219,7 +245,6 @@ static GString *server_ssh_login(const gchar * title, const gchar * message)
 	GString *password = !confirmed ? NULL : g_string_new(gtk_entry_get_text(GTK_ENTRY(entry)));
 
 	gtk_widget_destroy(dialog);
-	gdk_threads_leave();
 	return password;
 }
 
@@ -228,9 +253,7 @@ static GString *server_ssh_login(const gchar * title, const gchar * message)
  */
 static gboolean server_ssh_question(const gchar * title, const gchar * message)
 {
-	gdk_threads_enter();
 	gboolean response = gebr_gui_confirm_action_dialog(title, message);
-	gdk_threads_leave();
 	return response;
 }
 
@@ -273,13 +296,23 @@ gboolean server_find_address (const gchar *address,
 	GtkTreeIter i;
 	GtkTreeModel *model;
 
+	g_return_val_if_fail(address != NULL, FALSE);
+	g_return_val_if_fail(g_strcmp0(address, "") != 0, FALSE);
+
 	model = GTK_TREE_MODEL (gebr.ui_server_list->common.store);
 	gebr_gui_gtk_tree_model_foreach(i, model) {
 		GebrServer *server;
+		gboolean is_auto_choose = FALSE;
+
+		gtk_tree_model_get(model, &iter,
+				   SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+
+		if (is_auto_choose)
+			continue;
 
 		gtk_tree_model_get (model, &i, SERVER_POINTER, &server, -1);
 
-		if (strcmp (address, server->comm->address->str) != 0)
+		if (g_strcmp0 (address, server->comm->address->str) != 0)
 			continue;
 
 		if (!group) {
@@ -482,4 +515,14 @@ void gebr_server_set_autoconnect (GebrServer *self, gboolean setting)
 void gebr_server_connect (GebrServer *self)
 {
 	gebr_comm_server_connect (self->comm);
+}
+
+gint gebr_server_get_ncores (GebrServer *self)
+{
+	return self->ncores;
+}
+
+void gebr_server_set_ncores (GebrServer *self, gint cores)
+{
+	self->ncores = cores;
 }

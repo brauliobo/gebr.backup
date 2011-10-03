@@ -88,6 +88,8 @@ struct gebr {
 	GHashTable * help_edit_windows;
 	GHashTable * xmls_by_filename;
 
+	GtkWidget *flow_exec_speed_widget;
+
 	GebrValidator *validator;
 
 	GebrGeoXmlDocument *project_line;
@@ -97,7 +99,7 @@ struct gebr {
 	GebrGeoXmlProgram *program;
 
 	GList *flow_clipboard;
-	struct gebr_log *log;
+	GebrLog *log;
 	GSList *tmpfiles;
 
 	/* Persistent GUI */
@@ -125,6 +127,8 @@ struct gebr {
 		gboolean job_log_word_wrap;
 		gboolean job_log_auto_scroll;
 		gboolean native_editor;
+
+		gint flow_exec_speed;
 
 		// Selections state
 		gint current_notebook;
@@ -159,20 +163,14 @@ struct gebr {
 	} pixmaps;				
 };
 
-/**
- * Take initial measures. This function is called when \ref gebr.window is shown.
- */
-void gebr_init(void);
+void gebr_init(gboolean has_config);
 
 /**
  * Free memory, remove temporaries files and quit.
  */
 gboolean gebr_quit(gboolean save_config);
 
-/**
- * Initialize configuration for GeBR.
- */
-int gebr_config_load(void);
+gboolean gebr_config_load(void);
 
 /**
  * Populates the various data models, such as menus index and projects & lines.
@@ -193,7 +191,7 @@ void gebr_config_save(gboolean verbose);
  * \param in_log_file If TRUE, appends \p message in log file (see ~/.gebr/log/ directory).
  * \param message A printf-like formated message.
  */
-void gebr_message(enum gebr_log_message_type type, gboolean in_statusbar, gboolean in_log_file,
+void gebr_message(GebrLogMessageType type, gboolean in_statusbar, gboolean in_log_file,
 		  const gchar * message, ...);
 
 /**

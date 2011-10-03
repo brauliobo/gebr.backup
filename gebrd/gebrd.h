@@ -70,7 +70,7 @@ struct _GebrdApp {
 
 	GString *run_filename;
 	GString *fs_lock;
-	struct gebr_log *log;
+	GebrLog *log;
 	GMainLoop *main_loop;
 	int finished_starting_pipe[2];
 
@@ -81,7 +81,10 @@ struct _GebrdApp {
 	GebrGeoXmlDocument *line;
 	GebrGeoXmlDocument *proj;
 	GebrValidator *validator;
+
+	gint nprocs;
 };
+
 struct _GebrdAppClass {
 	GObjectClass parent;
 };
@@ -103,7 +106,7 @@ void gebrd_quit(void);
  * Log a message in the gebrd log file and to standand output.
  * The message in only shown in the stdout if gebrd is running in interative mode.
  */
-void gebrd_message(enum gebr_log_message_type type, const gchar * message, ...);
+void gebrd_message(GebrLogMessageType type, const gchar * message, ...);
 
 /**
  * Return a free port to be used for X11 redirection.
@@ -145,6 +148,17 @@ void gebrd_clean_proj_line_dicts(void);
  *  Get validator to gebrd if self->validator != NULL
  */
 GebrValidator *gebrd_get_validator(GebrdApp *self);
+
+/**
+ * gebrd_app_set_heuristic_aggression:
+ *
+ * @self: The #GebrdApp with number of procs.
+ * @aggressive: Aggression will be the basis of heuristic.
+ * @nice: The nice to be used on processor.
+ *
+ * Returns: The number of procs and nice after set heuristic.
+ */
+gint gebrd_app_set_heuristic_aggression(GebrdApp *self, gint aggressive, gint *nice);
 
 G_END_DECLS
 #endif				//__GEBRD_H

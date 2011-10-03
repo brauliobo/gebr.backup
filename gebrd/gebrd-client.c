@@ -270,12 +270,18 @@ static void client_old_parse_messages(GebrCommProtocolSocket * socket, struct cl
 			GebrdMemInfo *meminfo = gebrd_mem_info_new();
 			model_name = gebrd_cpu_info_get (cpuinfo, 0, "model name");
 			total_memory = gebrd_mem_info_get (meminfo, "MemTotal");
+			gchar *ncores = g_strdup_printf("%d", gebrd_cpu_info_n_procs(cpuinfo));
 			gebr_comm_protocol_socket_oldmsg_send(client->socket, FALSE,
-							      gebr_comm_protocol_defs.ret_def, 8,
-							      gebrd->hostname, display_port->str,
-							      queue_list->str, server_type,
-							      accounts_list->str, model_name,
-							      total_memory, gebrd->fs_lock->str);
+							      gebr_comm_protocol_defs.ret_def, 9,
+							      gebrd->hostname,
+							      display_port->str,
+							      queue_list->str,
+							      server_type,
+							      accounts_list->str,
+							      model_name,
+							      total_memory,
+							      gebrd->fs_lock->str,
+							      ncores);
 
 			gebrd_cpu_info_free (cpuinfo);
 			gebrd_mem_info_free (meminfo);
@@ -283,7 +289,7 @@ static void client_old_parse_messages(GebrCommProtocolSocket * socket, struct cl
 			g_string_free(display_port, TRUE);
 			g_string_free(accounts_list, TRUE);
 			g_string_free(queue_list, TRUE);
-
+			g_free(ncores);
 		} else if (client->socket->protocol->logged == FALSE) {
 			/* not logged! */
 			goto err;
@@ -295,20 +301,21 @@ static void client_old_parse_messages(GebrCommProtocolSocket * socket, struct cl
 			job_list(client);
 		} else if (message->hash == gebr_comm_protocol_defs.run_def.code_hash) {
 			GList *arguments;
-			GString *xml, *account, *queue, *n_process, *run_id;
+			GString *xml, *account, *queue, *n_process, *run_id, *exec_speed;
 			GebrdJob *job;
 
 			/* organize message data */
-			if ((arguments = gebr_comm_protocol_socket_oldmsg_split(message->argument, 5)) == NULL)
+			if ((arguments = gebr_comm_protocol_socket_oldmsg_split(message->argument, 6)) == NULL)
 				goto err;
 			xml = g_list_nth_data(arguments, 0);
 			account = g_list_nth_data(arguments, 1);
 			queue = g_list_nth_data(arguments, 2);
 			n_process = g_list_nth_data(arguments, 3);
 			run_id = g_list_nth_data(arguments, 4);
+			exec_speed = g_list_nth_data(arguments, 5);
 
 			/* try to run and send return */
-			job_new(&job, client, queue, account, xml, n_process, run_id);
+			job_new(&job, client, queue, account, xml, n_process, run_id, exec_speed);
 #ifdef DEBUG
 			gchar *env_delay = getenv("GEBRD_RUN_DELAY_SEC");
 			if (env_delay != NULL)

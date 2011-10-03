@@ -16,13 +16,11 @@
  *   <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
-
 #include <glib/gi18n.h>
 #include <libgebr/date.h>
-#include <libgebr/gui/gebr-gui-file-entry.h>
-#include <libgebr/gui/gebr-gui-utils.h>
-#include <libgebr/gui/gebr-gui-icons.h>
+#include <libgebr/gui/gui.h>
+#include <libgebr/comm/gebr-comm.h>
+#include <stdlib.h>
 
 #include "ui_flow.h"
 #include "gebr.h"
@@ -35,163 +33,20 @@
 
 #include "job.h"
 
-#define GEBR_FLOW_UI_RESPONSE_EXECUTE 1
+/* Prototypes {{{1 */
+static void create_jobs_and_run(GebrCommRunner *runner);
 
-static gboolean flow_io_run_dialog(GebrCommServerRunConfig *config, GebrServer *server, gboolean mpi_program);
-static void flow_io_run(GebrGeoXmlFlow *flow, gboolean parallel, gboolean single);
-
-gboolean flow_io_get_selected(struct ui_flow_io *ui_flow_io, GtkTreeIter * iter)
-{
-	return gtk_tree_selection_get_selected(
-			gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_flow_io->treeview)), NULL, iter);
-}
-
-void flow_io_select_iter(struct ui_flow_io *ui_flow_io, GtkTreeIter * iter)
-{
-	gebr_gui_gtk_tree_view_select_iter(GTK_TREE_VIEW(ui_flow_io->treeview), iter);
-}
-
-void flow_io_set_server(GtkTreeIter * server_iter, const gchar * input, const gchar * output, const gchar * error)
-{
-	GebrServer *server;
-
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->common.store), server_iter, SERVER_POINTER, &server, -1);
-
-	gebr_geoxml_flow_server_set_address(gebr.flow, server->comm->address->str);
-	gebr_geoxml_flow_io_set_input(gebr.flow, input);
-	gebr_geoxml_flow_io_set_output(gebr.flow, output);
-	gebr_geoxml_flow_io_set_error(gebr.flow, error);
-
-	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, TRUE);
-}
-
-void flow_fast_run(gboolean parallel, gboolean single)
-{
-	flow_io_run(gebr.flow, parallel, single);
-}
-
-void flow_add_program_sequence_to_view(GebrGeoXmlSequence * program,
-				       gboolean select_last,
-				       gboolean never_opened)
-{
-	const gchar *icon;
-	GtkTreeIter iter;
-	GebrGeoXmlProgramControl control;
-	gboolean has_control;
-	GebrGeoXmlProgram *first_prog;
-
-	gtk_tree_model_get_iter_first (GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store), &iter);
-	gtk_tree_model_get (GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store), &iter,
-			    FSEQ_GEBR_GEOXML_POINTER, &first_prog, -1);
-
-	control = gebr_geoxml_program_get_control (first_prog);
-	has_control = control != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY;
-
-	// Reference this program so _sequence_next don't destroy it
-	gebr_geoxml_object_ref(program);
-	for (; program != NULL; gebr_geoxml_sequence_next(&program)) {
-		control = gebr_geoxml_program_get_control (GEBR_GEOXML_PROGRAM (program));
-
-		if (!has_control && control != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY) {
-			gtk_list_store_insert_after (gebr.ui_flow_edition->fseq_store, &iter, NULL);
-			has_control = TRUE;
-		} else
-			gtk_list_store_insert_before(gebr.ui_flow_edition->fseq_store,
-						     &iter, &gebr.ui_flow_edition->output_iter);
-
-		icon = gebr_gui_get_program_icon(GEBR_GEOXML_PROGRAM(program));
-		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &iter,
-				   FSEQ_TITLE_COLUMN, gebr_geoxml_program_get_title(GEBR_GEOXML_PROGRAM(program)),
-				   FSEQ_ICON_COLUMN, icon,
-				   FSEQ_TOOLTIP, _("This program needs to be configure"),
-				   FSEQ_GEBR_GEOXML_POINTER, program,
-				   FSEQ_ELLIPSIZE, PANGO_ELLIPSIZE_NONE,
-				   FSEQ_EDITABLE, FALSE,
-				   FSEQ_SENSITIVE, TRUE,
-				   FSEQ_NEVER_OPENED, never_opened,
-				   -1);
-		gebr_geoxml_object_ref(program);
-
-		GebrIExprError undef;
-		gebr_geoxml_program_get_error_id(GEBR_GEOXML_PROGRAM(program), &undef);
-		if (never_opened || undef == GEBR_IEXPR_ERROR_PATH)
-			continue;
-		gebr_geoxml_program_is_valid(GEBR_GEOXML_PROGRAM(program), gebr.validator, NULL);
-	}
-
-	if (select_last)
-		flow_edition_select_component_iter(&iter);
-}
-
-void flow_program_check_sensitiveness (void)
-{
-	GebrGeoXmlSequence *program;
-	GebrGeoXmlProgram *first_program = NULL;
-	GebrGeoXmlProgram *last_program = NULL;
-	gboolean has_some_error_output = FALSE;
-	gboolean has_configured = FALSE;
-
-	gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->input_iter,
-			   FSEQ_EDITABLE, FALSE,
-			   FSEQ_SENSITIVE, FALSE, -1);
-	gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->output_iter,
-			   FSEQ_EDITABLE, FALSE,
-			   FSEQ_SENSITIVE, FALSE, -1);
-	gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->error_iter,
-			   FSEQ_EDITABLE, FALSE,
-			   FSEQ_SENSITIVE, FALSE, -1);
-
-	gebr_geoxml_flow_get_program(gebr.flow, &program, 0);
-	for (; program != NULL; gebr_geoxml_sequence_next(&program)) {
-
-		GebrGeoXmlProgramControl control = gebr_geoxml_program_get_control (GEBR_GEOXML_PROGRAM (program));
-
-		if (control != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY)
-			continue;
-
-		if (gebr_geoxml_program_get_status (GEBR_GEOXML_PROGRAM(program)) == GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED) {
-			if (!has_configured) {
-				first_program = GEBR_GEOXML_PROGRAM(program);
-				gebr_geoxml_object_ref(first_program);
-				has_configured = TRUE;
-			}
-			if (!has_some_error_output && gebr_geoxml_program_get_stderr(GEBR_GEOXML_PROGRAM(program))){
-				has_some_error_output = TRUE;
-			}
-
-			if (last_program)
-				gebr_geoxml_object_unref(last_program);
-
-			last_program = GEBR_GEOXML_PROGRAM(program);
-			gebr_geoxml_object_ref(last_program);
-		}
-	}
-
-	if (has_configured) {
-		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->input_iter,
-				   FSEQ_EDITABLE, gebr_geoxml_program_get_stdin(GEBR_GEOXML_PROGRAM(first_program)),
-				   FSEQ_SENSITIVE, gebr_geoxml_program_get_stdin(GEBR_GEOXML_PROGRAM(first_program)), -1);
-		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->output_iter,
-				   FSEQ_EDITABLE, gebr_geoxml_program_get_stdout(GEBR_GEOXML_PROGRAM(last_program)),
-				   FSEQ_SENSITIVE, gebr_geoxml_program_get_stdout(GEBR_GEOXML_PROGRAM(last_program)), -1);
-
-		if (has_some_error_output)
-			gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->error_iter,
-					   FSEQ_EDITABLE, TRUE,
-					   FSEQ_SENSITIVE, TRUE, -1);
-		gebr_geoxml_object_unref(first_program);
-		gebr_geoxml_object_unref(last_program);
-	}
-}
-
-/**
- * \internal
- *
- * @param config A pointer to a gebr_comm_server_run structure, which will hold the parameters entered within the dialog.
- * @param server
- * @param mpi_program
+/* Private methods {{{1 */
+/*
+ * flow_io_run_dialog:
+ * @config: A pointer to a gebr_comm_server_run structure, which will hold the parameters entered within the dialog.
+ * @server:
+ * @mpi_program:
  */
-static gboolean flow_io_run_dialog(GebrCommServerRunConfig *config, GebrServer *server, gboolean mpi_program)
+static gboolean
+flow_io_run_dialog(GebrCommRunner *config,
+		   GebrServer     *server,
+		   gboolean        mpi_program)
 {
 	gboolean ret = TRUE;
 	GtkWidget *dialog;
@@ -339,161 +194,510 @@ out:
 	return ret;
 }
 
-/*
- * flow_io_run:
- *
- * Check for current server and if its connected, for the queue selected.
- */
-static void flow_io_run(GebrGeoXmlFlow *flow, gboolean parallel, gboolean single)
+static gboolean
+fill_moab_account_and_queue(GebrCommRunner *runner,
+			    GebrServer *server,
+			    const gchar *queue_id,
+			    gboolean is_mpi)
 {
-	/* FLOW: get selected */
+	if (!flow_io_run_dialog(runner, server, is_mpi)) {
+		gebr_message(GEBR_LOG_ERROR, TRUE, TRUE, _("No available queue for server \"%s\"."), server->comm->address->str);
+		return FALSE;
+	}
+
+	runner->queue = g_strdup(queue_id);
+	return TRUE;
+}
+
+/*
+ * QueueTypes:
+ * @AUTOMATIC_QUEUE: A queue created when a flow is executed
+ * @USER_QUEUE: A queue created when the user chooses a name or when multiple
+ * flows are executed.
+ * @IMMEDIATELY_QUEUE: The immediately queue.
+ */
+typedef enum {
+	AUTOMATIC_QUEUE,
+	USER_QUEUE,
+	IMMEDIATELY_QUEUE,
+} QueueTypes;
+
+static QueueTypes
+get_queue_type(const gchar *queue_id)
+{
+	if (g_strcmp0(queue_id, "j") == 0)
+		return IMMEDIATELY_QUEUE;
+
+	if (queue_id[0] == 'j')
+		return AUTOMATIC_QUEUE;
+
+	if (queue_id[0] == 'q')
+		return USER_QUEUE;
+
+	g_return_val_if_reached(IMMEDIATELY_QUEUE);
+}
+
+/*
+ * Creates the queue name for multiple flows execution.
+ * The queue name consists of the title of the first flow
+ * concatenated with the title of the last flow.
+ */
+static gchar *
+create_multiple_execution_queue(GebrCommRunner *runner,
+				GebrServer *server)
+{
+	GebrCommRunnerFlow *runflow;
+	GebrGeoXmlFlow *first, *last;
+	GString *new_queue = g_string_new(NULL);
+	gchar *tfirst, *tlast;
+
+	runflow = g_list_first(runner->flows)->data;
+	first = runflow->flow;
+
+	runflow = g_list_last(runner->flows)->data;
+	last = runflow->flow;
+
+	tfirst = gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(first));
+	tlast = gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(last));
+	g_string_printf(new_queue, _("After \"%s\"...\"%s\""), tfirst, tlast);
+	g_string_prepend_c(new_queue, 'q');
+	g_free(tfirst);
+	g_free(tlast);
+
+	/* Finds a unique name for the queue. */
+	gint queue_num = 1;
+	gchar *tmpname = g_strdup(new_queue->str);
+	while (server_queue_find(server, tmpname, NULL)) {
+		g_free(tmpname);
+		tmpname = g_strdup_printf("%s %d", new_queue->str, queue_num);
+		queue_num++;
+	}
+	g_string_assign(new_queue, tmpname);
+
+	return g_string_free(new_queue, FALSE);
+}
+
+/*
+ * Fills the queue and MPI/MOAB parameters in @runner struct.
+ */
+static gboolean
+fill_runner_struct(GebrCommRunner *runner,
+		   const gchar    *queue_id,
+		   gboolean        parallel,
+		   gboolean        single)
+{
+	GebrServer *server;
+	GebrCommRunnerFlow *runflow;
+	gboolean multiple, is_mpi;
+
+	server = runner->servers->data;
+	runflow = runner->flows->data;
+	multiple = !single && runner->flows->next != NULL;
+	is_mpi = gebr_geoxml_flow_get_first_mpi_program(runflow->flow) != NULL;
+
+	if (server->type == GEBR_COMM_SERVER_TYPE_MOAB) {
+		if (fill_moab_account_and_queue(runner, server, queue_id, is_mpi))
+			return TRUE;
+		else
+			goto free_and_error;
+	} else {
+		gboolean is_immediately = queue_id == NULL || get_queue_type(queue_id) == IMMEDIATELY_QUEUE;
+
+		// Multiple flows in sequence
+		if (multiple && !parallel) {
+			const gchar *internal_queue_name = queue_id? queue_id:"j";
+			if (is_immediately || get_queue_type(internal_queue_name) == AUTOMATIC_QUEUE) {
+				runner->queue = create_multiple_execution_queue(runner, server);
+				gebr_comm_protocol_socket_oldmsg_send(server->comm->socket, FALSE,
+								      gebr_comm_protocol_defs.rnq_def, 2,
+								      internal_queue_name, runner->queue);
+			} else
+				runner->queue = g_strdup(internal_queue_name);
+
+		// Append single flow in queue
+		} else if (!parallel && !is_immediately) {
+			if (get_queue_type(queue_id) == AUTOMATIC_QUEUE) {
+				if (!flow_io_run_dialog(runner, server, is_mpi))
+					goto free_and_error;
+
+				gebr_comm_protocol_socket_oldmsg_send(server->comm->socket, FALSE,
+								      gebr_comm_protocol_defs.rnq_def, 2,
+								      queue_id, runner->queue);
+			} else {
+				runner->queue = g_strdup(queue_id);
+				if (is_mpi && !flow_io_run_dialog(runner, server, is_mpi))
+					goto free_and_error;
+			}
+
+		// Single & Multiple parallel execution
+		} else {
+			/* If the active combobox entry is the first one (index 0), then
+			 * "Immediately" (a queue name starting with j) is selected as queue option. */
+			runner->queue = g_strdup("j");
+			if (is_mpi && !flow_io_run_dialog(runner, server, is_mpi))
+			    goto free_and_error;
+		}
+	}
+
+	return TRUE;
+
+free_and_error:
+	gebr_comm_runner_free(runner);
+	return FALSE;
+}
+
+static GList *
+get_connected_servers(GtkTreeModel *model)
+{
+	GtkTreeIter iter;
+	GList *servers = NULL;
+	GebrServer *server;
+
+	gebr_gui_gtk_tree_model_foreach(iter, model) {
+		gboolean is_auto_choose;
+		gtk_tree_model_get(model, &iter, SERVER_POINTER, &server,
+				   SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+
+		if (is_auto_choose)
+			continue;
+
+		if (server->comm->socket->protocol->logged)
+			servers = g_list_prepend(servers, server);
+	}
+
+	return servers;
+}
+
+/*
+ * Struct to handle 2D points
+ */
+typedef struct {
+	gdouble x;
+	gdouble y;
+} GebrPoint;
+
+/*
+ * Compute the linear regression over a given list of points (GebrPoints)
+ */
+void
+create_linear_model(GList *points, gdouble **parameters)
+{
+	gint j;
+	GList *i;
+	gdouble weight[] = {1, 1, 1};
+	gdouble sumY=0, sumX=0, sumX2=0, sumXY=0, w=0;
+	for (i = points, j = 0; i; i = i->next, j++) {
+		GebrPoint *point = i->data;
+		sumY += point->y * weight[j];
+		sumX += point->x * weight[j];
+		sumX2 += (point->x*point->x) * weight[j];
+		sumXY += (point->x*point->y) * weight[j];
+		w += weight[j];
+	}
+	// Line Ax + B = 0
+	// A = parameters[0]
+	// B = parameters[1]
+	(*parameters)[0] = (w*sumXY - sumX*sumY)/(w*sumX2 - sumX*sumX);
+	(*parameters)[1] = (sumY - (*parameters)[0]*sumX)/w;
+}
+
+/*
+ * Compute the parameters of a polynomial (2nd order) fit
+ */
+void
+create_2ndDegreePoly_model(GList *points, gdouble parameters[])
+{
+	gdouble M, MA, MB, MC, **N;
+	gint j;
+	GList *i;
+	N = g_new(GebrPoint*, 3);
+	for (i = points, j = 0; i; i = i->next, j++) {
+		GebrPoint *point = i->data;
+		N[j] = g_new(GebrPoint, 4);
+		N[j][0] = 1;
+		N[j][1] = point->x; 
+		N[j][2] = N[j][1]*N[j][1]; 
+		N[j][3] = point->y;
+		}
+
+	M = (N[1][1] - N[0][1]) * (N[2][1] - N[0][1])*(N[2][1] - N[1][1]);
+	MA = N[2][3]*(N[1][1]-N[0][1]) + N[1][3]*(N[0][1]-N[2][1]) + N[0][3]*(N[2][1]-N[1][1]);
+	MB = N[2][3]*(N[0][2]-N[1][2]) + N[1][3]*(N[2][2]-N[0][2]) + N[0][3]*(N[1][2]-N[2][2]);
+	MC = N[2][3]*(N[0][1]*N[1][2] - N[1][1]*N[0][2]) + N[1][3]*(N[2][1]*N[0][2]-N[0][1]*N[2][2]) + N[0][3]*(N[1][1]*N[2][2]-N[2][1]*N[1][2]);  
+	// Equation Ax2 + Bx + C = 0
+	parameters[0] = MA/M;
+	parameters[1] = MB/M;
+	parameters[2] = MC/M;
+	
+	for (gint j=0; j<3; j++)
+		g_free(N[j]);
+	g_free(N);
+}
+
+/*
+ * Predict the future load
+ */
+static gdouble
+predict_current_load(GList *points, gdouble delay)
+{
+	gdouble prediction;
+	gdouble parameters[3];
+	//create_linear_model(points, &parameters);
+	//prediction = parameters[0]*delay + parameters[1];
+	create_2ndDegreePoly_model(points, parameters);
+	prediction = parameters[0]*delay*delay + parameters[1]*delay + parameters[2];
+
+	return prediction;
+}
+
+/*
+ * Compute the score of a server
+ */
+static gdouble
+calculate_server_score(const gchar *load, gint ncores)
+{
+	GList *points = NULL;
+	gdouble delay = 1.0;
+	GebrPoint point1, point5, point15;
+	
+	sscanf(load, "%lf %lf %lf", &(point1.y), &(point5.y), &(point15.y));
+	
+	point1.y /= ncores; 
+	point5.y /= ncores;
+       	point15.y /= ncores;	
+	point1.x = -1.0; 
+	point5.x = -5.0; 
+	point15.x = -15.0;
+	points = g_list_prepend(points, &point1);
+	points = g_list_prepend(points, &point5);
+	points = g_list_prepend(points, &point15);
+	
+	gdouble current_load = predict_current_load(points, delay);
+	
+	g_list_free(points);
+
+	return current_load;
+}
+
+/*
+ * Struct to handle the server with the maximum score
+ */
+typedef struct {
+	gdouble min_score;
+	GebrServer *the_one;
+	gint responses;
+	gint requests;
+	gboolean parallel;
+	gboolean single;
+	GebrCommRunner *runner;
+} ServerScores;
+
+/*
+ * Rank the server according to the scores
+ */
+static void
+on_response_received(GebrCommHttpMsg *request, GebrCommHttpMsg *response, ServerScores *scores)
+{
+	if (request->method == GEBR_COMM_HTTP_METHOD_GET)
+	{
+		GebrCommJsonContent *json = gebr_comm_json_content_new(response->content->str);
+		GString *value = gebr_comm_json_content_to_gstring(json);
+		GebrServer *server = g_object_get_data(G_OBJECT(request), "current-server");
+		gdouble score = calculate_server_score(value->str, server->ncores);
+		g_debug("Server: %s, Score: %lf, Load: %s", server->comm->address->str, score*4, value->str);
+
+		if (score < scores->min_score) {
+			scores->min_score = score;
+			scores->the_one = server;
+		}
+		scores->responses++;
+		if (scores->responses == scores->requests) {
+			scores->runner->servers = g_list_prepend(scores->runner->servers, scores->the_one);
+			if (fill_runner_struct(scores->runner, NULL, scores->parallel, scores->single))
+				create_jobs_and_run(scores->runner);
+			gebr_comm_runner_free(scores->runner);
+
+			g_debug("THE ONE: %s, Min Score: %lf", scores->the_one->comm->address->str, scores->min_score*4);
+		}
+	}
+}
+
+/*
+ * Request all the connected servers the info on the local file /proc/loadavg
+ */
+static void
+send_sys_load_request(GList *servers, GebrCommRunner *runner, gboolean parallel, gboolean single)
+{
+	ServerScores *scores = g_new0(ServerScores, 1);
+	scores->parallel = parallel;
+	scores->single = single;
+	scores->min_score = G_MAXDOUBLE;
+	scores->runner = runner;
+
+	for (GList *i = servers; i; i = i->next) {
+		GebrCommHttpMsg *request;
+		GebrServer *server = i->data;
+		request = gebr_comm_protocol_socket_send_request(server->comm->socket,
+								 GEBR_COMM_HTTP_METHOD_GET,
+								 "/sys-load", NULL);
+		g_object_set_data(G_OBJECT(request), "current-server", i->data);
+		g_signal_connect(request, "response-received",
+				 G_CALLBACK(on_response_received), scores);
+		scores->requests++;
+	}
+}
+
+static void
+create_job_entry(GebrCommRunner *runner, GebrGeoXmlFlow *flow, guint runid, gboolean select)
+{
+	gchar *title;
+	GebrJob *job;
+	GebrServer *server;
+	GString *queue_string;
+
+	gebr_geoxml_flow_set_date_last_run(flow, gebr_iso_date());
+	document_save(GEBR_GEOXML_DOC(flow), FALSE, FALSE);
+	flow_browse_info_update(); 
+
+	server = runner->servers->data;
+	queue_string = g_string_new(runner->queue);
+	job = job_new_from_flow(server, flow, queue_string);
+	g_string_free(queue_string, TRUE);
+	g_string_printf(job->parent.run_id, "%u", runid);
+
+	if (select) {
+		job_set_active(job);
+		gebr.config.current_notebook = 3;
+		gtk_notebook_set_current_page(GTK_NOTEBOOK(gebr.notebook), gebr.config.current_notebook);
+	}
+
+	title = gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(flow));
+
+	if (gebr_comm_server_is_local(server->comm) == FALSE)
+		gebr_message(GEBR_LOG_INFO, FALSE, TRUE, _("Asking server '%s' to run Flow '%s'."), server->comm->address->str, title);
+	else 
+		gebr_message(GEBR_LOG_INFO, FALSE, TRUE, _("Asking local server to run Flow '%s'."), title);
+	g_free(title);
+}
+
+/*
+ * Creates job entries in JobControl tab. Also swaps the data structs from
+ * GebrCommRunner::servers list from GebrServer to GebrCommServer, so GebrComm
+ * can handle it (because GebrComm can't see GebrServer struct).
+ */
+static void
+create_jobs_and_run(GebrCommRunner *runner)
+{
+	gboolean first = TRUE;
+
+	for (GList *i = runner->flows; i; i = i->next) {
+		GebrCommRunnerFlow *runflow = i->data;
+		create_job_entry(runner, runflow->flow, runflow->run_id, first);
+		first = FALSE;
+	}
+
+	for (GList *i = runner->servers; i; i = i->next)
+		i->data = ((GebrServer*)i->data)->comm;
+
+	gebr_comm_runner_run(runner);
+}
+
+static void
+add_selected_flows_to_runner(GebrCommRunner *runner)
+{
+	GebrGeoXmlFlow *flow;
+	GtkTreeView *treeview;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	treeview = GTK_TREE_VIEW(gebr.ui_flow_browse->view);
+	model = gtk_tree_view_get_model(treeview);
+
+	gebr_gui_gtk_tree_view_foreach_selected(&iter, treeview) {
+		gtk_tree_model_get(model, &iter, FB_XMLPOINTER, &flow, -1);
+		gebr_validator_set_document(gebr.validator, (GebrGeoXmlDocument**) &flow, GEBR_GEOXML_DOCUMENT_TYPE_FLOW, FALSE);
+		gebr_comm_runner_add_flow(runner, gebr.validator, flow);
+	}
+	gebr_validator_set_document(gebr.validator, (GebrGeoXmlDocument**) &gebr.flow, GEBR_GEOXML_DOCUMENT_TYPE_FLOW, FALSE);
+}
+
+/*
+ * Gets the selected queue. Returns %TRUE if no queue was selected, %FALSE
+ * otherwise.
+ */
+static gboolean
+get_selected_queue(gchar **queue, GebrServer *server)
+{
+	GtkTreeIter queue_iter;
+	gboolean has_error = FALSE;
+
+	if (!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), &queue_iter)) {
+		if (server->type == GEBR_COMM_SERVER_TYPE_MOAB ||
+		    !gtk_tree_model_get_iter_first(GTK_TREE_MODEL(server->queues_model), &queue_iter)) {
+			gebr_message(GEBR_LOG_ERROR, TRUE, TRUE, _("No available queue for server \"%s\"."), server->comm->address->str);
+			has_error = TRUE;
+		}
+	}
+
+	if (!has_error)
+		gtk_tree_model_get(GTK_TREE_MODEL(server->queues_model), &queue_iter, 
+				   SERVER_QUEUE_ID, queue, -1);
+
+	return !has_error;
+}
+
+/* Public methods {{{1 */
+void
+gebr_ui_flow_run(gboolean parallel, gboolean single)
+{
+	GebrCommRunner *runner;
+	GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(gebr.ui_flow_edition->server_combobox));
+
 	if (!flow_browse_get_selected(NULL, FALSE)) {
 		gebr_message(GEBR_LOG_ERROR, TRUE, FALSE, _("No Flow selected."));
 		return;
 	}
-	/* SERVER on combox: get selected */
-	GtkTreeIter server_iter;
-	if (!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(gebr.ui_flow_edition->server_combobox), &server_iter)) {
-		//just happen if the current server was removed
-		gebr_message(GEBR_LOG_ERROR, TRUE, FALSE, _("No server selected."));
+
+	runner = gebr_comm_runner_new();
+	runner->parallel = parallel;
+	runner->execution_speed = g_strdup_printf("%d", gebr_interface_get_execution_speed());
+
+	if (single)
+		gebr_comm_runner_add_flow(runner, gebr.validator, gebr.flow);
+	else
+		add_selected_flows_to_runner(runner);
+
+	if (gebr.ui_flow_edition->autochoose) {
+		GList *servers = get_connected_servers(model);
+		send_sys_load_request(servers, runner, parallel, single);
+		g_list_free(servers);
 		return;
-	}
-
-	GebrServer *server;
-
-	gtk_tree_model_get (GTK_TREE_MODEL(gebr.ui_project_line->servers_sort), &server_iter,
-			    SERVER_POINTER, &server, -1);
-
-	/* SERVER: check connection */
-	if (!gebr_comm_server_is_logged(server->comm)) {
-		if (gebr_comm_server_is_local(server->comm))
-			gebr_message(GEBR_LOG_ERROR, TRUE, TRUE,
-				     _("You are not connected to the local server."), server->comm->address->str);
-		else
-			gebr_message(GEBR_LOG_ERROR, TRUE, TRUE,
-				     _("You are not connected to server '%s'."), server->comm->address->str);
-		return;
-	}
-
-	/* initialization */
-	GebrCommServerRunConfig *config = gebr_comm_server_run_config_new();
-	config->queue = NULL;
-	config->parallel = parallel;
-	
-	/* SET config->queue */
-	GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
-	gboolean multiple = !single && gtk_tree_selection_count_selected_rows(selection) > 1;
-	gboolean mpi_program = (gebr_geoxml_flow_get_first_mpi_program(gebr.flow) != NULL);
-	GtkTreeIter queue_iter;
-	if (server->type == GEBR_COMM_SERVER_TYPE_MOAB) {
-		if (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), &queue_iter)) {
-			gtk_tree_model_get(GTK_TREE_MODEL(server->queues_model), &queue_iter, 
-					   SERVER_QUEUE_ID, &config->queue, -1);
-			if (!flow_io_run_dialog(config, server, mpi_program))
-				goto err;
-		} else {
-			gebr_message(GEBR_LOG_ERROR, TRUE, TRUE, _("No available queue for server '%s'."), server->comm->address->str);
-			goto err;
-		}
 	} else {
-		/* Common servers. */
-		gboolean is_immediately = gtk_combo_box_get_active(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox)) == 0;
+		GtkTreeIter server_iter;
+		GebrServer *server;
+		gchar *queue_id;
 
-		/* ENSURE THAT AFTER IF/ELSE CHAINS config->queue WAS INITIALIZED!
-		 * REMEMBER flow_io_run_dialog ALWAYS SET config->queue IF NULL AND TRUE RETURNED
-		 * FIXME: SIMPLIFY CONDITIONS */
-		if (multiple && !parallel) {
-			if (!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), &queue_iter) &&
-			    !gtk_tree_model_get_iter_first(GTK_TREE_MODEL(server->queues_model), &queue_iter))
-				goto err;
-
-			GString *new_internal_queue_name = g_string_new(NULL);
-			gchar *internal_queue_name;
-			gtk_tree_model_get(GTK_TREE_MODEL(server->queues_model), &queue_iter, 
-					   SERVER_QUEUE_ID, &internal_queue_name, -1);
-
-			/* If the first flow is marked to run Immediately or it has a Job Queue selected,
-			 * we must create a new queue name. The name is composed by the first and the last
-			 * flow title in the selection.
-			 */
-			if (is_immediately || internal_queue_name[0] == 'j') {
-				GList *selected = gebr_gui_gtk_tree_view_get_selected_iters(GTK_TREE_VIEW(gebr.ui_flow_browse->view));
-				GebrGeoXmlFlow *first;
-				GebrGeoXmlFlow *last;
-				gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_browse->store),
-						   (GtkTreeIter*)(g_list_first(selected)->data), FB_XMLPOINTER, &first, -1);
-				gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_browse->store),
-						   (GtkTreeIter*)(g_list_last(selected)->data), FB_XMLPOINTER, &last, -1);
-				g_list_foreach(selected, (GFunc) gtk_tree_iter_free, NULL);
-				g_list_free(selected);
-
-				/* compose it */
-				GString *aux = g_string_new(NULL);
-				g_string_printf(aux, _("After '%s'...'%s'"),
-						gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(first)),
-						gebr_geoxml_document_get_title(GEBR_GEOXML_DOCUMENT(last)));
-				g_string_prepend_c(aux, 'q');
-				g_string_assign(new_internal_queue_name, aux->str);
-				/* Finds a unique name for the queue. */
-				for (gint queue_num = 1; server_queue_find(server, new_internal_queue_name->str, NULL);)
-					g_string_printf(new_internal_queue_name, "%s %d", aux->str, queue_num++);
-				g_string_free(aux, TRUE);
-
-				/* In this case, we have renamed the `internal_queue_name' to 'new_internal_queue_name', so we must
-				 * send the request to the server. */
-				gebr_comm_protocol_socket_oldmsg_send(server->comm->socket, FALSE,
-								      gebr_comm_protocol_defs.rnq_def, 2,
-								      internal_queue_name, new_internal_queue_name->str);
-			} else
-				g_string_assign(new_internal_queue_name, internal_queue_name);
-
-			/* frees */
-			config->queue = g_string_free(new_internal_queue_name, FALSE);
-			g_free(internal_queue_name);
-		} else if (!parallel && !is_immediately) {
-			if (!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), &queue_iter) &&
-			    !gtk_tree_model_get_iter_first(GTK_TREE_MODEL(server->queues_model), &queue_iter))
-				goto err;
-
-			gchar *internal_queue_name;
-			gtk_tree_model_get(GTK_TREE_MODEL(server->queues_model), &queue_iter, 
-					   SERVER_QUEUE_ID, &internal_queue_name, -1);
-			
-			/* Other queue option is selected: after a running job (flow) or
-			 * on a pre-existent queue.
-			 */
-			if (internal_queue_name[0] == 'j') {
-				/* Prefix 'j' indicates a single running job. So, the user is placing a new
-				 * job behind this single one, which denotes proper enqueuing. In this case,
-				 * it is necessary to give a name to the new queue. */
-
-				/* config->queue being set here! */
-				if (!flow_io_run_dialog(config, server, mpi_program)) {
-					g_free(internal_queue_name);
-					goto err;
-				}
-				gebr_comm_protocol_socket_oldmsg_send(server->comm->socket, FALSE,
-								      gebr_comm_protocol_defs.rnq_def, 2, internal_queue_name, config->queue);
-				g_free(internal_queue_name);
-			} else {
-				config->queue = internal_queue_name;
-				if (mpi_program && !flow_io_run_dialog(config, server, mpi_program))
-					goto err;
-			}
-		} else {
-			/* If the active combobox entry is the first one (index 0), then
-			 * "Immediately" (a queue name starting with j) is selected as queue option. */
-			config->queue = g_strdup("j");
-			if (mpi_program && !flow_io_run_dialog(config, server, mpi_program))
-			    goto err;
+		if (!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(gebr.ui_flow_edition->server_combobox), &server_iter)) {
+			gebr_message(GEBR_LOG_ERROR, TRUE, FALSE, _("No server selected."));
+			goto free_and_error;
 		}
+
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->servers_sort), &server_iter,
+				   SERVER_POINTER, &server, -1);
+
+		runner->servers = g_list_prepend(runner->servers, server);
+
+		if (!get_selected_queue(&queue_id, server)) {
+			gebr_message(GEBR_LOG_ERROR, TRUE, FALSE, _("No queue selected."));
+			goto free_and_error;
+		}
+
+		if (!fill_runner_struct(runner, queue_id, parallel, single))
+			goto free_and_error;
+
+		create_jobs_and_run(runner);
 	}
 
-	document_save(GEBR_GEOXML_DOCUMENT(gebr.flow), TRUE, FALSE);
-
-	flow_run(server, config, !multiple);
-	return;
-
-err:
-	gebr_comm_server_run_config_free(config);
+free_and_error:
+	gebr_comm_runner_free(runner);
 }

@@ -1021,3 +1021,18 @@ gebr_geoxml_flow_revalidate(GebrGeoXmlFlow *flow, GebrValidator *validator)
 			gebr_geoxml_program_set_status(prog, GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED);
 	}
 }
+
+gboolean
+gebr_geoxml_flow_is_parallelizable(GebrGeoXmlFlow *flow,
+                                   GebrValidator *validator)
+{
+	if (!gebr_geoxml_flow_has_control_program(flow))
+		return FALSE;
+
+	const gchar *output = gebr_geoxml_flow_io_get_output(flow);
+
+	if (!strlen(output) || gebr_validator_use_iter(validator, output, GEBR_GEOXML_PARAMETER_TYPE_STRING, GEBR_GEOXML_DOCUMENT_TYPE_FLOW))
+		return TRUE;
+
+	return FALSE;
+}
