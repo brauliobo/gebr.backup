@@ -1,3 +1,9 @@
+gebrproject (0.15.1) lucid; urgency=low
+
+  * Parallel execution on multicore machines (#994)
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Mon, 26 Sep 2011 18:13:55 -0300
+
 gebrproject (0.14.0) lucid; urgency=low
 
   * Support to newest Linux distros (Debian Squeeze, Ubuntu Natty, Fedora 15 and CentOS 6)

@@ -25,8 +25,8 @@ AC_PREREQ([2.59])
 # set GEBR_BINARY_AGE and GEBR_INTERFACE_AGE to 0.
 
 m4_define(gebr_major_version,   [0])
-m4_define(gebr_minor_version,  [14])
-m4_define(gebr_micro_version,   [0])
+m4_define(gebr_minor_version,  [15])
+m4_define(gebr_micro_version,   [1])
 m4_define([gebr_interface_age], [0])
 m4_define([gebr_binary_age],
           [m4_eval(100 * gebr_minor_version + gebr_micro_version)])
@@ -173,7 +173,6 @@ AC_ARG_WITH([tidy],
 	    [want_tidy=yes])
 
 ENABLE_TIDY=0
-TIDY_HAVE_SUBDIR=0
 if test "x${want_tidy}" = xyes; then
 	AC_SEARCH_LIBS([tidyCreate], [tidy],
 		       [have_tidy=yes],
@@ -181,7 +180,7 @@ if test "x${want_tidy}" = xyes; then
 
 	if test "x${have_tidy}" = xyes; then
 		AC_CHECK_HEADERS([tidy/tidy.h tidy/buffio.h],
-				 [TIDY_HAVE_SUBDIR=1],
+				 [],
 				 [AC_CHECK_HEADERS([tidy.h buffio.h],
 						   [],
 						   [have_tidy=no;])])
@@ -201,7 +200,6 @@ if test "x${want_tidy}" = xyes; then
 	fi
 fi
 AC_SUBST(ENABLE_TIDY)
-AC_SUBST(TIDY_HAVE_SUBDIR)
 
 dnl ============================================================================
 dnl Checking for zlib library
@@ -273,8 +271,6 @@ fi
 
 AC_DEFINE_UNQUOTED(ENABLE_TIDY, [$ENABLE_TIDY],
 		   [If one, tidy is enabled, zero is disabled])
-AC_DEFINE_UNQUOTED(TIDY_HAVE_SUBDIR, [$TIDY_HAVE_SUBDIR],
-		   [If one, tidy resides in tidy/tidy.h])
 
 DATA_DIR=`echo $TMP_PREFIX/share`
 AC_DEFINE_UNQUOTED(DATA_DIR, ["$DATA_DIR"], [Data dir])
@@ -295,9 +291,6 @@ AC_DEFINE_UNQUOTED(LIBGEBR_PIXMAPS_DIR, ["$LIBGEBR_PIXMAPS_DIR"], [libgebr pixma
 
 LIBGEBR_ICONS_DIR="$LIBGEBR_DATA_DIR/icons"
 AC_DEFINE_UNQUOTED(LIBGEBR_ICONS_DIR, ["$LIBGEBR_ICONS_DIR"], [libgebr icons dir])
-
-LIBGEBR_CKEDITOR_DIR="$LIBGEBR_DATA_DIR/ckeditor"
-AC_DEFINE_UNQUOTED(LIBGEBR_CKEDITOR_DIR, ["$LIBGEBR_CKEDITOR_DIR"], [libgebr ckeditor dir])
 
 LIBGEBR_STYLES_DIR="$LIBGEBR_DATA_DIR/styles"
 AC_DEFINE_UNQUOTED(LIBGEBR_STYLES_DIR, ["$LIBGEBR_STYLES_DIR"], [libgebr styles])
@@ -324,14 +317,6 @@ AC_DEFINE_UNQUOTED(GEBR_DATA_DIR, ["$GEBR_DATA_DIR"], ["GeBR's data dir"])
 GEBR_VERSION="$VERSION"
 AC_DEFINE_UNQUOTED(GEBR_VERSION, ["$GEBR_VERSION"], ["GeBR's version"])
 
-GEBR_HELP_EDIT_SCRIPT_PATH=$LIBGEBR_CKEDITOR_DIR
-AC_DEFINE_UNQUOTED(GEBR_HELP_EDIT_SCRIPT_PATH, ["$GEBR_HELP_EDIT_SCRIPT_PATH"],
-		   ["TODO Substitute me with LIBGEBR_CKEDITOR_DIR"])
-
-GEBR_STYLES_DIR=$LIBGEBR_STYLES_DIR
-AC_DEFINE_UNQUOTED(GEBR_STYLES_DIR, ["$GEBR_STYLES_DIR"],
-		   ["TODO Substitute me with LIBGEBR_STYLES_DIR"])
-
 GEBR_SYS_MENUS_DIR="$GEBR_DATA_DIR/menus"
 AC_DEFINE_UNQUOTED(GEBR_SYS_MENUS_DIR, ["$GEBR_SYS_MENUS_DIR"], [Menus dir])
 
@@ -347,13 +332,12 @@ AC_DEFINE_UNQUOTED(DEBR_DATA_DIR, ["$DEBR_DATA_DIR"], ["DeBR's data dir"])
 DEBR_GLADE_DIR="$DEBR_DATA_DIR/glade"
 AC_DEFINE_UNQUOTED(DEBR_GLADE_DIR, ["$DEBR_GLADE_DIR"], [Glade dir])
 
-DEBR_HELP_EDIT_CKEDITOR="$LIBGEBR_CKEDITOR_DIR/ckeditor.js"
+DEBR_HELP_EDIT_CKEDITOR="$LIBGEBR_DATA_DIR/ckeditor/ckeditor.js"
 AC_DEFINE_UNQUOTED(DEBR_HELP_EDIT_CKEDITOR, ["$DEBR_HELP_EDIT_CKEDITOR"],
 		   [TODO Use this instead of dir?])
 
 DEBR_USERDOC_HTML="$DEBR_DATA_DIR/userdoc/debr.html"
 AC_DEFINE_UNQUOTED(DEBR_USERDOC_HTML, ["$DEBR_USERDOC_HTML"], [User documentation])
-
 
 GEBRD_VERSION="$VERSION"
 AC_DEFINE_UNQUOTED(GEBRD_VERSION, ["$GEBRD_VERSION"], ["GeBRd's version"]) 

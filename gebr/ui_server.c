@@ -40,7 +40,9 @@
  * Prototypes
  */
 
-static void server_list_add(struct ui_server_list *ui_server_list, const gchar * address);
+static void
+server_list_add(struct ui_server_list *ui_server_list,
+		const gchar * address);
 
 static void on_combo_changed(gpointer user_data);
 
@@ -426,11 +428,16 @@ static void server_common_actions(GtkDialog * dialog, gint arg1, struct ui_serve
 	}
 }
 
-/*
- * Function: server_list_add
+/**
+ * server_list_add:
+ * @ui_server_list: Pointer to user interface server list
+ * @address: The new server address
+ *
  * Callback to add a server to the server list
  */
-static void server_list_add(struct ui_server_list *ui_server_list, const gchar * address)
+static void
+server_list_add(struct ui_server_list *ui_server_list,
+		const gchar * address)
 {
 	gboolean ret;
 	GtkTreeIter iter;
@@ -441,10 +448,17 @@ static void server_list_add(struct ui_server_list *ui_server_list, const gchar *
 	/* check if it is already in list */
 	gebr_gui_gtk_tree_model_foreach(iter, GTK_TREE_MODEL(ui_server_list->common.store)) {
 		GebrServer *server;
+		gboolean is_auto_choose = FALSE;
 
 		gtk_tree_model_get(GTK_TREE_MODEL(ui_server_list->common.store), &iter, SERVER_POINTER, &server, -1);
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->common.store), &iter,
+		   				   SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
 
-		if (strcmp (server->comm->address->str, address) == 0) {
+		if (is_auto_choose)
+			continue;
+
+		if (g_strcmp0 (server->comm->address->str, address) == 0)
+		{
 			ret = gtk_tree_model_filter_convert_child_iter_to_iter (
 					GTK_TREE_MODEL_FILTER (ui_server_list->common.filter),
 					&filter_iter, &iter);
@@ -520,6 +534,7 @@ static gboolean visible_func (GtkTreeModel *model,
 	gchar *tag;
 	gchar *fsid;
 	gboolean is_fs;
+	gboolean is_auto_choose;
 	GtkTreeIter active;
 	GtkComboBox *combo;
 	GtkTreeModel *combo_model;
@@ -527,6 +542,10 @@ static gboolean visible_func (GtkTreeModel *model,
 
 	combo = GTK_COMBO_BOX (gebr.ui_server_list->common.combo);
 	combo_model = gtk_combo_box_get_model (combo);
+
+	gtk_tree_model_get(model, iter, SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+	if (is_auto_choose)
+		return FALSE;
 
 	if (!gtk_combo_box_get_active_iter (combo, &active))
 		return TRUE;
@@ -593,11 +612,18 @@ struct ui_server_list *server_list_setup_ui(void)
 							  G_TYPE_STRING,	/* Tag List		*/
 							  G_TYPE_STRING,	/* CPU Info		*/
 							  G_TYPE_STRING, 	/* Memory Info		*/
-							  G_TYPE_STRING 	/* File System Group	*/
+							  G_TYPE_STRING, 	/* File System Group	*/
+							  G_TYPE_BOOLEAN	/* Is auto-choose */
 							 );
 
+	GtkTreeIter iter;
+	gtk_list_store_append(ui_server_list->common.store, &iter);
+	gtk_list_store_set(ui_server_list->common.store, &iter,
+			   SERVER_NAME, _("Auto-choose"),
+			   SERVER_IS_AUTO_CHOOSE, TRUE,
+			   -1);
+
 	ui_server_list->common.filter = gtk_tree_model_filter_new(GTK_TREE_MODEL(ui_server_list->common.store), NULL);
-	gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(ui_server_list->common.filter), visible_func, NULL, NULL);
 
 	ui_server_list->common.sort_store = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(ui_server_list->common.filter));
 
@@ -619,6 +645,7 @@ struct ui_server_list *server_list_setup_ui(void)
 	g_signal_connect(dialog, "response", G_CALLBACK(server_common_actions), &ui_server_list->common);
 
 	server_common_setup(&ui_server_list->common);
+	gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(ui_server_list->common.filter), visible_func, NULL, NULL);
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), ui_server_list->common.widget, TRUE, TRUE, 0);
 
 	hbox = gtk_hbox_new(FALSE, 3);
@@ -668,15 +695,14 @@ void server_list_show(struct ui_server_list *ui_server_list)
 	gtk_widget_show_all(ui_server_list->common.dialog);
 }
 
-/*
- * Function: server_list_updated_status
- * Update status of _server_ in store
- *
- */
-void server_list_updated_status(GebrServer *server)
+void
+server_list_updated_status(GebrServer *server)
 {
 	GdkPixbuf *status_icon;
 	GtkTreePath *path;
+
+	if (server == NULL)
+		return;
 
 	status_icon = (server->last_error->len || server->comm->last_error->len)
 	    ? gebr.pixmaps.stock_warning : (server->comm->socket->protocol->logged == TRUE)
@@ -689,11 +715,15 @@ void server_list_updated_status(GebrServer *server)
 	gtk_tree_model_row_changed(GTK_TREE_MODEL(gebr.ui_server_list->common.store), path, &server->iter);
 }
 
-gchar **ui_server_list_tag (GebrServer *server)
+gchar **
+ui_server_list_tag (GebrServer *server)
 {
 	gchar *tags;
 	gchar **tag_list;
 	GtkTreeModel *model;
+
+	if (server == NULL)
+		return NULL;
 
 	model = GTK_TREE_MODEL (gebr.ui_server_list->common.store);
 
@@ -704,7 +734,9 @@ gchar **ui_server_list_tag (GebrServer *server)
 	return tag_list;
 }
 
-GList *ui_server_servers_with_tag (const gchar *tag) {
+GList *
+ui_server_servers_with_tag (const gchar *tag)
+{
 	GList *list = NULL;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
@@ -715,6 +747,12 @@ GList *ui_server_servers_with_tag (const gchar *tag) {
 		GebrServer *server;
 		gchar *tags;
 		gchar **tag_list;
+		gboolean is_auto_choose;
+
+		gtk_tree_model_get(model, &iter, SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+
+		if (is_auto_choose)
+			continue;
 
 		gtk_tree_model_get(model, &iter,
 				   SERVER_POINTER, &server,
@@ -735,12 +773,18 @@ GList *ui_server_servers_with_tag (const gchar *tag) {
 	return g_list_reverse (list);
 }
 
-gboolean ui_server_has_tag (GebrServer *server, const gchar *tag)
+gboolean
+ui_server_has_tag (GebrServer *server,
+		   const gchar *tag)
 {
 	gchar *tags;
 	gchar **tag_list;
 	GtkTreeModel *model;
 	gboolean retval = FALSE;
+
+	g_return_val_if_fail(tag != NULL, FALSE);
+	g_return_val_if_fail(g_strcmp0(tag, "") != 0, FALSE);
+	g_return_val_if_fail(server != NULL, FALSE);
 
 	model = GTK_TREE_MODEL (gebr.ui_server_list->common.store);
 
@@ -803,15 +847,22 @@ static gchar *sort_and_remove_doubles (const gchar *tags_str)
 	return g_string_free (tags, FALSE);
 }
 
-void ui_server_set_tags (GebrServer *server, const gchar *str)
+void
+ui_server_set_tags (GebrServer *server,
+		    const gchar *str)
 {
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(str != NULL);
+	g_return_if_fail(g_strcmp0(str, "") != 0);
+
 	gtk_list_store_set (gebr.ui_server_list->common.store, &server->iter,
 			    SERVER_TAGS, str,
 			    -1);
 	ui_server_update_tags_combobox ();
 }
 
-gchar **ui_server_get_all_tags (void)
+gchar **
+ui_server_get_all_tags (void)
 {
 	GtkTreeIter iter;
 	GtkTreeModel *model;
@@ -823,6 +874,12 @@ gchar **ui_server_get_all_tags (void)
 	model = GTK_TREE_MODEL (gebr.ui_server_list->common.store);
 
 	gebr_gui_gtk_tree_model_foreach (iter, model) {
+		gboolean is_auto_choose;
+		gtk_tree_model_get (model, &iter, SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+
+		if (is_auto_choose)
+			continue;
+
 		gtk_tree_model_get (model, &iter, SERVER_TAGS, &tags, -1);
 		g_string_append_printf (concat, "%s,", tags);
 		g_free (tags);
@@ -837,7 +894,8 @@ gchar **ui_server_get_all_tags (void)
 	return retval;
 }
 
-gchar **ui_server_get_all_fsid (void)
+gchar **
+ui_server_get_all_fsid (void)
 {
 	gchar *fsid;
 	gchar *sorted;
@@ -850,6 +908,13 @@ gchar **ui_server_get_all_fsid (void)
 	list = g_string_new ("");
 
 	gebr_gui_gtk_tree_model_foreach (iter, model) {
+		gboolean is_auto_choose = FALSE;
+
+		gtk_tree_model_get (model, &iter, SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+
+		if (is_auto_choose)
+			continue;
+
 		gtk_tree_model_get (model, &iter, SERVER_FS, &fsid, -1);
 		if (fsid)
 			g_string_append_printf (list, "%s,", fsid);
@@ -865,7 +930,17 @@ gchar **ui_server_get_all_fsid (void)
 	return retval;
 }
 
-static gboolean tag_is_heterogeneous (const gchar *tag)
+/**
+ * tag_is_heterogeneous:
+ *
+ * @tag: The tag to be checked
+ *
+ * Check if a server tag is heterogeneous. When a tag is
+ * heterogeneous it means that this tag is applied to servers
+ * in different filesystems.
+ */
+static gboolean
+tag_is_heterogeneous (const gchar *tag)
 {
 	gchar *fs1, *fs2;
 	GList *servers = NULL;
@@ -873,6 +948,9 @@ static gboolean tag_is_heterogeneous (const gchar *tag)
 	GebrServer *svr1, *srv2;
 	GtkTreeModel *model;
 	gboolean retval = FALSE;
+
+	g_return_val_if_fail(tag != NULL, FALSE);
+	g_return_val_if_fail(g_strcmp0(tag, "") != 0, FALSE);
 
 	model = GTK_TREE_MODEL (gebr.ui_server_list->common.store);
 	list = servers = ui_server_servers_with_tag (tag);
@@ -1085,14 +1163,22 @@ gboolean ui_server_ask_for_tags_remove_permission (void){
 	gboolean result = FALSE;
 	gchar *tags;
 	GString *removed_tags = g_string_new(NULL);
-	gchar **removed_tagsv; 
+	gchar **removed_tagsv;
 	GString *all_tags = g_string_new(NULL);
-	gchar **all_tagsv; 
+	gchar **all_tagsv;
 	GList *all = NULL;
 
 
 	/* Build the list with all tags not sorted nor exclusive tags*/
 	gebr_gui_gtk_tree_model_foreach (iter, GTK_TREE_MODEL (gebr.ui_server_list->common.store)) {
+		gboolean is_auto_choose = FALSE;
+
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->common.store), &iter,
+		   				   SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+
+		if (is_auto_choose)
+			continue;
+
 		gtk_tree_model_get (GTK_TREE_MODEL (gebr.ui_server_list->common.store), &iter,
 				    SERVER_TAGS, &tags,
 				    -1);
@@ -1110,6 +1196,14 @@ gboolean ui_server_ask_for_tags_remove_permission (void){
 	gebr_gui_gtk_tree_view_foreach_selected(&iter, gebr.ui_server_list->common.view) {
 
 		GebrServer *server;
+		gboolean is_auto_choose = FALSE;
+
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_server_list->common.sort_store), &iter,
+		   				   SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+
+		if (is_auto_choose)
+			continue;
+
 		gtk_tree_model_get (gebr.ui_server_list->common.sort_store, &iter,
 				    SERVER_POINTER, &server,
 				    SERVER_TAGS, &tags,

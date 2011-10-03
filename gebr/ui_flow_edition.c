@@ -82,7 +82,8 @@ static void on_queue_combobox_changed (GtkComboBox *combo, GtkComboBox *server_c
  * Public functions
  */
 
-struct ui_flow_edition *flow_edition_setup_ui(void)
+struct ui_flow_edition *
+flow_edition_setup_ui(void)
 {
 	struct ui_flow_edition *ui_flow_edition;
 
@@ -1230,38 +1231,52 @@ static void flow_edition_on_combobox_changed(GtkComboBox * combobox)
 	if (!gtk_combo_box_get_active_iter (combobox, &iter))
 		return;
 
+	gboolean is_auto_choose;
 	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->servers_sort), &iter,
-			   SERVER_POINTER, &server,
+			   SERVER_IS_AUTO_CHOOSE, &is_auto_choose,
 			   -1);
-	gtk_combo_box_set_model (GTK_COMBO_BOX (gebr.ui_flow_edition->queue_combobox),
-				 GTK_TREE_MODEL (server->queues_model));
 
-	const gchar *addr = server->comm->address->str;
+	gebr.ui_flow_edition->autochoose = is_auto_choose;
+	gtk_widget_set_sensitive(gebr.ui_flow_edition->queue_combobox, !is_auto_choose);
 
-	gtk_tree_model_get (GTK_TREE_MODEL (gebr.ui_flow_browse->store), &flow_iter,
-			    FB_LAST_QUEUES, &last_queue_hash,
-			    -1);
+	if (is_auto_choose) {
+		gebr_geoxml_flow_server_set_address(gebr.flow, _("Auto-choose"));
+		gtk_combo_box_set_model(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), NULL);
+	} else {
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_project_line->servers_sort), &iter,
+				   SERVER_POINTER, &server,
+				   -1);
+		gtk_combo_box_set_model (GTK_COMBO_BOX (gebr.ui_flow_edition->queue_combobox),
+					 GTK_TREE_MODEL (server->queues_model));
 
-	if (!last_queue_hash) {
-		last_queue_hash = g_hash_table_new_full (g_str_hash,
-							 g_str_equal,
-							 (GDestroyNotify) g_free,
-							 NULL);
-		g_hash_table_insert (last_queue_hash,
-				     g_strdup (addr),
-				     GINT_TO_POINTER (0));
+		const gchar *addr = server->comm->address->str;
 
-		gtk_list_store_set (gebr.ui_flow_browse->store, &flow_iter,
-				    FB_LAST_QUEUES, last_queue_hash,
+		gtk_tree_model_get (GTK_TREE_MODEL (gebr.ui_flow_browse->store), &flow_iter,
+				    FB_LAST_QUEUES, &last_queue_hash,
 				    -1);
-		g_object_weak_ref (G_OBJECT (gebr.ui_flow_browse->store),
-				   (GWeakNotify) g_hash_table_destroy, last_queue_hash);
+
+		if (!last_queue_hash) {
+			last_queue_hash = g_hash_table_new_full (g_str_hash,
+								 g_str_equal,
+								 (GDestroyNotify) g_free,
+								 NULL);
+			g_hash_table_insert (last_queue_hash,
+					     g_strdup (addr),
+					     GINT_TO_POINTER (0));
+
+			gtk_list_store_set (gebr.ui_flow_browse->store, &flow_iter,
+					    FB_LAST_QUEUES, last_queue_hash,
+					    -1);
+			g_object_weak_ref (G_OBJECT (gebr.ui_flow_browse->store),
+					   (GWeakNotify) g_hash_table_destroy, last_queue_hash);
+		}
+
+		lstq = GPOINTER_TO_INT (g_hash_table_lookup (last_queue_hash, addr));
+		gtk_combo_box_set_active(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), lstq);
+
+		gebr_geoxml_flow_server_set_address (gebr.flow, addr);
 	}
 
-	lstq = GPOINTER_TO_INT (g_hash_table_lookup (last_queue_hash, addr));
-	gtk_combo_box_set_active(GTK_COMBO_BOX(gebr.ui_flow_edition->queue_combobox), lstq);
-
-	gebr_geoxml_flow_server_set_address (gebr.flow, addr);
 	flow_edition_set_io();
 	flow_browse_info_update();
 }
@@ -1363,12 +1378,15 @@ on_server_disconnected_set_row_insensitive(GtkCellLayout   *cell_layout,
 {
 
 	GebrServer *server;
+	gboolean is_auto_choose;
 
-	gtk_tree_model_get (tree_model, iter, SERVER_POINTER, &server, -1);
+	gtk_tree_model_get (tree_model, iter, SERVER_POINTER, &server,
+			    SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
 
-	if (server && server->comm)
-		g_object_set (cell, "sensitive",
-			      gebr_comm_server_is_logged (server->comm), NULL);
+	if (is_auto_choose)
+		g_object_set(cell, "sensitive", TRUE, NULL);
+	else if (server && server->comm)
+		g_object_set(cell, "sensitive", gebr_comm_server_is_logged (server->comm), NULL);
 }
 
 static void on_queue_combobox_changed (GtkComboBox *combo, GtkComboBox *server_combo)
@@ -1387,6 +1405,13 @@ static void on_queue_combobox_changed (GtkComboBox *combo, GtkComboBox *server_c
 		return;
 
 	server_model = gtk_combo_box_get_model (server_combo);
+
+	gboolean is_auto_choose;
+
+	gtk_tree_model_get (server_model, &server_iter, SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
+	if (is_auto_choose)
+		return;
+
 	gtk_tree_model_get (server_model, &server_iter,
 			    SERVER_POINTER, &server,
 			    -1);
@@ -1412,22 +1437,30 @@ flow_edition_find_flow_server (GebrGeoXmlFlow *flow,
 			       GtkTreeModel   *model,
 			       GtkTreeIter    *iter)
 {
-  const gchar *addr;
-  gboolean     valid;
-  GebrServer  *server;
+	const gchar *addr;
+	gboolean     valid;
+	GebrServer  *server;
 
-  addr = gebr_geoxml_flow_server_get_address (flow);
-  valid = gtk_tree_model_get_iter_first (model, iter);
-  while (valid)
-    {
-      gtk_tree_model_get (model, iter, SERVER_POINTER, &server, -1);
-      if (g_strcmp0 (server->comm->address->str, addr) == 0)
-        return TRUE;
-      valid = gtk_tree_model_iter_next (model, iter);
-    }
+	addr = gebr_geoxml_flow_server_get_address (flow);
+	valid = gtk_tree_model_get_iter_first (model, iter);
+	while (valid)
+	{
+		gboolean is_auto_choose;
+		gtk_tree_model_get (model, iter, SERVER_IS_AUTO_CHOOSE, &is_auto_choose, -1);
 
-  gtk_tree_model_get_iter_first (model, iter);
-  return FALSE;
+		if (is_auto_choose) {
+			valid = gtk_tree_model_iter_next (model, iter);
+			continue;
+		}
+
+		gtk_tree_model_get (model, iter, SERVER_POINTER, &server, -1);
+		if (g_strcmp0 (server->comm->address->str, addr) == 0)
+			return TRUE;
+		valid = gtk_tree_model_iter_next (model, iter);
+	}
+
+	gtk_tree_model_get_iter_first (model, iter);
+	return FALSE;
 }
 
 void
@@ -1465,3 +1498,118 @@ flow_edition_revalidate_programs(void)
 			flow_edition_change_iter_status(GEBR_GEOXML_PROGRAM_STATUS_UNCONFIGURED, &iter);
 	}
 }
+
+void flow_add_program_sequence_to_view(GebrGeoXmlSequence * program,
+				       gboolean select_last,
+				       gboolean never_opened)
+{
+	const gchar *icon;
+	GtkTreeIter iter;
+	GebrGeoXmlProgramControl control;
+	gboolean has_control;
+	GebrGeoXmlProgram *first_prog;
+
+	gtk_tree_model_get_iter_first (GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store), &iter);
+	gtk_tree_model_get (GTK_TREE_MODEL (gebr.ui_flow_edition->fseq_store), &iter,
+			    FSEQ_GEBR_GEOXML_POINTER, &first_prog, -1);
+
+	control = gebr_geoxml_program_get_control (first_prog);
+	has_control = control != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY;
+
+	// Reference this program so _sequence_next don't destroy it
+	gebr_geoxml_object_ref(program);
+	for (; program != NULL; gebr_geoxml_sequence_next(&program)) {
+		control = gebr_geoxml_program_get_control (GEBR_GEOXML_PROGRAM (program));
+
+		if (!has_control && control != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY) {
+			gtk_list_store_insert_after (gebr.ui_flow_edition->fseq_store, &iter, NULL);
+			has_control = TRUE;
+		} else
+			gtk_list_store_insert_before(gebr.ui_flow_edition->fseq_store,
+						     &iter, &gebr.ui_flow_edition->output_iter);
+
+		icon = gebr_gui_get_program_icon(GEBR_GEOXML_PROGRAM(program));
+		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &iter,
+				   FSEQ_TITLE_COLUMN, gebr_geoxml_program_get_title(GEBR_GEOXML_PROGRAM(program)),
+				   FSEQ_ICON_COLUMN, icon,
+				   FSEQ_TOOLTIP, _("This program needs to be configure"),
+				   FSEQ_GEBR_GEOXML_POINTER, program,
+				   FSEQ_ELLIPSIZE, PANGO_ELLIPSIZE_NONE,
+				   FSEQ_EDITABLE, FALSE,
+				   FSEQ_SENSITIVE, TRUE,
+				   FSEQ_NEVER_OPENED, never_opened,
+				   -1);
+		gebr_geoxml_object_ref(program);
+
+		GebrIExprError undef;
+		gebr_geoxml_program_get_error_id(GEBR_GEOXML_PROGRAM(program), &undef);
+		if (never_opened || undef == GEBR_IEXPR_ERROR_PATH)
+			continue;
+		gebr_geoxml_program_is_valid(GEBR_GEOXML_PROGRAM(program), gebr.validator, NULL);
+	}
+
+	if (select_last)
+		flow_edition_select_component_iter(&iter);
+}
+
+void flow_program_check_sensitiveness (void)
+{
+	GebrGeoXmlSequence *program;
+	GebrGeoXmlProgram *first_program = NULL;
+	GebrGeoXmlProgram *last_program = NULL;
+	gboolean has_some_error_output = FALSE;
+	gboolean has_configured = FALSE;
+
+	gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->input_iter,
+			   FSEQ_EDITABLE, FALSE,
+			   FSEQ_SENSITIVE, FALSE, -1);
+	gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->output_iter,
+			   FSEQ_EDITABLE, FALSE,
+			   FSEQ_SENSITIVE, FALSE, -1);
+	gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->error_iter,
+			   FSEQ_EDITABLE, FALSE,
+			   FSEQ_SENSITIVE, FALSE, -1);
+
+	gebr_geoxml_flow_get_program(gebr.flow, &program, 0);
+	for (; program != NULL; gebr_geoxml_sequence_next(&program)) {
+
+		GebrGeoXmlProgramControl control = gebr_geoxml_program_get_control (GEBR_GEOXML_PROGRAM (program));
+
+		if (control != GEBR_GEOXML_PROGRAM_CONTROL_ORDINARY)
+			continue;
+
+		if (gebr_geoxml_program_get_status (GEBR_GEOXML_PROGRAM(program)) == GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED) {
+			if (!has_configured) {
+				first_program = GEBR_GEOXML_PROGRAM(program);
+				gebr_geoxml_object_ref(first_program);
+				has_configured = TRUE;
+			}
+			if (!has_some_error_output && gebr_geoxml_program_get_stderr(GEBR_GEOXML_PROGRAM(program))){
+				has_some_error_output = TRUE;
+			}
+
+			if (last_program)
+				gebr_geoxml_object_unref(last_program);
+
+			last_program = GEBR_GEOXML_PROGRAM(program);
+			gebr_geoxml_object_ref(last_program);
+		}
+	}
+
+	if (has_configured) {
+		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->input_iter,
+				   FSEQ_EDITABLE, gebr_geoxml_program_get_stdin(GEBR_GEOXML_PROGRAM(first_program)),
+				   FSEQ_SENSITIVE, gebr_geoxml_program_get_stdin(GEBR_GEOXML_PROGRAM(first_program)), -1);
+		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->output_iter,
+				   FSEQ_EDITABLE, gebr_geoxml_program_get_stdout(GEBR_GEOXML_PROGRAM(last_program)),
+				   FSEQ_SENSITIVE, gebr_geoxml_program_get_stdout(GEBR_GEOXML_PROGRAM(last_program)), -1);
+
+		if (has_some_error_output)
+			gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &gebr.ui_flow_edition->error_iter,
+					   FSEQ_EDITABLE, TRUE,
+					   FSEQ_SENSITIVE, TRUE, -1);
+		gebr_geoxml_object_unref(first_program);
+		gebr_geoxml_object_unref(last_program);
+	}
+}
+

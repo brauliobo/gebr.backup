@@ -24,6 +24,7 @@
 
 #include "server.h"
 #include <libgebr/gui/gebr-gui-html-viewer-widget.h>
+#include <libgebr/comm/gebr-comm.h>
 
 G_BEGIN_DECLS
 
@@ -60,10 +61,7 @@ void flow_set_paths_to_relative(GebrGeoXmlFlow * flow, gboolean relative);
  * Clear all flow's paths
  */
 void flow_set_paths_to_empty(GebrGeoXmlFlow * flow);
-/** 
- * Runs a flow.
- */
-void flow_run(GebrServer *server, GebrCommServerRunConfig * config, gboolean single);
+
 /**
  * Make a revision from current flow.
  * Opens a dialog asking the user for a comment of it.
