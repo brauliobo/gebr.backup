@@ -1102,7 +1102,9 @@ gebr_validator_clean_cache(GebrValidator *self)
 		} else {
 			seq = gebr_geoxml_document_get_dict_parameter(cache_docs[i]);
 			while (seq) {
-				hash_data_remove(self, GET_VAR_NAME(GEBR_GEOXML_PARAMETER(seq)), i);
+				gchar * varname = GET_VAR_NAME(GEBR_GEOXML_PARAMETER(seq));
+				hash_data_remove(self, varname, i);
+				g_free(varname);
 				gebr_geoxml_sequence_next(&seq);
 			}
 			gebr_geoxml_document_unref(cache_docs[i]);
