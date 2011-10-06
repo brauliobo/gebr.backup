@@ -1305,31 +1305,60 @@ gboolean gebr_validator_evaluate_param(GebrValidator *self,
 	g_return_val_if_fail(param != NULL && gebr_geoxml_parameter_is_dict_param(param), FALSE);
 	GebrGeoXmlParameterType type = gebr_geoxml_parameter_get_type(param);
 	GebrGeoXmlDocumentType scope = gebr_geoxml_parameter_get_scope(param);
-	const gchar *name = GET_VAR_NAME(param);
-	const gchar *expr = GET_VAR_VALUE(param);
+	gchar *name = GET_VAR_NAME(param);
+	gchar *expr = GET_VAR_VALUE(param);
+	gboolean retval = FALSE;
 
 	HashData *data = g_hash_table_lookup(self->vars, name);
+
+	if (data == NULL)
+	{
+		g_free(name);
+		g_free(expr);
+	}
 	g_return_val_if_fail(data != NULL , FALSE);
 
 	if (!get_error_indirect(self, data->dep[scope], name, type, scope, error))
+	{
+		g_free(name);
+		g_free(expr);
 		return FALSE;
+	}
 
 	if (g_strcmp0(name, "iter") == 0 && !gebr_validator_validate_iter(self, param, error))
+	{
+		g_free(name);
+		g_free(expr);
 		return FALSE;
+	}
 
 	if(!gebr_validator_update_vars(self, scope, error))
+	{
+		g_free(name);
+		g_free(expr);
 		return FALSE;
+	}
 
 	if (data->error[scope]) {
+		g_free(name);
+		g_free(expr);
 		g_propagate_error(error, g_error_copy(data->error[scope]));
 		return FALSE;
 	}
 
 	// Numeric expressions on dictionary must be just fetched by name
 	if (get_validator_by_type(self, type) == GEBR_IEXPR(self->arith_expr))
-		expr = name;
+	{
+		g_free(expr);
+		expr = g_strdup(name);
+	}
 
-	return gebr_validator_evaluate_internal(self, name, expr, type, value, scope, TRUE, error);
+	retval = gebr_validator_evaluate_internal(self, name, expr, type, value, scope, TRUE, error);
+
+	g_free(name);
+	g_free(expr);
+
+	return retval;
 }
 
 gboolean
