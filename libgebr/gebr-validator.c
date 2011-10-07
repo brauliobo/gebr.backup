@@ -231,12 +231,18 @@ set_error(GebrValidator *self,
 	  GebrGeoXmlDocumentType scope,
 	  GError *error)
 {
-	if (!name) return;
+	if (!name)
+		return;
+
 	HashData *data = g_hash_table_lookup(self->vars, name);
 	g_return_if_fail(data != NULL);
-	if (error) {
+
+	if (error)
+	{
+		g_clear_error(&data->error[scope]);
 		data->error[scope] = g_error_copy(error);
-	} else if (data->error[scope])
+	}
+	else if (data->error[scope])
 		g_clear_error(&data->error[scope]);
 }
 
