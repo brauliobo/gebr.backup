@@ -905,9 +905,9 @@ gebr_validator_move(GebrValidator         *self,
 		    GList                **affected,
 		    GError               **error)
 {
-	const gchar *name;
-	const gchar *value;
-	const gchar *comment;
+	gchar *name = NULL;
+	gchar *value = NULL;
+	gchar *comment = NULL;
 	HashData *data;
 	GebrGeoXmlParameter *new_param;
 	GebrGeoXmlParameterType type;
@@ -916,7 +916,16 @@ gebr_validator_move(GebrValidator         *self,
 	name = GET_VAR_NAME(source);
 	data = g_hash_table_lookup(self->vars, name);
 
+	if (data == NULL)
+	{
+		g_free(name);
+	}
 	g_return_val_if_fail(data != NULL, FALSE);
+
+	if(self->docs[pivot_scope] == NULL)
+	{
+		g_free(name);
+	}
 	g_return_val_if_fail(self->docs[pivot_scope] != NULL, FALSE);
 
 	comment = gebr_geoxml_parameter_get_label(source);
@@ -935,6 +944,10 @@ gebr_validator_move(GebrValidator         *self,
 				    GEBR_IEXPR_ERROR_BAD_MOVE,
 				    _("The variable %s already exists in that scope"),
 				    name);
+			g_free(comment);
+			g_free(value);
+			g_free(name);
+
 			return FALSE;
 		} else {
 			GebrGeoXmlDocument *doc;
@@ -961,6 +974,10 @@ gebr_validator_move(GebrValidator         *self,
 	gebr_validator_insert(self, new_param, NULL, error);
 
 	*copy = new_param;
+
+	g_free(comment);
+	g_free(value);
+	g_free(name);
 
 	if (*error)
 		return FALSE;
