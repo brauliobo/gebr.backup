@@ -31,6 +31,7 @@ struct client {
 	GebrCommServerLocation server_location;
 	/* x11 redirected display, if server is remote. if local this is the true display */
 	GString *display;
+	gchar *sessid;
 };
 
 void client_add(GebrCommStreamSocket * stream_socket);

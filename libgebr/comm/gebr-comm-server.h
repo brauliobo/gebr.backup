@@ -85,6 +85,7 @@ typedef struct gebr_comm_server {
 		SERVER_ERROR_SSH,
 	} error;
 	GString *last_error;
+	const gchar *sessid;
 
 	/* virtual methods */
 	const struct gebr_comm_server_ops {

@@ -373,6 +373,7 @@ GebrServer *gebr_server_new (const gchar * address, gboolean autoconnect, const 
 			     NULL);
 
 	self->comm = gebr_comm_server_new (address, &ops);
+	self->comm->sessid = gebr_get_session_id();
 	self->comm->user_data = self;
 
 	model = GTK_TREE_MODEL (gebr.ui_server_list->common.store);
