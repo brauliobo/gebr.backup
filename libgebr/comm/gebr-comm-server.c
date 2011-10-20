@@ -572,6 +572,7 @@ static void gebr_comm_server_socket_connected(GebrCommProtocolSocket * socket, s
 	/* initialization */
 	gethostname(hostname, 255);
 	display = getenv("DISPLAY");
+
 	if (display == NULL)
 		display = "";
 	else
@@ -609,13 +610,13 @@ static void gebr_comm_server_socket_connected(GebrCommProtocolSocket * socket, s
 
 		/* send INI */
 		gebr_comm_protocol_socket_oldmsg_send(server->socket, FALSE,
-					     gebr_comm_protocol_defs.ini_def, 4, PROTOCOL_VERSION, hostname, "remote",
-					     mcookie_str);
+					     gebr_comm_protocol_defs.ini_def, 5, PROTOCOL_VERSION, hostname, "remote",
+					     mcookie_str, server->sessid);
 	} else {
 		/* send INI */
 		gebr_comm_protocol_socket_oldmsg_send(server->socket, FALSE,
-					     gebr_comm_protocol_defs.ini_def, 4, PROTOCOL_VERSION, hostname, "local",
-					     display);
+					     gebr_comm_protocol_defs.ini_def, 5, PROTOCOL_VERSION, hostname, "local",
+					     display, server->sessid);
 	}
 }
 

@@ -49,7 +49,7 @@ static void client_process_request(GebrCommProtocolSocket * socket, GebrCommHttp
 static void client_process_response(GebrCommProtocolSocket * socket, GebrCommHttpMsg * request,
 				    GebrCommHttpMsg * response, struct client *client);
 static void client_old_parse_messages(GebrCommProtocolSocket * socket, struct client *client);
-
+static gint client_find_repeated_sessid (gconstpointer i, gconstpointer target);
 
 /*
  * Public functions
@@ -62,6 +62,7 @@ void client_add(GebrCommStreamSocket * socket)
 	client = g_new(struct client, 1);
 	client->socket = gebr_comm_protocol_socket_new_from_socket(socket);
 	client->display = g_string_new(NULL);
+	client->sessid = NULL;
 
 	gebrd->clients = g_list_prepend(gebrd->clients, client);
 	g_signal_connect(client->socket, "disconnected", G_CALLBACK(client_disconnected), client);
@@ -76,6 +77,7 @@ void client_free(struct client *client)
 {
 	g_object_unref(client->socket);
 	g_string_free(client->display, TRUE);
+	g_free(client->sessid);
 	g_free(client);
 }
 
@@ -195,18 +197,22 @@ static void client_old_parse_messages(GebrCommProtocolSocket * socket, struct cl
 			GString *accounts_list;
 			GString *queue_list;
 			gchar *server_type;
+			GString *sessid;
 
 			display_port = g_string_new("");
 			accounts_list = g_string_new("");
 			queue_list = g_string_new("");
 
 			/* organize message data */
-			if ((arguments = gebr_comm_protocol_socket_oldmsg_split(message->argument, 4)) == NULL)
+			if ((arguments = gebr_comm_protocol_socket_oldmsg_split(message->argument, 5)) == NULL)
 				goto err;
 			version = g_list_nth_data(arguments, 0);
 			hostname = g_list_nth_data(arguments, 1);
 			place = g_list_nth_data(arguments, 2);
 			x11 = g_list_nth_data(arguments, 3);
+			sessid = g_list_nth_data(arguments, 4);
+
+			client->sessid = g_strdup(sessid->str);
 
 			if (strcmp(version->str, PROTOCOL_VERSION)) {
 				gebr_comm_protocol_socket_oldmsg_send(client->socket, TRUE,
@@ -214,6 +220,25 @@ static void client_old_parse_messages(GebrCommProtocolSocket * socket, struct cl
 								      "Client/server version mismatch (GeBRd version is "GEBRD_VERSION")");
 				goto err;
 			}
+
+			GList * matches = g_list_find_custom (gebrd->clients, sessid->str, client_find_repeated_sessid);
+			void func(gpointer data, gpointer user_data){
+				struct client *client = (struct client* ) data;
+				g_debug("Foreach de clients %s", client->sessid);
+			
+			}
+			g_list_foreach(gebrd->clients, func, NULL);
+
+			if (g_list_length(matches) > 1)
+			{
+			/*	gebr_comm_protocol_socket_oldmsg_send(client->socket, TRUE,
+								      gebr_comm_protocol_defs.err_def, 1,
+								      _("Client already connect to this server"));
+				g_debug("gebrd-client.c:servidor já conectado");
+				goto err;
+				*/
+			}
+			g_debug("%s",sessid->str);
 
 			/* set client info */
 			client->socket->protocol->logged = TRUE;
@@ -288,6 +313,7 @@ static void client_old_parse_messages(GebrCommProtocolSocket * socket, struct cl
 			gebrd_cpu_info_free (cpuinfo);
 			gebrd_mem_info_free (meminfo);
 			gebr_comm_protocol_socket_oldmsg_split_free(arguments);
+
 			g_string_free(display_port, TRUE);
 			g_string_free(accounts_list, TRUE);
 			g_string_free(queue_list, TRUE);
@@ -440,4 +466,11 @@ static void client_old_parse_messages(GebrCommProtocolSocket * socket, struct cl
 err:	gebr_comm_message_free(message);
 	client->socket->protocol->messages = g_list_delete_link(client->socket->protocol->messages, link);
 	client_disconnected(socket, client);
+}
+
+
+static gint client_find_repeated_sessid (gconstpointer i, gconstpointer target)
+{
+	struct client * client = (struct client *) i;
+	return g_strcmp0(client->sessid, target);
 }
