@@ -70,9 +70,13 @@ insert_new_entry(GebrMaestroController *mc)
 }
 
 static void
-drag_data_received_handl(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
-			 GtkSelectionData *selection_data, guint target_type, guint time,
-			 gpointer data)
+drag_data_received_handl(GtkWidget *widget,
+			 GdkDragContext *context,
+			 gint x, gint y,
+			 GtkSelectionData *selection_data,
+			 guint target_type,
+			 guint time,
+			 GebrMaestroServer *maestro)
 {
 	gpointer *daemon;
 
@@ -89,16 +93,27 @@ drag_data_received_handl(GtkWidget *widget, GdkDragContext *context, gint x, gin
 
 	g_debug("Got Address %p: %s", *daemon, gebr_daemon_server_get_address(*daemon));
 
+	if (GTK_IS_LABEL(widget))
+		g_warning("Implement me %s:%d", __FILE__, __LINE__);
+	else if (GTK_IS_TREE_VIEW(widget)) {
+		const gchar *tag = g_object_get_data(G_OBJECT(widget), "tag");
+		gebr_maestro_server_add_tag_to(maestro, *daemon, tag);
+	}
+
         gtk_drag_finish(context, dnd_success, delete_selection_data, time);
+
+	// This line is needed because GtkTreeView's already implement
+	// ::drag-data-received signal. This prevents GtkTreeView from
+	// calling it.
 	g_signal_stop_emission_by_name(widget, "drag-data-received");
 }
 
 static gboolean
-drag_drop_handl (GtkWidget *widget,
-		 GdkDragContext *context,
-		 gint x, gint y,
-		 guint time,
-		 gpointer user_data)
+drag_drop_handl(GtkWidget *widget,
+		GdkDragContext *context,
+		gint x, gint y,
+		guint time,
+		gpointer user_data)
 {
         gboolean is_valid_drop_site;
         GdkAtom target_type;
@@ -138,10 +153,10 @@ drag_data_get_handl(GtkWidget *widget,
 }
 
 static void
-set_widget_drag_dest(GtkWidget *widget)
+set_widget_drag_dest(GebrMaestroServer *maestro, GtkWidget *widget)
 {
         g_signal_connect(widget, "drag-data-received",
-			 G_CALLBACK(drag_data_received_handl), NULL);
+			 G_CALLBACK(drag_data_received_handl), maestro);
         g_signal_connect(widget, "drag-drop",
 			 G_CALLBACK(drag_drop_handl), NULL);
 
@@ -214,27 +229,25 @@ on_server_group_changed(GebrMaestroServer *maestro,
 	for (GList *i = tags; i; i = i->next) {
 		const gchar *tag = i->data;
 		GtkWidget *label = gtk_label_new(tag);
-
 		GtkTreeModel *model = gebr_maestro_server_get_model(maestro, FALSE, tag);
 		GtkTreeModel *new_model = copy_model_for_groups(model);
 		g_object_unref(model);
 
-		GtkWidget *view = gtk_tree_view_new_with_model(new_model);
-
+		GtkWidget *view = gtk_tree_view_new_with_model(model);
 		GtkTreeViewColumn *col = gtk_tree_view_column_new();
 		GtkCellRenderer *cell = gtk_cell_renderer_text_new();
 		gtk_tree_view_column_set_title(col, _("Address"));
 		gtk_tree_view_column_pack_start(col, cell, TRUE);
 		gtk_tree_view_column_set_cell_data_func(col, cell, notebook_group_show_address, self, NULL);
-
 		gtk_tree_view_append_column(GTK_TREE_VIEW(view), col);
-
 		gtk_notebook_prepend_page(nb, view, label);
-
 		gtk_widget_show(label);
 		gtk_widget_show(view);
 
-		set_widget_drag_dest(view);
+		gchar *tagdup = g_strdup(tag);
+		g_object_set_data(G_OBJECT(view), "tag", tagdup);
+		g_object_weak_ref(G_OBJECT(view), (GWeakNotify)g_free, tagdup);
+		set_widget_drag_dest(maestro, view);
 	}
 }
 
@@ -471,7 +484,7 @@ gebr_maestro_controller_create_dialog(GebrMaestroController *self)
 	on_server_group_changed(maestro, self);
 
 	GtkEventBox *event = GTK_EVENT_BOX(gtk_builder_get_object(self->priv->builder, "eventbox_drop"));
-	set_widget_drag_dest(GTK_WIDGET(event));
+	set_widget_drag_dest(maestro, GTK_WIDGET(event));
 
 	GtkDialog *dialog = GTK_DIALOG(gtk_builder_get_object(self->priv->builder, "dialog_maestro"));
 	g_signal_connect(dialog, "response", G_CALLBACK(on_dialog_response), self);
