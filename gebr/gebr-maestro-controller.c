@@ -329,7 +329,7 @@ notebook_group_show_address(GtkTreeViewColumn *tree_column,
 
 	if (daemon) {
 		g_object_set(cell,
-			     "text", gebr_daemon_server_get_display_address(daemon),
+			     "text", gebr_daemon_server_get_hostname(daemon),
 			     "sensitive", TRUE,
 			     NULL);
 		g_object_unref(daemon);
@@ -362,7 +362,7 @@ copy_model_for_groups(GtkTreeModel *orig_model)
 		gtk_list_store_append(new_model, &new_iter);
 		gtk_list_store_set(new_model, &new_iter,
 		                   MAESTRO_CONTROLLER_DAEMON, daemon,
-		                   MAESTRO_CONTROLLER_ADDR, !g_strcmp0(hostname, "")? gebr_daemon_server_get_address(daemon) : hostname,
+		                   MAESTRO_CONTROLLER_ADDR, gebr_daemon_server_get_address(daemon),
 		                   -1);
 	}
 
@@ -892,6 +892,12 @@ on_servers_edited(GtkCellRendererText *cell,
 
 	server_list_add(mc, new_text);
 	insert_new_entry(mc);
+
+	GtkTreeIter iter;
+	GtkTreeView *view = GTK_TREE_VIEW(gtk_builder_get_object(mc->priv->builder, "treeview_servers"));
+
+	gtk_tree_model_get_iter_first(GTK_TREE_MODEL(mc->priv->model), &iter);
+	gebr_gui_gtk_tree_view_select_iter(view, &iter);
 }
 
 static void 
@@ -1179,33 +1185,44 @@ static void
 on_maestro_error(GebrMaestroServer *maestro,
 		 const gchar *addr,
 		 const gchar *error_type,
+		 const gchar *error_msg,
 		 GebrMaestroController *mc)
 {
-	const gchar *error_msg;
+	GtkTreeIter iter;
+	GtkTreeModel *model = GTK_TREE_MODEL(mc->priv->model);
+	const gchar *message;
 
-	if (g_strcmp0(error_type, "nfs") == 0)
-		error_msg = N_("<span size='large' weight='bold'>The selected maestro cannot manage the server "
-			       "%s, because it has a different NFS.</span>");
-	else if (g_strcmp0(error_type, "id") == 0)
-		error_msg = N_("<span size='large' weight='bold'>The selected maestro cannot manage the server "
-			       "%s, because it was already added.</span>");
-	else if (g_strcmp0(error_type, "protocol") == 0)
-		error_msg = N_("<span size='large' weight='bold'>The selected maestro cannot manage the server "
-			       "%s, because it is using a different protocol version.</span>");
-	else if (g_strcmp0(error_type, "connection-refused") == 0)
-		error_msg = N_("<span size='large' weight='bold'>The selected maestro cannot manage the server "
-			       "%s, because it is already registered at another maestro.</span>");
+	if (!*error_type)
+		message = NULL;
+	else if (g_strcmp0(error_type, "error:nfs") == 0)
+		message = _("The selected maestro cannot manage the server, because it has a different NFS.");
+	else if (g_strcmp0(error_type, "error:id") == 0)
+		message = _("The selected maestro cannot manage the server, because it was already added.");
+	else if (g_strcmp0(error_type, "error:protocol") == 0)
+		message = _("The selected maestro cannot manage the server, because it is using a different protocol version.");
+	else if (g_strcmp0(error_type, "error:connection-refused") == 0)
+		message = _("The selected maestro cannot manage the server, because it is already registered at another maestro.");
+	else if (g_strcmp0(error_type, "error:ssh") == 0)
+		message = _(error_msg);
 
-	GtkWidget *dialog  = gtk_message_dialog_new_with_markup(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-	                                                        GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-	                                                        _(error_msg), addr);
-	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 
-	gdk_threads_enter();
-	gtk_dialog_run(GTK_DIALOG(dialog));
+	GebrDaemonServer *daemon;
+	gebr_gui_gtk_tree_model_foreach(iter, model) {
+		gtk_tree_model_get(model, &iter,
+		                   MAESTRO_CONTROLLER_DAEMON, &daemon, -1);
 
-	gtk_widget_destroy(dialog);
-	gdk_threads_leave();
+		if (!daemon)
+			continue;
+
+		if (g_strcmp0(addr, gebr_daemon_server_get_address(daemon)) == 0) {
+			gebr_daemon_server_set_error(daemon, message);
+
+			GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+			gtk_tree_model_row_changed(model, path, &iter);
+
+			break;
+		}
+	}
 }
 
 static void
@@ -1278,7 +1295,7 @@ gebr_maestro_controller_maestro_state_changed_real(GebrMaestroController *mc,
 					      GTK_STOCK_CONNECT);
 		gtk_entry_set_icon_tooltip_text(entry,
 						GTK_ENTRY_ICON_SECONDARY,
-						"Connected");
+						_("Connected"));
 		on_daemons_changed(maestro, mc);
 		GtkTreeView *view = GTK_TREE_VIEW(gtk_builder_get_object(mc->priv->builder, "treeview_servers"));
 		gtk_tree_view_set_model(view, GTK_TREE_MODEL(mc->priv->model));

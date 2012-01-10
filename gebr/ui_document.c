@@ -228,22 +228,16 @@ document_properties_create_maestro_combobox(GebrGeoXmlLine *line)
 
 	if (maestro) {
 		const gchar *stockid;
-		if (gebr_maestro_server_get_state(maestro) == SERVER_STATE_CONNECT)
+		if (gebr_maestro_server_get_state(maestro) == SERVER_STATE_CONNECT) {
 			stockid = GTK_STOCK_CONNECT;
-		else {
-			const gchar *error = gebr_maestro_server_get_error(maestro);
-			if (!error || !*error)
-				stockid = GTK_STOCK_DISCONNECT;
-			else
-				stockid = GTK_STOCK_DIALOG_WARNING;
+			gebr_maestro_server_get_server(maestro);
+			gtk_list_store_append(store, &iter);
+			gtk_list_store_set(store, &iter,
+			                   0, stockid,
+			                   1, gebr_maestro_server_get_address(maestro),
+			                   -1);
+			gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo), &iter);
 		}
-		gebr_maestro_server_get_server(maestro);
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter,
-				   0, stockid,
-				   1, gebr_maestro_server_get_address(maestro),
-				   -1);
-		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo), &iter);
 	}
 
 	if (!gebr_maestro_controller_get_maestro_for_line(gebr.maestro_controller, line)) {
@@ -259,7 +253,6 @@ document_properties_create_maestro_combobox(GebrGeoXmlLine *line)
 			gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo), &iter);
 		}
 	}
-
 
 	return combo;
 }
@@ -454,9 +447,9 @@ void document_properties_setup_ui (GebrGeoXmlDocument * document,
 		g_signal_connect(lock_button, "toggled",
 				 G_CALLBACK(on_lock_button_toggled), data);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lock_button), FALSE);
-		gtk_widget_set_tooltip_text(image, "Click to Lock/Unlock the Maestro of this Line.\n"
+		gtk_widget_set_tooltip_text(image, _("Click to Lock/Unlock the Maestro of this Line.\n"
 						    "If you change the Maestro of this Line, some paths of"
-						    " this Line and its respective Flows can be broken.");
+						    " this Line and its respective Flows can be broken."));
 
 		GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
 
