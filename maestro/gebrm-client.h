@@ -87,12 +87,29 @@ const gchar *gebrm_client_get_magic_cookie(GebrmClient *client);
 
 /**
  * gebrm_client_add_forward:
+ *
+ * Adds a remote forward from @remote_port of @server to this client.
  */
 void gebrm_client_add_forward(GebrmClient *client,
 			      GebrCommServer *server,
 			      guint16 remote_port);
 
+/**
+ * gebrm_client_kill_forward_by_address:
+ *
+ * Kills the forward with @addr server.
+ */
+void gebrm_client_kill_forward_by_address(GebrmClient *client,
+					  const gchar *addr);
+
 void gebrm_client_remove_forwards(GebrmClient *client);
+
+void gebrm_client_add_temp_id(GebrmClient *client,
+			      const gchar *temp_id,
+			      const gchar *job_id);
+
+const gchar *gebrm_client_get_job_id_from_temp(GebrmClient *client,
+					       const gchar *temp_id);
 
 
 G_END_DECLS

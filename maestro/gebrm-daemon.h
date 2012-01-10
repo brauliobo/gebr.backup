@@ -161,7 +161,15 @@ void gebrm_daemon_set_id(GebrmDaemon *daemon,
 
 const gchar *gebrm_daemon_get_id(GebrmDaemon *daemon);
 
-const gchar *gebrm_daemon_get_error(GebrmDaemon *daemon);
+const gchar *gebrm_daemon_get_error_type(GebrmDaemon *daemon);
+
+const gchar *gebrm_daemon_get_error_msg(GebrmDaemon *daemon);
+
+void gebrm_daemon_set_error_type(GebrmDaemon *daemon,
+                                 const gchar *error_type);
+
+void gebrm_daemon_set_error_msg(GebrmDaemon *daemon,
+                                const gchar *error_msg);
 
 gint gebrm_daemon_get_uncompleted_tasks(GebrmDaemon *daemon);
 
@@ -172,6 +180,9 @@ void gebrm_daemon_send_client_info(GebrmDaemon *daemon,
 				   const gchar *cookie);
 
 const gchar *gebrm_daemon_get_hostname(GebrmDaemon *daemon);
+
+void gebrm_daemon_send_error_message(GebrmDaemon *daemon,
+                                     GebrCommProtocolSocket *socket);
 
 G_END_DECLS
 

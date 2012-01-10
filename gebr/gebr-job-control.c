@@ -423,7 +423,7 @@ jobs_visible_for_servers(GtkTreeModel *model,
 		gchar **servers = gebr_job_get_servers(job, &n);
 
 		for (int i = 0; i < n; i++)
-			if (g_strcmp0(servers[i], name) == 0)
+			if (g_strcmp0(servers[i], display) == 0)
 				has_server = TRUE;
 
 		g_strfreev(servers);
@@ -1010,7 +1010,7 @@ compute_subheader_label(GebrJob *job,
 
 	/* start date (may have failed, never started) */
 	if (start_date && strlen(start_date))
-		g_string_append_printf(start, "Started at %s", gebr_localized_date(start_date));
+		g_string_append_printf(start, _("Started at %s"), gebr_localized_date(start_date));
 
 	/* finish date */
 	if (finish_date && strlen(finish_date)) {
@@ -1231,7 +1231,7 @@ gebr_job_control_load_details(GebrJobControl *jc,
 	gtk_label_set_markup(input_file, markup);
 	g_free(markup);
 
-	if (gebr_validator_evaluate(gebr.validator, input_file_str,
+	if (input_file_str && gebr_validator_evaluate(gebr.validator, input_file_str,
 				    GEBR_GEOXML_PARAMETER_TYPE_STRING,
 				    GEBR_GEOXML_DOCUMENT_TYPE_FLOW, &result, NULL)) {
 		gtk_widget_set_tooltip_text(GTK_WIDGET(input_file), result);
@@ -1242,7 +1242,7 @@ gebr_job_control_load_details(GebrJobControl *jc,
 	gtk_label_set_markup (output_file, markup);
 	g_free(markup);
 
-	if (gebr_validator_evaluate(gebr.validator, output_file_str,
+	if (output_file_str && gebr_validator_evaluate(gebr.validator, output_file_str,
 				    GEBR_GEOXML_PARAMETER_TYPE_STRING,
 				    GEBR_GEOXML_DOCUMENT_TYPE_FLOW, &result, NULL)) {
 		gtk_widget_set_tooltip_text(GTK_WIDGET(output_file), result);
@@ -1253,7 +1253,7 @@ gebr_job_control_load_details(GebrJobControl *jc,
 	gtk_label_set_markup (log_file, markup);
 	g_free(markup);
 
-	if (gebr_validator_evaluate(gebr.validator, log_file_str,
+	if (log_file_str && gebr_validator_evaluate(gebr.validator, log_file_str,
 				    GEBR_GEOXML_PARAMETER_TYPE_STRING,
 				    GEBR_GEOXML_DOCUMENT_TYPE_FLOW, &result, NULL)) {
 		gtk_widget_set_tooltip_text(GTK_WIDGET(log_file), result);
@@ -1559,19 +1559,24 @@ on_maestro_filter_changed(GtkComboBox *combo,
 	GtkTreeModel *groups = gebr_maestro_server_get_groups_model(maestro);
 
 	gebr_gui_gtk_tree_model_foreach(it, groups) {
-		gchar *name;
+		gchar *name, *host;
 		const gchar *display;
 		GebrMaestroServerGroupType type;
 
 		gtk_tree_model_get(groups, &it,
 				   MAESTRO_SERVER_TYPE, &type,
 				   MAESTRO_SERVER_NAME, &name,
+				   MAESTRO_SERVER_HOST, &host,
 				   -1);
 
 		if (!*name)
 			display = gebr_maestro_server_get_display_address(maestro);
-		else
-			display = name;
+		else {
+			if (type == MAESTRO_SERVER_TYPE_DAEMON)
+				display = host;
+			else
+				display = name;
+		}
 
 		gtk_list_store_append(jc->priv->server_filter, &iter);
 		gtk_list_store_set(jc->priv->server_filter, &iter,
