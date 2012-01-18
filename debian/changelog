@@ -1,0 +1,253 @@
+gebrproject (0.15.6) lucid; urgency=low
+
+  * Feature freeze.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Mon, 16 Jan 2012 15:25:13 -0200
+
+gebrproject (0.15.5) lucid; urgency=low
+
+  * New maestro to orchestrate job execution in GeBR's behalf. (#1097)
+  * Improved configuration of servers groups. (#1095) (#1096)
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Fri, 06 Jan 2012 19:37:51 -0200
+
+gebrproject (0.15.4) lucid; urgency=low
+
+  * Speed and niceness icons cleanup.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Fri, 18 Nov 2011 17:24:01 -0200
+
+gebrproject (0.15.3) lucid; urgency=low
+
+  * Better menu search at Flow Editor (#963)
+  * Job Control interface polishing (#1072) (#1073) (#1074)
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Thu, 17 Nov 2011 19:24:10 -0200
+
+gebrproject (0.15.2) lucid; urgency=low
+
+  * Flat Job Control interface with filters (#1064)
+  * Distribution of parallel flows within server groups (#1052)
+  * Automatic server selection by the current processing capacity (#1051)
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Fri, 04 Nov 2011 17:12:23 -0200
+
+gebrproject (0.15.1) lucid; urgency=low
+
+  * Parallel execution on multicore machines (#994)
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Mon, 26 Sep 2011 18:13:55 -0300
+
+gebrproject (0.14.0) lucid; urgency=low
+
+  * Support to newest Linux distros (Debian Squeeze, Ubuntu Natty, Fedora 15 and CentOS 6)
+  * Multiple execution of a Flow using loops
+  * Flow's parameters defined by arithmetic expressions
+  * Huge improvements on memory performance
+  * Many sample projects to illustrate SU usage
+  * List of variables on reports
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Thu, 22 Sep 2011 21:09:42 -0300
+
+gebrproject (0.13.15) lucid; urgency=high
+
+  * Removed section "Reports of What's New" in GeBR's documentation.
+  * Fix double free in in GeoXml library.
+
+ -- Ian Liu <ian.liu@gebrproject.com>  Fri, 16 Sep 2011 10:00:32 -0300
+
+gebrproject (0.13.14) lucid; urgency=medium
+
+  * Natty compatibility.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Tue, 30 Aug 2011 19:15:07 -0300
+
+gebrproject (0.13.13) lucid; urgency=medium
+
+  * Huge memory leak in xml fixed.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Wed, 24 Aug 2011 12:35:47 -0300
+
+gebrproject (0.13.9) lucid; urgency=medium
+
+  * Expression evaluation improved and tested.
+  * Reports now includes dictionary variables.
+  * Backward compatibility with previews version dictionary.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Thu, 21 Jul 2011 17:35:40 -0300
+
+gebrproject (0.13.5) lucid; urgency=low
+
+  * First preview of loop, expressions and server groups.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Tue, 31 May 2011 19:20:02 -0300
+
+gebrproject (0.12.0) squeeze; urgency=low
+
+  * Now GêBR has updated user documentation.
+  * Automatic report generation for flows and lines.
+  * Multiple flows execution, queued or at same time.
+  * Delete key works as expected on most cases.
+  * Multiple selection in Job control tab.
+  * Internationalization is now fixed.
+  * When running a flow, the used queue is memorized.
+  * Better source code organization for easier build.
+  * DéBR Menus are pretty formatted with Tidy.
+  * DéBR Menus help edition improvements.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Tue, 12 Apr 2011 16:41:48 -0300
+
+gebrproject (0.11.9) squeeze; urgency=low
+
+  * Fix bug when running a remote graphic flow.
+  * Fixed a bug where executing a flow stripped its programs help.
+  * Fixed how to get help content for old helps. (Fixes issue 916)
+  * Fixed when delete key at flow I/O edition. (Fixes issue 919)
+  * Fixed segfalt when providing wrong password for remote server.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Mon, 21 Mar 2011 14:10:49 -0300
+
+gebrproject (0.11.8) squeeze; urgency=low
+
+  * Finished user documentation review.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Mon, 28 Feb 2011 19:05:16 -0300
+
+gebrproject (0.11.7) squeeze; urgency=low
+
+  * Fixed Flow Editor and Properties translations.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Wed, 23 Feb 2011 14:57:09 -0300
+
+gebrproject (0.11.6) squeeze; urgency=low
+
+  * Translation updated.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Fri, 18 Feb 2011 14:42:12 -0200
+
+gebrproject (0.11.5) squeeze; urgency=low
+
+  * Final adjusts before release.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Fri, 18 Feb 2011 09:46:55 -0200
+
+gebrproject (0.11.3) squeeze; urgency=low
+
+  * Switch to dpkg-source 3.0 (native) format.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Tue, 15 Feb 2011 14:08:21 -0200
+
+gebrproject (0.11.2) squeeze; urgency=low
+
+  * Feature freeze before 0.12.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Mon, 07 Feb 2011 20:39:13 -0200
+
+gebrproject (0.10.1) squeeze; urgency=low
+
+  * Bug fix release.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Thu, 13 Jan 2011 17:40:08 -0200
+
+gebrproject (0.10.0) squeeze; urgency=low
+
+  * One step closer to 1.0.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Thu, 11 Nov 2010 13:39:29 -0200
+
+gebrproject (0.9.20) squeeze; urgency=low
+
+  * More bugs fixed and translations.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Wed, 10 Nov 2010 21:11:27 -0200
+
+gebrproject (0.9.19) squeeze; urgency=low
+
+  * More fixes before the stable release.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Tue, 09 Nov 2010 22:12:14 -0200
+
+gebrproject (0.9.18) squeeze; urgency=low
+
+  * Development release for validate fixes on freeze.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Thu, 28 Oct 2010 12:04:05 -0200
+
+gebrproject (0.9.17) squeeze; urgency=low
+
+  * Release 0.9.17.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Fri, 16 Jul 2010 13:45:21 -0300
+
+gebrproject (0.9.16) squeeze; urgency=low
+
+  * Moab-like cluster support, chained flows and WYSWYG help editor.
+
+ -- Fabricio Matheus Goncalves <fmatheus@gebrproject.com>  Sun, 07 Mar 2010 23:11:18 -0300
+
+gebrproject (0.9.15) squeeze; urgency=low
+
+  * Release 0.9.15 (1.0.0 beta 9)
+
+ -- Ricardo Biloti <biloti@gebrproject.com>  Fri, 11 Dec 2009  23:20:00 -0300
+
+gebrproject (0.9.14) squeeze; urgency=low
+
+  * Release 0.9.14 (1.0.0 beta 8)
+
+ -- Ricardo Biloti <biloti@gmail.com>  Mon, 10 Aug 2009  20:39:00 -0300
+
+gebrproject (0.9.13) squeeze; urgency=low
+
+  * Release 0.9.13 (1.0.0 beta 7)
+
+ -- Ricardo Biloti <biloti@gmail.com>  Mon, 17 Jun 2009  17:04:00 -0300
+
+gebrproject (0.9.12) squeeze; urgency=low
+
+  * Release 0.9.12 (1.0.0 beta 6)
+
+ -- Ricardo Biloti <biloti@gmail.com>  Mon, 02 Apr 2009  18:29:00 -0300
+
+gebrproject (0.9.11) squeeze; urgency=low
+
+  * Release 0.9.11 (1.0.0 beta 5)
+
+ -- Ricardo Biloti <biloti@gmail.com>  Mon, 21 Mar 2009  20:36:00 -0300
+
+gebrproject (0.9.10) squeeze; urgency=low
+
+  * Release 0.9.10 (1.0.0 beta 4)
+
+ -- Ricardo Biloti <biloti@gmail.com>  Mon, 09 Mar 2009  16:19:00 -0300
+
+gebrproject (0.9.9) squeeze; urgency=low
+
+  * Release 0.9.9 (1.0.0 beta 3)
+
+ -- Ricardo Biloti <biloti@gmail.com>  Mon, 02 Mar 2009  17:03:00 -0300
+
+gebrproject (0.9.8) squeeze; urgency=low
+
+  * Release 0.9.8 (1.0.0 beta 2)
+
+ -- Ricardo Biloti <biloti@gmail.com>  Fri, 30 Jan 2009  14:00:00 -0200
+
+gebrproject (0.9.7) squeeze; urgency=low
+
+  * Release 0.9.7 (1.0.0 beta 1)
+
+ -- Ricardo Biloti <biloti@gmail.com>  Thu, 15 Jan 2009  14:00:00 -0200
+
+gebrproject (0.9.3) squeeze; urgency=low
+
+  * Release 0.9.3 with many improvements
+
+ -- Ricardo Biloti <biloti@gmail.com>  Thu, 13 Dec 2007 14:00:00 -0200
+
+gebrproject (0.9.1-1) squeeze; urgency=low
+
+  * Initial release
+
+ -- Bráulio Barros de Oliveira <brauliobo@gmail.com>  Fri, 21 Sep 2007 16:16:28 -0300
+
