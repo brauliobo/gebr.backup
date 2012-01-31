@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<section
+  xmlns="http://docbook.org/ns/docbook"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  lang="pt_BR"
+  version="5.0"
+  xml:id="flow_editor">
+
+  <title>A aba 
+    <guilabel>Editor de Fluxo</guilabel></title>
+    <para>Para criar um Fluxo, siga as instruções em <xref linkend="flows_browser_create_flow" />.
+    </para>
+  <para>Agora que já sabemos como adicionar programas ao Fluxo, precisamos configurá-los. Vejamos então as demais
+    ferramentas da aba <guilabel>Editor de Fluxo</guilabel>:</para>
+  <itemizedlist>
+    <listitem>
+      <para>
+        <link linkend="flow_editor_copy_program">Copiar programa(s) selecionado(s) para a área de transferência</link>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <link linkend="flow_editor_paste_program">Colar programa(s) selecionado(s) da área de transferência</link>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <link linkend="flow_editor_delete_program">Deletar programa</link>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <link linkend="flow_editor_edit_parameters_program">Editar os parâmetros de um programa</link>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <link linkend="flow_editor_change_state_program">Mudar o estado de um programa</link>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <link linkend="flow_editor_edit_input_output">Editar arquivos de entrada e saída do Fluxo</link>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <link linkend="flow_editor_execute_flow">Executar um Fluxo</link>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <link linkend="flow_editor_multicores">Velocidade de execução</link>
+      </para>
+    </listitem>
+  </itemizedlist>
+  <tip>
+    <para>Experimente usar <emphasis>menus de contexto</emphasis> no lugar dos botões de comando. Para
+      isso, clique com o botão direito do mouse nos programas que você
+      adicionar. Você vai notar que diversos comandos podem ser acionados por este método. Em determinados casos,
+      isso é mais <emphasis>fácil e rápido</emphasis> do que usar os botões.</para>
+  </tip>
+  <section xml:id="flow_editor_copy_program">
+    <title>Copiar programas para a área de transferência</title>
+    <para>A funcionalidade é análoga a da <xref linkend="flows_browser_copy_flow"/>, através 
+      do botão <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/botao_copiar_fluxo.png"/></imageobject></inlinemediaobject></guiicon> ou, mais prático, pelo conhecido atalho
+      <keycombo><keycap>Ctrl</keycap><keycap>C</keycap></keycombo>.</para>
+    <tip>
+      <para>Você pode selecionar vários programas para serem copiados simultaneamente usando 
+        <keycombo><keycap>Ctrl</keycap><mousebutton>Clique</mousebutton></keycombo> ou 
+        <keycombo><keycap>Shift</keycap><mousebutton>Clique</mousebutton></keycombo>.</para>
+    </tip>
+  </section>
+  <section xml:id="flow_editor_paste_program">
+    <title>Colar programas da área de transferência</title>
+    <para>A funcionalidade é análoga a da <xref linkend="flows_browser_paste_flow"/>, porém os programas serão colados dentro do Fluxo selecionado.
+    </para>
+    <tip>
+      <para>O programa (ou conjunto de programas) copiado anteriormente para a área de transferência pode ser colado
+        em <emphasis>qualquer Fluxo</emphasis> existente, e não só no Fluxo de origem. Basta alternar
+        para a aba <guilabel>Fluxos</guilabel>, selecionar o Fluxo desejado, voltar para a aba <guilabel>Editor de
+          Fluxo</guilabel> e colar o(s) programas(s).</para>
+    </tip>
+  </section>
+  <section xml:id="flow_editor_delete_program">
+    <title>Deletar programas</title>
+    <para>Para excluir um programa (ou um conjunto de programas), selecione-o e clique no
+      botão <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/botao_apagar_projeto.png"/></imageobject></inlinemediaobject></guiicon>.</para>
+    <caution>
+      <para>A GêBR  <emphasis>não emite aviso</emphasis> antes de deletar programas e esta operação é irreversível.</para>
+    </caution>
+  </section>
+  <section xml:id="flow_editor_edit_parameters_program">
+    <title>Editar os parâmetros de um programa</title>
+    <para>Os parâmetros de um programa são as configurações iniciais do mesmo, definidas pelo usuário.</para>
+    <para>Para editar os parâmetros de um programa:</para>
+    <procedure>
+      <step>
+        <para>Selecione o programa na janela ao lado esquerdo do <emphasis><guilabel>Editor de Fluxo</guilabel></emphasis> e clique no
+          botão <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/botao_editar_propriedades_projeto.png"/></imageobject></inlinemediaobject></guiicon> da barra de ferramentas ou dê um
+          duplo clique no programa. A janela <guilabel>Parâmetros</guilabel> se abrirá.</para>
+      </step>
+      <step>
+        <para>Na janela <guilabel>Parâmetros</guilabel>, edite os parâmetros do programa. Note que os parâmetros
+          variam bastante de um programa para outro, tanto em quantidade como em tipo.</para>
+        <tip>
+          <para>Clique no botão <guibutton>Ajuda</guibutton> (canto inferior esquerdo da janela
+            <guilabel>Parâmetros</guilabel>) para visualizar a <emphasis>documentação do
+              programa</emphasis>. Isso pode ser útil durante a edição de parâmetros.</para>
+        </tip>
+        <tip>
+          <para>Clique no botão <guibutton>Padrão</guibutton> quando quiser retornar para a configuração padrão do
+            programa.</para>
+        </tip>
+      </step>
+      <step>
+        <para>Clique em <guibutton>OK</guibutton>.</para>
+      </step>
+    </procedure>
+  </section>
+  <section xml:id="flow_editor_change_state_program">
+    <title>Mudar o estado de um programa</title>
+    <para>Após realizar o procedimento da <xref linkend="flow_editor_edit_parameters_program"/>, note que o programa passa a ser sinalizado
+      por <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_configurado.png"/></imageobject></inlinemediaobject></guiicon> em vez
+      de <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_nao_configurado.png"/></imageobject></inlinemediaobject></guiicon>. Isso indica que o programa passou do
+      estado <emphasis>Não configurado</emphasis> para o
+      estado <emphasis>Configurado</emphasis>. Além desses dois estados, um programa pode assumir ainda o
+      estado <emphasis>Desabilitado</emphasis>
+      (<guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_desabilitado.png"/></imageobject></inlinemediaobject></guiicon>). Você pode alternar entre estes estados de duas maneiras,
+      <mousebutton>clique com botão direito</mousebutton> sobre o programa e selecione o estado desejado a partir do menu de contexto ou
+      use o atalho <keycombo><keycap>Espaço</keycap></keycombo> para trocar entre os possíveis estados dos programas selecionados.</para>
+    <tip>
+      <para>Você pode mudar o estado de vários programas simultaneamente, selecionando-os com 
+        <keycombo><keycap>Ctrl</keycap><mousebutton>Clique</mousebutton></keycombo> ou 
+        <keycombo><keycap>Shift</keycap><mousebutton>Clique</mousebutton></keycombo>.</para>
+    </tip>
+    <tip>
+      <para>Mudar o estado do programa não altera a configuração dos parâmetros. Você pode alternar com segurança
+        entre os estados, os parâmetros serão preservados.</para>
+    </tip>
+    <important>
+      <para>Programas <emphasis>Desabilitados</emphasis>
+        (<guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_desabilitado.png"/></imageobject></inlinemediaobject></guiicon>) são ignorados durante a execução do Fluxo. Dessa forma, você
+        pode <emphasis>habilitar ou desabilitar pedaços de um Fluxo</emphasis>, conforme a
+        conveniência.</para>
+    </important>
+  </section>
+  <section xml:id="flow_editor_edit_input_output">
+    <title>Editar arquivos de entrada e saída do Fluxo</title>
+    <para>Na <xref linkend="flows_browser_create_flow"/>, mostramos como criar um Fluxo. 
+      Há situações em que o Fluxo precisa extrair dados de um <emphasis>arquivo de entrada</emphasis>, gerar como resultado um <emphasis>arquivo
+        de saída</emphasis> ou um <emphasis>arquivo de registro de erro</emphasis>.</para>
+    <para>Para associar algum destes tipos de arquivo a um Fluxo:</para>
+    <figure>
+      <mediaobject>
+        <caption>Na aba Editor de Fluxo, você pode editar os arquivos de entrada, saída e log de um fluxo.</caption>
+        <imageobject>
+          <imagedata fileref="../images/GeBR_flow_editor_input_file.png"/>
+        </imageobject>
+      </mediaobject>
+    </figure>
+    <procedure>
+      <step>
+        <para>Certifique-se de ter selecionado o Fluxo e de que você pode editar os caminhos de entrada, saída e erro (aba Editor de Fluxo, no campo Sequência de Fluxo),
+          através de um clique duplo nos botões
+          <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_arquivo_entrada.png"/></imageobject></inlinemediaobject></guiicon>,
+          <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_arquivo_saida.png"/></imageobject></inlinemediaobject></guiicon> e
+          <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_arquivo_erro.png"/></imageobject></inlinemediaobject></guiicon>.
+        </para>
+      </step>
+      <step>
+        <para>Edite os caminhos ou clique no
+          ícone <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_escolher_arquivo.png"/></imageobject></inlinemediaobject></guiicon> e navegue pela janela <guilabel>Escolha um
+            Arquivo</guilabel>.</para>
+      </step>
+    </procedure>
+    <para>Ao sair da janela 
+      <guilabel>Entrada/Saída do Fluxo</guilabel>, note que os arquivos de entrada e saída que você associou ao
+      Fluxo aparecem na caixa <guilabel>Sequência de Fluxo</guilabel>, sinalizados com os ícones
+      <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_arquivo_entrada.png"/></imageobject></inlinemediaobject></guiicon> e
+      <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/icone_arquivo_saida.png"/></imageobject></inlinemediaobject></guiicon>, abaixo e acima dos programas do Fluxo (se houver algum).</para>
+    <note>
+      <para>Se quiser remover um dos arquivo da lista, selecione-o com
+        o <emphasis>botão direito</emphasis> do mouse e clique em
+        <guimenuitem>Excluir</guimenuitem>.</para>
+    </note>
+  </section>
+  <section xml:id="flow_editor_execute_flow">
+    <title>Executar um Fluxo</title>
+    <para>Para executar o Fluxo atual, clique no botão 
+      <guiicon><inlinemediaobject><imageobject><imagedata fileref="../../common-images/botao_executar_fluxo.png"/></imageobject></inlinemediaobject></guiicon>. A execução de um fluxo também pode ser executada através da aba <guilabel>Fluxos</guilabel> (veja <xref linkend="flows_browser_execute_flow"/>).</para>
+
+    <para>Na aba Editor de Fluxo, você pode executar um Fluxo após outro
+      Fluxo, criando uma fila de execução. Para executar após um Fluxo em
+      específico, ao invés de escolher  <emphasis>Imediatamente</emphasis>,
+      vá para a aba <guilabel>Editor de Fluxos</guilabel> e escolha 
+      <emphasis> Após FluxoX </emphasis>.
+      Por padrão, os fluxos são executados no grupo do Maestro. Veja em <xref linkend="servers_configuration"/> como definir e editar os servidores/grupos que podem ser utilizados na execução.</para>
+    <figure>
+      <mediaobject>
+	      <caption>Na segundo campo de <guilabel>Executar</guilabel>, você pode selecionar <emphasis>após
+	      </emphasis> qual Fluxo deseja executar.</caption>
+        <imageobject>
+          <imagedata fileref="../images/GeBR_flow_editor_queue.png"/>
+        </imageobject>
+      </mediaobject>
+    </figure>
+    <para>No momento em que o Fluxo começa a ser executado, a GêBR alterna imediatamente para a aba
+      <guilabel>Controle de tarefas</guilabel>, que mostra o relatório (<emphasis>log</emphasis>) da execução.</para>
+  </section>
+  <section xml:id="flow_editor_multicores">
+    <title>Multiplos processadores</title>
+    <para>GêBR otimiza a execução de laços em máquina com múltiplos processadores (cores). A execução de fluxos paralelizáveis pode ser otimizado por este recurso. 
+	    Se o Fluxo é paralelizável (i.e., satisfaz os critérios abaixo)
+	    então você pode ajustar o número de processadores a serem utilizados.
+	    </para>
+	    <para>Para ser paralelizável, além de ter um laço, o Fluxo precisa
+		    satisfazer um destes critérios:</para>
+    <itemizedlist>
+      <listitem>O Fluxo tem laço e não tem arquivo de saída;</listitem>
+      <listitem>O Fluxo tem laço e a saída de cada passo do laço não é entrada de outro passo
+        .</listitem>
+    </itemizedlist>
+    <para>Você pode ajustar o número de processadores a ser utilizado através da barra de ajuste
+      .</para>
+    <imageobject>
+      <imagedata fileref="../images/GeBR_flow_editor_flow_exec_speed.png" />
+    </imageobject>
+    <para>Cada nível da barra de ajuste corresponde a um número de núcleos utilizado pela tarefa.</para>
+  </section>
+  <section xml:id="flow_editor_priority_execution">
+    <title>Prioridade de execução</title>
+    <para>Computadores são multitarefas, o que significa que podem executar várias tarefas
+      concorrentemente. Quando muitas tarefas são executadas ao mesmo tempo, o computador 
+      se sobrecarrega e diminui seu desempenho. Fluxos de processamento sísmico, em particular,
+      exigem muitos recursos das máquinas.</para>
+      <para>Para prevenir o sobrecarregamento das máquinas, a GêBR oferece a possibilidade de 
+	      executar um Fluxo em estado de <guilabel>Baixa prioridade</guilabel>.  </para>
+      
+    <imageobject>
+      <imagedata fileref="../images/GeBR_flow_editor_priority_execution.png" />
+    </imageobject>
+    <para>Há duas opções: </para>
+    <itemizedlist>
+      <listitem>Baixa prioridade (o Fluxo irá esperar recursos livres para executar
+       , de modo a não sobrecarregar o sistema)</listitem>
+      <listitem>Alta prioridade (a execução disputará com outros programas ativos 
+	      por recursos do sistema)</listitem>
+    </itemizedlist>
+    <para>Tecnicamente, rodar em modo de "Baixa prioridade" significa reduzir a prioridade de
+	    execução da tarefa, algo como dizer ao computador para "esperar outras coisas mais
+	    importantes serem executadas primeiro". Este é o caso quando o usuário faz outras
+	    coisas enquanto processa seus Fluxos na GêBR. O modo de "Alta Prioridade"
+	    significa que a GêBR terá maior prioridade sobre os outros processos, algo como
+	    "Eu quero este processamento da GêBR pronto o mais rápido possível".
+    </para>
+    <para>
+	    Se a GêBR é o único programa sendo executado nos servidores, i.e., não 
+	    há competidores por recursos do sistema, então ambos estados correspodem ao
+	    mesmo modo.
+      </para>
+  </section>
+  <section xml:id="flow_editor_loop">
+    <title>Executando um Fluxo múltiplas vezes</title>
+    <para>O programa <emphasis>Loop</emphasis> (que pertence a categoria <emphasis>Loops</emphasis>) é tratado de uma maneira especial comparado aos outros programas da GêBR. Vamos ver a seguir
+      algumas destas diferenças.</para>
+    <para>Ao adicionarmos o programa Loop, nota-se que ele sempre aparece no topo do Fluxo, isso ocorre para representar 
+      que aquele Fluxo será executado repetidamente, de acordo com o preenchimento dos parâmetros do programa (visto na seção <xref linkend="flow_editor_edit_parameters_program"/>).</para>
+    <mediaobject>
+      <caption>Na aba Editor de Fluxo, após o programa <emphasis>Loop</emphasis> ser adicionado e configurado.</caption>
+      <imageobject>
+        <imagedata fileref="../images/GeBR_flow_editor_loop.png"/>
+      </imageobject>
+    </mediaobject>
+    <para>Após o <emphasis>Loop</emphasis> ser adicionado, teremos acesso a uma nova variável, chamada <emphasis>iter</emphasis> (veja <xref linkend="dictionary_variables"/>), que tem seu valor alterado a cada iteração,
+      de acordo com o preenchimento de seus parâmetros.</para>
+    <mediaobject>
+      <caption>Janela de edição de parâmetros do programa <emphasis>Loop</emphasis>, com um exemplo simples do preenchimento.</caption>
+      <imageobject>
+        <imagedata fileref="../images/loop_parametros.png"/>
+      </imageobject>
+    </mediaobject>
+  </section>
+
+ <section xml:id="flow_editor_multiple_machines">
+    <title>Execução em várias máquinas</title>
+    <para>Se a GêBR estiver conectada a várias máquinas (configuração através do
+      <xref linkend="servers_configuration" />), e o Fluxo for paralelizável (veja 
+      abaixo os critérios para um Fluxo ser paralelizável), então o usuário tem a
+      opção de executar o Fluxo de forma distribuída.</para>
+    <para>Para ser <emphasis>paralelizável</emphasis>, o Fluxo precisa satisfazer um
+      destes critérios:</para>
+    <itemizedlist>
+      <listitem>
+        <para>O Fluxo não tem arquivos de saída;</para>
+      </listitem>
+      <listitem>
+        <para>Se existirem arquivos de saída, eles devem ser independentes, i.e., 
+          o arquivo de saída de um passo do laço não deve servir de entrada para
+          outro passo do laço.</para>
+      </listitem>
+    </itemizedlist>
+    <para>No caso de o Fluxo não ser paralelizável, a GêBR irá executar o Fluxo na melhor 
+      melhor máquina no memomento de execução (GêBR ordena as máquinas baseado na 
+      disponibilidade e na velocidade). Numa execução distribuída, é importante distinguir 
+      os modos de Prioridade. Quando o Fluxo é paralelizável, o Fluxo é dividido e 
+      distribuído entre as máquinas disponíveis de acordo com sua ordenação).</para>
+    <para>Se você deseja executar um Fluxo (paralelizado ou não) em um servidor 
+      em específico, você pode forçar sua execução indo à aba <guilabel>Editor de
+        Fluxo</guilabel> e escolhendo o servidor desejado.</para>
+  </section>
+
+</section>
