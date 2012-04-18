@@ -430,6 +430,13 @@ on_assistant_prepare(GtkAssistant *assistant,
 }
 
 static void
+on_assistant_destroy(GtkWindow *window,
+                     WizardData *data)
+{
+	g_free(data);
+}
+
+static void
 line_setup_wizard(GebrGeoXmlLine *line)
 {
 	GtkBuilder *builder = gtk_builder_new();
@@ -454,6 +461,7 @@ line_setup_wizard(GebrGeoXmlLine *line)
 	WizardData *data = g_new(WizardData, 1);
 	data->assistant = assistant;
 	data->builder = builder;
+	g_signal_connect(assistant, "destroy", G_CALLBACK(on_assistant_destroy), data);
 	g_signal_connect(assistant, "cancel", G_CALLBACK(on_assistant_cancel), NULL);
 	g_signal_connect(assistant, "close", G_CALLBACK(on_assistant_close), data);
 	g_signal_connect(assistant, "prepare", G_CALLBACK(on_assistant_prepare), data);
@@ -543,7 +551,6 @@ on_line_callback_base_focus_out(GtkWidget *widget,
 	gchar *relative = gebr_relativise_home_path(text, mount_point, simple_home);
 
 	gtk_entry_set_text(GTK_ENTRY(widget), relative);
-
 
 	g_free(mount_point);
 	g_free(relative);
