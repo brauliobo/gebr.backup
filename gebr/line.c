@@ -225,6 +225,7 @@ time_out_error(gpointer user_data)
 {
 	WizardData *data = user_data;
 
+	g_source_remove(data->progress_animation);
 	g_source_remove(data->timeout);
 
 	GObject *image = gtk_builder_get_object(data->builder, "image_status");
@@ -452,7 +453,7 @@ line_setup_wizard(GebrGeoXmlLine *line)
 {
 	GtkBuilder *builder = gtk_builder_new();
 
-	if (!gtk_builder_add_from_file(builder, GEBR_GLADE_DIR "/document-properties-new.glade", NULL))
+	if (!gtk_builder_add_from_file(builder, GEBR_GLADE_DIR "/document-properties.glade", NULL))
 		return;
 
 	GtkWidget *page1 = GTK_WIDGET(gtk_builder_get_object(builder, "main_props"));
