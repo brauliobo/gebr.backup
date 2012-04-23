@@ -88,8 +88,7 @@ GtkDialog *gebr_maestro_controller_create_dialog(GebrMaestroController *self);
 GebrMaestroServer * gebr_maestro_controller_get_maestro(GebrMaestroController *self);
 
 void gebr_maestro_controller_connect(GebrMaestroController *self,
-				     const gchar *address,
-				     StorageType type);
+				     const gchar *address);
 
 GebrMaestroServer *gebr_maestro_controller_get_maestro_for_address(GebrMaestroController *mc,
 								   const gchar *address);
@@ -99,6 +98,31 @@ GebrMaestroServer *gebr_maestro_controller_get_maestro_for_line(GebrMaestroContr
 
 void gebr_maestro_controller_set_window(GebrMaestroController *mc,
 					GtkWindow *window);
+
+void gebr_maestro_controller_server_list_add(GebrMaestroController *mc,
+                                             const gchar * address);
+
+void gebr_maestro_controller_daemon_server_address_func(GtkTreeViewColumn *tree_column,
+                                                        GtkCellRenderer *cell,
+                                                        GtkTreeModel *model,
+                                                        GtkTreeIter *iter,
+                                                        gpointer data);
+
+void gebr_maestro_controller_daemon_server_status_func(GtkTreeViewColumn *tree_column,
+                                                       GtkCellRenderer *cell,
+                                                       GtkTreeModel *model,
+                                                       GtkTreeIter *iter,
+                                                       gpointer data);
+
+GtkWindow * gebr_maestro_controller_get_window(GebrMaestroController *mc);
+
+GtkTreeModel *gebr_maestro_controller_get_servers_model(GebrMaestroController *mc);
+
+GtkMenu *gebr_maestro_controller_server_popup_menu(GtkWidget * widget,
+                                                   GebrMaestroController *mc);
+
+void gebr_maestro_controller_update_daemon_model(GebrMaestroServer *maestro,
+                                                 GebrMaestroController *mc);
 
 G_END_DECLS
 

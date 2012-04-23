@@ -241,7 +241,7 @@ void document_properties_setup_ui(GebrGeoXmlDocument * document,
 	g_return_if_fail(document != NULL);
 
 	GtkBuilder *builder = gtk_builder_new();
-	const gchar *glade_file = GEBR_GLADE_DIR "/document-properties-new.glade";
+	const gchar *glade_file = GEBR_GLADE_DIR "/document-properties.glade";
 
 	if (!gtk_builder_add_from_file(builder, glade_file, NULL))
 		return;
@@ -303,6 +303,8 @@ void document_properties_setup_ui(GebrGeoXmlDocument * document,
 
 	GtkWidget *main_props = GTK_WIDGET(gtk_builder_get_object(builder, "main_props"));
 	GtkWidget *table = GTK_WIDGET(gtk_builder_get_object(builder, "table"));
+	GtkWidget *info_label = GTK_WIDGET(gtk_builder_get_object(builder, "info_label"));
+	gtk_widget_hide(info_label);
 
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
 	gtk_box_pack_start(GTK_BOX(button_box), cancel_button, TRUE, TRUE, 0);
@@ -345,6 +347,15 @@ void document_properties_setup_ui(GebrGeoXmlDocument * document,
 		/* Base Path Tab */
 		GtkWidget *base_box = GTK_WIDGET(gtk_builder_get_object(builder, "vbox_base"));
 		GtkWidget *hierarchy_box = GTK_WIDGET(gtk_builder_get_object(builder, "hierarchy_base"));
+		GObject *label;
+
+		const gchar *maestro_addr = gebr_maestro_server_get_address(maestro);
+		gchar *text_maestro = g_markup_printf_escaped(_("<i>You will browse on files and folders of servers of maestro <b>%s</b>.\n"
+				"This directories structure can be not the same on your local machine.</i>"), maestro_addr);
+		label = gtk_builder_get_object(data->builder, "label6");
+		gtk_label_set_markup(GTK_LABEL(label), text_maestro);
+		g_free(text_maestro);
+
 		gtk_notebook_append_page(GTK_NOTEBOOK(notebook), base_box, gtk_label_new(_("BASE Path")));
 		gtk_widget_set_visible(hierarchy_box, TRUE);
 
@@ -365,11 +376,13 @@ void document_properties_setup_ui(GebrGeoXmlDocument * document,
 			base_path = g_build_filename(gebr_maestro_server_get_home_dir(maestro), "GeBR", line_key, NULL);
 		g_free(line_key);
 
-		gtk_entry_set_text(entry_base, base_path);
+		gchar *base_path2 = gebr_relativise_home_path(base_path, gebr_maestro_server_get_sftp_root(maestro), gebr_maestro_server_get_home_dir(maestro));
+		gtk_entry_set_text(entry_base, base_path2);
+		g_free(base_path);
+		g_free(base_path2);
 
 		g_signal_connect(entry_base, "changed", G_CALLBACK(on_properties_entry_changed), data->ok_button);
 		g_signal_connect(entry_base, "focus-out-event", G_CALLBACK(on_line_callback_base_focus_out), NULL);
-		g_free(base_path);
 
 		/* Import Path Tab */
 		GtkWidget *import_box = GTK_WIDGET(gtk_builder_get_object(builder, "vbox_import"));
@@ -1707,11 +1720,7 @@ gebr_ui_document_send_paths_to_maestro(GebrMaestroServer *maestro,
 {
 	GebrCommServer *server = gebr_maestro_server_get_server(maestro);
 
-	gchar ***paths = g_new(gchar**, 2);
-	paths[0] = g_new(gchar *, 2);
-	paths[0][0] = g_strdup(gebr_maestro_server_get_home_dir(maestro));
-	paths[0][1] = g_strdup("HOME");
-	paths[1] = NULL;
+	gchar ***paths = gebr_generate_paths_with_home(gebr_maestro_server_get_home_dir(maestro));
 
 	if (!oldmsg)
 		oldmsg = "";

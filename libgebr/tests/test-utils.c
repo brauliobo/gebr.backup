@@ -273,6 +273,7 @@ test_gebr_relativise_path(void)
 	gchar *DATA1 = g_build_filename(home, "fooliu", "data1", NULL);
 
 	GebrGeoXmlLine *line = gebr_geoxml_line_new();
+	gebr_geoxml_line_append_path(line, "HOME", home);
 	gebr_geoxml_line_append_path(line, "BASE", BASE);
 	gebr_geoxml_line_append_path(line, "DATA", DATA);
 	gebr_geoxml_line_append_path(line, "DATA1", DATA1);
@@ -280,9 +281,9 @@ test_gebr_relativise_path(void)
 
 	gchar *** paths = gebr_geoxml_line_get_paths(line);
 
-	g_assert_cmpstr(gebr_relativise_path(g_build_filename("$HOME", "fooliu", NULL), "", paths), ==, "<BASE>");
-	g_assert_cmpstr(gebr_relativise_path(g_build_filename("$HOME", "fooliu", "data", NULL), "", paths), ==, "<DATA>");
-	g_assert_cmpstr(gebr_relativise_path(g_build_filename("$HOME", "fooliu", "data", "boo", NULL), "", paths), ==, "<DATA>/boo");
+	g_assert_cmpstr(gebr_relativise_path(g_build_filename("<HOME>", "fooliu", NULL), "", paths), ==, "<BASE>");
+	g_assert_cmpstr(gebr_relativise_path(g_build_filename("<HOME>", "fooliu", "data", NULL), "", paths), ==, "<DATA>");
+	g_assert_cmpstr(gebr_relativise_path(g_build_filename("<HOME>", "fooliu", "data", "boo", NULL), "", paths), ==, "<DATA>/boo");
 
 	g_assert_cmpstr(gebr_relativise_path(g_build_filename("/", "tmp", "foo", NULL), "", paths), ==, "<IMPORT>");
 
@@ -295,7 +296,7 @@ test_gebr_relativise_path(void)
 	g_assert_cmpstr(gebr_relativise_path(g_build_filename(PRE, BASE, "data", NULL), PRE, paths), ==, "<DATA>");
 	g_assert_cmpstr(gebr_relativise_path(g_build_filename(PRE, BASE, "data", "boo", NULL), PRE, paths), ==, "<DATA>/boo");
 
-	gchar *PRE2 = g_build_filename("$HOME", ".gvfs", "sftp on dell2", NULL);
+	gchar *PRE2 = g_build_filename("<HOME>", ".gvfs", "sftp on dell2", NULL);
 	g_assert_cmpstr(gebr_relativise_path(g_build_filename(PRE2, BASE, NULL), PRE, paths), ==, "<BASE>");
 	g_assert_cmpstr(gebr_relativise_path(g_build_filename(PRE2, BASE, "data", NULL), PRE, paths), ==, "<DATA>");
 	g_assert_cmpstr(gebr_relativise_path(g_build_filename(PRE2, BASE, "data", "boo", NULL), PRE, paths), ==, "<DATA>/boo");
@@ -330,7 +331,7 @@ test_gebr_gtk_bookmarks_add_paths(void)
 	gchar *** paths = gebr_geoxml_line_get_paths(line);
 
 	gchar *contents;
-	const gchar *file = TEST_SRCDIR "/bookmarks";
+	const gchar *file = "/tmp/bookmarks";
 	g_unlink(file);
 
 	gebr_gtk_bookmarks_add_paths(file, "", paths);
@@ -356,7 +357,7 @@ test_gebr_gtk_bookmarks_remove_paths(void)
 	gchar *** paths = gebr_geoxml_line_get_paths(line);
 
 	gchar *contents;
-	const gchar *file = TEST_SRCDIR "/bookmarks";
+	const gchar *file = "/tmp/bookmarks";
 	g_unlink(file);
 
 	gebr_gtk_bookmarks_add_paths(file, "", paths);
@@ -367,6 +368,18 @@ test_gebr_gtk_bookmarks_remove_paths(void)
 
 	g_unlink(file);
 }
+
+void
+test_gebr_calculate_number_of_processors(void)
+{
+	gint nprocs[] 	 = {1, 2, 9, 9};
+	gint agression[] = {1, 3, 3, 5};
+	g_assert_cmpint(gebr_calculate_number_of_processors(nprocs[0], agression[0]), ==, 1);
+	g_assert_cmpint(gebr_calculate_number_of_processors(nprocs[1], agression[1]), ==, 1);
+	g_assert_cmpint(gebr_calculate_number_of_processors(nprocs[2], agression[2]), ==, 5);
+	g_assert_cmpint(gebr_calculate_number_of_processors(nprocs[3], agression[3]), ==, 9);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -385,6 +398,7 @@ int main(int argc, char *argv[])
 	g_test_add_func("/libgebr/utils/gebr_resolve_relative_path", test_gebr_resolve_relative_path);
 	g_test_add_func("/libgebr/utils/gebr_gtk_bookmarks_add_paths", test_gebr_gtk_bookmarks_add_paths);
 	g_test_add_func("/libgebr/utils/gebr_gtk_bookmarks_remove_paths", test_gebr_gtk_bookmarks_remove_paths);
+	g_test_add_func("/libgebr/utils/test_gebr_calculate_number_of_processors", test_gebr_calculate_number_of_processors);
 
 	gint ret = g_test_run();
 	gebr_geoxml_finalize();

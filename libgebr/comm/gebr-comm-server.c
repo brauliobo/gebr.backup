@@ -189,13 +189,11 @@ gebr_comm_server_get_last_error(GebrCommServer *server)
 GebrCommServer *
 gebr_comm_server_new(const gchar * _address,
 		     const gchar *gebr_id,
-		     const struct gebr_comm_server_ops *ops,
-		     StorageType type)
+		     const struct gebr_comm_server_ops *ops)
 {
 	GebrCommServer *server;
 	server = g_object_new(GEBR_COMM_TYPE_SERVER, NULL);
 
-	server->storage_type = type;
 	server->priv->gebr_id = g_strdup(gebr_id);
 	server->socket = gebr_comm_protocol_socket_new();
 	server->address = g_string_new(_address);
@@ -772,16 +770,12 @@ gebr_comm_server_socket_connected(GebrCommProtocolSocket * socket,
 		GTimeVal gebr_time;
 		g_get_current_time(&gebr_time);
 		gchar *gebr_time_iso = g_time_val_to_iso8601(&gebr_time);
-
-		const gchar *str_storage_type = gebr_storage_type_enum_to_str(server->storage_type);
-
 		gebr_comm_protocol_socket_oldmsg_send(server->socket, FALSE,
-						      gebr_comm_protocol_defs.ini_def, 5,
+						      gebr_comm_protocol_defs.ini_def, 4,
 						      gebr_version(),
 						      mcookie_str,
 						      server->priv->gebr_id,
-						      gebr_time_iso,
-						      str_storage_type);
+						      gebr_time_iso);
 		g_free(mcookie_str);
 		g_free(gebr_time_iso);
 	} else {

@@ -1226,9 +1226,7 @@ gebr_file_chooser_set_warning_widget(gchar ***paths,
 				     gchar *file,
 				     GtkWidget *chooser_dialog)
 {
-	gchar *folder = g_strconcat("file://", paths[0][0], NULL);
-	gboolean success = gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(chooser_dialog), folder);
-	g_free(folder);
+	gboolean success = gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser_dialog), g_get_home_dir());
 	gebr_gtk_bookmarks_add_paths(file, "file://", paths);
 
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 5);
@@ -1236,7 +1234,13 @@ gebr_file_chooser_set_warning_widget(gchar ***paths,
 	GtkWidget *image = gtk_image_new_from_stock(GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
 	gtk_box_pack_start(GTK_BOX(vbox), image, FALSE, FALSE, 5);
 
-	GtkWidget *label = gtk_label_new(_("The presented files are from your local machine and may not represent the files on the servers."));
+	gchar *txt = g_markup_printf_escaped(_("The presented files are from your <b>local machine</b> "
+					       "and may not represent the files on the <b>servers</b>."));
+	GtkWidget *label = gtk_label_new(NULL);
+	gtk_label_set_markup(GTK_LABEL(label), txt);
+
+	g_free(txt);
+
 	gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
 	gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD);
 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 5);
@@ -1245,4 +1249,101 @@ gebr_file_chooser_set_warning_widget(gchar ***paths,
 	gtk_widget_show_all(vbox);
 	gtk_file_chooser_set_preview_widget (GTK_FILE_CHOOSER(chooser_dialog), vbox);
 	return success;
+}
+
+void
+gebr_file_chooser_set_current_directory (const gchar *entry_text, const gchar *prefix, gchar ***paths, GtkWidget *dialog, gchar **error)
+{
+	gchar *folder = NULL;
+	gboolean err_entry = FALSE;
+	gboolean err_dir = FALSE;
+
+	if (!entry_text || !*entry_text ) {
+		err_entry = TRUE;
+		error = NULL;
+	} else {
+		gchar *err_msg = NULL;
+		gchar *aux = gebr_resolve_relative_path(entry_text, paths);
+		if (!gebr_validate_path(aux, paths, &err_msg)) {
+			for (gint i = 0; paths && paths[i]; i++) {
+				if (g_strcmp0(paths[i][1], "HOME") == 0) {
+				    g_free(aux);
+				    aux = g_strdup(paths[i][0]);
+				    break;
+				}
+			}
+		}
+		*error = err_msg;
+		gchar *folder = g_build_filename(prefix, aux, NULL);
+
+		err_dir = !gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), folder);
+
+		g_free(aux);
+		g_free(folder);
+	}
+
+	if (err_entry || err_dir) {
+		gchar *base_dir = NULL, *home_dir = NULL;
+		for (gint i = 0; paths && paths[i]; i++) {
+			if (g_strcmp0(paths[i][1], "HOME") == 0)
+				home_dir = g_strdup(paths[i][0]);
+
+			if (g_strcmp0(paths[i][1], "BASE") == 0) {
+				base_dir = g_strdup(paths[i][0]);
+				break;
+			}
+		}
+
+		gchar *curr_dir;
+		if (base_dir)
+			curr_dir = gebr_resolve_relative_path(base_dir, paths);
+		else
+			curr_dir = gebr_resolve_relative_path(home_dir, paths);
+
+		folder = g_build_filename(prefix, curr_dir, NULL);
+		gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), folder);
+
+		g_free(curr_dir);
+		g_free(home_dir);
+		g_free(base_dir);
+		g_free(folder);
+	}
+}
+
+gint
+gebr_file_chooser_set_remote_navigation(GtkWidget *dialog,
+                                        GtkEntry *entry,
+					gchar *sftp_prefix,
+                                        gchar ***paths,
+                                        gboolean insert_bookmarks,
+                                        gchar **new_text)
+{
+	g_return_val_if_fail(new_text != NULL, GTK_RESPONSE_CANCEL);
+
+	gint response;
+	gchar *filename = g_build_filename(g_get_home_dir(), ".gtk-bookmarks", NULL);;
+	const gchar *entry_text = gtk_entry_get_text(entry);
+	gchar *err_filechooser = NULL;
+
+	if (sftp_prefix) {
+		gebr_file_chooser_set_current_directory (entry_text, sftp_prefix, paths, dialog, &err_filechooser);
+		if (insert_bookmarks)
+			gebr_gtk_bookmarks_add_paths(filename, sftp_prefix, paths);
+	} else {
+		gebr_file_chooser_set_warning_widget(paths, filename, dialog);
+	}
+
+	gtk_widget_show_all(dialog);
+
+	response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+	*new_text = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+
+	gebr_gtk_bookmarks_remove_paths(filename, paths);
+
+	gtk_widget_destroy(dialog);
+	g_free(err_filechooser);
+	g_free(filename);
+
+	return response;
 }

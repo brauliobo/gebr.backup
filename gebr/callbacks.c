@@ -178,10 +178,9 @@ line_check_maestro_connected(void)
 	                                                       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 	                                                       GTK_MESSAGE_WARNING,
 	                                                       GTK_BUTTONS_OK,
-	                                                       _("<span size='large'><b>There is no connected maestro.</b></span>\n\n"
-	                                                         "You need one to create a line."));
+	                                                       _("\nA connected maestro is required to accomplish this task.\n"));
 
-	gchar *win_title = g_strdup_printf(_("Maestro disconnected"));
+	gchar *win_title = g_strdup(_("Maestro disconnected"));
 	gtk_window_set_title(GTK_WINDOW(dialog), win_title);
 
 	gtk_dialog_run(GTK_DIALOG(dialog));
@@ -209,7 +208,7 @@ flows_check_maestro_connected(void)
 	                                                       _("<span size='large'><b>The maestro of this line is disconnected.</b></span>\n\n"
 	                                                	 "Connect to maestro <b>%s</b> to execute this line."), maestro_line);
 
-	gchar *win_title = g_strdup_printf(_("Maestro disconnected"));
+	gchar *win_title = g_strdup(_("Maestro disconnected"));
 	gtk_window_set_title(GTK_WINDOW(dialog), win_title);
 
 	gtk_dialog_run(GTK_DIALOG(dialog));
@@ -403,7 +402,12 @@ void on_job_control_stop(void)
 
 void on_configure_preferences_activate(void)
 {
-	preferences_setup_ui(FALSE);
+	preferences_setup_ui(FALSE, FALSE, FALSE);
+}
+
+void on_configure_wizard_activate(void)
+{
+	preferences_setup_ui(FALSE, TRUE, FALSE);
 }
 
 void on_configure_servers_activate(void)

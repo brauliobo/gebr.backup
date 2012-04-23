@@ -25,12 +25,6 @@
 
 G_BEGIN_DECLS
 
-typedef enum {
-	NONE,
-	SSH_KEY,
-	ENC_PASS
-} StorageType;
-
 /**
  * gebr_g_string_replace:
  * @string: The string to with the text.
@@ -297,6 +291,8 @@ gchar *gebr_relativise_path(const gchar *path_string,
 gchar *gebr_resolve_relative_path(const char *path,
 				gchar ***pvector);
 
+gchar ***gebr_generate_paths_with_home(const gchar *home);
+
 /**
  * gebr_gtk_bookmarks_add_paths:
  *
@@ -332,10 +328,6 @@ gboolean gebr_generate_key(const gchar *host);
  * gebr_add_ssh_key:
  */
 gboolean gebr_add_ssh_key(const gchar *host);
-
-const gchar *gebr_storage_type_enum_to_str(StorageType type);
-
-StorageType gebr_storage_type_str_to_enum(const gchar *type);
 
 G_END_DECLS
 

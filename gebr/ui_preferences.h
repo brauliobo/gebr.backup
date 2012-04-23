@@ -27,7 +27,12 @@ struct ui_preferences {
 	GtkWidget *dialog;
 	GtkBuilder *builder;
 
+	gboolean cancel_assistant;
 	gboolean first_run;
+	gboolean insert_preferences;
+
+	gint prev_page;
+	GtkWidget *back_button;
 
 	GtkWidget *username;
 	GtkWidget *email;
@@ -37,10 +42,17 @@ struct ui_preferences {
 	GtkWidget *log_load;
 	GtkWidget *built_in_radio_button;
 	GtkWidget *user_radio_button;
-	GtkComboBox *maestro_combo;
+	GtkWidget *server_entry;
+	GtkEntry *maestro_entry;
+	gchar *maestro_addr;
+
+	GtkListStore *maestro_chooser;
+	GtkCellRenderer *renderer_chooser;
 };
 
-struct ui_preferences *preferences_setup_ui(gboolean first_run);
+struct ui_preferences *preferences_setup_ui(gboolean first_run,
+                                            gboolean wizard_run,
+                                            gboolean insert_preferences);
 
 G_END_DECLS
 #endif				//__UI_PREFERENCES_H
