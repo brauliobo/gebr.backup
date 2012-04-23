@@ -156,53 +156,25 @@ __gebr_gui_file_entry_browse_button_clicked(GtkButton *button,
 	if (file_entry->customize_function != NULL)
 		file_entry->customize_function(GTK_FILE_CHOOSER(chooser_dialog), file_entry->customize_user_data);
 
-	gchar *file = g_build_filename(g_get_home_dir(), ".gtk-bookmarks", NULL);
 	gchar ***paths = gebr_geoxml_line_get_paths(file_entry->line);
-	const gchar *entr = gtk_entry_get_text(GTK_ENTRY(file_entry->entry));
- 
-	if (file_entry->prefix) {
-		gchar *folder = NULL;
-		gboolean err_entry = FALSE;
-		gboolean err_dir = FALSE;
-		if (!entr || !*entr ) 
-			err_entry = TRUE;
-		else {
-			gchar *entry_text = g_path_get_dirname(entr);
-			gchar *aux = gebr_resolve_relative_path(entry_text, paths);
-			folder = g_build_filename(file_entry->prefix, aux, NULL);
-			g_free(aux);
-			g_free(entry_text);
-			err_dir = !gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(chooser_dialog), folder);
-		}
 
-		if (err_entry || err_dir){
-			g_free(folder);
-			folder = g_build_filename(file_entry->prefix, paths[0][0], NULL);
-			gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(chooser_dialog), folder);
-		}
+	gchar *new_text;
+	gint response = gebr_file_chooser_set_remote_navigation(chooser_dialog,
+	                                                        GTK_ENTRY(file_entry->entry),
+	                                                        file_entry->prefix,
+	                                                        paths, TRUE,
+	                                                        &new_text);
 
-		gebr_gtk_bookmarks_add_paths(file, file_entry->prefix, paths);
-		g_free(folder);
-	}
-	else 
-		gebr_file_chooser_set_warning_widget(paths, file, chooser_dialog);
+	if (response == GTK_RESPONSE_OK) {
+		gtk_entry_set_text(GTK_ENTRY(file_entry->entry), new_text);
 
-	switch (gtk_dialog_run(GTK_DIALOG(chooser_dialog))) {
-	case GTK_RESPONSE_OK:
-		gtk_entry_set_text(GTK_ENTRY(file_entry->entry),
-				   gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser_dialog)));
 		g_signal_emit(file_entry, object_signals[PATH_CHANGED], 0);
-		break;
-	default:
-		break;
 	}
 
-	gebr_gtk_bookmarks_remove_paths(file, paths);
-
-	gtk_widget_destroy(GTK_WIDGET(chooser_dialog));
 	gtk_widget_grab_focus (file_entry->entry);
+
+	g_free(new_text);
 	gebr_pairstrfreev(paths);
-	g_free(file);
 }
 
 static gboolean on_mnemonic_activate(GebrGuiFileEntry * file_entry)

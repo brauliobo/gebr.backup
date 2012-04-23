@@ -358,12 +358,11 @@ update_speed_slider_sensitiveness(GebrFlowEdition *fe)
 	else
 		sensitive = FALSE;
 	
-	g_debug("Sensitive? %s", sensitive ? "T":"F");
-
 	gebr_geoxml_object_unref(prog);
 
 	gebr_interface_update_speed_sensitiveness(fe->speed_button,
 						  fe->speed_slider,
+						  fe->ruler,
 						  sensitive);
 }
 
@@ -736,61 +735,23 @@ static void open_activated(GtkEntry *entry, GtkEntryIconPosition icon_pos, GdkEv
 
 	GebrMaestroServer *maestro = gebr_maestro_controller_get_maestro_for_line(gebr.maestro_controller, gebr.line);
 	gchar ***paths = gebr_geoxml_line_get_paths(gebr.line);
-	gchar *filename = g_build_filename(g_get_home_dir(), ".gtk-bookmarks", NULL);
-	if (maestro) {
-		gchar *prefix = gebr_maestro_server_get_sftp_prefix(maestro);
-		gboolean logged = gebr_maestro_server_get_state(maestro) == SERVER_STATE_LOGGED;
-		const gchar *entr = gtk_entry_get_text(entry);
-		g_debug("------------------entry_text:'%s'", entr);
-		gboolean err_dir = FALSE;
-		gboolean err_entry = FALSE;
-		if (prefix) {
-			gchar *folder = NULL;
-			if (!entr || !*entr ) 
-				err_entry = TRUE;
-			else {
-				gchar *entry_text = g_path_get_dirname(entr);
-				gchar *aux = gebr_resolve_relative_path(entry_text, paths);
-				folder = g_build_filename(prefix, aux, NULL);
-				
-				g_free(aux);
-				g_free(entry_text);
-			}
+	gchar *prefix = gebr_maestro_server_get_sftp_prefix(maestro);
 
-			err_dir = !gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), folder);
-			if (err_entry || err_dir){
-				g_free(folder);
-				folder = g_build_filename(prefix, paths[0][0], NULL);
-				gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), folder);
-			}
+	gchar *new_text;
+	gint response = gebr_file_chooser_set_remote_navigation(dialog, entry,
+	                                                        prefix, paths, TRUE,
+	                                                        &new_text);
 
-			if (logged)
-				gebr_gtk_bookmarks_add_paths(filename, prefix, paths);
-			g_free(folder);
-			g_free(prefix);
-		}
-		else if (!logged)
-			gebr_file_chooser_set_warning_widget(paths, filename, dialog);
-
-	}
-
-	gtk_widget_show_all(dialog);
-
-	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES) {
-		gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		gtk_entry_set_text(entry, filename);
+	if (response == GTK_RESPONSE_YES) {
+		gtk_entry_set_text(entry, new_text);
 		
 		GtkCellRenderer *renderer = g_object_get_data(G_OBJECT(entry), "renderer");
 		gtk_cell_renderer_stop_editing(renderer, FALSE);
-		flow_edition_component_edited(GTK_CELL_RENDERER_TEXT(renderer), path, filename);
-		g_free(filename);
+		flow_edition_component_edited(GTK_CELL_RENDERER_TEXT(renderer), path, new_text);
 	}
 
-	gebr_gtk_bookmarks_remove_paths(filename, paths);
-
-	gtk_widget_destroy(dialog);
+	g_free(new_text);
 	g_free(path);
-	g_free(filename);
 	gebr_pairstrfreev(paths);
 }
 

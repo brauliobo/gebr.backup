@@ -87,7 +87,6 @@ struct _GebrCommServer {
 	gboolean ac;
 
 	/* ssh stuff */
-	StorageType storage_type;
 	gchar *password;
 	gboolean tried_existant_pass;
 	gint16 tunnel_port;
@@ -176,8 +175,7 @@ GType gebr_comm_server_get_type(void) G_GNUC_CONST;
 
 GebrCommServer *gebr_comm_server_new(const gchar *_address,
 				     const gchar *gebr_id,
-				     const struct gebr_comm_server_ops *ops,
-				     StorageType type);
+				     const struct gebr_comm_server_ops *ops);
 
 const gchar *gebr_comm_server_get_last_error(GebrCommServer *server);
 

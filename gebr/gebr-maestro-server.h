@@ -130,7 +130,7 @@ GtkTreeModel *gebr_maestro_server_get_queues_model(GebrMaestroServer *maestro);
 
 void gebr_maestro_server_disconnect(GebrMaestroServer *maestro, gboolean quit);
 
-void gebr_maestro_server_connect(GebrMaestroServer *maestro, StorageType type);
+void gebr_maestro_server_connect(GebrMaestroServer *maestro);
 
 void gebr_maestro_server_add_temporary_job(GebrMaestroServer *maestro, GebrJob *job);
 
@@ -179,6 +179,11 @@ gint gebr_maestro_server_get_ncores_for_group(GebrMaestroServer *maestro,
                                               const gchar *mpi_flavor,
                                               const gchar *group,
                                               GebrMaestroServerGroupType type);
+
+gboolean gebr_maestro_server_has_servers(GebrMaestroServer *maestro,
+                                         gboolean connected_servers);
+
+gboolean gebr_maestro_server_has_connected_daemon(GebrMaestroServer *maestro);
 
 G_END_DECLS
 

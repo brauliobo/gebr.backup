@@ -304,6 +304,7 @@ state_changed(GebrCommServer *comm_server,
 			gebr_maestro_server_set_error(maestro, "error:ssh", err);
 	} else if (state == SERVER_STATE_LOGGED) {
 		gebr_maestro_server_set_error(maestro, "error:none", NULL);
+		gebr_config_maestro_save();
 	}
 
 	const gchar *error_type = maestro->priv->error_type;
@@ -487,8 +488,6 @@ parse_messages(GebrCommServer *comm_server,
 				GString *port = g_list_nth_data(arguments, 0);
 				GString *clocks_diff = g_list_nth_data(arguments, 1);
 
-				g_debug("===============On '%s', line '%d', clocks_diff:'%s' ", __FILE__, __LINE__, clocks_diff->str);
-
 				gebr_maestro_server_set_clocks_diff(maestro, atoi(clocks_diff->str));
 
 				gebr_comm_server_set_logged(comm_server);
@@ -503,8 +502,6 @@ parse_messages(GebrCommServer *comm_server,
 
 				daemon_addr = g_list_nth_data(arguments, 0);
 				status_id = g_list_nth_data(arguments, 1);
-
-				g_debug("on %s, daemon_addr:'%s', error:'%s'", __func__, daemon_addr->str, status_id->str);
 
 				gint ret_id = atoi(status_id->str);
 				g_signal_emit(maestro, signals[PATH_ERROR], 0, ret_id);
@@ -745,7 +742,6 @@ parse_messages(GebrCommServer *comm_server,
 			GString *status = g_list_nth_data(arguments, 1);
 			GString *parameter = g_list_nth_data(arguments, 2);
 
-			g_debug("******************************on %s, id:%s, status:%s, parameter:%s",__func__, id->str, status->str, parameter->str  ); 
 			GebrJob *job = g_hash_table_lookup(maestro->priv->jobs, id->str);
 			gebr_job_set_status(job, gebr_comm_job_get_status_from_string(status->str), parameter->str);
 
@@ -1392,12 +1388,11 @@ gebr_maestro_server_disconnect(GebrMaestroServer *maestro,
 }
 
 void
-gebr_maestro_server_connect(GebrMaestroServer *maestro,
-                            StorageType type)
+gebr_maestro_server_connect(GebrMaestroServer *maestro)
 {
 	maestro->priv->server = gebr_comm_server_new(maestro->priv->address,
 						     gebr_get_session_id(),
-						     &maestro_ops, type);
+						     &maestro_ops);
 	maestro->priv->server->user_data = maestro;
 	gebr_comm_server_connect(maestro->priv->server, TRUE);
 }
@@ -1621,4 +1616,37 @@ gebr_maestro_server_get_ncores_for_group(GebrMaestroServer *maestro,
 	}
 
 	return sum;
+}
+
+gboolean
+gebr_maestro_server_has_servers(GebrMaestroServer *maestro,
+                                gboolean connected_servers)
+{
+	gboolean valid;
+	GtkTreeIter iter;
+	GebrDaemonServer *daemon;
+	GtkTreeModel *model = GTK_TREE_MODEL(maestro->priv->store);
+
+	 valid = gtk_tree_model_get_iter_first(model, &iter);
+	 while (valid) {
+		 gtk_tree_model_get(model, &iter, 0, &daemon, -1);
+
+		 if (daemon) {
+			 const gchar *addr = gebr_daemon_server_get_address(daemon);
+			 if (connected_servers && *addr) {
+				 if (gebr_daemon_server_get_state(daemon) == SERVER_STATE_LOGGED)
+					 return TRUE;
+			 } else if (*addr)
+				 return TRUE;
+		 }
+
+		 valid = gtk_tree_model_iter_next(model, &iter);
+	 }
+
+	 return FALSE;
+}
+gboolean
+gebr_maestro_server_has_connected_daemon(GebrMaestroServer *maestro)
+{
+	return maestro->priv->has_connected_daemon;
 }

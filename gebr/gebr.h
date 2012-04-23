@@ -105,6 +105,11 @@ struct gebr {
 		GKeyFile *key_file;
 		GString *path;
 
+		GKeyFile *key_file_maestro;
+		GString *path_maestro;
+
+		GString *version;
+
 		GString *maestro_address;
 		GString *username;
 		GString *email;
@@ -170,6 +175,11 @@ gboolean gebr_config_load(void);
 void gebr_config_apply(void);
 
 /**
+ * Save GeBR's Maestro config to ~/.gebr/.maestros.conf file.
+ */
+void gebr_config_maestro_save(void);
+
+/**
  * Save GeBR config to ~/.gebr/.gebr.conf file.
  * \param verbose If TRUE, report 'Configuration saved' in status bar.
  */
@@ -193,6 +203,8 @@ void gebr_message(GebrLogMessageType type, gboolean in_statusbar, gboolean in_lo
 void gebr_remove_help_edit_window(GebrGeoXmlDocument * document);
 
 const gchar *gebr_get_session_id(void);
+
+gboolean gebr_has_maestro_config(void);
 
 G_END_DECLS
 

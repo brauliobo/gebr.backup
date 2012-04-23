@@ -2,278 +2,144 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkHBox" id="maestro_info">
-    <property name="visible">True</property>
-    <property name="border_width">5</property>
-    <child>
-      <object class="GtkImage" id="image1">
-        <property name="visible">True</property>
-        <property name="stock">gtk-info</property>
-        <property name="icon-size">6</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="padding">5</property>
-        <property name="position">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel" id="maestro_info_label">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">&lt;i&gt;&lt;b&gt;Maestro&lt;/b&gt; is the responsible for receiving client requests and for managing the available resources to perform it in the best way&lt;/i&gt;</property>
-        <property name="use_markup">True</property>
-        <property name="wrap">True</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="padding">10</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-  </object>
-  <object class="GtkHBox" id="pwd_info">
-    <property name="visible">True</property>
-    <property name="border_width">5</property>
-    <child>
-      <object class="GtkImage" id="image2">
-        <property name="visible">True</property>
-        <property name="stock">gtk-info</property>
-        <property name="icon-size">6</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="padding">5</property>
-        <property name="position">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel" id="pwd_info_label">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">&lt;i&gt;Information about connections Gebr-maestro-daemon and, SSH and the need of passwords&lt;/i&gt;</property>
-        <property name="use_markup">True</property>
-        <property name="wrap">True</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="padding">10</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-  </object>
   <object class="GtkVBox" id="maestro_chooser">
     <property name="visible">True</property>
     <property name="border_width">5</property>
     <property name="spacing">20</property>
     <child>
-      <object class="GtkLabel" id="label6">
+      <object class="GtkVBox" id="main_connection">
         <property name="visible">True</property>
-        <property name="label" translatable="yes">Choose the Maestro:</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="position">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkComboBox" id="maestro_combo">
-        <property name="visible">True</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-  </object>
-  <object class="GtkVBox" id="pwd_options">
-    <property name="visible">True</property>
-    <property name="border_width">5</property>
-    <child>
-      <object class="GtkLabel" id="label5">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">Choose the way in which G&#xEA;BR is going to handle the passwords</property>
-      </object>
-      <packing>
-        <property name="padding">10</property>
-        <property name="position">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkVBox" id="vbox3">
-        <property name="visible">True</property>
+        <property name="border_width">5</property>
         <child>
-          <object class="GtkRadioButton" id="sshkey_button">
-            <property name="label" translatable="yes">SSH keys</property>
+          <object class="GtkLabel" id="pwd_info_label">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="draw_indicator">True</property>
-            <property name="group">storepass_button</property>
+            <property name="label" translatable="yes">G&#xEA;BR needs a &lt;b&gt;connection&lt;/b&gt; to a Maestro to send jobs and receive outputs. For security reasons an encrypted connection is made using SSH protocol. 
+
+Your login password may be asked to stablish the connection.</property>
+            <property name="use_markup">True</property>
+            <property name="wrap">True</property>
           </object>
           <packing>
             <property name="expand">False</property>
+            <property name="padding">10</property>
             <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkRadioButton" id="storepass_button">
-            <property name="label" translatable="yes">Store passwords</property>
+          <object class="GtkHBox" id="hbox4">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="draw_indicator">True</property>
-            <property name="group">sshkey_button</property>
+            <child>
+              <object class="GtkComboBoxEntry" id="maestro_combo">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="connect_button">
+                <property name="label" translatable="yes">Connect</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
+            <property name="fill">False</property>
             <property name="position">1</property>
           </packing>
         </child>
-        <child>
-          <object class="GtkRadioButton" id="none_button">
-            <property name="label" translatable="yes">None</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="draw_indicator">True</property>
-            <property name="group">sshkey_button</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
       </object>
       <packing>
-        <property name="position">1</property>
-      </packing>
-    </child>
-  </object>
-  <object class="GtkVBox" id="review">
-    <property name="visible">True</property>
-    <property name="spacing">2</property>
-    <child>
-      <object class="GtkLabel" id="label1">
-        <property name="ypad">1</property>
-        <property name="label" translatable="yes">Here is the summary of you connections settings. Changes can be made by going to Actions-&amp;gt;Server</property>
-        <property name="use_markup">True</property>
-        <property name="wrap">True</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="padding">15</property>
         <property name="position">0</property>
       </packing>
     </child>
     <child>
-      <object class="GtkTable" id="table1">
+      <object class="GtkVBox" id="main_status">
         <property name="visible">True</property>
-        <property name="border_width">5</property>
-        <property name="n_rows">3</property>
-        <property name="n_columns">2</property>
-        <property name="column_spacing">20</property>
-        <property name="row_spacing">5</property>
-        <property name="homogeneous">True</property>
+        <property name="border_width">20</property>
+        <property name="spacing">15</property>
         <child>
-          <object class="GtkLabel" id="label2">
+          <object class="GtkLabel" id="status_title">
             <property name="visible">True</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">&lt;b&gt;Maestro&lt;/b&gt;</property>
+            <property name="label" translatable="yes">&lt;span size='large'&gt;Connecting to Maestro...&lt;/span&gt;</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
-            <property name="x_options">GTK_FILL</property>
-            <property name="y_options"></property>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="label3">
+          <object class="GtkAlignment" id="status_container">
             <property name="visible">True</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">&lt;b&gt;Servers&lt;/b&gt;</property>
-            <property name="use_markup">True</property>
+            <property name="yalign">0</property>
+            <property name="yscale">0</property>
+            <child>
+              <object class="GtkHBox" id="hbox1">
+                <child>
+                  <object class="GtkImage" id="status_img">
+                    <property name="visible">True</property>
+                    <property name="xalign">1</property>
+                    <property name="stock">gtk-ok</property>
+                    <property name="icon-size">6</property>
+                  </object>
+                  <packing>
+                    <property name="padding">5</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="status_label">
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                    <property name="label" translatable="yes">Connected!</property>
+                    <property name="wrap">True</property>
+                    <property name="wrap_mode">word-char</property>
+                  </object>
+                  <packing>
+                    <property name="padding">5</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
           </object>
           <packing>
-            <property name="top_attach">1</property>
-            <property name="bottom_attach">2</property>
-            <property name="x_options">GTK_FILL</property>
-            <property name="y_options"></property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="label4">
-            <property name="visible">True</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">&lt;b&gt;Password storage&lt;/b&gt;</property>
-            <property name="use_markup">True</property>
-          </object>
-          <packing>
-            <property name="top_attach">2</property>
-            <property name="bottom_attach">3</property>
-            <property name="x_options">GTK_FILL</property>
-            <property name="y_options"></property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="review_maestro_label">
-            <property name="visible">True</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">dellX</property>
-          </object>
-          <packing>
-            <property name="left_attach">1</property>
-            <property name="right_attach">2</property>
-            <property name="x_options">GTK_FILL</property>
-            <property name="y_options">GTK_FILL</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="review_pwd_label">
-            <property name="visible">True</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">SSH keys</property>
-          </object>
-          <packing>
-            <property name="left_attach">1</property>
-            <property name="right_attach">2</property>
-            <property name="top_attach">2</property>
-            <property name="bottom_attach">3</property>
-            <property name="x_options">GTK_FILL</property>
-            <property name="y_options">GTK_FILL</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="servers_maestro">
-            <property name="visible">True</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">label</property>
-          </object>
-          <packing>
-            <property name="left_attach">1</property>
-            <property name="right_attach">2</property>
-            <property name="top_attach">1</property>
-            <property name="bottom_attach">2</property>
-            <property name="x_options">GTK_FILL</property>
-            <property name="y_options">GTK_FILL</property>
+            <property name="position">1</property>
           </packing>
         </child>
       </object>
       <packing>
-        <property name="expand">False</property>
         <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="maestro_status_label">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="label" translatable="yes">Choose one maestro to proceed</property>
+      </object>
+      <packing>
+        <property name="position">2</property>
       </packing>
     </child>
   </object>
   <object class="GtkTable" id="main_preferences">
     <property name="visible">True</property>
     <property name="border_width">5</property>
-    <property name="n_rows">4</property>
+    <property name="n_rows">3</property>
     <property name="n_columns">2</property>
     <property name="column_spacing">5</property>
-    <property name="row_spacing">8</property>
+    <property name="row_spacing">5</property>
     <child>
       <object class="GtkLabel" id="label7">
         <property name="visible">True</property>
@@ -355,142 +221,406 @@
         <property name="y_options">GTK_FILL</property>
       </packing>
     </child>
-    <child>
-      <object class="GtkLabel" id="label10">
-        <property name="visible">True</property>
-        <property name="xalign">0</property>
-        <property name="label" translatable="yes">HTML editor</property>
-      </object>
-      <packing>
-        <property name="top_attach">3</property>
-        <property name="bottom_attach">4</property>
-        <property name="x_options">GTK_FILL</property>
-        <property name="y_options"></property>
-        <property name="x_padding">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkHBox" id="html_box">
-        <property name="visible">True</property>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="right_attach">2</property>
-        <property name="top_attach">3</property>
-        <property name="bottom_attach">4</property>
-        <property name="y_options">GTK_FILL</property>
-      </packing>
-    </child>
   </object>
-  <object class="GtkVBox" id="main_status">
+  <object class="GtkListStore" id="liststore1"/>
+  <object class="GtkVBox" id="main_servers">
     <property name="visible">True</property>
-    <property name="border_width">20</property>
-    <property name="spacing">15</property>
+    <property name="border_width">5</property>
     <child>
-      <object class="GtkLabel" id="status_title">
+      <object class="GtkLabel" id="main_servers_label">
         <property name="visible">True</property>
-        <property name="label" translatable="yes">&lt;span size='large'&gt;Connecting on Maestro...&lt;/span&gt;</property>
+        <property name="label">Now you need to add &lt;b&gt;Servers&lt;/b&gt; to be handled by your Maestro &lt;b&gt;XXX&lt;/b&gt;.
+
+For each server, you are going to be asked for your login credentials.</property>
         <property name="use_markup">True</property>
+        <property name="wrap">True</property>
+        <property name="width_chars">50</property>
       </object>
       <packing>
         <property name="expand">False</property>
+        <property name="padding">10</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkHBox" id="add_server_box">
+        <property name="visible">True</property>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <object class="GtkButton" id="server_add">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <child>
+              <object class="GtkLabel" id="label1">
+                <property name="visible">True</property>
+                <property name="xpad">5</property>
+                <property name="label" translatable="yes">Add</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">5</property>
+            <property name="pack_type">end</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">False</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkScrolledWindow" id="scrolledwindow1">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="hscrollbar_policy">automatic</property>
+        <property name="vscrollbar_policy">automatic</property>
+        <child>
+          <object class="GtkTreeView" id="servers_view">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="servers_label">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="label" translatable="yes">Add at least one server on your maestro to use G&#xEA;BR.</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="padding">5</property>
+        <property name="position">3</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkVBox" id="maestro_info">
+    <property name="visible">True</property>
+    <child>
+      <object class="GtkHBox" id="hbox15">
+        <property name="visible">True</property>
+        <property name="border_width">5</property>
+        <child>
+          <object class="GtkImage" id="image1">
+            <property name="visible">True</property>
+            <property name="stock">gtk-info</property>
+            <property name="icon-size">6</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">5</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="maestro_info_label">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">&lt;b&gt;Maestro&lt;/b&gt; is the responsible for receiving G&#xEA;BR requests and for managing the available resources to perform it in the best way.</property>
+            <property name="use_markup">True</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">10</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
         <property name="fill">False</property>
         <property name="position">0</property>
       </packing>
     </child>
     <child>
-      <object class="GtkAlignment" id="status_container">
+      <object class="GtkHBox" id="hbox3">
         <property name="visible">True</property>
-        <property name="yalign">0</property>
-        <property name="yscale">0</property>
+        <property name="border_width">5</property>
         <child>
-          <object class="GtkHBox" id="hbox1">
+          <object class="GtkLabel" id="label5">
+            <property name="visible">True</property>
+            <property name="xalign">1</property>
+            <property name="label" translatable="yes">More information can be found</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="maestro_info_button">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="relief">none</property>
+            <property name="xalign">0</property>
             <child>
-              <object class="GtkImage" id="status_img">
-                <property name="visible">True</property>
-                <property name="xalign">1</property>
-                <property name="stock">gtk-ok</property>
-                <property name="icon-size">6</property>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="status_label">
+              <object class="GtkLabel" id="label4">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Connected!</property>
+                <property name="label" translatable="yes">&lt;i&gt;here.&lt;/i&gt;</property>
+                <property name="use_markup">True</property>
               </object>
-              <packing>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
       <packing>
+        <property name="expand">False</property>
+        <property name="fill">False</property>
+        <property name="padding">5</property>
         <property name="position">1</property>
       </packing>
     </child>
   </object>
-  <object class="GtkVBox" id="main_keys">
+  <object class="GtkVBox" id="review">
     <property name="visible">True</property>
-    <property name="border_width">20</property>
-    <property name="spacing">15</property>
     <child>
-      <object class="GtkLabel" id="keys_title">
+      <object class="GtkTable" id="table1">
         <property name="visible">True</property>
-        <property name="label" translatable="yes">&lt;span size='large'&gt;Generating Keys...&lt;/span&gt;</property>
-        <property name="use_markup">True</property>
+        <property name="border_width">5</property>
+        <property name="n_rows">3</property>
+        <property name="n_columns">3</property>
+        <property name="column_spacing">20</property>
+        <property name="row_spacing">5</property>
+        <child>
+          <object class="GtkLabel" id="label2">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="label" translatable="yes">&lt;b&gt;Preferences&lt;/b&gt;</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="x_options">GTK_FILL</property>
+            <property name="y_options"></property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label3">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="label" translatable="yes">&lt;b&gt;Maestro&lt;/b&gt;</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="top_attach">1</property>
+            <property name="bottom_attach">2</property>
+            <property name="x_options">GTK_FILL</property>
+            <property name="y_options"></property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="review_pref_label">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="label" translatable="yes">&lt;i&gt;Not configured &lt;/i&gt;</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="right_attach">2</property>
+            <property name="x_options">GTK_FILL</property>
+            <property name="y_options">GTK_FILL</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="review_maestro_label">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="label" translatable="yes">&lt;i&gt;Not connected &lt;/i&gt;</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="right_attach">2</property>
+            <property name="top_attach">1</property>
+            <property name="bottom_attach">2</property>
+            <property name="x_options">GTK_FILL</property>
+            <property name="y_options">GTK_FILL</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="review_pref_img">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="stock">gtk-stop</property>
+            <property name="icon-size">1</property>
+          </object>
+          <packing>
+            <property name="left_attach">2</property>
+            <property name="right_attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="review_maestro_img">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="stock">gtk-stop</property>
+            <property name="icon-size">1</property>
+          </object>
+          <packing>
+            <property name="left_attach">2</property>
+            <property name="right_attach">3</property>
+            <property name="top_attach">1</property>
+            <property name="bottom_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label6">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="label" translatable="yes">&lt;b&gt;Servers&lt;/b&gt;</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="top_attach">2</property>
+            <property name="bottom_attach">3</property>
+            <property name="x_options">GTK_FILL</property>
+            <property name="y_options"></property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="review_servers_label">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="label" translatable="yes">&lt;i&gt;None &lt;/i&gt;</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="right_attach">2</property>
+            <property name="top_attach">2</property>
+            <property name="bottom_attach">3</property>
+            <property name="x_options">GTK_FILL</property>
+            <property name="y_options">GTK_FILL</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="review_servers_img">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="stock">gtk-stop</property>
+            <property name="icon-size">1</property>
+          </object>
+          <packing>
+            <property name="left_attach">2</property>
+            <property name="right_attach">3</property>
+            <property name="top_attach">2</property>
+            <property name="bottom_attach">3</property>
+          </packing>
+        </child>
       </object>
       <packing>
         <property name="expand">False</property>
-        <property name="fill">False</property>
+        <property name="padding">10</property>
         <property name="position">0</property>
       </packing>
     </child>
     <child>
-      <object class="GtkAlignment" id="keys_container">
+      <object class="GtkHBox" id="hbox5">
         <property name="visible">True</property>
-        <property name="yalign">0</property>
-        <property name="yscale">0</property>
         <child>
-          <object class="GtkHBox" id="hbox2">
-            <child>
-              <object class="GtkImage" id="keys_img">
-                <property name="visible">True</property>
-                <property name="xalign">1</property>
-                <property name="stock">gtk-ok</property>
-                <property name="icon-size">6</property>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="keys_label">
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Created!</property>
-              </object>
-              <packing>
-                <property name="position">1</property>
-              </packing>
-            </child>
+          <object class="GtkImage" id="review_img">
+            <property name="visible">True</property>
+            <property name="stock">gtk-dialog-warning</property>
+            <property name="icon-size">5</property>
           </object>
+          <packing>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="review_orientation">
+            <property name="visible">True</property>
+            <property name="xalign">0</property>
+            <property name="yalign">0</property>
+            <property name="xpad">5</property>
+            <property name="ypad">15</property>
+            <property name="label" translatable="yes">G&#xEA;BR is unable to proceed without this configuration.</property>
+            <property name="use_markup">True</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
       <packing>
+        <property name="expand">False</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkVBox" id="servers_info">
+    <property name="visible">True</property>
+    <property name="border_width">5</property>
+    <child>
+      <object class="GtkLabel" id="server_info_label">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">&lt;i&gt;"A maestro without servers is like a general
+without soldiers."&lt;/i&gt;</property>
+        <property name="use_markup">True</property>
+        <property name="wrap">True</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">False</property>
+        <property name="padding">10</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkHBox" id="servers_info_box">
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkImage" id="image3">
+            <property name="visible">True</property>
+            <property name="stock">gtk-info</property>
+            <property name="icon-size">6</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">5</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label10">
+            <property name="visible">True</property>
+            <property name="yalign">0</property>
+            <property name="label" translatable="yes">
+&lt;b&gt;Servers&lt;/b&gt; are in charge of running processing flows, under maestro&#x2019;s coordination. For each server, you are going to be asked for your login credentials.
+You may be asked once more for your login credentials to be able to browse the remote file system.
+</property>
+            <property name="use_markup">True</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="fill">False</property>
         <property name="position">1</property>
       </packing>
     </child>
