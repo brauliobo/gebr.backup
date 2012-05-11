@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<article
+  xmlns="http://docbook.org/ns/docbook"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  lang="pt_BR"
+  version="5.0">
+
+  <info>
+    <title>GêBR - Guia do Usuário</title>
+  </info>
+
+  <!-- O que é a GêBR? -->
+  <xi:include href="what-is-gebr.xml" />
+  
+  <!-- Projetos, Linhas e Fluxos: uma visão geral -->
+  <xi:include href="overview.xml" />
+  
+  <!-- A aba Projetos e Linhas -->
+  <xi:include href="projects-lines-tab.xml" />
+  
+  <!-- A aba Fluxos -->
+  <xi:include href="flows-tab.xml" />
+  
+  <!-- A aba Editor de Fluxo -->
+  <xi:include href="flow-editor-tab.xml" />
+  
+  <!-- A aba Controle de Tarefas -->
+  <xi:include href="job-control-tab.xml" />
+  
+  <!-- Variáveis -->
+  
+  <!-- Recursos adicionais -->
+  <xi:include href="additional-features.xml" />
+  
+</article>
