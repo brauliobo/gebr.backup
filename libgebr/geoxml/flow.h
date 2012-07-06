@@ -348,7 +348,11 @@ GebrGeoXmlRevision *gebr_geoxml_flow_append_revision(GebrGeoXmlFlow * flow, cons
  * @revision should not be NULL.
  * If \p flow is NULL nothing is done.
  */
-void gebr_geoxml_flow_set_revision_data(GebrGeoXmlRevision * revision, const gchar * flow, const gchar * date, const gchar * comment);
+void gebr_geoxml_flow_set_revision_data(GebrGeoXmlRevision * revision,
+                                        const gchar * flow,
+                                        const gchar * date,
+                                        const gchar * comment,
+                                        const gchar * id);
 
 /**
  * gebr_geoxml_flow_get_revision:
@@ -379,7 +383,28 @@ gebr_geoxml_flow_get_revision(GebrGeoXmlFlow * flow,
  *
  * If \p revision in NULL nothing is done.
  */
-void gebr_geoxml_flow_get_revision_data(GebrGeoXmlRevision * revision, gchar ** flow, gchar ** date, gchar ** comment);
+void gebr_geoxml_flow_get_revision_data(GebrGeoXmlRevision * revision,
+                                        gchar ** flow,
+                                        gchar ** date,
+                                        gchar ** comment,
+                                        gchar ** id);
+
+/**
+ *
+ */
+gulong gebr_geoxml_flow_get_revision_index_by_id(GebrGeoXmlFlow *flow,
+                                                 gchar *parent_id);
+
+GebrGeoXmlRevision *gebr_geoxml_flow_get_revision_by_id(GebrGeoXmlFlow *flow,
+                                                        gchar *id);
+
+/**
+ *
+ */
+gboolean gebr_geoxml_flow_get_parent_revision(GebrGeoXmlFlow *flow,
+                                              gchar **date,
+                                              gchar **comment,
+                                              gchar **id);
 
 /**
  * Get the number of revisions \p flow has.
@@ -552,6 +577,10 @@ gchar * gebr_geoxml_flow_io_get_output_real(GebrGeoXmlFlow *flow);
 gboolean gebr_geoxml_flow_is_single_core(GebrGeoXmlFlow *flow,
                                          GebrValidator *validator);
 
+gchar * gebr_geoxml_flow_create_dot_code(GebrGeoXmlFlow *flow, GHashTable *hash);
+
+gchar *gebr_geoxml_flow_revisions_get_root_id(GHashTable *hash);
+	
 G_END_DECLS
 
 #endif				//__GEBR_GEOXML_FLOW_H

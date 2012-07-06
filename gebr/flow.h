@@ -65,15 +65,38 @@ void flow_set_paths_to_relative(GebrGeoXmlFlow * flow, GebrGeoXmlLine *line, gch
 void flow_set_paths_to_empty(GebrGeoXmlFlow * flow);
 
 /**
+ * Remove selected program from flow process.
+ */
+void flow_program_remove(void);
+
+/**
  * Make a revision from current flow.
  * Opens a dialog asking the user for a comment of it.
  */
 gboolean flow_revision_save(void);
 
 /**
- * Remove selected program from flow process.
+ *
  */
-void flow_program_remove(void);
+gboolean flow_revision_remove(GebrGeoXmlFlow *flow,
+                              gchar *id_remove,
+                              gchar *parent_head,
+                              GHashTable *hash);
+
+/**
+ *
+ */
+GHashTable *gebr_flow_revisions_hash_create(GebrGeoXmlFlow *flow);
+
+/**
+ *
+ */
+void gebr_flow_revisions_hash_free(GHashTable *revision);
+
+gboolean gebr_flow_revisions_create_graph(GebrGeoXmlFlow *flow,
+                                          GHashTable *revs,
+                                          gchar ** png_filename);
+
 /**
  * Move selected program to top in the processing flow.
  */
@@ -127,18 +150,23 @@ gchar * gebr_generate_variables_value_table(GebrGeoXmlDocument *doc, gboolean he
  * gebr_flow_generate_header:
  * @flow: a #GebrGeoXmlFlow
  * @include_date: whether to include the date
+ * @rev_comment: Revision comment or NULL if doesn't have revision
+ * @rev_date: Revision date or NULL if doesn't have revision
  *
  * Creates a string containing a HTML description of @flow.
  *
  * Returns: a newly allocated string containing HTML markup.
  */
-gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date);
+gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date,
+                                  gchar *rev_comment, gchar *rev_date);
 
 /**
  * gebr_flow_get_detailed_report:
  * @flow: a #GebrGeoXmlFlow
  * @include_table: whether to include the parameter/value table 
  * @include_table: whether to include the date in the header
+ * @rev_comment: Revision comment or NULL if doesn't have revision
+ * @rev_date: Revision date or NULL if doesn't have revision
  *
  * Generates the detailed report for @flow and returns it as a string.
  * The detailed report includes a header containing informations such
@@ -148,7 +176,8 @@ gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date);
  *
  * Returns: a newly allocated string, which must be freed with g_free().
  */
-gchar * gebr_flow_get_detailed_report (GebrGeoXmlFlow * flow, gboolean include_table, gboolean include_date);
+gchar * gebr_flow_get_detailed_report (GebrGeoXmlFlow * flow, gboolean include_table,
+                                       gboolean include_date, gchar *rev_comment, gchar *rev_date);
 
 void gebr_flow_modify_paths(GebrGeoXmlFlow *flow,
 			    GebrFlowModifyPathsFunc func,

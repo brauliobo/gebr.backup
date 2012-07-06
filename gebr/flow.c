@@ -27,6 +27,8 @@
 #include <gtk/gtk.h>
 
 #include <glib/gi18n.h>
+#include <glib/gstdio.h>
+
 #include <libgebr/date.h>
 #include <libgebr/utils.h>
 #include <libgebr/gebr-tar.h>
@@ -75,6 +77,8 @@ void flow_new (void)
 	gebr_geoxml_document_set_author(GEBR_GEOXML_DOC(flow), gebr_geoxml_document_get_author(GEBR_GEOXML_DOCUMENT(gebr.line)));
 	gebr_geoxml_document_set_email(GEBR_GEOXML_DOC(flow), gebr_geoxml_document_get_email(GEBR_GEOXML_DOCUMENT(gebr.line)));
 
+	gebr_geoxml_document_set_parent_id(GEBR_GEOXML_DOC(flow), "");
+
 	line_flow = gebr_geoxml_line_append_flow(gebr.line, gebr_geoxml_document_get_filename(GEBR_GEOXML_DOC(flow)));
 	iter = line_append_flow_iter(flow, line_flow);
 
@@ -108,9 +112,20 @@ void flow_free(void)
 		valid = gtk_list_store_remove(gebr.ui_flow_edition->fseq_store, &iter);
 	}
 	gtk_tree_view_set_model(GTK_TREE_VIEW(gebr.ui_flow_edition->fseq_view), model);
-	gtk_container_foreach(GTK_CONTAINER(gebr.ui_flow_browse->revisions_menu),
-			      (GtkCallback) gtk_widget_destroy, NULL);
+
 	flow_browse_info_update();
+}
+
+static void
+flow_delete_graph_file(gchar *filename)
+{
+	GString *path;
+
+	path = document_get_path(filename);
+	path = g_string_append(path, ".png");
+	g_unlink(path->str);
+
+	g_string_free(path, TRUE);
 }
 
 void flow_delete(gboolean confirm)
@@ -159,7 +174,10 @@ void flow_delete(gboolean confirm)
 		gebr_remove_help_edit_window(document);
 		valid = gtk_list_store_remove(GTK_LIST_STORE(gebr.ui_flow_browse->store), &iter);
 		flow_free();
+
 		document_delete(filename);
+		flow_delete_graph_file(filename);
+
 		g_signal_emit_by_name(gebr.ui_flow_browse->view, "cursor-changed");
 
 		g_free(title);
@@ -170,6 +188,8 @@ void flow_delete(gboolean confirm)
 
 	if (gebr_geoxml_line_get_flows_number(gebr.line) == 0)
 		flow_edition_set_run_widgets_sensitiveness(gebr.ui_flow_edition, FALSE, FALSE);
+
+	flow_browse_info_update();
 
 	project_line_info_update();
 }
@@ -503,13 +523,13 @@ gebr_flow_modify_paths(GebrGeoXmlFlow *flow,
 	gebr_geoxml_flow_get_revision(flow, &revision, 0);
 	for (; revision != NULL; gebr_geoxml_sequence_next(&revision)) {
 		gchar *xml;
-		gebr_geoxml_flow_get_revision_data(GEBR_GEOXML_REVISION(revision), &xml, NULL, NULL);
+		gebr_geoxml_flow_get_revision_data(GEBR_GEOXML_REVISION(revision), &xml, NULL, NULL, NULL);
 		GebrGeoXmlFlow *rev;
 		if (gebr_geoxml_document_load_buffer((GebrGeoXmlDocument **)&rev, xml) == GEBR_GEOXML_RETV_SUCCESS) {
 			gebr_flow_modify_paths(rev, func, set_programs_unconfigured, data);
 			g_free(xml);
 			gebr_geoxml_document_to_string(GEBR_GEOXML_DOCUMENT(rev), &xml);
-			gebr_geoxml_flow_set_revision_data(GEBR_GEOXML_REVISION(revision), xml, NULL, NULL);
+			gebr_geoxml_flow_set_revision_data(GEBR_GEOXML_REVISION(revision), xml, NULL, NULL, NULL);
 			document_free(GEBR_GEOXML_DOCUMENT(rev));
 		}
 		g_free(xml);
@@ -627,6 +647,7 @@ gboolean flow_revision_save(void)
 	if (response == GTK_RESPONSE_OK) {
 
 		GebrGeoXmlRevision *revision;
+		gchar *id;
 
 		gebr_gui_gtk_tree_view_foreach_selected(&iter, gebr.ui_flow_browse->view) {
 
@@ -639,9 +660,12 @@ gboolean flow_revision_save(void)
 
 			revision = gebr_geoxml_flow_append_revision(GEBR_GEOXML_FLOW(flow), 
 								    gtk_entry_get_text(GTK_ENTRY(entry)));
+
+			gebr_geoxml_flow_get_revision_data(revision, NULL, NULL, NULL, &id);
+			gebr_geoxml_document_set_parent_id(GEBR_GEOXML_DOCUMENT(flow), id);
+
 			document_save(flow, FALSE, FALSE);
-			flow_browse_load_revision(revision, TRUE);
-			flow_browse_info_update();
+			flow_browse_reload_selected();
 			ret = TRUE;
 
 			//document_free(flow);
@@ -652,6 +676,146 @@ gboolean flow_revision_save(void)
 	gtk_widget_destroy(dialog);
 
 	return ret;
+}
+
+gboolean
+flow_revision_remove(GebrGeoXmlFlow *flow,
+                     gchar *id_remove,
+                     gchar *parent_head,
+                     GHashTable *hash)
+{
+	gboolean result;
+	GList *children = g_hash_table_lookup(hash, id_remove);
+
+	gchar *id;
+	GebrGeoXmlSequence *seq;
+
+	gboolean removed = FALSE;
+	gebr_geoxml_flow_get_revision(flow, &seq, 0);
+	for (; seq; gebr_geoxml_sequence_next(&seq)) {
+		gebr_geoxml_flow_get_revision_data(GEBR_GEOXML_REVISION(seq), NULL, NULL, NULL, &id);
+		if (!g_strcmp0(id, id_remove)) {
+			gebr_geoxml_sequence_remove(seq);
+			removed = TRUE;
+			break;
+		}
+	}
+
+	g_warn_if_fail(removed == TRUE);
+
+	if (!children) {
+		gboolean has_head = (g_strcmp0(parent_head, id) == 0);
+		g_free(id);
+		return has_head;
+	}
+
+	if (!g_strcmp0(id_remove, parent_head))
+		result = TRUE;
+
+	for (GList *i = children; i; i = i->next)
+		result = (flow_revision_remove(flow, i->data,
+		                               parent_head, hash) || result);
+
+	g_free(id);
+
+	return result;
+}
+
+GHashTable *
+gebr_flow_revisions_hash_create(GebrGeoXmlFlow *flow)
+{
+	GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+	GebrGeoXmlSequence *seq;
+	gebr_geoxml_flow_get_revision(flow, &seq, 0);
+
+	for(; seq; gebr_geoxml_sequence_next(&seq)) {
+		GebrGeoXmlRevision *rev = GEBR_GEOXML_REVISION(seq);
+		gchar *flow_xml;
+		gchar *id;
+		GebrGeoXmlDocument *revdoc;
+
+		gebr_geoxml_flow_get_revision_data(rev, &flow_xml, NULL, NULL, &id);
+
+		if (gebr_geoxml_document_load_buffer(&revdoc, flow_xml) != GEBR_GEOXML_RETV_SUCCESS) {
+			g_free(flow_xml);
+			g_free(id);
+			return NULL;
+		}
+		g_free(flow_xml);
+
+		gchar *parent_id = gebr_geoxml_document_get_parent_id(revdoc);
+
+		if (!parent_id || !*parent_id) {
+			GList *childs = g_hash_table_lookup(hash, id);
+			g_hash_table_insert(hash, g_strdup(id), childs);
+			g_free(id);
+			gebr_geoxml_document_free(revdoc);
+			continue;
+		}
+
+		GList *childs = g_hash_table_lookup(hash, parent_id);
+		childs = g_list_prepend(childs, g_strdup(id));
+		g_hash_table_insert(hash, parent_id, childs);
+
+		g_free(id);
+		gebr_geoxml_document_free(revdoc);
+	}
+
+	return hash;
+}
+void
+gebr_flow_revisions_hash_free(GHashTable *revision)
+{
+	void free_hash(gpointer key, gpointer value)
+	{
+		GList *list = value;
+		g_list_free(list);
+	}
+
+	g_hash_table_foreach(revision, (GHFunc) free_hash, NULL);
+	g_hash_table_destroy(revision);
+}
+
+gboolean
+gebr_flow_revisions_create_graph(GebrGeoXmlFlow *flow,
+                                 GHashTable *revs,
+                                 gchar **png_filename)
+{
+	GError *error = NULL;
+	gchar *dotfile = g_build_filename(g_get_home_dir(), ".gebr", "gebr", "data", "tmp.dot", NULL);
+	gchar *filename = g_strdup_printf("%s.png", gebr_geoxml_document_get_filename(GEBR_GEOXML_DOCUMENT(flow)));
+	gchar *pngfile = g_build_filename(g_get_home_dir(), ".gebr", "gebr", "data", filename, NULL);
+
+	gchar *dot_content = gebr_geoxml_flow_create_dot_code(flow, revs);
+	g_file_set_contents(dotfile, dot_content, -1, &error);
+	if (error)
+		g_warn_if_reached();
+
+
+
+	gchar *cmd_line = g_strdup_printf("bash -c \"dot -Tpng %s > %s\"; rm %s",
+	                                  dotfile, pngfile, dotfile);
+	gint exit;
+
+	g_debug("=====> CMD_LINE: %s", cmd_line);
+
+	if (!g_spawn_command_line_sync(cmd_line, NULL, NULL, &exit, &error))
+		return FALSE;
+
+	if (error)
+		return FALSE;
+
+	if (png_filename)
+		*png_filename = g_strdup(pngfile);
+
+	g_free(dot_content);
+	g_free(cmd_line);
+	g_free(filename);
+	g_free(dotfile);
+	g_free(pngfile);
+
+	return TRUE;
 }
 
 void flow_program_remove(void)
@@ -1155,7 +1319,10 @@ gchar * gebr_flow_generate_parameter_value_table(GebrGeoXmlFlow *flow)
 	return g_string_free(dump, FALSE);
 }
 
-gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date)
+gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow,
+                                  gboolean include_date,
+                                  gchar *rev_comment,
+                                  gchar *rev_date)
 {
 	gchar *date;
 	GString *dump;
@@ -1168,11 +1335,20 @@ gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date)
 	dump = g_string_new(NULL);
 	title = gebr_geoxml_document_get_title(GEBR_GEOXML_DOC(flow));
 	description = gebr_geoxml_document_get_description(GEBR_GEOXML_DOC(flow));
-	g_string_printf(dump,
-			"<h1>%s</h1>\n"
-			"<h2>%s</h2>\n",
-			title,
-			description);
+	if (rev_comment && rev_date)
+		g_string_printf(dump,
+		                "<h1>%s</h1> "
+		                "<div class='gebr-flow-revision'>"
+		                "	<span class='title'>Revision: %s </span>"
+		                "	<span class='date'>(%s)</span>"
+		                "</div>\n"
+		                "<h2>%s</h2>\n",
+		                title, rev_comment, rev_date, description);
+	else
+		g_string_printf(dump,
+		                "<h1>%s</h1>\n"
+		                "<h2>%s</h2>\n",
+		                title, description);
 	g_free(title);
 	g_free(description);
 
@@ -1219,7 +1395,11 @@ gchar * gebr_flow_generate_header(GebrGeoXmlFlow * flow, gboolean include_date)
 	return g_string_free(dump, FALSE);
 }
 
-gchar * gebr_flow_get_detailed_report (GebrGeoXmlFlow * flow, gboolean include_table, gboolean include_date)
+gchar * gebr_flow_get_detailed_report (GebrGeoXmlFlow * flow,
+                                       gboolean include_table,
+                                       gboolean include_date,
+                                       gchar *rev_comment,
+                                       gchar *rev_date)
 { // OK
 	gchar * table;
 	gchar * inner;
@@ -1237,7 +1417,7 @@ gchar * gebr_flow_get_detailed_report (GebrGeoXmlFlow * flow, gboolean include_t
 
 	table = include_table ? gebr_flow_generate_parameter_value_table (flow) : "";
 	flow_dict = include_table ? gebr_generate_variables_value_table(GEBR_GEOXML_DOCUMENT(flow), TRUE, TRUE) : "";
-	header = gebr_flow_generate_header (flow, include_date);
+	header = gebr_flow_generate_header (flow, include_date, rev_comment, rev_date);
 	report = g_strdup_printf ("<div class='gebr-geoxml-flow'>%s%s%s%s</div>\n", header, inner, flow_dict, table);
 
 	if (include_table) {
@@ -1293,10 +1473,10 @@ gebr_flow_set_toolbar_sensitive(void)
 	gtk_action_set_sensitive(gtk_action_group_get_action(gebr.action_group_flow, "flow_view"), sensitive);
 	gtk_action_set_sensitive(gtk_action_group_get_action(gebr.action_group_flow, "flow_edit"), sensitive);
 	gtk_widget_set_sensitive(gebr.ui_flow_browse->speed_button, sensitive_exec_slider);
-	gtk_widget_set_sensitive(gebr.ui_flow_browse->revisions_button, sensitive);
 
 	if (sensitive) {
 		gtk_widget_show(gebr.ui_flow_browse->info_window);
+		gtk_widget_show(gebr.ui_flow_browse->rev_main);
 		gtk_widget_hide(gebr.ui_flow_browse->warn_window);
 	} else {
 		if (no_line_selected)
@@ -1307,6 +1487,7 @@ gebr_flow_set_toolbar_sensitive(void)
 			                     "Try changing its maestro or connecting it."));
 
 		gtk_widget_show(gebr.ui_flow_browse->warn_window);
+		gtk_widget_hide(gebr.ui_flow_browse->rev_main);
 		gtk_widget_hide(gebr.ui_flow_browse->info_window);
 	}
 

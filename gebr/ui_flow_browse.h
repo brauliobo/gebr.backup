@@ -41,6 +41,17 @@ enum {
 	FB_N_COLUMN
 };
 
+/*
+ * Revision fields
+ */
+enum {
+	REV_COMMENT = 0,
+	REV_DATE,
+	REV_XMLPOINTER,
+	REV_ACTIVE,
+	REV_N_COLUMN
+};
+
 /**
  */
 typedef struct {
@@ -52,28 +63,34 @@ typedef struct {
 	GtkWidget *warn_window;
 
 	GtkWidget *revisions_button;
-	GtkWidget *revisions_menu;
+
+	GtkWidget *rev_main;
+	GtkWidget *revpage_main;
+	GtkWidget *revpage_warn;
+	GtkWidget *rev_view;
+	GtkTreeStore *rev_store;
 
 	struct ui_flow_browse_info {
+		GtkBuilder *builder_flow;
+
 		GtkWidget *title;
 		GtkWidget *description;
+
+		GtkWidget *rev_num;
 
 		GtkWidget *created_label;
 		GtkWidget *created;
 		GtkWidget *modified_label;
 		GtkWidget *modified;
-		GtkWidget *lastrun_label;
+
 		GtkWidget *lastrun;
 
-		GtkWidget *server_label;
-		GtkWidget *server;
 		GtkWidget *input_label;
 		GtkWidget *input;
 		GtkWidget *output_label;
 		GtkWidget *output;
 		GtkWidget *error_label;
 		GtkWidget *error;
-		GtkWidget *rev_num;
 
 		GtkWidget *help_view;
 		GtkWidget *help_edit;
@@ -92,7 +109,7 @@ typedef struct {
  * Return:
  * The structure containing relevant data.
  */
-GebrUiFlowBrowse *flow_browse_setup_ui(GtkWidget * revisions_menu);
+GebrUiFlowBrowse *flow_browse_setup_ui();
 
 /**
  * Update information shown about the selected flow
@@ -117,12 +134,6 @@ void flow_browse_select_iter(GtkTreeIter * iter);
  * Turn multiple selection into single.
  */
 void flow_browse_single_selection(void);
-
-/**
- * Load \p revision into the list of revision.
- * If \p new is TRUE, then it is prepended; otherwise, appended.
- */
-void flow_browse_load_revision(GebrGeoXmlRevision * revision, gboolean new);
 
 void flow_browse_show_help(void);
 

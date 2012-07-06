@@ -167,6 +167,8 @@ GebrGeoXmlFlow *gebr_geoxml_flow_new()
 	document = gebr_geoxml_document_new("flow", GEBR_GEOXML_FLOW_VERSION);
 
 	root = gebr_geoxml_document_root_element(document);
+	
+	
 	server = __gebr_geoxml_insert_new_element(root, "server", NULL);
 	__gebr_geoxml_set_attr_value (server, "group-type", "group");
 	__gebr_geoxml_set_attr_value (server, "group-name", "");
@@ -180,10 +182,13 @@ GebrGeoXmlFlow *gebr_geoxml_flow_new()
 	GdomeElement *date = __gebr_geoxml_get_first_element(root, "date");
 	gdome_el_unref(__gebr_geoxml_insert_new_element(date, "lastrun", NULL), &exception);
 
+	GdomeElement *parent = __gebr_geoxml_insert_new_element(root, "parent", date);
+
 	gdome_el_unref(server, &exception);
 	gdome_el_unref(date, &exception);
 	gdome_el_unref(root, &exception);
 	gdome_el_unref(io, &exception);
+	gdome_el_unref(parent, &exception);
 
 	return GEBR_GEOXML_FLOW(document);
 }
@@ -471,7 +476,6 @@ gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRe
 	if (flow == NULL || revision == NULL)
 		return FALSE;
 
-	GString *merged_help;
 	gchar *revision_help;
 	gchar *flow_help;
 	GebrGeoXmlDocument *revision_flow;
@@ -485,53 +489,14 @@ gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRe
 					     __gebr_geoxml_get_element_value((GdomeElement *) revision)))
 		return FALSE;
 
+	gchar *id;
+	gebr_geoxml_flow_get_revision_data(revision, NULL, NULL, NULL, &id);
+
 	flow_help = gebr_geoxml_document_get_help (GEBR_GEOXML_DOCUMENT (flow));
 	revision_help = gebr_geoxml_document_get_help (revision_flow);
-	merged_help = g_string_new (flow_help);
-	if (strlen (revision_help) > 1) {
-		gchar *revision_xml;
-		regex_t regexp;
-		regmatch_t matchptr[2];
-		gssize start = -1;
-		gssize length = -1;
-		gssize flow_i = -1;
-
-		regcomp(&regexp, "<body[^>]*>\\(.*\\?\\)<\\/body>", REG_ICASE);
-		if (!regexec(&regexp, revision_help, 2, matchptr, 0)) {
-			start = matchptr[1].rm_so;
-			length = matchptr[1].rm_eo - matchptr[1].rm_so;
-		}
-
-		regcomp (&regexp, "</body>", REG_NEWLINE | REG_ICASE);
-		if (!regexec (&regexp, flow_help, 1, matchptr, 0)) {
-			flow_i = matchptr[0].rm_so;
-		}
-
-		if (start != -1 && length != -1 && flow_i != -1){
-			gchar * date = NULL;
-			gchar * comment = NULL;
-			GString * revision_data;
-
-			revision_data = g_string_new(NULL);
-
-			gebr_geoxml_flow_get_revision_data(revision, NULL, &date, &comment);
-			g_string_append_printf (revision_data, "<hr /><p>%s</p><p>%s</p>",
-						comment, date);
-			g_string_insert (merged_help, flow_i, revision_data->str); 
-			g_string_insert_len (merged_help, flow_i + revision_data->len, revision_help + start, length); 
-		}
-
-		gebr_geoxml_document_set_help (revision_flow, "");
-		gebr_geoxml_document_to_string (revision_flow, &revision_xml);
-		__gebr_geoxml_set_element_value((GdomeElement *) revision, revision_xml, __gebr_geoxml_create_CDATASection);
-		g_free (revision_xml);
-		if(report_merged)
-			*report_merged = TRUE;
-	}
-	g_free(flow_help);
-	g_free(revision_help);
 
 	gebr_geoxml_flow_get_revision(flow, &first_revision, 0);
+
 	/* remove all elements till first_revision
 	 * WARNING: for this implementation to work revision must be
 	 * the last child of flow. Be careful when changing the DTD!
@@ -559,8 +524,11 @@ gboolean gebr_geoxml_flow_change_to_revision(GebrGeoXmlFlow * flow, GebrGeoXmlRe
 				      (GdomeNode *) new_node, (GdomeNode *) first_revision, &exception);
 	}
 
-	gebr_geoxml_document_set_help (GEBR_GEOXML_DOCUMENT (flow), merged_help->str);
-	g_string_free (merged_help, TRUE);
+	gebr_geoxml_document_set_help (GEBR_GEOXML_DOCUMENT (flow), revision_help);
+	gebr_geoxml_document_set_parent_id(GEBR_GEOXML_DOCUMENT (flow), id);
+
+	g_free(id);
+	g_free(revision_help);
 
 	return TRUE;
 }
@@ -577,7 +545,6 @@ gebr_geoxml_flow_append_revision(GebrGeoXmlFlow * flow,
 	g_return_val_if_fail(comment != NULL, NULL);
 
 	revision_flow = GEBR_GEOXML_FLOW(gebr_geoxml_document_clone(GEBR_GEOXML_DOCUMENT(flow)));
-	gebr_geoxml_document_set_help (GEBR_GEOXML_DOCUMENT (revision_flow), "");
 
 	GdomeElement * revision_root = gebr_geoxml_document_root_element(GEBR_GEOXML_DOCUMENT(revision_flow));
 	/* remove revisions from the revision flow. */
@@ -606,13 +573,18 @@ gebr_geoxml_flow_append_revision(GebrGeoXmlFlow * flow,
 	gebr_geoxml_object_unref(root);
 	gebr_geoxml_object_unref(first_revision);
 
-	gebr_geoxml_flow_set_revision_data(revision, revision_xml, gebr_iso_date(), comment);
+	gebr_geoxml_flow_set_revision_data(revision, revision_xml, gebr_iso_date(),
+					   comment, gebr_create_id_with_current_time()); 
 	g_free(revision_xml);
 
 	return revision;
 }
 
-void gebr_geoxml_flow_set_revision_data(GebrGeoXmlRevision * revision, const gchar * flow, const gchar * date, const gchar * comment)
+void gebr_geoxml_flow_set_revision_data(GebrGeoXmlRevision * revision,
+                                        const gchar * flow,
+                                        const gchar * date,
+                                        const gchar * comment,
+                                        const gchar * id)
 {
 	g_return_if_fail(revision != NULL);
 	if (flow != NULL)
@@ -621,6 +593,8 @@ void gebr_geoxml_flow_set_revision_data(GebrGeoXmlRevision * revision, const gch
 		__gebr_geoxml_set_attr_value((GdomeElement *) revision, "date", date);
 	if (comment != NULL)
 		__gebr_geoxml_set_attr_value((GdomeElement *) revision, "comment", comment);
+	if (id != NULL)
+		__gebr_geoxml_set_attr_value((GdomeElement *) revision, "id", id);
 }
 
 enum GEBR_GEOXML_RETV
@@ -645,7 +619,11 @@ gebr_geoxml_flow_get_revision(GebrGeoXmlFlow * flow,
 	return retval;
 }
 
-void gebr_geoxml_flow_get_revision_data(GebrGeoXmlRevision * revision, gchar ** flow, gchar ** date, gchar ** comment)
+void gebr_geoxml_flow_get_revision_data(GebrGeoXmlRevision * revision,
+                                        gchar ** flow,
+                                        gchar ** date,
+                                        gchar ** comment,
+                                        gchar ** id)
 {
 	g_return_if_fail(revision != NULL);
 
@@ -660,6 +638,94 @@ void gebr_geoxml_flow_get_revision_data(GebrGeoXmlRevision * revision, gchar ** 
 
 	if (comment)
 		*comment = __gebr_geoxml_get_attr_value((GdomeElement *) revision, "comment");
+	if (id)
+		*id = __gebr_geoxml_get_attr_value((GdomeElement *) revision, "id");
+}
+
+gulong
+gebr_geoxml_flow_get_revision_index_by_id(GebrGeoXmlFlow *flow,
+                                          gchar *parent_id)
+{
+	gulong rev_index, index = 0;
+	gboolean find_rev = FALSE;
+	GebrGeoXmlSequence *seq;
+	gebr_geoxml_flow_get_revision(flow, &seq, index);
+
+	for (; !find_rev && seq; gebr_geoxml_sequence_next(&seq), index++) {
+		GebrGeoXmlRevision *rev = GEBR_GEOXML_REVISION(seq);
+		gchar *id;
+		gebr_geoxml_flow_get_revision_data(rev, NULL, NULL, NULL, &id);
+		if (g_strcmp0(parent_id, id) == 0) {
+			rev_index = index;
+			find_rev = TRUE;
+		}
+		g_free(id);
+	}
+
+	if (find_rev)
+		return rev_index;
+	else
+		return -1;
+}
+
+GebrGeoXmlRevision *
+gebr_geoxml_flow_get_revision_by_id(GebrGeoXmlFlow *flow,
+                                    gchar *id)
+{
+	GebrGeoXmlRevision *revision = NULL;
+	gboolean find_rev = FALSE;
+	GebrGeoXmlSequence *seq;
+	gebr_geoxml_flow_get_revision(flow, &seq, 0);
+
+	for (; !find_rev && seq; gebr_geoxml_sequence_next(&seq)) {
+		GebrGeoXmlRevision *rev = GEBR_GEOXML_REVISION(seq);
+		gchar *rev_id;
+		gebr_geoxml_flow_get_revision_data(rev, NULL, NULL, NULL, &rev_id);
+		if (g_strcmp0(rev_id, id) == 0) {
+			find_rev = TRUE;
+			revision = rev;
+			gebr_geoxml_document_ref(GEBR_GEOXML_DOCUMENT(revision));
+		}
+		g_free(rev_id);
+	}
+
+	return revision;
+}
+
+gboolean
+gebr_geoxml_flow_get_parent_revision(GebrGeoXmlFlow *flow,
+                                     gchar **date,
+                                     gchar **comment,
+                                     gchar **id)
+{
+	if (flow == NULL) {
+		if (date)
+			*date = NULL;
+		if (comment)
+			*comment = NULL;
+		if (id)
+			*id = NULL;
+		return FALSE;
+	}
+
+	gchar *parent_id = gebr_geoxml_document_get_parent_id(GEBR_GEOXML_DOCUMENT(flow));
+	gulong index = gebr_geoxml_flow_get_revision_index_by_id(flow, parent_id);
+
+	if (index == -1) {
+		if (date)
+			*date = NULL;
+		if (comment)
+			*comment = NULL;
+		if (id)
+			*id = NULL;
+		return FALSE;
+	}
+
+	GebrGeoXmlSequence *seq;
+	gebr_geoxml_flow_get_revision(flow, &seq, index);
+	gebr_geoxml_flow_get_revision_data(GEBR_GEOXML_REVISION(seq), NULL, date, comment, id);
+
+	return TRUE;
 }
 
 glong gebr_geoxml_flow_get_revisions_number(GebrGeoXmlFlow * flow)
@@ -1358,4 +1424,124 @@ gebr_geoxml_flow_is_single_core(GebrGeoXmlFlow *flow,
 
 	gebr_geoxml_object_unref(prog);
 	return FALSE;
+}
+
+gchar *
+gebr_geoxml_flow_create_dot_code(GebrGeoXmlFlow *flow, GHashTable *hash)
+{
+        GList *valuelist_aux = g_hash_table_get_values(hash);
+	GList *valuelist;
+        GString *graph = g_string_new("");
+	gchar *root_id = NULL;
+	const gchar *head = "head";
+
+	valuelist = gebr_double_list_to_list(valuelist_aux);
+
+	graph =  g_string_append(graph, ("digraph {\ngraph [bgcolor=transparent]\n"));
+
+	void print_format(GebrGeoXmlFlow *flow, gchar *id, GString *graph, gboolean is_head) {
+		GebrGeoXmlSequence *revision = NULL;
+		gchar *comment = NULL;
+		gchar *unescaped_comment = NULL;
+		gchar *format_node = NULL;
+		gchar *date = NULL;
+		gchar *iso_date = NULL;
+		gchar **time_field = NULL;
+		gchar **iso_date_field;
+		gulong int_id = gebr_geoxml_flow_get_revision_index_by_id(flow, (gchar *)id);
+		gint status =  gebr_geoxml_flow_get_revision(flow, &revision, int_id);
+
+		if (status != GEBR_GEOXML_RETV_SUCCESS)
+			g_warn_if_reached();
+
+		gebr_geoxml_flow_get_revision_data(GEBR_GEOXML_REVISION(revision), NULL, &iso_date, &unescaped_comment, NULL);
+		iso_date_field = g_strsplit(iso_date, " ", -1);
+		time_field = g_strsplit(iso_date_field[4], ":", -1);
+
+		date = g_strdup_printf("%s %s, %s  %s:%s %s", iso_date_field[2], iso_date_field[1], iso_date_field[3],
+				time_field[0], time_field[1], iso_date_field[5]);
+		comment = g_markup_printf_escaped("%s", unescaped_comment);
+			
+		if (is_head) {
+			format_node = g_strdup_printf(
+					"%s [ label =<<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" bgcolor=\"white\">"
+					"<tr><td bgcolor=\"#000080\" align=\"center\"><font color=\"white\">%s*</font></td>"
+					"</tr><tr><td align=\"center\">%s</td></tr></table>>, shape = note, color = \"#000080\","
+					"fontsize = 10]\n",
+					head, comment, _("Current"));
+		} else {
+			format_node = g_strdup_printf(
+					"%s [ label =<<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" bgcolor=\"white\">"
+					"<tr><td bgcolor=\"#000040\" align=\"center\"><font color=\"white\">%s</font></td></tr>"
+					"<tr><td align=\"center\">%s</td></tr></table>>, shape = note,"
+					"fontsize = 10]\n",
+					(gchar*)id,
+					comment,
+					date);
+		}
+
+		graph =  g_string_append(graph, format_node);
+
+		g_free(format_node);
+		g_free(unescaped_comment);
+		g_free(comment);
+		g_free(iso_date);
+		g_free(date);
+		g_strfreev(iso_date_field);
+		g_strfreev(time_field);
+		gebr_geoxml_object_unref(revision);
+	}
+
+
+	//Print formats 
+	for (GList *child = valuelist; child; child = child->next) {
+		print_format(flow, child->data, graph, FALSE);
+	}
+	root_id = gebr_geoxml_flow_revisions_get_root_id(hash);
+	print_format(flow, root_id, graph, FALSE);
+
+	gchar *parent_id = gebr_geoxml_document_get_parent_id(GEBR_GEOXML_DOCUMENT(flow));
+	print_format(flow, parent_id, graph, TRUE);
+	g_string_append_printf(graph, "%s->%s[style=filled] \n", parent_id, head);
+
+	void print_edges(gchar *key, GList *value, GString *text) {
+		for (GList *child = value; child; child = child->next) {
+			g_string_append_printf(text, "%s->%s[style=filled] \n",
+					       key, (gchar*)child->data);
+		}
+	}
+
+	g_hash_table_foreach(hash, (GHFunc) print_edges, graph);
+        graph =  g_string_append(graph, ("}\n"));
+
+	g_free(parent_id);
+
+        return g_string_free(graph, FALSE);
+}
+
+gchar *
+gebr_geoxml_flow_revisions_get_root_id(GHashTable *hash)
+{
+	if (!hash)
+		return NULL;
+
+	gchar *root = NULL;
+
+
+	GList *parents = g_hash_table_get_keys(hash);
+	GList *children_aux = g_hash_table_get_values(hash);
+	GList *children = gebr_double_list_to_list(children_aux);
+
+	for (GList *i = parents; i; i = i->next) {
+		if (!g_list_find_custom(children, i->data, (GCompareFunc)g_strcmp0)) {
+			root = g_strdup(i->data);
+			break;
+		}
+	}
+
+	//Do not need to free children_aux
+	g_list_free(children_aux);
+	g_list_free(parents);
+
+	return root;
 }

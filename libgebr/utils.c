@@ -1438,3 +1438,25 @@ gebr_kill_by_port(gint port)
 	g_free(cmd_line);
 	return ret;
 }
+
+gchar *
+gebr_create_id_with_current_time()
+{
+	GTimeVal result;
+
+	g_get_current_time(&result);
+
+	return g_strdup_printf("%ld%ld", result.tv_sec, result.tv_usec);
+}
+
+GList *
+gebr_double_list_to_list(GList *double_list)
+{
+	GList *single_list = NULL;
+
+	for (GList *i = double_list; i; i = i->next) {
+		single_list = g_list_concat(single_list, g_list_copy(i->data));
+	
+	}
+	return single_list;
+}
