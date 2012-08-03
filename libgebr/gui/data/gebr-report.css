@@ -1,0 +1,310 @@
+/* 
+ * @title: Simple
+ * @author: GêBR Core Team
+ * @e-mail: gebr-devel@googlegroups.com
+ */
+
+/*
+* CSS Geral
+*/
+
+/*
+* CSS Geral
+*/
+
+* {
+	font-family: sans-serif;
+}
+body {
+	margin: 0 auto;
+	text-align: left;
+	border-left: 1px solid #aaaaaa;
+	border-right: 1px solid #aaaaaa;
+	margin-right: auto;
+    margin-left: auto;
+}
+.header {
+	margin: 10px;
+}
+.header .title {
+	font-size: 20px;
+	padding: 10px;
+	font-weight: bold;
+}
+.header .title a {
+	text-decoration: none;
+	color: #000000;
+}
+.header .description {
+	font-size: 16px;
+	color: #666666;
+	font-weight: bold;
+}
+.header .credits {
+	margin: 10px;
+	font-size: 14px;
+	color: #777777;
+}
+.header .email:before { 
+	content: " - <"; 
+}
+.header .email:after  { 
+	content: ">"; 
+}
+.header .date  {
+	font-size: 14px;
+	font-style: italic;
+	padding: 5px 0px 5px 0px;
+}
+.body {
+	margin: 10px;
+}
+.body .comments {
+	font-size: 16px;
+	padding: 10px;
+}
+.body .index {
+	padding: 10px;
+	font-size: 16px;
+	font-style: italic;
+}
+.body .index li {
+	color: #666666;
+	list-style: decimal;
+}
+.body .index .title {
+	color: #333333;
+}
+.body .index .title a {
+	text-decoration: none;
+	color: #000000;
+}
+.body .index .description {
+	color: #333333;
+	font-size: 14px;
+}
+
+.tables {
+	margin: 10px;
+}
+.body .variables {
+	padding: 10px 0px 10px 0px;
+}
+.body .variables table {
+	font-size: 14px;
+	text-align: center;
+	border: 1px solid #dddddd; 
+	border-collapse: collapse;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.body .variables caption {
+	font-weight: bold;
+	font-size: 16px;
+}
+.body .variables td {
+	padding: 3px;
+	border-top: solid 1px #dddddd;
+    border-bottom: solid 1px #dddddd;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.body .variables thead {
+	background-color: #333333;
+    text-align: center;
+    color: #fff;
+    font-weight: bold;
+}
+.body .variables tbody .scope {
+	background-color: #d0d0d0;
+	font-weight: bold;
+}
+.body .variables tbody .scope-content {
+	font-weight: inherit;
+	color: #333333;
+}
+.body .variables tbody .error {
+	background-color: #FFFFE0;
+}
+
+/* CSS for Line */
+
+.header .maestro {
+	font-size: 14px;
+	font-style: italic;
+}
+.paths {
+	margin: 10px;
+}
+.paths table {
+	font-size: 14px;
+	text-align: center;
+	border: 1px solid #dddddd; 
+	margin-top: 30px;
+    margin-bottom: 20px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.paths caption {
+	font-weight: bold;
+	font-size: 16px;
+}
+.paths td {
+	padding: 3px;
+	border-top: solid 1px #dddddd;
+    border-bottom: solid 1px #dddddd;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.paths tbody .type {
+	background-color: #eeeeee;
+	font-weight: bold;
+}
+.index .subindex {
+	padding: 10px;
+	font-size: 14px;
+	font-style: italic;
+}
+.index .subindex .title {
+	color: #666666;
+}
+.index .subindex .description {
+	color: #666666;
+	font-size: 12px;
+}
+
+/* CSS for Flow */
+
+.io {
+	margin: 10px;
+}
+.io table {
+	font-size: 14px;
+	text-align: center;
+	border: 1px solid #dddddd; 
+	margin-top: 30px;
+    margin-bottom: 20px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.io caption {
+	font-weight: bold;
+	font-size: 16px;
+}
+.io td {
+	padding: 3px;
+	border-top: solid 1px #dddddd;
+    border-bottom: solid 1px #dddddd;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.io tbody .type {
+	background-color: #eeeeee;
+	font-weight: bold;
+}
+.programs {
+	padding: 10px 0px 10px 0px;
+}
+.programs .title {
+	font-size: 18px;
+	padding: 10px;
+	font-weight: bold;
+}
+.programs .title a {
+	text-decoration: none;
+	color: #000000;
+}
+.programs .description {
+	font-size: 16px;
+	color: #666666;
+	font-weight: bold;
+	padding-bottom: 5px;
+}
+.parameters {
+	font-size: 14px;
+	text-align: center;
+	border: 1px solid #dddddd; 
+	margin-top: 30px;
+    margin-bottom: 20px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.parameters caption {
+	font-weight: bold;
+	font-size: 14px;
+}
+.parameters td {
+	padding: 3px;
+	border-top: solid 1px #dddddd;
+    border-bottom: solid 1px #dddddd;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.parameters thead {
+	background-color: #333333;
+    text-align: center;
+    color: #fff;
+    font-weight: bold;
+}
+.parameters tbody .group {
+	background-color: #d0d0d0;
+}
+.parameters tbody .param {
+	color: #333333;
+}
+.snapshot {
+	border: 1px solid #aaaaaa;
+	margin-top: 20px;
+	padding: 10px;
+}
+
+/* SubClasses */
+
+.project .line {
+	border: 1px solid #aaaaaa;
+	margin-top: 20px;
+	margin-left: 20px;
+}
+.project .line .flow {
+	border: 1px solid #aaaaaa;
+	margin-top: 20px;
+	margin-left: 40px;
+}
+.line .flow {
+	border: 1px solid #aaaaaa;
+	margin-top: 20px;
+	margin-left: 20px;
+}
+.flow .programs {
+	border: 1px solid #aaaaaa;
+	margin-top: 20px;
+	margin-left: 20px;
+}
+.project .line .header .title {
+	font-size: 18px;
+}
+.project .line .header .description {
+	font-size: 16px;
+}
+.line .flow .header .title {
+	font-size: 18px;
+}
+.line .flow .header .description {
+	font-size: 16px;
+}
+.project .line .flow .header .title {
+	font-size: 16px;
+}
+.project .line .flow .header .description {
+	font-size: 14px;
+}
