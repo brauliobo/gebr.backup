@@ -30,7 +30,9 @@
 #include "flow.h"
 #include "document.h"
 #include "ui_help.h"
-#include "ui_flow.h"
+#include "ui_flow_execution.h"
+#include "ui_flow_browse.h"
+#include "ui_flow_program.h"
 
 /* Prototypes {{{1 */
 static void	parameters_actions			(GtkDialog          *dialog,
@@ -49,7 +51,7 @@ parameters_configure_setup_ui(void)
 	GtkWidget *button;
 	GebrGuiProgramEdit *program_edit;
 
-	if (flow_edition_get_selected_component(NULL, FALSE) == FALSE)
+	if (flow_browse_get_selected(NULL, FALSE) == FALSE)
 		return;
 
 	dialog = gtk_dialog_new_with_buttons(_("Parameters"),
@@ -108,20 +110,28 @@ gboolean
 validate_selected_program(GError **error)
 {
 	GtkTreeIter iter;
-	flow_edition_get_selected_component(&iter, FALSE);
+	flow_browse_get_selected(&iter, FALSE);
 	return validate_program_iter(&iter, error);
 }
 
 gboolean
 validate_program_iter(GtkTreeIter *iter, GError **error)
 {
+	GebrUiFlowBrowseType type;
+	GebrUiFlowProgram *ui_program;
 	gboolean never_opened;
 	GebrGeoXmlProgram *program;
 
-	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_edition->fseq_store), iter,
-			   FSEQ_GEBR_GEOXML_POINTER, &program,
-			   FSEQ_NEVER_OPENED, &never_opened,
+	gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_browse->store), iter,
+			   FB_STRUCT_TYPE, &type,
+	                   FB_STRUCT, &ui_program,
 			   -1);
+
+	if (type != STRUCT_TYPE_PROGRAM)
+		return FALSE;
+
+	never_opened = gebr_ui_flow_program_get_flag_opened(ui_program);
+	program = gebr_ui_flow_program_get_xml(ui_program);
 
 	if (never_opened)
 		return FALSE;
@@ -150,13 +160,22 @@ parameters_actions(GtkDialog *dialog, gint response, GebrGuiProgramEdit *program
 		icon = gebr_gui_get_program_icon(GEBR_GEOXML_PROGRAM(program_edit->program));
 
 		/* Update interface */
-		flow_edition_get_selected_component(&iter, FALSE);
-		gtk_list_store_set(gebr.ui_flow_edition->fseq_store, &iter,
-				   FSEQ_GEBR_GEOXML_POINTER, program_edit->program,
-				   FSEQ_ICON_COLUMN, icon,
-				   FSEQ_NEVER_OPENED, FALSE,
-				   -1);
-		flow_edition_select_component_iter(&iter);
+		flow_browse_get_selected(&iter, FALSE);
+
+		GebrUiFlowProgram *ui_program;
+		gtk_tree_model_get(GTK_TREE_MODEL(gebr.ui_flow_browse->store), &iter,
+		                   FB_STRUCT, &ui_program,
+		                   -1);
+
+		gebr_geoxml_object_ref(program_edit->program);
+		gebr_ui_flow_program_set_xml(ui_program, program_edit->program);
+
+		if (gebr_ui_flow_program_get_flag_opened(ui_program))
+			gebr_ui_flow_program_set_flag_opened(ui_program, FALSE);
+
+		flow_browse_reload_selected();
+
+		flow_browse_select_iter(&iter);
 
 		GebrGeoXmlProgram *program = program_edit->program;
 		if (gebr_geoxml_program_get_control(program) == GEBR_GEOXML_PROGRAM_CONTROL_FOR) {
@@ -173,11 +192,12 @@ parameters_actions(GtkDialog *dialog, gint response, GebrGuiProgramEdit *program
 		}
 
 		if (validate_selected_program(NULL))
-			flow_edition_change_iter_status(GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED, &iter);
+			flow_browse_change_iter_status(GEBR_GEOXML_PROGRAM_STATUS_CONFIGURED, &iter, gebr.ui_flow_browse);
 		else
-			flow_edition_change_iter_status(GEBR_GEOXML_PROGRAM_STATUS_UNCONFIGURED, &iter);
+			flow_browse_change_iter_status(GEBR_GEOXML_PROGRAM_STATUS_UNCONFIGURED, &iter, gebr.ui_flow_browse);
 
-		flow_edition_set_io();
+		flow_browse_revalidate_programs(gebr.ui_flow_browse);
+		flow_browse_validate_io(gebr.ui_flow_browse);
 		gebr_flow_edition_update_speed_slider_sensitiveness(gebr.ui_flow_edition);
 
 		/* Update parameters review on Flow Browse */

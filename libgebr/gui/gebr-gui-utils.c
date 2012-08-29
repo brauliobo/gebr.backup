@@ -349,12 +349,12 @@ gboolean gebr_gui_gtk_list_store_move_down(GtkListStore * store, GtkTreeIter * i
 	return TRUE;
 }
 
-gulong gebr_gui_gtk_list_store_get_iter_index(GtkListStore * list_store, GtkTreeIter * iter)
+gulong gebr_gui_gtk_list_store_get_iter_index(GtkTreeStore * store, GtkTreeIter * iter)
 {
 	gchar *node;
 	gulong index;
 
-	node = gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(list_store), iter);
+	node = gtk_tree_model_get_string_from_iter(GTK_TREE_MODEL(store), iter);
 	index = (gulong) atol(node);
 	g_free(node);
 
@@ -604,8 +604,8 @@ out:	g_list_foreach(list, (GFunc) gtk_tree_iter_free, NULL);
 
 void gebr_gui_gtk_tree_view_select_iter(GtkTreeView * tree_view, GtkTreeIter * iter)
 {
-	GtkTreeSelection *tree_selection = gtk_tree_view_get_selection(tree_view);
-	gtk_tree_selection_unselect_all(tree_selection);
+//	GtkTreeSelection *tree_selection = gtk_tree_view_get_selection(tree_view);
+//	gtk_tree_selection_unselect_all(tree_selection);
 	if (iter == NULL)
 		return;
 
@@ -613,7 +613,7 @@ void gebr_gui_gtk_tree_view_select_iter(GtkTreeView * tree_view, GtkTreeIter * i
 
 	GtkTreePath * tree_path;
 	tree_path = gtk_tree_model_get_path(gtk_tree_view_get_model(tree_view), iter);
-	gtk_tree_view_set_cursor(tree_view, tree_path, gtk_tree_view_get_column(tree_view, 0), FALSE);
+	gtk_tree_view_set_cursor(tree_view, tree_path, NULL, FALSE);
 	gtk_tree_path_free(tree_path);
 
 	gebr_gui_gtk_tree_view_scroll_to_iter_cell(tree_view, iter);

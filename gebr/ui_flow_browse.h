@@ -35,14 +35,17 @@ G_BEGIN_DECLS
  * Store fields
  */
 enum {
-	FB_TITLE = 0,
-	FB_FILENAME,
-	FB_LINE_FLOW_POINTER,
-	FB_XMLPOINTER,
-	FB_LAST_QUEUES,
-	FB_SNP_LAST_MODIF,
+	FB_STRUCT_TYPE = 0,
+	FB_STRUCT,
 	FB_N_COLUMN
 };
+
+typedef enum {
+	STRUCT_TYPE_FLOW,
+	STRUCT_TYPE_PROGRAM,
+	STRUCT_TYPE_IO,
+	STRUCT_TYPE_COLUMN
+} GebrUiFlowBrowseType;
 
 /**
  * Menu store fields
@@ -58,11 +61,13 @@ enum {
  */
 typedef struct {
 	GtkWidget *widget;
-	GtkListStore *store;
+
+	GtkTreeStore *store;
 	GtkWidget *view;
+	GtkWidget *flows_frame;
 	GtkCellRenderer *icon_renderer;
 	GtkCellRenderer *text_renderer;
-	GtkCellRenderer *snap_renderer;
+	GtkCellRenderer *action_renderer;
 
 	GtkWidget *queue_combobox;
 	GtkWidget *server_combobox;
@@ -72,9 +77,6 @@ typedef struct {
 	GtkWidget *menu_window;
 	GtkTreeStore *menu_store;
 	GtkWidget *menu_view;
-
-	GtkWidget *prog_window;
-	GtkWidget *prog_frame;
 
 	GtkWidget *info_window;
 	GtkWidget *warn_window;
@@ -170,14 +172,25 @@ void gebr_flow_browse_status_icon(GtkTreeViewColumn *tree_column,
                                   GtkTreeIter *iter,
                                   gpointer data);
 
-void gebr_flow_browse_snapshot_icon (GtkTreeViewColumn *tree_column,
-                                     GtkCellRenderer *cell,
-                                     GtkTreeModel *model,
-                                     GtkTreeIter *iter,
-                                     gpointer data);
+void gebr_flow_browse_action_icon (GtkTreeViewColumn *tree_column,
+                                   GtkCellRenderer *cell,
+                                   GtkTreeModel *model,
+                                   GtkTreeIter *iter,
+                                   gpointer data);
+
+void gebr_flow_browse_text(GtkTreeViewColumn *tree_column,
+                           GtkCellRenderer *cell,
+                           GtkTreeModel *model,
+                           GtkTreeIter *iter,
+                           gpointer data);
+
+void gebr_flow_browse_select_file_column(GtkTreeView *tree_view,
+                                                GtkTreeIter *iter,
+                                                GebrUiFlowBrowse *fb);
 
 void gebr_flow_browse_select_snapshot_column(GtkTreeView *tree_view,
-                                             GebrUiFlowBrowse *ui_flow_browse);
+                                             GtkTreeIter *iter,
+                                             GebrUiFlowBrowse *fb);
 
 void gebr_flow_browse_select_job(GebrUiFlowBrowse *fb);
 
@@ -223,6 +236,33 @@ gint gebr_flow_browse_calculate_n_max(GebrUiFlowBrowse *fb);
 
 void gebr_flow_browse_select_job_output(const gchar *job_id,
                                         GebrUiFlowBrowse *fb);
+
+void flow_browse_revalidate_programs(GebrUiFlowBrowse *fb);
+
+void flow_browse_program_check_sensitiveness(void);
+
+void  flow_browse_change_iter_status(GebrGeoXmlProgramStatus status,
+                                     GtkTreeIter *iter,
+                                     GebrUiFlowBrowse *fb);
+
+gboolean gebr_flow_browse_get_io_iter(GtkTreeModel *model,
+                                      GtkTreeIter *io_iter,
+                                      GebrUiFlowBrowseType io_type);
+
+void flow_browse_status_changed(guint status);
+
+/**
+ * flow_add_program_sequence_to_view:
+ * @program: A #GebrGeoXmlSequence of #GebrGeoXmlProgram to be added to the view.
+ * @select_last: Whether to select the last program.
+ *
+ * Adds all programs in the sequence @program into the flow edition view.
+ */
+void flow_add_program_sequence_to_view(GebrGeoXmlSequence * program,
+				       gboolean select_last,
+				       gboolean never_opened);
+
+void flow_browse_validate_io(GebrUiFlowBrowse *fb);
 
 G_END_DECLS
 #endif				//__UI_FLOW_BROWSE_H
