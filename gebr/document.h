@@ -152,42 +152,6 @@ GString *document_get_path(const gchar * filename);
 void document_delete(const gchar * filename);
 
 /**
- * gebr_document_report_get_styles:
- * @report: an html markup
- *
- * Returns: a list of strings containing all styles inside @report. It may return complete <style> tags and <link
- * rel='stylesheet' ... > tags. You must free all strings and the list itself.
- */
-GList * gebr_document_report_get_styles(const gchar * report);
-
-/**
- * gebr_document_report_get_styles_string:
- * See gebr_document_report_get_styles().
- * Returns: a newly allocated string containing the styles concatenated with line breaks.
- */
-gchar * gebr_document_report_get_styles_string(const gchar * report);
-
-/**
- * gebr_document_report_get_inner_body:
- * @report: an html markup
- *
- * Returns: a newly allocated string containing the inner
- * html of the body tag from @report.
- */
-gchar * gebr_document_report_get_inner_body(const gchar * report);
-
-
-/**
- * gebr_document_generate_report:
- * @document:
- *
- * Returns: a newly allocated string containing the header for document
- */
-gchar * gebr_document_generate_header(GebrGeoXmlDocument * document,
-                                      gboolean is_internal,
-                                      const gchar *index);
-
-/**
  * gebr_document_generate_report:
  * @document:
  *
@@ -195,27 +159,6 @@ gchar * gebr_document_generate_header(GebrGeoXmlDocument * document,
  * structure #gebr.config.
  */
 gchar * gebr_document_generate_report (GebrGeoXmlDocument *document);
-
-/**
- * gebr_document_get_css_header_field:
- * @filename: Name of the css file. It trusts that the file is ok.
- * @field: Name of the field to be checked (ex. "title", "e-mail")
- *
- * Gets a @field from the CSS comment header. A field is defined as a JavaDoc comment. For instance, the value of the
- * field "title" in the example below is <emphasis>Foobar</emphasis>:
- * <programlisting>
- * /<!-- -->**
- *  * @title: Foobar
- *  * @author: John
- *  *<!-- -->/
- * body {
- *   color: blue;
- * }
- * </programlisting>
- *
- * Returns: A newly allocated string containing the field value.
- */
-gchar *gebr_document_get_css_header_field (const gchar *filename, const gchar *field);
 
 G_END_DECLS
 
