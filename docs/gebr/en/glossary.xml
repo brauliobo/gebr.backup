@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<glossary>
+	<glossdiv>
+		<title>C</title>
+		<glossentry id="Client">
+			<glossterm>Client</glossterm>
+			<glossdef>
+				<para>Host machine of GêBR.</para>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>D</title>
+		<glossentry id="Dictionary">
+			<glossterm>Dictionary of variables</glossterm>
+			<glossdef>
+				<para>Place where the variables are defined.</para>
+				<glossseealso otherterm="Variable">Variable</glossseealso>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>F</title>
+		<glossentry id="Flow">
+			<glossterm>Flow</glossterm>
+			<glossdef>
+				<para>Sequence of operations over over an input data.
+				</para>
+				<glossseealso otherterm="Program">Program</glossseealso>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>G</title>
+		<glossentry id="Groups">
+			<glossterm>Groups</glossterm>
+			<glossdef>
+				<para>Subset of processing nodes of the maestro.</para>
+				<glossseealso otherterm="Maestro">Maestro</glossseealso>
+				<glossseealso otherterm="ProcessingNodes">Processing nodes</glossseealso>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>J</title>
+		<glossentry id="Job">
+			<glossterm>Job</glossterm>
+			<glossdef>
+				<para>Flow submitted to execution.</para>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+		<glossdiv>
+		<title>L</title>
+		<glossentry id="Line">
+			<glossterm>Line</glossterm>
+			<glossdef>
+				<para>Seismic data composed of processing flows.</para>
+				<glossseealso otherterm="Flow">Flow</glossseealso>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>M</title>
+		<glossentry id="Maestro">
+			<glossterm>Maestro</glossterm>
+			<glossdef>
+				<para>Resources manager of the pool of processing nodes.
+				</para>
+				<glossseealso otherterm="Client">Client</glossseealso>
+				<glossseealso otherterm="ProcessingNodes">Processing nodes</glossseealso>
+			</glossdef>
+		</glossentry>
+		<glossentry id="Menu">
+			<glossterm>Menu</glossterm>
+			<glossdef>
+				<para>Representation of a single program or a set of programs.
+				</para>
+				<glossseealso otherterm="Program">Program</glossseealso>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>P</title>
+		<glossentry id="Parameter">
+			<glossterm>Parameter</glossterm>
+			<glossdef>
+				<para>Configuration of a program.</para>
+				<glossseealso otherterm="Program">Program</glossseealso>
+			</glossdef>
+		</glossentry>
+		<glossentry id="ProcessingNodes">
+			<glossterm>Processing nodes</glossterm>
+			<glossdef>
+				<para>Processing units used coordenated by the maestro.</para>
+				<glossseealso otherterm="Maestro">Maestro</glossseealso>
+				<glossseealso otherterm="Task">Task</glossseealso>
+			</glossdef>
+		</glossentry>
+		
+		
+		<glossentry id="Program">
+			<glossterm>Program</glossterm>
+			<glossdef>
+				<para>Operation ported from a menu.
+				</para>
+				<glossseealso otherterm="Parameter">Parameter</glossseealso>
+			</glossdef>
+		</glossentry>
+		<glossentry id="Project">
+			<glossterm>Project</glossterm>
+			<glossdef>
+				<para>Set that organizes and clusters seismic lines.</para>
+				<glossseealso otherterm="Line">Line</glossseealso>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>S</title>
+		<glossentry id="Snapshot">
+			<glossterm>Snapshot</glossterm>
+			<glossdef>
+				<para>Record of the settings of a flow.
+				</para>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>T</title>
+		<glossentry id="Task">
+			<glossterm>Task</glossterm>
+			<glossdef>
+				<para>Piece of job to be done.</para>
+				<glossseealso otherterm="Job">Job</glossseealso>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+	<glossdiv>
+		<title>V</title>
+		<glossentry id="Variable">
+			<glossterm>Variable</glossterm>
+			<glossdef>
+				<para>Value or information stored for
+					posterior use.
+				</para>
+				<glossseealso otherterm="Dictionary">Dictionary of variables
+				</glossseealso>
+			</glossdef>
+		</glossentry>
+	</glossdiv>
+</glossary>

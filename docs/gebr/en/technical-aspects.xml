@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<chapter
+  xmlns="http://docbook.org/ns/docbook"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  lang="en"
+  version="5.0"
+  xml:id="technical_aspects">
+
+  <title>Technical aspects</title>
+
+  <section xml:id="technical_aspects_intercommunication_between_players">
+    <title>Intercommunication between players</title>
+
+    <para>GêBR can take benefit of the resources of multiple
+      processing nodes. To handle it, GêBR is segmented in three layers:</para>
+
+    <itemizedlist>
+      <listitem>The local node (the GêBR graphical interface
+        or <emphasis>the
+        client</emphasis>)<indexterm><primary>GêBR</primary><secondary>the
+        interface</secondary></indexterm>, from where the user sends
+        requests.
+      </listitem>
+      <listitem>An intermediate layer (the
+        maestro)<indexterm><primary>Maestro</primary></indexterm>,
+        where all the jobs are coordinated.
+      </listitem>
+      <listitem>Executors (the nodes
+        <indexterm><primary>Node </primary></indexterm>
+        or <emphasis>processing nodes</emphasis>), where the jobs are executed.
+      </listitem>
+    </itemizedlist>
+
+    <note>
+      <para>GêBR can be connected to only one maestro at once. Each
+				maestro, in turn, can be connected to many nodes.
+				However, those processing nodes must share the file system
+        containing the user's home directory. This is usually provided
+        by Network File System (NFS) infrastructure.
+      </para>
+    </note>
+
+    <para>GêBR model comprises communications between processing nodes (see
+      <xref linkend="communication_diagram"/>), namely:
+    </para>
+
+    <itemizedlist>
+      <listitem>Between client and maestro.</listitem>
+      <listitem>Between maestro and the nodes.</listitem>
+    </itemizedlist>
+
+    <para>All connections are performed using Secure Shell (SSH)
+      protocol. SSH is intended to provide secure encrypted
+      communication over a network. A login password may be asked 
+      multiple times to establish such connections. 
+      This can be cumbersome, if there are a lot of
+      nodes under the maestro domain.
+    </para>
+
+    <para>The SSH public-key authentication is an alternative method
+      to establish connections which eliminates the need of requests
+      for passwords. Despite less annoying, this method is equally
+      secure. It is based on public-key cryptography, where encryption
+      and decryption use public/private key pair for authentication
+      purposes. The maestro knows the public key and only the client
+      knows the associated private key.
+    </para>
+
+    <para>By checking the option <guilabel>Use encryption key to automatically
+	    authenticate the next session</guilabel> on password dialog,
+	    GêBR will use public/private key authentication.
+	    Once this operation is successfully done, there will be no
+	    need to type the password to connect to that maestro
+	    through GêBR. Analogous behavior occurs in the connection
+	    between maestros and nodes.
+    </para>
+
+    <figure>
+      <title>GêBR public-key authentication</title>
+      <mediaobject>
+        <caption>Suppose a client wants to establish a connection
+          with a maestro. The client is requested for login
+          credential, but instead it provides the key associated to
+          the maestro. The maestro try to match the client key with
+          one of his own public keys. In positive case, the client
+          is allowed to communicate to that maestro. Otherwise, it
+          requests for the user's password.</caption>
+        <imageobject>
+					<imagedata fileref="../images/GeBR_public_key_diagram.png"
+						contentwidth="887px" contentdepth="271px" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para>Alternatively, the private/public key pair can be created
+    without GêBR (consult <link xlink:show="new"
+      xlink:href="https://help.ubuntu.com/community/SSH/OpenSSH/Keys">here</link>
+      for more information).
+    </para>
+
+  </section>
+
+  <section xml:id="technical_aspects_remote_browsing">
+    <title>Accessing remote files</title>
+
+    <para>GêBR infrastructure comprises GêBR, maestro and nodes
+      as main actors (see
+      <xref linkend="technical_aspects_intercommunication_between_players"/>) and the
+      processing files, therefore, may be on different places than
+      the user's node.
+    </para>
+    <para>No matter the node where the file is, it can be 
+    accessed through the remote navigation (see window below).
+    </para>
+    <para>In two places GêBR will not browsing the
+      nodes filesystem: <emphasis>Import/Export</emphasis> of
+      projects, lines or flows. On these cases, backup can
+      be saved on the local machine, instead of remote nodes.</para>
+    <figure>
+      <title>Remote browsing of files</title>
+      <mediaobject>
+	<imageobject>
+		<imagedata fileref="../images/GeBR_flow_editor_remote_browsing.png"
+			contentwidth="535px" contentdepth="467px" />
+	</imageobject>
+      </mediaobject>
+      <caption>Example of remote browsing for an output file. Note the
+      bookmarks on the <guilabel>Places</guilabel> panel.</caption>
+    </figure>
+
+    <para>GêBR puts markers (bookmarks) to the important folders of the line in
+      context (see <xref linkend="projects_lines_line_paths"/>). 
+      They aim to facilitate the access to the files of the line.
+    </para>
+
+    <note>
+      <para>In external file browser (say Nautilus), these
+        bookmarks will appear there too. They disappear when GêBR is closed.</para>
+    </note>
+  </section>
+
+  <section xml:id="technical_aspects_multicores">
+    <title>Parallelized processing</title>
+
+		<para>GêBR takes advantage of the <emphasis>multi-core</emphasis> feature
+			of most of
+      the recent machines. The execution of repetitive flows can be
+      optimized by this resource. If the flow has Loops and is
+      parallelizable (given some criteria, shown below), the execution performance 
+      based on the number of processors can be adjusted.</para>
+
+		<para>GêBR also takes advantage of the number of 
+			processing nodes connected to the user's maestro. The resources of every
+			node can be effectively employed to improve the performance.</para>
+
+    <para>Accordingly, GêBR can parallelize the flow if:
+    <itemizedlist>
+			<listitem>the processing node has a multi-core architecture or;</listitem>
+			<listitem>the maestro is connected to multiple nodes.</listitem>
+		</itemizedlist>
+		and if the flow is parallelizable.
+		</para>
+
+    <para>To be considered parallelizable, besides having a loop, a
+      flow must achieve one, and just one, of these criteria:</para>
+    <itemizedlist>
+			<listitem>The flow does not have an output file;</listitem>
+			<listitem>The flow has an output file which 
+				depends on the iter variable (see
+				<xref linkend="flows_loop"/>);</listitem>
+      <listitem>The output of each step of the loop is not the input
+        of any other step of the loop.</listitem>
+			<listitem>Flows with MPI programs (see section
+				<xref linkend="technical_aspects_mpi_support"/>).</listitem>
+    </itemizedlist>
+
+    <para>
+			The <emphasis>level of parallelism</emphasis> of a job execution can
+			be adjusted by the Advanced Execution settings (see
+			<xref linkend="flows_detailed_execution"/>).
+		</para>
+
+    <para>In case the flow is not parallelizable (i.e., does not fit
+			any of the above conditions), GêBR runs the job in the choosen node.</para>
+  </section>
+
+  <section xml:id="technical_aspects_priority_execution">
+    <title>Priority of execution</title>
+    <para>Computers, nowadays, are multitasked, what means that
+      multiple things can be done at the same time. When many tasks
+      are executed at the same time, the computer can get overloaded
+      and decrease its performance. Seismic processing, particularly,
+      can exhaust the computer resources.</para>
+
+    <para>GêBR has a feature that overcomes the issue of overloading
+      due to multitasking, by enabling the execution of the flows in
+      a <guilabel>Wait for free resources</guilabel> state:</para>
+
+		<para>Two options are available  (see
+			<xref linkend="flows_detailed_execution"/>): </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+					<guilabel>Dispute resources </guilabel> (the
+					execution of the flow is going to dispute
+          for the computer resources with all the other active programs).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+					<guilabel>Wait for free resources</guilabel> (the flow is
+					going to wait its turn to execute
+          and try not to overload the system).
+        </para>
+      </listitem>
+    </itemizedlist>
+		<para>Technically, when running in <guilabel>Wait for free
+				resources</guilabel> mode,
+			GêBR will
+      reduce the execution priority of the task, meaning it will tell the
+      computer that "it can wait more important things to be done".
+      This is the case when the user has other things to do while waits
+			the calculations to be done.</para>
+	  
+	  <para>The <guilabel>Share available resources</guilabel>
+			mode means
+      GêBR will use greater run priority for the task, and that
+      implies it will act as a foreground process, demanding more
+			resources. It's the "I need this done now" mode, when the
+			user needs the job to be finished as soon as possible,
+			and doesn't care if it
+      will fight for resources with other programs.</para>
+
+    <para>If GêBR is the only program executing on the node, i.e.,
+      it doesn't have a challenger for the computer resources, then
+      both states corresponds to the same situation.  This is the
+      "nightly job" situation, when (theoretically) no one is using
+      the processing nodes and some jobs are left to be done for the next
+      morning.</para>
+  </section>
+
+  <section xml:id="technical_aspects_mpi_support">
+    <title>Support to MPI programs</title>
+
+    <para>Some programs, known as <emphasis>parallel
+				programs</emphasis><indexterm><primary>Program</primary>
+				<secondary>parallel</secondary></indexterm>,
+	deal themselves with the distribution of their computations
+	among many nodes. In this way, those programs are
+	much more efficient, exploit all available resources to run
+	faster. Technically, they employ a infrastructure known
+	as <emphasis>MPI</emphasis><indexterm><primary>MPI</primary></indexterm>. GêBR
+	supports parallel programs.
+    </para>
+
+    <para>There are many implementations (flavors) of
+      MPI<indexterm><primary>MPI</primary></indexterm>, but the most
+      widely used are
+      OpenMPI<indexterm><primary>MPI</primary><secondary>OpenMPI</secondary></indexterm>
+      and
+			MPICH2<indexterm><primary>MPI</primary><secondary>MPICH2</secondary></indexterm>.
+			OpenMPI is an open source implementation and has influence of three
+      earlier approaches: FT-MPI, LA-MPI and LAM/MPI. The MPICH2 is
+      another widely used implementation and is based on the MPI-2.2
+      standard.
+    </para>
+
+    <para>GêBR supports <emphasis>both OpenMPI and MPICH2</emphasis>. However, MPI
+      programs can only run on nodes that support the execution of
+      MPI. Thus, for GêBR support of MPI, the user must have acces to
+      nodes/clusters that also support it.
+    </para>
+
+		<para>In the maestro/nodes interface, in the MPI column, an icon
+      indicates whether the node supports MPI. Roll over
+      the icon to check the flavors of MPI available on that
+      processing nodes. The parallel program can be executed just on 
+      processing nodes that support the same flavor as the one used in it.
+    </para>
+
+    <figure>
+      <title>Indication of MPI availability</title>
+			<imagedata fileref="../images/GeBR_servers_mpi.png"
+				contentwidth="360px" contentdepth="142px" />
+      <caption>The second column indicates the types (flavors) of MPI
+	available in the nodes.</caption>
+    </figure>
+    
+    <para>To run an MPI program, first it's necessary create a menu in DêBR
+      and choose the proper MPI implementation to the
+      program. Then import it in GêBR. With double-click over the MPI 
+      program in the Flows tab, the number of processes to be 
+      used by that MPI call can be seen.
+    </para>
+
+    <figure>
+      <title>MPI settings</title>
+			<imagedata fileref="../images/GeBR_programs_mpi_parameters.png"
+				contentwidth="503px" contentdepth="121px" />
+			<caption>The <guilabel>np</guilabel> value is set according
+				to the speed value set in the Advanced Execution dialog (see
+				<xref linkend="flows_detailed_execution"/>).</caption>
+    </figure>
+  </section>
+
+  <section xml:id="technical_aspects_administrative_features">
+    <title>Administrative features</title>
+		<para>
+			The administrator can configure global options appliable 
+			to everyone that starts GêBR for the first time.
+		</para>
+
+  <section xml:id="technical_aspects_maestro_configuration_file">
+  <title> Administrative maestro suggestion </title>
+		<para>
+			GêBR verifies the existence of an environment variable
+			(GEBR_DEFAULT_MAESTRO) to suggest a maestro. The syntax of
+			this variable is <code>maestro_A, description_A; maestro_B,
+				description_B</code>.
+		</para>
+			
+		<para>
+			For instance, if the administrator sets GEBR_DEFAULT_MAESTRO as
+			<code>127.0.0.1, My first maestro; 100.00.00.0, My second maestro;</code>
+			then, on the first time or through <guilabel>Connection Assistant</guilabel>
+			(see <xref linkend="additional_features_connection_assistant" />),
+			GêBR offer the following options:
+		</para>
+
+		<itemizedlist>
+		<listitem>
+			127.0.0.1 as the default maestro with description 'My first maestro'
+		</listitem>
+		<listitem>
+			100.0.0.0 as another available maestro with description 'My second maestro' 
+		</listitem>
+	</itemizedlist>
+
+</section>
+  <section xml:id="technical_aspects_nodes_environment_variable">
+  <title> Administrative nodes suggestion </title>
+		<para>
+			Additionally, GêBR can also automatically add processing nodes. This
+			configuration can be done through a file in the path
+			<code>/etc/gebr/servers.conf</code>.
+		</para>
+			
+		<para>
+			The syntax of this file must be the names of the nodes enclosed by brackets.
+		</para>
+		<para>
+			For instance, if the administrator sets <code>/etc/gebr/servers.conf</code>
+			with
+			<programlisting>
+				<![CDATA[
+				[node1]
+				[node2]
+				[node3]
+				]]>
+	</programlisting>
+		<para>
+			then for every user with that maestro, the processing nodes node1, node2 and node3
+			will be available.
+		</para>
+		</para>
+</section>
+  </section>
+
+  <section xml:id="technical_aspects_import_samples">
+    <title>Sample projects</title>
+    <para>In <menuchoice>
+        <guimenu>Help</guimenu>
+        <guimenuitem>Samples</guimenuitem>
+		</menuchoice> menu, there are samples to be imported.</para>
+		<para>
+			GêBR offers bundled samples for download in its hostpage,
+			<link xlink:show="new" xlink:href="https://www.gebrproject.com">hostpage</link>
+		like gebr-menus-su package. Here are some samples this package provides:
+			<itemizedlist>
+				<listitem>
+					Dip Moveout : 
+					<emphasis> Ilustrates different types of DMO processing </emphasis>
+				</listitem>
+				<listitem>
+					Velocity Analysis : 
+					<emphasis> Illustrate some velocity analysis processes </emphasis>
+				</listitem>
+				<listitem>
+					NMO : 
+					<emphasis> Illustrate normal moveout corrections and stacking </emphasis>
+				</listitem>
+				<listitem>
+					Ray Tracing : 
+					<emphasis> Illustrates different ray tracing programs </emphasis>
+				</listitem>
+				<listitem>
+					Migration Inversion : 
+					<emphasis> Illustrates different processes of migration inversion </emphasis>
+				</listitem>
+				<listitem>
+					Time Frequency Analysis : 
+					<emphasis> Illustrates chirpy data in the time-frequency domain </emphasis>
+				</listitem>
+				<listitem>
+					Deconvolution : 
+					<emphasis> Illustrate a random noise attenuation via F-X deconvolution </emphasis>
+				</listitem>
+				<listitem>
+					Filtering : 
+					<emphasis> Ilustrates different filtering processes </emphasis>
+				</listitem>
+				<listitem>
+					Trace Headers and Values : 
+					<emphasis> Illustrates several applications to the trace headers and values of keywords </emphasis>
+				</listitem>
+				<listitem>
+					Plotting : 
+					<emphasis> Illustrates different plotting programs </emphasis>
+				</listitem>
+				<listitem>
+					Velocity Profiles : 
+					<emphasis> Illustrate several types of velocity profiles </emphasis>
+				</listitem>
+				<listitem>
+					Muting : 
+					<emphasis> Illustrating a picking in a data, and your result after applied mute </emphasis>
+				</listitem>
+				<listitem>
+					Synthetic : 
+					<emphasis> Show several demonstrations about synthetic data creation </emphasis>
+				</listitem>
+				<listitem>
+					Amplitude Correction : 
+					<emphasis> Illustrates the amplitude correction on synthetic seismic data </emphasis>
+				</listitem>
+				<listitem>
+					Offset Continuation : 
+					<emphasis> Ilustrates the use of Offset Continuation method </emphasis>
+				</listitem>
+				<listitem>
+					Block : 
+					<emphasis> Creates a data set of the form required by the "block" program.	</emphasis>
+				</listitem>
+				<listitem>
+					Stacking Traces : 
+					<emphasis> Illustrating the usage phase weighted and diversity stacking </emphasis>
+				</listitem>
+				<listitem>
+					Vibroseis Sweeps : 
+					<emphasis> Illustrates using SUVIBRO </emphasis>
+				</listitem>
+				<listitem>
+					Making Data : 
+					<emphasis> Illustrating the construction of common offsets and shot gathers </emphasis>
+				</listitem>
+			</itemizedlist>
+
+		</para>
+		Once imported, the associated flows can be readily consulted or executed (consult 
+		<xref linkend="flows_execute_flow"/>).
+		<para>
+
+		</para>
+	</section>
+</chapter>
