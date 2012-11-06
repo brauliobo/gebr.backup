@@ -49,6 +49,8 @@ struct _GebrmAppPriv {
 	gchar *nfsid;
 	gchar *home;
 
+	GebrMaestroSettings *settings;
+
 	gboolean connect_all;
 
 	GQueue *job_def_queue;
@@ -142,6 +144,35 @@ gebrm_app_job_controller_add(GebrmApp *app, GebrmJob *job)
 			    g_strdup(gebrm_job_get_id(job)),
 			    job);
 }
+
+// Configuration Methods {{{
+
+GebrMaestroSettings *
+gebrm_app_create_configuration()
+{
+	GebrMaestroSettings *ms;
+
+	GString *path = g_string_new(NULL);
+	g_string_printf(path, "%s/.gebr/gebrm/maestro.conf", g_get_home_dir());
+
+	ms = gebr_maestro_settings_new(path->str);
+
+	g_string_free(path, TRUE);
+
+	return ms;
+}
+
+gchar *
+gebrm_app_get_nfsid(GebrMaestroSettings *ms)
+{
+	GKeyFile *key;
+
+	key = gebr_maestro_settings_get_key_file(ms);
+	gchar *nfsid = g_key_file_get_start_group(key);
+
+	return nfsid;
+}
+
 // }}}
 
 static gchar *
@@ -162,6 +193,18 @@ gebrm_app_send_home_dir(GebrmApp *app, GebrCommProtocolSocket *socket, const gch
 					      home);
 }
 
+static void
+gebrm_app_send_nfsid(GebrmApp *app, GebrCommProtocolSocket *socket, const gchar *nfsid)
+{
+	const gchar *hosts = gebr_maestro_settings_get_addrs(app->priv->settings, nfsid);
+	const gchar *label = gebr_maestro_settings_get_label_for_domain(app->priv->settings, nfsid);
+
+	gebr_comm_protocol_socket_oldmsg_send(socket, FALSE,
+					      gebr_comm_protocol_defs.nfsid_def, 3,
+					      nfsid,
+					      hosts,
+					      label);
+}
 
 static gboolean
 gebrm_app_send_mpi_flavors(GebrCommProtocolSocket *socket, GebrmDaemon *daemon)
@@ -620,6 +663,7 @@ on_daemon_init(GebrmDaemon *daemon,
 	const gchar *home = gebrm_daemon_get_home_dir(daemon);
 	gboolean remove = FALSE;
 	gboolean home_defined = FALSE;
+	gboolean send_nfs = FALSE;
 
 	if (g_strcmp0(error_type, "connection-refused") == 0) {
 		if (has_duplicated_daemons(app, error_msg)) {
@@ -657,6 +701,7 @@ on_daemon_init(GebrmDaemon *daemon,
 	}
 
 	if (!app->priv->nfsid) {
+		send_nfs = TRUE;
 		app->priv->nfsid = g_strdup(nfsid);
 	} else if (g_strcmp0(app->priv->nfsid, nfsid) != 0) {
 		error = "error:nfs";
@@ -681,11 +726,27 @@ err:
 		if (app->priv->home)
 			home_defined = TRUE;
 
+		if (send_nfs) {
+			const gchar *label = gebr_maestro_settings_get_label_for_domain(app->priv->settings,
+			                                                                nfsid);
+
+			gebr_maestro_settings_set_domain(app->priv->settings, nfsid,
+			                                 label,
+			                                 g_get_host_name());
+
+			gebr_maestro_settings_save(app->priv->settings);
+		}
+
 		for (GList *i = app->priv->connections; i; i = i->next) {
 			GebrCommProtocolSocket *socket = gebrm_client_get_protocol_socket(i->data);
 			if (!home_defined)
 				gebrm_app_send_home_dir(app, socket, home);
+
+			if (send_nfs)
+				gebrm_app_send_nfsid(app, socket, nfsid);
+
 			send_server_status_message(app, socket, daemon, gebrm_daemon_get_autoconnect(daemon), state);
+
 
 			queue_client_info(app, daemon, i->data);
 			gebrm_app_send_mpi_flavors(socket, daemon);
@@ -1498,10 +1559,11 @@ on_client_parse_messages(GebrCommProtocolSocket *socket,
 					gebrm_app_send_mpi_flavors(socket, i->data);
 			}
 
+			if (app->priv->nfsid)
+				gebrm_app_send_nfsid(app, socket, app->priv->nfsid);
+
 			if (app->priv->home)
-				gebr_comm_protocol_socket_oldmsg_send(socket, FALSE,
-								      gebr_comm_protocol_defs.home_def, 1,
-								      app->priv->home);
+				gebrm_app_send_home_dir(app, socket, app->priv->home);
 
 			g_free(port_str);
 
@@ -1537,6 +1599,19 @@ on_client_parse_messages(GebrCommProtocolSocket *socket,
 				                                      old_path->str,
 				                                      option->str);
 			}
+		} else if (message->hash == gebr_comm_protocol_defs.nfsid_def.code_hash) {
+			GList *arguments;
+
+			if ((arguments = gebr_comm_protocol_socket_oldmsg_split(message->argument, 3)) == NULL)
+				goto err;
+
+			GString *nfsid = g_list_nth_data(arguments, 0);
+			GString *label = g_list_nth_data(arguments, 2);
+
+			gebr_maestro_settings_change_label(app->priv->settings, nfsid->str, label->str);
+			gebr_maestro_settings_save(app->priv->settings);
+
+			gebr_comm_protocol_socket_oldmsg_split_free(arguments);
 		}
 
 		gebr_comm_message_free(message);
@@ -2001,6 +2076,9 @@ gebrm_app_run(GebrmApp *app, int fd, const gchar *version)
 	//Generate gebr.key
 	gebr_generate_key();
 
+	// Create configuration for NFS
+	app->priv->settings = gebrm_app_create_configuration();
+
 	// Add server from user file
 	const gchar *path = gebrm_app_get_servers_file();
 	gebrm_config_load_servers(app, path);
@@ -2027,15 +2105,43 @@ gebrm_app_get_lock_file(void)
 const gchar *
 gebrm_app_get_version_file(void)
 {
+	static gchar *version = NULL;
+
+	if (!version) {
+		gchar *dirname = get_gebrm_dir_name();
+		version = g_build_filename(dirname, "version", NULL);
+		g_free(dirname);
+	}
+
+	return version;
+}
+
+const gchar *
+gebrm_app_get_lock_file_for_addr(const gchar *addr)
+{
 	static gchar *lock = NULL;
 
 	if (!lock) {
-		gchar *dirname = get_gebrm_dir_name();
-		lock = g_build_filename(dirname, "version", NULL);
+		gchar *dirname = g_build_filename(g_get_home_dir(), ".gebr", "gebrm", addr, NULL);
+		lock = g_build_filename(dirname, "lock", NULL);
 		g_free(dirname);
 	}
 
 	return lock;
+}
+
+const gchar *
+gebrm_app_get_version_file_for_addr(const gchar *addr)
+{
+	static gchar *version = NULL;
+
+	if (!version) {
+		gchar *dirname = g_build_filename(g_get_home_dir(), ".gebr", "gebrm", addr, NULL);
+		version = g_build_filename(dirname, "version", NULL);
+		g_free(dirname);
+	}
+
+	return version;
 }
 
 const gchar *

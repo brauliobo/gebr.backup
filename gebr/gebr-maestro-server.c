@@ -25,6 +25,7 @@
 #include <glib/gi18n.h>
 #include <libgebr/gui/gui.h>
 #include <libgebr/gebr-maestro-info.h>
+#include <libgebr/gebr-maestro-settings.h>
 #include <stdlib.h>
 
 #include "gebr.h" // for gebr_get_session_id()
@@ -46,6 +47,8 @@ struct _GebrMaestroServerPriv {
 	gchar *error_msg;
 	GtkWindow *window;
 	gchar *home;
+	gchar *nfsid;
+	gchar *nfs_label;
 	gint clocks_diff;
 	gboolean wizard_setup;
 
@@ -337,7 +340,6 @@ state_changed(GebrCommServer *comm_server,
 	}
 	else if (state == SERVER_STATE_LOGGED) {
 		gebr_maestro_server_set_error(maestro, "error:none", NULL);
-		gebr_config_maestro_save();
 
 		gebr_project_line_show(gebr.ui_project_line);
 
@@ -1000,6 +1002,30 @@ parse_messages(GebrCommServer *comm_server,
 
 			gebr_comm_protocol_socket_oldmsg_split_free(arguments);
 		}
+		else if (message->hash == gebr_comm_protocol_defs.nfsid_def.code_hash) {
+			GList *arguments;
+
+			if ((arguments = gebr_comm_protocol_socket_oldmsg_split(message->argument, 3)) == NULL)
+				goto err;
+
+			GString *nfsid = g_list_nth_data(arguments, 0);
+			GString *hosts = g_list_nth_data(arguments, 1);
+			GString *label = g_list_nth_data(arguments, 2);
+
+			g_debug("NFSID = %s / LABEL = %s", nfsid->str, label->str);
+
+			gebr_config_set_current_nfs_info(nfsid->str,
+			                                 hosts->str,
+			                                 label->str);
+
+			gebr_maestro_server_set_nfsid(maestro, nfsid->str);
+			gebr_maestro_server_set_nfs_label(maestro, label->str);
+
+			gebr_project_line_show(gebr.ui_project_line);
+			g_signal_emit(maestro, signals[STATE_CHANGE], 0);
+
+			gebr_comm_protocol_socket_oldmsg_split_free(arguments);
+		}
 
 		gebr_comm_message_free(message);
 		comm_server->socket->protocol->messages = g_list_delete_link(comm_server->socket->protocol->messages, link);
@@ -1062,6 +1088,8 @@ gebr_maestro_server_finalize(GObject *object)
 	g_object_unref(maestro->priv->store);
 	g_hash_table_unref(maestro->priv->jobs);
 	g_hash_table_unref(maestro->priv->temp_jobs);
+	g_free(maestro->priv->nfsid);
+	g_free(maestro->priv->home);
 	unmount_gvfs(maestro, FALSE);
 
 	G_OBJECT_CLASS(gebr_maestro_server_parent_class)->finalize(object);
@@ -1077,6 +1105,9 @@ static void
 gebr_maestro_server_state_change_real(GebrMaestroServer *maestro)
 {
 	update_groups_store(maestro);
+
+	if (maestro->priv->nfsid)
+		gebr_config_maestro_save();
 }
 
 static void
@@ -1622,6 +1653,39 @@ gebr_maestro_server_get_sftp_prefix(GebrMaestroServer *maestro)
 }
 
 void
+gebr_maestro_server_set_nfsid(GebrMaestroServer *maestro,
+                              const gchar *nfsid)
+{
+	if (maestro->priv->nfsid)
+		g_free(maestro->priv->nfsid);
+	maestro->priv->nfsid = g_strdup(nfsid);
+}
+
+const gchar *
+gebr_maestro_server_get_nfsid(GebrMaestroServer *maestro)
+{
+	if (maestro->priv->nfsid && strlen(maestro->priv->nfsid))
+		return maestro->priv->nfsid;
+
+	return NULL;
+}
+
+void
+gebr_maestro_server_set_nfs_label(GebrMaestroServer *maestro,
+                                  const gchar *nfs_label)
+{
+	if (maestro->priv->nfs_label)
+		g_free(maestro->priv->nfs_label);
+	maestro->priv->nfs_label = g_strdup(nfs_label);
+}
+
+const gchar *
+gebr_maestro_server_get_nfs_label(GebrMaestroServer *maestro)
+{
+	return maestro->priv->nfs_label;
+}
+
+void
 gebr_maestro_server_set_home_dir(GebrMaestroServer *maestro,
 				 const gchar *home)
 {
@@ -1872,4 +1936,19 @@ gebr_maestro_server_copy_queues_model(GtkTreeModel *orig_model)
 		 valid = gtk_tree_model_iter_next(orig_model, &iter);
 	 }
 	 return GTK_TREE_MODEL(new_model);
+}
+
+void
+gebr_maestro_server_send_nfs_label(GebrMaestroServer *maestro)
+{
+	const gchar *nfsid = maestro->priv->nfsid;
+	const gchar *label = maestro->priv->nfs_label;
+
+	GebrCommServer *server = gebr_maestro_server_get_server(maestro);
+
+	gebr_comm_protocol_socket_oldmsg_send(server->socket, FALSE,
+	                                      gebr_comm_protocol_defs.nfsid_def, 3,
+	                                      nfsid,
+	                                      "",
+	                                      label);
 }
