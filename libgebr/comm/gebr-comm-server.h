@@ -44,6 +44,7 @@ G_BEGIN_DECLS
 #define GEBR_COMM_SERVER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  GEBR_COMM_TYPE_SERVER, GebrCommServerClass))
 
 #define GEBR_PORT_PREFIX "gebr-port="
+#define GEBR_ADDR_PREFIX "gebr-addr="
 
 
 typedef enum {
@@ -78,7 +79,7 @@ typedef struct _GebrCommServerPriv GebrCommServerPriv;
 typedef struct _GebrCommServerClass GebrCommServerClass;
 
 struct _GebrCommServer {
-	GObject *parent;
+	GObject parent;
 	GebrCommProtocolSocket *socket;
 
 	GebrCommServerPriv *priv;
