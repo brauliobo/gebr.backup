@@ -189,14 +189,10 @@ void gebr_comm_server_kill(GebrCommServer *gebr_comm_server);
 
 /**
  * gebr_comm_server_forward_x11:
- * @gebr_comm_server:
- * @port:
  *
- * For the logged _gebr_comm_server_ forward x11 server _port_ to user display
- * Fail if user's display is not set, returning FALSE.
- * If any other x11 redirect was previously made it is unmade
+ * Forward @remote_display to the local machine.
  */
-gboolean gebr_comm_server_forward_x11(GebrCommServer *gebr_comm_server, guint16 port);
+void gebr_comm_server_forward_x11(GebrCommServer *gebr_comm_server, guint16 remote_display);
 
 const gchar *gebr_comm_server_state_to_string(GebrCommServerState state);
 
@@ -275,20 +271,6 @@ void gebr_comm_server_emit_interactive_state_signals(GebrCommServer *server);
 GebrCommTerminalProcess *gebr_comm_server_forward_remote_port(GebrCommServer *server,
 							      guint16 remote_port,
 							      guint16 local_port);
-
-/**
- * gebr_comm_forward_local_port:
- * @server: A #GebrCommServer.
- * @remote_port: The remote port in which connections will be listened.
- * @local_port: The local port to be connected.
- *
- * Returns: The #GebrCommTerminalProcess of the ssh tunnel. You can call
- * gebr_comm_terminal_process_kill() to close the tunnel.
- */
-GebrCommTerminalProcess *gebr_comm_server_forward_local_port(GebrCommServer *server,
-							     guint16 remote_port,
-							     guint16 local_port,
-							     const gchar *addr);
 
 /**
  * gebr_comm_server_append_key:

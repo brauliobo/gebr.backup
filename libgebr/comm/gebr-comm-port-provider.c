@@ -32,7 +32,16 @@
 #include "../marshalers.h"
 
 struct _GebrCommPortForward {
-	GebrCommTerminalProcess *tprocess;
+	GebrCommSsh *ssh;
+};
+
+struct _GebrCommPortProviderPriv {
+	GebrCommPortType type;
+	gchar *address;
+	gchar *sftp_address;
+	guint display;
+	GebrCommSsh *ssh_forward;
+	GebrCommPortForward *forward;
 };
 
 static gchar *get_local_forward_command(GebrCommPortProvider *self,
@@ -64,14 +73,6 @@ enum {
 };
 
 guint signals[LAST_SIGNAL] = { 0, };
-
-struct _GebrCommPortProviderPriv {
-	GebrCommPortType type;
-	gchar *address;
-	gchar *sftp_address;
-	guint display;
-	GebrCommSsh *ssh_forward;
-};
 
 static void
 gebr_comm_port_provider_get(GObject    *object,
@@ -322,7 +323,7 @@ start(GebrCommPortProvider *self, struct PortProviderVirtualMethods *vmethods)
 
 /* Set our own error*/
 static void
-local_set_error(GError *error, GError **local_error)
+transform_spawn_sync_error(GError *error, GError **local_error)
 {
 	if (!error)
 		return;
@@ -340,49 +341,63 @@ local_set_error(GError *error, GError **local_error)
 		    error_msg);
 }
 
+static void
+set_forward(GebrCommPortProvider *self, GebrCommSsh *ssh)
+{
+	g_return_if_fail(self->priv->forward == NULL);
+	self->priv->forward = g_new0(GebrCommPortForward, 1);
+	self->priv->forward->ssh = ssh;
+}
+
 /* Local port provider implementation {{{ */
 static void
-local_get_port(GebrCommPortProvider *self, const gchar *binary)
+local_get_port(GebrCommPortProvider *self, gboolean maestro)
 {
-	gchar *tmp = g_strdup_printf("%s-%s.tmp", self->priv->address, "maestro");
-	gchar *filename = g_build_filename(g_get_home_dir(), ".gebr", tmp, NULL);
-	GString *cmd_line = g_string_new(NULL);
-	GError *error = NULL;
-	GError *local_error = NULL;
+	const gchar *binary = maestro ? "gebrm":"gebrd";
+	gchar *output = NULL;
 	gchar *err = NULL;
 	gint status;
-	gchar *output = NULL;
-	gchar *port = NULL;
+	GError *error = NULL;
 
-	g_string_printf(cmd_line, "bash -l -c %s 2> %s", binary, filename);
+	g_spawn_command_line_sync(binary, &output, &err, &status, &error);
 
-	g_spawn_command_line_sync(cmd_line->str, &output, &err, &status, &error);
+	gchar *tmp = g_strdup_printf("%s-%s.tmp", self->priv->address, maestro? "maestro":"daemon");
+	gchar *filename = g_build_filename(g_get_home_dir(), ".gebr", tmp, NULL);
+	GError *local_error = NULL;
 
-	if (error || (WIFEXITED(status) && WEXITSTATUS(status) != 0))
-		local_set_error(error, &local_error);
-	else if (output)
-		port = output + strlen(GEBR_PORT_PREFIX);
-	else
+	if (err) {
+		g_file_set_contents(filename, err, -1, NULL);
+		g_free(err);
+	}
+
+	guint port;
+
+	if (error || (WIFEXITED(status) && WEXITSTATUS(status) != 0)) {
+		transform_spawn_sync_error(error, &local_error);
+		g_clear_error(&error);
+	} else if (output) {
+		port = atoi(output + strlen(GEBR_PORT_PREFIX));
+	} else {
 		g_warn_if_reached();
+	}
 
-	emit_signals(self, port ? atoi(port) : 0, error);
+	emit_signals(self, port, error);
 
 	g_free(tmp);
 	g_free(output);
 	g_free(filename);
-	g_string_free(cmd_line, TRUE);
 }
 
 void
 local_get_maestro_port(GebrCommPortProvider *self)
 {
-	local_get_port(self, "gebrm");
+	local_get_port(self, TRUE);
 }
 
 void
 local_get_daemon_port(GebrCommPortProvider *self)
 {
-	local_get_port(self, "gebrd");
+	local_get_port(self, FALSE);
 }
 
 void
@@ -468,6 +483,7 @@ on_ssh_stdout(GebrCommSsh *_ssh, const GString *buffer, GebrCommPortProvider *se
 	g_signal_connect(ssh, "ssh-question", G_CALLBACK(on_ssh_question), self);
 	g_signal_connect(ssh, "ssh-error", G_CALLBACK(on_ssh_error), self);
 	gebr_comm_ssh_set_command(ssh, command);
+	set_forward(self, ssh);
 	gebr_comm_ssh_run(ssh);
 	g_free(command);
 
@@ -475,6 +491,9 @@ on_ssh_stdout(GebrCommSsh *_ssh, const GString *buffer, GebrCommPortProvider *se
 	data->self = self;
 	data->port = port;
 	g_timeout_add(200, tunnel_poll_port, data);
+
+	// the ssh command for getting the maestro/daemon port isn't needed anymore.
+	g_object_unref(_ssh);
 }
 
 static gchar *
@@ -574,11 +593,10 @@ remote_get_daemon_port(GebrCommPortProvider *self)
 }
 
 static gchar *
-get_x11_command(GebrCommPortProvider *self)
+get_x11_command(GebrCommPortProvider *self, guint *x11_port)
 {
 	gchar *ssh_cmd;
 	guint16 display_number;
-	static guint x11_port = 6010;
 	GString *cmd_line, *display_host;
 
 	gchar *display = getenv("DISPLAY");
@@ -595,13 +613,13 @@ get_x11_command(GebrCommPortProvider *self)
 	if (sscanf(tmp->str, ":%hu.", &display_number) != 1)
 		display_number = 0;
 
-	while (!gebr_comm_listen_socket_is_local_port_available(x11_port))
-		++x11_port;
+	while (!gebr_comm_listen_socket_is_local_port_available(*x11_port))
+		(*x11_port)++;
 
 	ssh_cmd = get_ssh_command_with_key();
 	cmd_line = g_string_new(NULL);
 	g_string_printf(cmd_line, "%s -x -R %d:%s:%d %s -N", ssh_cmd, self->priv->display,
-			display_host->str, x11_port, self->priv->address);
+			display_host->str, *x11_port, self->priv->address);
 
 	g_string_free(tmp, TRUE);
 	g_free(ssh_cmd);
@@ -612,14 +630,21 @@ get_x11_command(GebrCommPortProvider *self)
 void
 remote_get_x11_port(GebrCommPortProvider *self)
 {
+	static guint x11_port = 6010;
 	GebrCommSsh *ssh = gebr_comm_ssh_new();
 	g_signal_connect(ssh, "ssh-password", G_CALLBACK(on_ssh_password), self);
 	g_signal_connect(ssh, "ssh-question", G_CALLBACK(on_ssh_question), self);
 	g_signal_connect(ssh, "ssh-error", G_CALLBACK(on_ssh_error), self);
-	gchar *command = get_x11_command(self);
+	gchar *command = get_x11_command(self, &x11_port);
 	gebr_comm_ssh_set_command(ssh, command);
+	set_forward(self, ssh);
 	gebr_comm_ssh_run(ssh);
 	g_free(command);
+
+	struct TunnelPollData *data = g_new(struct TunnelPollData, 1);
+	data->self = self;
+	data->port = x11_port;
+	g_timeout_add(200, tunnel_poll_port, data);
 }
 
 static gchar *
@@ -652,6 +677,7 @@ remote_get_sftp_port(GebrCommPortProvider *self)
 	g_signal_connect(ssh, "ssh-error", G_CALLBACK(on_ssh_error), self);
 	gchar *command = get_local_forward_command(self, &port, self->priv->sftp_address, 22);
 	gebr_comm_ssh_set_command(ssh, command);
+	set_forward(self, ssh);
 	gebr_comm_ssh_run(ssh);
 	g_free(command);
 
@@ -700,12 +726,18 @@ gebr_comm_port_provider_start(GebrCommPortProvider *self)
 	start(self, vmethods);
 }
 
+GebrCommPortForward *
+gebr_comm_port_provider_get_forward(GebrCommPortProvider *self)
+{
+	return self->priv->forward;
+}
+
 /* GebrCommPortForward methods */
 
 void
 gebr_comm_port_forward_close(GebrCommPortForward *port_forward)
 {
-	gebr_comm_terminal_process_kill(port_forward->tprocess);
-	gebr_comm_terminal_process_free(port_forward->tprocess);
+	gebr_comm_ssh_kill(port_forward->ssh);
+	g_object_unref(port_forward->ssh);
 }
 /* }}} */
