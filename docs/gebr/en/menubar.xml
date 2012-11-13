@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<chapter
+   xmlns="http://docbook.org/ns/docbook"
+   xmlns:xi="http://www.w3.org/2001/XInclude"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   lang="en"
+   version="5.0"
+   xml:id="menu">
+
+  <title>The <guimenu>Action</guimenu> menu</title>
+  
+  <para>From the <guimenu>Actions</guimenu> menu, the user can access the
+    <guimenuitem>Preferences</guimenuitem> and
+		configure the <guimenuitem>Maestro/Nodes</guimenuitem> settings. If the user's enthusiasm
+    for GêBR has lead to read the whole manual, then the user has
+    probably used almost all available features found in these
+    options. But just in case, the user will find the documentation for these options
+    below.</para>
+  
+  <section id="actions_preferences">
+    <title>Preferences</title>
+    <para>The details the user provides in the
+      <guimenuitem>Preferences</guimenuitem> dialog box will be
+      adopted as the default by GêBR.  Specifically:</para>
+    <itemizedlist>
+      <listitem>
+        <para><guilabel>User name:</guilabel> will be used as the
+          default for <guilabel>Author</guilabel>, when the user creates
+          projects, lines and flows.</para>
+      </listitem>
+      <listitem>
+        <para><guilabel>Email:</guilabel> will be used as the
+          default for <guilabel>Email</guilabel>, when the user creates
+          projects, lines and flows.</para>
+      </listitem>
+      <listitem>
+        <para><guilabel>User's menus directory:</guilabel> will be
+          the default directory where <emphasis>GêBR's
+            Menus</emphasis> are maintained
+          (<filename class="extension">mnu</filename> files).</para>
+      </listitem>
+    </itemizedlist>
+    <figure id="gebr_global_preferences">
+      <title>Global GêBR preferences dialog box</title>
+      <mediaobject>
+        <caption>Preferences menu opens a dialog box where the user edits
+          the user's name, e-mail, menu's directory and the HTML
+          editor.</caption>
+        <imageobject>
+					<imagedata fileref="../images/GeBR_preferences.png"
+						contentwidth="403px" contentdepth="271px" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+  </section>
+  
+  <section xml:id="additional_features_connection_assistant">
+    <title>Connection assistant</title>
+    <para>This option helps the user to configure all the necessary 
+    connections to work properly GêBR.</para>
+    <para>The connection assistant explains the user to connect to a maestro, 
+    its servers and enable remote browsing 
+    (for more information, see <xref linkend="additional_features_maestro_servers_configuration" /> 
+    and <xref linkend="technical_aspects_remote_browsing" />).</para>
+  </section>
+  
+  <section xml:id="additional_features_maestro_servers_configuration">
+    <title>Maestro/Nodes configuration</title>
+    <para>The Maestro/Nodes
+      Interface<indexterm><primary>Maestro</primary></indexterm><indexterm><primary>Node
+	  </primary></indexterm> has <emphasis>three</emphasis> parts:</para>
+    <itemizedlist>
+      <listitem>
+        <para><guilabel>Maestro</guilabel>: central unit of
+          coordination of multiple machines (for more information, see
+          <xref linkend="concepts_connections" />).</para>
+      </listitem>
+      <listitem>
+        <para><guilabel>Nodes</guilabel>: choose the nodes
+          associated to the current maestro.</para>
+      </listitem>
+      <listitem>
+        <para><guilabel>Groups</guilabel><indexterm><primary>Node
+	      </primary><secondary>group
+	      of</secondary></indexterm>: configure the groups of
+	      nodes on the current maestro.</para>
+      </listitem>
+    </itemizedlist>
+    
+    <figure id="maestro_server_dialog">
+      <title>Maestro / Nodes configuration dialog box</title>
+      <mediaobject>
+				<caption>The Maestro/Nodes configuration interface is divided in three parts: maestro, list of nodes and groups of nodes.</caption>
+        <imageobject>
+					<imagedata fileref="../images/GeBR_maestro_servers_overview.png"
+						contentwidth="398px" contentdepth="473px" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+      
+    <section xml:id="maestro">
+      <title>Maestro</title>
+
+      <para>In the upper part of the
+				<indexterm><primary>Maestro</primary></indexterm>/Nodes
+        Interface (see <xref linkend="maestro_server_dialog" />),
+        there is an entry in which the user can put the desired
+        machine to use as maestro. A requirement is that the maestro
+        must be installed on that machine. The state of the connection
+        between GêBR and the maestro is shown by the right-side icon:
+      </para>
+      <itemizedlist>
+        <listitem><para>connected (<inlinemediaobject>
+              <imageobject>
+                <imagedata fileref="../../common-images/gtk-connect.png" />
+              </imageobject>
+	    </inlinemediaobject>)</para></listitem>
+        <listitem><para>disconnected (<inlinemediaobject>
+              <imageobject>
+                <imagedata fileref="../../common-images/gtk-disconnect.png" />
+              </imageobject>
+	    </inlinemediaobject>)</para></listitem>
+        <listitem><para>error (<inlinemediaobject>
+              <imageobject>
+                <imagedata fileref="../../common-images/gtk-dialog-warning.png" />
+              </imageobject>
+	    </inlinemediaobject>)</para></listitem>
+      </itemizedlist>
+    </section>
+    
+    <section>
+      <title>Nodes</title>
+      <para>Once the maestro has been selected and the connection has
+        been successfully established, the user can associate nodes 
+        <indexterm><primary>Node
+        </primary></indexterm> to that maestro.</para>
+
+      <para>Each line of the nodes window represents each machine associated to the
+        maestro. The lines have some columns:</para>
+      <itemizedlist>
+	<listitem>
+	  <para><guilabel>AC</guilabel>: checkbox to activate or not
+	    the auto-connection to that node.</para>
+	</listitem>
+	<listitem>
+	  <para><guilabel>MPI</guilabel>: depicts whether the machine
+	  has support to
+	  MPI<indexterm><primary>MPI</primary></indexterm>.</para>
+	</listitem>
+	<listitem>
+	  <para><guilabel>Address</guilabel>: hostname or IP address
+	  of the node.</para>
+	</listitem>
+	<listitem>
+	  <para><guilabel>CPU Clock</guilabel>: CPU clock of the
+	  node.</para>
+	</listitem>
+	<listitem>
+	  <para><guilabel>Memory</guilabel>: total memory of the machine.</para>
+	</listitem>
+      </itemizedlist>
+
+
+      <para>The user can add a new machine by clicking
+        over <guilabel>New</guilabel> and entering the hostname or
+        IP address of the machine.</para>
+      
+    </section>
+
+    <section>
+      <title>Groups</title>
+      <para>It's possible to employ a subset of the machines associated to
+        the maestro<indexterm><primary>Processing
+        nodes</primary><secondary>group
+        of</secondary></indexterm>. This can be done through the
+        creation of groups of machines.</para>
+		
+		<para>The administration of the groups is in the bottom part 
+			of the Maestro/Nodes interface (see <xref linkend="maestro_server_dialog" />). 
+		</para>
+        
+        <para>To create a group, click over a node
+        in the list and drag it to the  
+        <inlinemediaobject>
+              <imageobject>
+                <imagedata fileref="../../common-images/group.png" />
+              </imageobject>
+	    </inlinemediaobject> icon.
+	    A text box will be prompted for the name of the group. Groups
+        with same names are not allowed.</para>
+
+	<example>
+		<title>
+			<emphasis role="bold">Using the groups</emphasis>
+		</title>
+		<para>
+			Using groups is very useful when it's necessary to run a flow in
+			a subset of machines different from the default
+			(For more information, see
+			<xref linkend="flows_detailed_execution" />
+			).
+			That's useful, Because sometimes it's desired save resources from some
+			processing nodes to not overload all of them.
+		</para>
+
+		<para>
+			For example:
+			<procedure>
+				<step> Choose a subset of processing nodes</step>
+				<step> Create a group with them.</step>
+				<step> Give a name for the group.</step>
+				<step>
+					Create a parallelizable flow (see
+					<xref linkend="technical_aspects_multicores" />
+					).
+				</step>
+				<step>
+					Open the
+					<guilabel>Execution settings window</guilabel>
+					on
+					<guilabel>Flows tab</guilabel>
+					(see
+					<xref linkend="flows_detailed_execution" />
+					).
+				</step>
+				<step> Set the maximum number of
+					cores (nominal capacity) to execute
+					the
+					flow.
+				</step>
+				<step> Set the group node desired.</step>
+				<step> Press run.</step>
+				<step>
+					Go to
+					<guilabel>Jobs</guilabel>
+					tab.
+				</step>
+				<step> Click on Details.</step>
+				<step>
+					See the nodes group in
+					which the flow was executed
+					(see
+					<xref linkend="jobs_right_panel" />
+					).
+				</step>
+			</procedure>
+		</para>
+		<para>It's easy to see that the execution was distributed
+			in the nodes of subset (group) chosen by the user and not
+			in all the processing nodes.
+		</para>
+	</example>
+    </section>
+  </section>
+  <section xml:id="technical_aspects_import_samples">
+    <title>Sample projects</title>
+    <para>In <menuchoice>
+        <guimenu>Help</guimenu>
+        <guimenuitem>Samples</guimenuitem>
+		</menuchoice> menu, there are samples to be imported.</para>
+		<para>
+			GêBR offers bundled samples for download in its hostpage,
+			<link xlink:show="new" xlink:href="https://www.gebrproject.com">hostpage</link>
+		like gebr-menus-su package. Here are some samples this package provides:
+			<itemizedlist>
+				<listitem>
+					Dip Moveout : 
+					<emphasis> Ilustrates different types of DMO processing </emphasis>
+				</listitem>
+				<listitem>
+					Velocity Analysis : 
+					<emphasis> Illustrate some velocity analysis processes </emphasis>
+				</listitem>
+				<listitem>
+					NMO : 
+					<emphasis> Illustrate normal moveout corrections and stacking </emphasis>
+				</listitem>
+				<listitem>
+					Ray Tracing : 
+					<emphasis> Illustrates different ray tracing programs </emphasis>
+				</listitem>
+				<listitem>
+					Migration Inversion : 
+					<emphasis> Illustrates different processes of migration inversion </emphasis>
+				</listitem>
+				<listitem>
+					Time Frequency Analysis : 
+					<emphasis> Illustrates chirpy data in the time-frequency domain </emphasis>
+				</listitem>
+				<listitem>
+					Deconvolution : 
+					<emphasis> Illustrate a random noise attenuation via F-X deconvolution </emphasis>
+				</listitem>
+				<listitem>
+					Filtering : 
+					<emphasis> Ilustrates different filtering processes </emphasis>
+				</listitem>
+				<listitem>
+					Trace Headers and Values : 
+					<emphasis> Illustrates several applications to the trace headers and values of keywords </emphasis>
+				</listitem>
+				<listitem>
+					Plotting : 
+					<emphasis> Illustrates different plotting programs </emphasis>
+				</listitem>
+				<listitem>
+					Velocity Profiles : 
+					<emphasis> Illustrate several types of velocity profiles </emphasis>
+				</listitem>
+				<listitem>
+					Muting : 
+					<emphasis> Illustrating a picking in a data, and your result after applied mute </emphasis>
+				</listitem>
+				<listitem>
+					Synthetic : 
+					<emphasis> Show several demonstrations about synthetic data creation </emphasis>
+				</listitem>
+				<listitem>
+					Amplitude Correction : 
+					<emphasis> Illustrates the amplitude correction on synthetic seismic data </emphasis>
+				</listitem>
+				<listitem>
+					Offset Continuation : 
+					<emphasis> Ilustrates the use of Offset Continuation method </emphasis>
+				</listitem>
+				<listitem>
+					Block : 
+					<emphasis> Creates a data set of the form required by the "block" program.	</emphasis>
+				</listitem>
+				<listitem>
+					Stacking Traces : 
+					<emphasis> Illustrating the usage phase weighted and diversity stacking </emphasis>
+				</listitem>
+				<listitem>
+					Vibroseis Sweeps : 
+					<emphasis> Illustrates using SUVIBRO </emphasis>
+				</listitem>
+				<listitem>
+					Making Data : 
+					<emphasis> Illustrating the construction of common offsets and shot gathers </emphasis>
+				</listitem>
+			</itemizedlist>
+
+		</para>
+		Once imported, the associated flows can be readily consulted or executed (consult 
+		<xref linkend="flows_execute_flow"/>).
+		<para>
+
+		</para>
+	</section>
+</chapter>
+  

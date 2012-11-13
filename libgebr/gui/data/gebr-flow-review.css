@@ -1,0 +1,86 @@
+/*
+ * @title: Flow Revision
+ * @author: GêBR Core Team
+ * @e-mail: gebr-devel@googlegroups.com
+ */
+
+/*
+* CSS to improve Flow Review
+*/
+.programs .title {
+	font-size: 14px;
+	padding-left: 10px;
+	padding-bottom: 0px;
+
+}
+.programs .description {
+	font-size: 11px;
+	font-style: italic;
+	padding-left: 10px;
+	padding-bottom: 2px;
+}
+.parameters {
+	font-size: 11px;
+	margin-top: 10px;
+	margin-right: 10px;
+	margin-left: 30px;
+	background: #ffffff;
+}
+.parameters caption {
+	display:none;
+}
+
+.param-required {
+	font-weight: bold;
+}
+
+.param-group {
+	background: #f8f8f8;
+}
+.param-group .label {
+	padding-left: 30px;
+}
+
+.io:before {
+	font-size: 12px;
+	font-weight: bold;
+	content: \"I/O Table\";
+}
+.io table {
+	font-size: 11px;
+	text-align: left;
+	margin-top: 15px;
+	margin-right: 10px;
+	margin-left: 15px;
+	background: #ffffff;
+}
+.io caption {
+	display:none;
+}
+
+body {
+	background-attachment: fixed;
+    background: #f9f5f3 url('pixmaps/flows-review-bg.png') top right repeat-x;
+}
+
+.program .error {
+	font-size: 11px;
+	text-align: left;
+	margin-top: 15px;
+	margin-right: 10px;
+	background-color: #FFFFE0;
+}
+
+.flow-error {
+	margin-top: 0px;
+	background-color: #FFFFE0;
+	padding: 3px 3px 3px 6px;
+	opacity: 0.6;
+}
+
+.flow-error p {
+	margin: 2px;
+	font-size: 13px;
+	text-align: left;
+	font-weight: bold;
+}
